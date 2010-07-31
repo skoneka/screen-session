@@ -57,7 +57,9 @@ class ScreenSession(object):
                     cgroup = "none"
                 
                 ctime=subprocess.Popen('screen -S %s -Q @time' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-                 
+                
+                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, os.path.join(self.basedir,self.savedir,cwin+"_scrollback")) , shell=True)
+                
                 print('window = '+cwin+ '; saved on '+ctime+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
@@ -80,11 +82,24 @@ class ScreenSession(object):
     def __save_win(self,winid,time,group,type,title,pids_data):
         fname=os.path.join(self.basedir,self.savedir,winid)
         print ("Saving window %s" % winid)
-        basedata=(time,group,type,title)
+        
+        pids_data_len="0"
+        if(pids_data):
+            pids_data_len=str(len(pids_data))
+            
+        basedata=(time,group,type,title,pids_data_len)
         f=open(fname,"w")
         for data in basedata:
             f.write(data+'\n')
+
+        if(pids_data):
+            for pid in pids_data:
+                f.write("-\n")
+                for data in pid:
+                    f.write(data+'\n')
         f.close()
+
+
 
 
     def __get_pid_info(self,pid):
