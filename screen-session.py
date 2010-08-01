@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess,sys,os
+import subprocess,sys,os,getopt,glob
+from array import array
 
 
 print 'Screen Session'
@@ -10,21 +11,111 @@ class ScreenSession(object):
     basedir=""
     savedir=""
     procdir="/proc"
+    
+    whitelist = ["vim","man"]
+    shells = ["zsh","zsh-beta","sh","bash"]
+    
+    __projectdir=""
 
     def __init__(self,pid,basedir,savedir):
         self.pid=str(pid)
         self.basedir=str(basedir)
         self.savedir=str(savedir)
+        self.__projectdir=os.path.join(self.basedir,self.savedir)
 
-    def store(self):
+    def save(self):
         print('storing')
-        self.__store_screen()
+        return self.__save_screen()
 
     def load(self):
-        print 'loading'
+        print('loading %s' % self.__projectdir)
+        self.__load_screen()
 
-    def __store_screen(self):
-        print 'storing screen'
+    def wizard(self):
+        print("running window wizard")
+        pass
+
+    def __load_screen(self):
+        
+        #check if target Screen is currently in some group and set hostgroup to it
+        try:
+            hostgroup = subprocess.Popen('screen -S %s -Q @group' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" (",1)[1].rsplit(")",1)[0]
+        except:
+            hostgroup = "none"
+
+        #create root group and put it into host group
+        rootgroup="restore_"+self.savedir
+        subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (self.pid,rootgroup,0 ) , shell=True)
+        subprocess.Popen('screen -S %s -X group %s' % (self.pid,hostgroup) , shell=True)
+#        subprocess.Popen('screen -S %s -X select %d' % (self.pid, rootgroup) , shell=True)
+        
+        print("restoring Screen session inside group %s -> %s" %(hostgroup,rootgroup))
+
+        print('number; time; group; type; title; processes;')
+        wins=[]
+
+        for filename in glob.glob(os.path.join(self.__projectdir,'win_*')):
+            f=open(filename)
+            win=list(f)[0:6]
+            f.close()
+            win=self.__striplist(win)
+            print (str(win))
+            wins.append((win[0], win[1], win[2], win[3], win[4], win[5]))
+
+
+        wins_trans = {}
+        for win in wins:
+            wins_trans[win[0]]=self.__create_win(False,wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+        
+        
+#        for win in wins:
+#            self.__order_group(wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+
+
+
+
+    # Take a list of string objects and return the same list
+    # stripped of extra whitespace.
+    def __striplist(self,l):
+        return([x.strip() for x in l])
+
+
+    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
+        if type=='basic':
+            if keep_numbering:
+                command='screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win)
+                subprocess.Popen(command , shell=True)
+            else:
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
+
+        elif type=='group':
+            if keep_numbering:
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,win ) , shell=True)
+            else:
+                print 'screen -S %s -X screen -t \"%s\" //group' % (pid,title)
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" //group' % (pid,title) , shell=True)
+        else:
+            print 'Unkown window type. Ignoring.'
+            return -1
+       
+
+        if keep_numbering:
+            newwin = win
+        else:
+            newwin = subprocess.Popen('screen -S %s -Q @number' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+
+        return newwin
+    
+    def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
+        subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) , shell=True)
+        if group=="none":
+            subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) , shell=True)
+        else:    
+            subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,group) , shell=True)
+            
+            
+
+    def __save_screen(self):
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
@@ -58,14 +149,14 @@ class ScreenSession(object):
                 
                 ctime=subprocess.Popen('screen -S %s -Q @time' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 
-                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, os.path.join(self.basedir,self.savedir,cwin+"_scrollback")) , shell=True)
+                #save scrollback
+                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)) , shell=True)
                 
                 print('window = '+cwin+ '; saved on '+ctime+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
                     for i,pid in enumerate(cpids):
                         print('    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
-                #self.__setup_windir(self.basedir,self.savedir,cwin)
 
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
 
@@ -80,14 +171,14 @@ class ScreenSession(object):
     
 
     def __save_win(self,winid,time,group,type,title,pids_data):
-        fname=os.path.join(self.basedir,self.savedir,winid)
+        fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         print ("Saving window %s" % winid)
         
         pids_data_len="0"
         if(pids_data):
             pids_data_len=str(len(pids_data))
             
-        basedata=(time,group,type,title,pids_data_len)
+        basedata=(winid,time,group,type,title,pids_data_len)
         f=open(fname,"w")
         for data in basedata:
             f.write(data+'\n')
@@ -115,12 +206,6 @@ class ScreenSession(object):
         cmdline=cmdline[len(exetail):]
         return (cwd,exetail,cmdline)
 
-
-    def __setup_windir(self,basedir,savedir,winid):
-        windir=os.path.join(basedir,savedir,winid)
-        print ("Setting up window directory %s" % windir)
-        os.makedirs(windir)
-
     def __setup_savedir(self,basedir,savefolder):
         savedir = os.path.join(basedir,savefolder)
         print ("Setting up session directory %s" % savedir)
@@ -133,15 +218,58 @@ class ScreenSession(object):
         else:
             os.makedirs(savedir)
             return True
-
-    def __submit_window(self,tty,win):
-        pass
-
-    def __store_proc(self):
-        print 'storing proc'
+def usage():
+    print('Usage:')
 
 if __name__=='__main__':
     # pid basedir
-    scs=ScreenSession(sys.argv[1],sys.argv[2],sys.argv[1])
-    scs.store()
+    try :
+        opts,args = getopt.getopt(sys.argv[1:], "nwl:sd:p:ho:v", ["keep-numbers","wizard","load=","save","dir=","pid=","help","output="])
+    except getopt.GetoptError, err:
+        print('Bad options.')
+        usage()
+        sys.exit(2)
+
+    output = None
+    verbose = False
+    keep_numbers=False
+    mode = 0
+    savedir = None
+    for o, a in opts:
+        if o == "-v":
+            verbose = True
+        if o in ("-n","--keep-numbers"):
+            keep_numbers = True
+        elif o in ("-h","--help"):
+            usage()
+            sys.exit(2)
+        elif o in ("-s","--save"):
+            mode = 1
+        elif o in ("-l","--load"):
+            savedir = a
+            mode = 2
+        elif o in ("-w","--wizard"):
+            mode = 3
+        elif o in ("-p","--pid"):
+            pid = a
+        elif o in ("-d","--dir"):
+            dir = a
+        elif o in ("-o","--output"):
+            output = a
+        else:
+            assert False, "unhandled option"
+    if not savedir:
+        savedir=pid
+
+    scs=ScreenSession(pid,dir,savedir)
+    if mode==1:
+        scs.save()
+    elif mode==2:
+        scs.load()
+    elif mode==3:
+        scs.wizard()
+    else:
+        print('No mode specified --load or --save')
+        
+
 
