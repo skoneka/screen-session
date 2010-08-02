@@ -12,8 +12,11 @@ class ScreenSession(object):
     maxwin=-1
     force=False
     
-    wizard_whitelist = ["vim","man"]
-    wizard_shells = ["zsh","zsh-beta","sh","bash"]
+    #primer arguments: primer_shells primer_whitelist primer_blacklist number_of_processes cwd exe args cwd exe args..
+    primer="./screen-session-primer"
+    primer_shells = ["zsh","zsh-beta","sh","bash"]
+    primer_whitelist = ["vim","man","more","less","most"]
+    primer_blacklist = ["screen-session"]
     
     __projectdir=""
 
@@ -25,7 +28,10 @@ class ScreenSession(object):
 
     def save(self):
         print('storing')
-        return self.__save_screen()
+        if not self.__setup_savedir(self.basedir,self.savedir):
+            return False
+        self.__save_screen()
+        self.__save_layouts()
 
     def load(self):
         print('loading %s' % self.__projectdir)
@@ -124,8 +130,6 @@ class ScreenSession(object):
 
     def __save_screen(self):
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        if not self.__setup_savedir(self.basedir,self.savedir):
-            return False
         print "Homewindow is " + homewindow
 
         cwin=-1
@@ -185,25 +189,32 @@ class ScreenSession(object):
         
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
         if not homelayout.startswith('This is layout'):
+            print("No layouts to save")
             return False
+        print("Saving layouts")
         homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
         homelayout = homelayout.strip()
         layoutname = layoutname.rsplit(')')[0]
+        print("Homelayout is %s (%s)"% (homelayout,layoutname))
         currentlayout=homelayout
-        prevlayout=-1
-        while currentlayout!=prevlayout:
-            subprocess.Popen('screen -S %s -X layout dump %s' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
+       
+
+        loop_exit_allowed=False
+        while currentlayout!=homelayout or not loop_exit_allowed:
+            loop_exit_allowed=True
+            print("currentlayout is %s (%s)"% (currentlayout,layoutname))
+            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
             subprocess.Popen('screen -S %s -X layout next' % (self.pid) , shell=True)
-            prevlayout=currentlayout
+            
             currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-            currentlayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
+            currentlayout,layoutname = currentlayout.split('layout',1)[1].rsplit('(')
             currentlayout = currentlayout.strip()
             layoutname = layoutname.rsplit(')')[0]
+        
+        print("Returned homelayout %s (%s)"% (homelayout,layoutname))
 
         return True
             
-            #subprocess.Popen('screen -S %s -X layout dump %s' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_current"+cwin)) , shell=True)
-
 
     def __save_win(self,winid,time,group,type,title,pids_data):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
@@ -255,6 +266,8 @@ class ScreenSession(object):
                 for filename in glob.glob(os.path.join(basedir,savedir,'win_*')):
                     os.remove(filename)
                 for filename in glob.glob(os.path.join(basedir,savedir,'scrollback_*')):
+                    os.remove(filename)
+                for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
                     os.remove(filename)
                 return True
             else:
