@@ -10,9 +10,10 @@ class ScreenSession(object):
     savedir=""
     procdir="/proc"
     maxwin=-1
+    force=False
     
-    whitelist = ["vim","man"]
-    shells = ["zsh","zsh-beta","sh","bash"]
+    wizard_whitelist = ["vim","man"]
+    wizard_shells = ["zsh","zsh-beta","sh","bash"]
     
     __projectdir=""
 
@@ -33,8 +34,13 @@ class ScreenSession(object):
     def wizard(self):
         print("running window wizard")
         pass
+    
+    def __remove_and_escape_bad_chars(self,str):
+        return str.replace('|','')#also need to escape "\" with "\\\\"
 
     def __load_screen(self):
+        homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        print ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
         try:
@@ -47,7 +53,8 @@ class ScreenSession(object):
         subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (self.pid,rootgroup,0 ) , shell=True)
         subprocess.Popen('screen -S %s -X group %s' % (self.pid,hostgroup) , shell=True)
         
-        print("restoring Screen session inside group %s -> %s" %(hostgroup,rootgroup))
+        rootwindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        print("restoring Screen session inside window %s group %s -> %s" %(rootwindow,hostgroup,rootgroup))
 
         print('number; time; group; type; title; processes;')
         wins=[]
@@ -58,16 +65,21 @@ class ScreenSession(object):
             f.close()
             win=self.__striplist(win)
             print (str(win))
-            wins.append((win[0], win[1], win[2], win[3], win[4], win[5]))
+            wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5]))
 
 
         wins_trans = {}
         for win in wins:
             wins_trans[win[0]]=self.__create_win(False,wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
+        for win in wins:
+            self.__order_group(wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
-#        for win in wins:
-#            self.__order_group(wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+
+        print ("Rootwindow is "+rootwindow)
+        print ("Returning homewindow " +homewindow)
+        
+        subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
 
 
 
@@ -81,16 +93,14 @@ class ScreenSession(object):
     def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
         if type=='basic':
             if keep_numbering:
-                command='screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win)
-                subprocess.Popen(command , shell=True)
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) , shell=True)
             else:
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,"r_"+title) , shell=True)
 
         elif type=='group':
             if keep_numbering:
                 subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,win ) , shell=True)
             else:
-                print 'screen -S %s -X screen -t \"%s\" //group' % (pid,title)
                 subprocess.Popen('screen -S %s -X screen -t \"%s\" //group' % (pid,title) , shell=True)
         else:
             print 'Unkown window type. Ignoring.'
@@ -120,7 +130,7 @@ class ScreenSession(object):
 
         cwin=-1
         ctty=None
-        for i in range(0,self.maxwin):
+        for i in range(0,self.maxwin+1):
             subprocess.Popen('screen -S %s -X select %d' % (self.pid, i) , shell=True)
             print('--')
             ctitle = subprocess.Popen('screen -S %s -Q @title' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -166,10 +176,34 @@ class ScreenSession(object):
 
         print ("Returning homewindow = " +homewindow)
         subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        print ('current window = '+cwin)
+#        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+#        print ('current window = '+cwin)
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
     
+
+    def __save_layouts(self):
+        
+        homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+        if not homelayout.startswith('This is layout'):
+            return False
+        homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
+        homelayout = homelayout.strip()
+        layoutname = layoutname.rsplit(')')[0]
+        currentlayout=homelayout
+        prevlayout=-1
+        while currentlayout!=prevlayout:
+            subprocess.Popen('screen -S %s -X layout dump %s' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
+            subprocess.Popen('screen -S %s -X layout next' % (self.pid) , shell=True)
+            prevlayout=currentlayout
+            currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+            currentlayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
+            currentlayout = currentlayout.strip()
+            layoutname = layoutname.rsplit(')')[0]
+
+        return True
+            
+            #subprocess.Popen('screen -S %s -X layout dump %s' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_current"+cwin)) , shell=True)
+
 
     def __save_win(self,winid,time,group,type,title,pids_data):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
@@ -214,8 +248,18 @@ class ScreenSession(object):
             os.makedirs(basedir)
 
         if os.path.exists(savedir):
-            print("Session \"%s\" in \"%s\" already exists. Aborting" % (savedir, basedir))
-            return False
+            print("Session \"%s\" in \"%s\" already exists. Use --force to overwrite." % (os.path.basename(savedir), basedir))
+            if self.force:
+                print('forcing..')
+                print('cleaning up %s' % savedir)
+                for filename in glob.glob(os.path.join(basedir,savedir,'win_*')):
+                    os.remove(filename)
+                for filename in glob.glob(os.path.join(basedir,savedir,'scrollback_*')):
+                    os.remove(filename)
+                return True
+            else:
+                print('Aborting.')
+                return False
         else:
             os.makedirs(savedir)
             return True
@@ -231,16 +275,25 @@ def usage():
     print('Usage:')
 
 if __name__=='__main__':
-    # pid basedir
-    waitfor = True
+    
+    if len(sys.argv)>1:
+        if sys.argv[1]=='--wait':
+            waitfor=True
+        else:
+            waitfor=False
+    else:
+        waitfor = False
+
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "wfi:o:m:nwlsd:p:hv", ["nowait","force","in", "out""maxwin","keep-numbers","wizard","load","save","dir=","pid=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "c:wfi:o:m:nwlsd:p:hv", ["current-session=","wait","force","in=", "out=","maxwin","keep-numbers","wizard","load","save","dir=","pid=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
         doexit(2,waitfor)
-
+    
+    current_session=None
     verbose = False
+    force = False
     keep_numbers=False
     mode = 0
     basedir =None
@@ -251,13 +304,17 @@ if __name__=='__main__':
     for o, a in opts:
         if o == "-v":
             verbose = True
-        if o in ("-n","--keep-numbers"):
+        elif o in ("-c","--current-session"):
+            current_session = a
+        elif o in ("-f","--force"):
+            force = True
+        elif o in ("-n","--keep-numbers"):
             keep_numbers = True
         elif o in ("-h","--help"):
             usage()
             doexit(0,waitfor)
-        elif o in ("-w","--nowait"):
-            waitfor = False
+        elif o in ("-w","--wait"):
+            waitfor = True
         elif o in ("-m","--maxwin"):
             maxwin = int(a)
         elif o in ("-s","--save"):
@@ -275,19 +332,25 @@ if __name__=='__main__':
         elif o in ("-o","--out"):
             output = a
         else:
-            assert False, "unhandled option"
+            doexit("Unhandled option",waitfor)
 
 
     if not basedir:
-        basedir = os.path.join(os.path.expanduser('~'),'.screen-sessions')
+        print("basedir not specified, using default:")
+        directory = os.path.join(os.path.expanduser('~'),'.screen-sessions')
+        print(directory)
+        basedir = directory
 
     if mode==0:
         usage()
         doexit(0,waitfor)
     elif mode==1:
         if not input:
-            print("for saving you must specify target Screen session PID as --input")
-            doexit("Aborting",waitfor)
+            if current_session:
+                input = current_session
+            else:
+                print("for saving you must specify target Screen session PID as --input")
+                doexit("Aborting",waitfor)
         pid = input
         if not output:
             savedir = pid
@@ -298,8 +361,11 @@ if __name__=='__main__':
             print("for loading you must specify saved Screen session as --input")
             doexit("Aborting",waitfor)
         if not output:
-            print("for loading you must specify target Screen session PID as --output")
-            doexit("Aborting",waitfor)
+            if current_session:
+                output = current_session
+            else:
+                print("for loading you must specify target Screen session PID as --output")
+                doexit("Aborting",waitfor)
         pid = output
         savedir = input
     
@@ -309,6 +375,7 @@ if __name__=='__main__':
     
     scs=ScreenSession(pid,basedir,savedir)
     scs.maxwin = maxwin
+    scs.force = force
     if mode==1:
         scs.save()
     elif mode==2:
