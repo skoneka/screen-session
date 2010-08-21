@@ -19,6 +19,7 @@ class ScreenSession(object):
     primer_blacklist = ["screen-session"]
     
     __projectdir=""
+    __scrollbacks=[]
 
     def __init__(self,pid,basedir,savedir):
         self.pid=str(pid)
@@ -32,6 +33,7 @@ class ScreenSession(object):
             return False
         self.__save_screen()
         self.__save_layouts()
+        self.__scrollback_clean()
 
     def load(self):
         print('loading %s' % self.__projectdir)
@@ -126,7 +128,24 @@ class ScreenSession(object):
         else:    
             subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,group) , shell=True)
             
-            
+    def __scrollback_clean(self):
+        for f in self.__scrollbacks:
+            try:
+                #clean up scrollback
+                ftmp=f+"_tmp"
+                temp=open(ftmp,'w')
+                thefile = open(f,'r')
+                for line in thefile:
+                    if cmp(line,'\n') == 0:
+                        line = line.replace('\n','')
+                    temp.write(line)
+                temp.close()
+                thefile.close()
+                os.remove(f)
+                os.rename(ftmp,f)
+            except:
+                print 'Unable to clean scrollback file: '+f
+
 
     def __save_screen(self):
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
@@ -165,7 +184,9 @@ class ScreenSession(object):
                 ctime=subprocess.Popen('screen -S %s -Q @time' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 
                 #save scrollback
-                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)) , shell=True)
+                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
+                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, scrollback_filename) , shell=True)
+                self.__scrollbacks.append(scrollback_filename)
                 
                 print('window = '+cwin+ '; saved on '+ctime+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
@@ -248,9 +269,7 @@ class ScreenSession(object):
         cmdline=f.read()
         f.close()
         
-        (exehead,exetail)=os.path.split(exe)
-        cmdline=cmdline[len(exetail):]
-        return (cwd,exetail,cmdline)
+        return (cwd,exe,cmdline)
 
     def __setup_savedir(self,basedir,savefolder):
         savedir = os.path.join(basedir,savefolder)
@@ -275,6 +294,8 @@ class ScreenSession(object):
                 return False
         else:
             os.makedirs(savedir)
+            os.remove(os.path.join(basedir,"current"))
+            os.symlink(savedir,os.path.join(basedir,"current"))
             return True
 
 
