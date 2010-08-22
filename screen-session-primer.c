@@ -23,6 +23,8 @@
 
 #define MAXBUFFERSIZE   80
 
+char buf[256];
+
 typedef enum menu
 {
     NONE=0,
@@ -34,6 +36,8 @@ typedef enum menu
 }MENU;
 
 void cleartoendofline( void );          /* ANSI function prototype */
+
+
 
 void cleartoendofline( void )
 {
@@ -160,14 +164,108 @@ char **make_arglist(char *program,char *arg1, char *arg2, int procs_n,int *procs
     args[procs_n+3]=NULL;
     return args;
 }
+int start(char *thisprogram,char *config,int procs_n,int *procs) {
+    if(procs_n==0)
+        return 0;
+    printf("datafile=%s\n",config);
+    char proc_cwd[256];
+    char proc_exe[256];
+    int proc_args_n;
+    char **proc_args;
+    int i,nl_c=0;
+    char c;
+    FILE *fp=NULL;
+    for(i=0;i<procs_n;i++)
+        printf("%d ",procs[i]);
+    printf("\n");
+    fp=fopen(config,"r");
+    if(!fp) {
+        printf("Cannot open data file. Aborting.\n");
+        return 1;
+    }
+    while((c=fgetc(fp))!=EOF) {
+        if(c=='\n') {
+            nl_c++;
+        }
+        else if (nl_c > (5+(procs[0]*5)))
+            break;
+    }
+    printf("starting: ");
+    fscanf(fp,"%s\n",proc_cwd); //cwd exe args
+    fscanf(fp,"%s\n",proc_exe);
+    fscanf(fp,"%d\n",&proc_args_n);
+    if(procs_n>1) {
+        proc_args_n+=2;
+    }
+    proc_args = malloc((proc_args_n+1)*sizeof(char*));
+    for(i=0;i<proc_args_n;i++) {
+        proc_args[i]=malloc(100*sizeof(char));
+    }
+    proc_args[proc_args_n]=NULL;
+    int null_c=0;
+    int word_c=0;
+    while((c=fgetc(fp))!=EOF) {
+        if(c=='\0') {
+            null_c++;
+            word_c=0;
+            if(null_c%2)
+                fputs(" \"",stdout);
+            else 
+                fputs("\" ",stdout);
+        }
+        else if(c=='\n') {
+            if(null_c%2)
+                fputs("\" ",stdout);
+            break;
+        }
+        else {
+            fputc(c,stdout);
+            proc_args[null_c][word_c]=c;
+            word_c++;
+            
+        }
+        if (null_c > proc_args_n)
+            break;
+    }
+    if(procs_n>1) {
+        strcpy(proc_args[proc_args_n-2],"-c");
+
+        char command[1000];
+        strcpy(command,thisprogram);
+        strcat(command," -s ");
+        strcat(command,config);
+        for(i=1;i<procs_n;i++) {
+            char buf[10];
+            sprintf(buf," %d",procs[i]);
+            strcat(command,buf);
+        }
+        strcat(command,"; ");
+        strcat(command,proc_exe);
+
+        strcpy(proc_args[proc_args_n-1],command);
+    }
+    printf("\n");
+    chdir(proc_cwd);
+    execvp(proc_exe,proc_args);
+
+
+
+}
 
 int main(int argc, char **argv) {
-///./program scrollbackfile datafile
+//./program scrollbackfile datafile
+//./program -s datafile [processes..]
     int i;
-    char buf[256];
     FILE *fp=NULL;
     char ch;
     int c;
+    if (strcmp(argv[1],"-s")==0) {
+        int procs[10];
+        for (i=3;i<argc;i++)
+            procs[i-3]=atoi(argv[i]);
+        start(argv[0],argv[2],i-3,procs);
+        return 0;
+    }
      
     fp=fopen(argv[1],"r");
     if(fp) {
@@ -198,13 +296,15 @@ int main(int argc, char **argv) {
         if(c=='\n') {
             nl_c++;
         }
-        if (nl_c > 4)
+        if (nl_c==1)
+           fputc(c,stdout);
+        else if (nl_c > 4)
             break;
      //   fputc(c,stdout);
     }
     
     fscanf(fp,"%d\n",&procs_c);
-    printf("This window had %d programs running:\n",procs_c);
+    printf("\nThis window had %d programs running:\n",procs_c);
 
     char proc_cwd[256];
     char proc_exe[256];
@@ -278,26 +378,7 @@ int main(int argc, char **argv) {
 
     }
 
-    
-
-    int arg_list_len=3;
-    char *arg_list[] = {
-        "sh",
-        "/",
-        NULL
-    };
-
-//printf("arg_list:");
-//for(i=0;i<arg_list_len;i++)
-//printf("%s ",arg_list[i]);
-//printf("\n");
-
-    //  printf("starting..\n");
-  //  execvp("sh",arg_list);
- //   printf("after\n");
-
-
-
     return 0;
 }
+
 
