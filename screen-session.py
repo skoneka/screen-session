@@ -14,7 +14,7 @@ class ScreenSession(object):
     lastdir="last"
     
     #primer arguments: primer_shells primer_whitelist primer_blacklist number_of_processes cwd exe args cwd exe args..
-    primer="./screen-session-primer"
+    primer="screen-session-primer"
     primer_shells = ["zsh","zsh-beta","sh","bash"]
     primer_whitelist = ["vim","man","more","less","most"]
     primer_blacklist = ["screen-session"]
@@ -104,7 +104,8 @@ class ScreenSession(object):
             if keep_numbering:
                 subprocess.Popen('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) , shell=True)
             else:
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,"r_"+title) , shell=True)
+                #subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
+                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s %s %s' % (pid,title,self.primer,os.path.join(basedir,savedir,"scrollback_"+win),os.path.join(basedir,savedir,"win_"+win)) , shell=True)
 
         elif type=='group':
             if keep_numbering:
@@ -429,7 +430,7 @@ if __name__=='__main__':
         doexit("Aborting",waitfor)
     
     scs=ScreenSession(pid,basedir,savedir)
-    if savedir == scs.lastdir:
+    if savedir == scs.lastdir and mode==1:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
 

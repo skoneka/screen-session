@@ -248,8 +248,6 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     chdir(proc_cwd);
     execvp(proc_exe,proc_args);
 
-
-
 }
 
 int main(int argc, char **argv) {
@@ -259,6 +257,10 @@ int main(int argc, char **argv) {
     FILE *fp=NULL;
     char ch;
     int c;
+    if(argc==1) {
+        printf("screen-session helper program\n");
+        return 0;
+    }
     if (strcmp(argv[1],"-s")==0) {
         int procs[10];
         for (i=3;i<argc;i++)
@@ -366,14 +368,31 @@ int main(int argc, char **argv) {
         case ONLY:
             printf("Starting program %d...\n",number);
             args[0]=number;
-            arglist=make_arglist("echo","-s",argv[2],1,args);
-            execvp("echo",arglist);
+            arglist=make_arglist(argv[0],"-s",argv[2],1,args);
+            execvp(argv[0],arglist);
             break;
         case ALL:
             printf("Starting all programs...\n");
+            for(i=0;i<procs_c;i++) {
+                args[i]=i;
+            }
+            arglist=make_arglist(argv[0],"-s",argv[2],procs_c,args);
+            execvp(argv[0],arglist);
+
             break;
         case NUMBER:
             printf("Starting programs up to %d...\n",number);
+            if(number>procs_c) {
+                number=procs_c;
+                printf("No such window. Starting programs up to %d...\n",number-1);
+            }
+            else
+                number++;
+            for(i=0;i<number;i++) {
+                args[i]=i;
+            }
+            arglist=make_arglist(argv[0],"-s",argv[2],number,args);
+            execvp(argv[0],arglist);
             break;
 
     }
