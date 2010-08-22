@@ -11,6 +11,7 @@ class ScreenSession(object):
     procdir="/proc"
     maxwin=-1
     force=False
+    lastdir="last"
     
     #primer arguments: primer_shells primer_whitelist primer_blacklist number_of_processes cwd exe args cwd exe args..
     primer="./screen-session-primer"
@@ -253,8 +254,12 @@ class ScreenSession(object):
         if(pids_data):
             for pid in pids_data:
                 f.write("-\n")
-                for data in pid:
-                    f.write(data+'\n')
+                for i,data in enumerate(pid):
+                    if i == 2:
+                        f.write(str(len(data.split('\0'))-1)+'\n')
+                        f.write(data+'\n')
+                    else:
+                        f.write(data+'\n')
         f.close()
 
 
@@ -288,14 +293,30 @@ class ScreenSession(object):
                     os.remove(filename)
                 for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
                     os.remove(filename)
+                
+                cwd=os.getcwd()
+                os.chdir(basedir)
+                try:
+                    os.remove(self.lastdir)
+                except:
+                    pass
+                os.symlink(savedir,self.lastdir)
+                os.chdir(cwd)
+                
                 return True
             else:
                 print('Aborting.')
                 return False
         else:
             os.makedirs(savedir)
-            os.remove(os.path.join(basedir,"current"))
-            os.symlink(savedir,os.path.join(basedir,"current"))
+            cwd=os.getcwd()
+            os.chdir(basedir)
+            try:
+                os.remove(self.lastdir)
+            except:
+                pass
+            os.symlink(savedir,self.lastdir)
+            os.chdir(cwd)
             return True
 
 
@@ -319,7 +340,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "c:wfi:o:m:nwlsd:p:hv", ["current-session=","wait","force","in=", "out=","maxwin","keep-numbers","wizard","load","save","dir=","pid=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "c:wfi:o:m:nwlsd:p:hv", ["current-session=","wait","force","in=", "out=","maxwin=","keep-numbers","wizard","load","save","dir=","pid=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -408,6 +429,10 @@ if __name__=='__main__':
         doexit("Aborting",waitfor)
     
     scs=ScreenSession(pid,basedir,savedir)
+    if savedir == scs.lastdir:
+        print("savedir cannot be named \"%s\". Aborting." % savedir)
+        doexit(1,waitfor)
+
     scs.maxwin = maxwin
     scs.force = force
     if mode==1:
