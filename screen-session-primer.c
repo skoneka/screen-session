@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <termios.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -53,6 +54,22 @@ int parseNumber(char *buffer) {
             number = 0;
         return number;
 }
+
+int mygetch ( void ) 
+{
+  int ch;
+  struct termios oldt, newt;
+  
+  tcgetattr ( STDIN_FILENO, &oldt );
+  newt = oldt;
+  newt.c_lflag &= ~( ICANON | ECHO );
+  tcsetattr ( STDIN_FILENO, TCSANOW, &newt );
+  ch = getchar();
+  tcsetattr ( STDIN_FILENO, TCSANOW, &oldt );
+  
+  return ch;
+}
+
 
 void userInput(int *menu_num, int *num) {
     char    ch;                     /* handles user input */
@@ -177,6 +194,8 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     fp=fopen(config,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
+        printf("Press any key to continue...\n");
+        mygetch();
         return 1;
     }
     while((c=fgetc(fp))!=EOF) {
@@ -288,8 +307,9 @@ int main(int argc, char **argv) {
 
     fp=fopen(argv[2],"r");
     if(!fp) {
-        printf("Cannot open data file.\n");
-        printf("Choose action\n");
+        printf("Cannot open data file. Aborting.\n");
+        printf("Press any key to continue...\n");
+        mygetch();
         return 1;
     }
 

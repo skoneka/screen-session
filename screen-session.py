@@ -13,11 +13,9 @@ class ScreenSession(object):
     force=False
     lastdir="last"
     
-    #primer arguments: primer_shells primer_whitelist primer_blacklist number_of_processes cwd exe args cwd exe args..
     primer="screen-session-primer"
-    primer_shells = ["zsh","zsh-beta","sh","bash"]
-    primer_whitelist = ["vim","man","more","less","most"]
-    primer_blacklist = ["screen-session"]
+    
+    blacklist = ["rm"]
     
     __projectdir=""
     __scrollbacks=[]
@@ -156,6 +154,7 @@ class ScreenSession(object):
 
         cwin=-1
         ctty=None
+        cppids={}
         for i in range(0,self.maxwin+1):
             subprocess.Popen('screen -S %s -X select %d' % (self.pid, i) , shell=True)
             print('--')
@@ -176,8 +175,16 @@ class ScreenSession(object):
                     cpids_data=[]
                     for i,pid in enumerate(cpids):
                         pid=pid[1:]
+                        ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
+                        cppids[pid]=ppid
+                        pidinfo=self.__get_pid_info(pid)
+                        (exehead,exetail)=os.path.split(pidinfo[1])
+                        if exetail in self.blacklist:
+                            pass #blacklist me
                         cpids[i]=pid
-                        cpids_data.append(self.__get_pid_info(pid))
+
+                        cpids_data.append(pidinfo)
+
 
                 try:
                     cgroup = subprocess.Popen('screen -S %s -Q @group' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" (",1)[1].rsplit(")",1)[0]
@@ -190,14 +197,39 @@ class ScreenSession(object):
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
                 subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, scrollback_filename) , shell=True)
                 self.__scrollbacks.append(scrollback_filename)
+
+                # sort window processes by parent pid
+                if cpids:
+                    pids_data_sort=[]
+                    pids_data_sort_index=0
+                    pid_tail=-1
+                    pid_tail_c=-1
+                    cpids_sort=[]
+                    for i,pid in enumerate(cpids):
+                        if cppids[pid] not in cppids.keys():
+                            pids_data_sort.append(cpids_data[i])
+                            cpids_sort.append(pid)
+                            pid_tail=pid
+                            break;
+                    
+                    for j in range(len(cpids)):
+                        for i,pid in enumerate(cpids):
+                            if pid_tail==cppids[pid]:
+                                pid_tail=pid
+                                pids_data_sort.append(cpids_data[i])
+                                cpids_sort.append(pid)
+                                break;
+                    cpids_data=pids_data_sort
+                    cpids=cpids_sort
+                #end sort
                 
                 print('window = '+cwin+ '; saved on '+ctime+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
                     for i,pid in enumerate(cpids):
                         print('    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
-
-                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
+                
+                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids,cpids_data,cppids)
 
                 
 
@@ -240,14 +272,14 @@ class ScreenSession(object):
         return True
             
 
-    def __save_win(self,winid,time,group,type,title,pids_data):
+    def __save_win(self,winid,time,group,type,title,cpids,pids_data,cppids):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         print ("Saving window %s" % winid)
         
         pids_data_len="0"
         if(pids_data):
             pids_data_len=str(len(pids_data))
-            
+        
         basedata=(winid,time,group,type,title,pids_data_len)
         f=open(fname,"w")
         for data in basedata:
@@ -275,7 +307,6 @@ class ScreenSession(object):
         f=open(os.path.join(piddir,"cmdline"),"r")
         cmdline=f.read()
         f.close()
-        
         return (cwd,exe,cmdline)
 
     def __setup_savedir(self,basedir,savefolder):
