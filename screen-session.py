@@ -84,11 +84,12 @@ class ScreenSession(object):
         for win in wins:
             self.__order_group(wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
-
-        print ("Rootwindow is "+rootwindow)
-        print ("Returning homewindow " +homewindow)
         
-        subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        print ("Rootwindow is "+rootwindow)
+        #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
+
+        print ("Returning homewindow " +homewindow)
+        subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE)
 
 
 

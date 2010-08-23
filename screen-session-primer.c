@@ -25,7 +25,7 @@
 
 char buf[256];
 
-typedef enum menu
+enum menu
 {
     NONE=0,
     RESET,
@@ -33,7 +33,7 @@ typedef enum menu
     ALL,
     ONLY,
     NUMBER
-}MENU;
+};
 
 void cleartoendofline( void );          /* ANSI function prototype */
 
@@ -167,7 +167,6 @@ char **make_arglist(char *program,char *arg1, char *arg2, int procs_n,int *procs
 int start(char *thisprogram,char *config,int procs_n,int *procs) {
     if(procs_n==0)
         return 0;
-    printf("datafile=%s\n",config);
     char proc_cwd[256];
     char proc_exe[256];
     int proc_args_n;
@@ -175,9 +174,6 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     int i,nl_c=0;
     char c;
     FILE *fp=NULL;
-    for(i=0;i<procs_n;i++)
-        printf("%d ",procs[i]);
-    printf("\n");
     fp=fopen(config,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
@@ -228,7 +224,10 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
             break;
     }
     if(procs_n>1) {
-        strcpy(proc_args[proc_args_n-2],"-c");
+        for(i=proc_args_n-1;i>2;i--) {
+            strcpy(proc_args[i],proc_args[i-2]);
+        }
+        strcpy(proc_args[1],"-c");
 
         char command[1000];
         strcpy(command,thisprogram);
@@ -242,7 +241,8 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
         strcat(command,"; ");
         strcat(command,proc_exe);
 
-        strcpy(proc_args[proc_args_n-1],command);
+        strcpy(proc_args[2],command);
+        
     }
     printf("\n");
     chdir(proc_cwd);
@@ -262,7 +262,8 @@ int main(int argc, char **argv) {
         return 0;
     }
     if (strcmp(argv[1],"-s")==0) {
-        int procs[10];
+        int *procs;
+        procs=malloc((argc-3)*sizeof(int));
         for (i=3;i<argc;i++)
             procs[i-3]=atoi(argv[i]);
         start(argv[0],argv[2],i-3,procs);
@@ -351,7 +352,8 @@ int main(int argc, char **argv) {
     userInput(&menu,&number);
     char *shell=NULL;
     char **arglist=NULL;
-    int args[10];
+    int *args;
+    args=malloc(procs_c*sizeof(int));
     switch(menu) {
         case EXIT:
             printf("Exiting...\n");
