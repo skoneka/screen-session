@@ -187,6 +187,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     char proc_cwd[256];
     char proc_exe[256];
     int proc_args_n;
+    char proc_blacklisted[10];
     char **proc_args;
     int i,nl_c=0;
     char c;
@@ -202,7 +203,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
         if(c=='\n') {
             nl_c++;
         }
-        else if (nl_c > (5+(procs[0]*5)))
+        else if (nl_c > (5+(procs[0]*6)))
             break;
     }
     printf("starting: ");
@@ -242,6 +243,9 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
         if (null_c > proc_args_n)
             break;
     }
+    fscanf(fp,"%s\n",proc_blacklisted);
+    if(strcmp(proc_blacklisted,"True")==0)
+        return 0;
     if(procs_n>1) {
         for(i=proc_args_n-1;i>2;i--) {
             strcpy(proc_args[i],proc_args[i-2]);
@@ -332,6 +336,7 @@ int main(int argc, char **argv) {
     char proc_cwd[256];
     char proc_exe[256];
     int proc_args_n;
+    char proc_blacklisted[10];
 
 
     for(i=0;i<procs_c;i++) {
@@ -362,9 +367,12 @@ int main(int argc, char **argv) {
                 break;
         }
         
+        fscanf(fp,"%s\n",proc_blacklisted);
         printf("\n");
         printf("\tCWD: %s\n",proc_cwd);
         printf("\tEXE: %s\n",proc_exe);
+        if (strcmp(proc_blacklisted,"True")==0)
+            printf("\tBLACKLISTED\n");
     }
     printf("--Restore--\n");
     int menu;

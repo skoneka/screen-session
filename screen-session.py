@@ -15,10 +15,11 @@ class ScreenSession(object):
     
     primer="screen-session-primer"
     
-    blacklist = ["rm"]
+    blacklist = ["screen-session","rm","shutdown"]
     
     __projectdir=""
     __scrollbacks=[]
+    __layoutprefix="layout_"
 
     def __init__(self,pid,basedir,savedir):
         self.pid=str(pid)
@@ -178,9 +179,6 @@ class ScreenSession(object):
                         ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
                         cppids[pid]=ppid
                         pidinfo=self.__get_pid_info(pid)
-                        (exehead,exetail)=os.path.split(pidinfo[1])
-                        if exetail in self.blacklist:
-                            pass #blacklist me
                         cpids[i]=pid
 
                         cpids_data.append(pidinfo)
@@ -227,9 +225,13 @@ class ScreenSession(object):
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
                     for i,pid in enumerate(cpids):
-                        print('    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
+                        if(cpids_data[i][3]):
+                            text="BLACKLISTED"
+                        else: 
+                            text=""
+                        print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                 
-                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids,cpids_data,cppids)
+                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
 
                 
 
@@ -239,7 +241,12 @@ class ScreenSession(object):
 #        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
 #        print ('current window = '+cwin)
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
-    
+    def __load_layouts(self):
+        homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+        if not homelayout.startswith('This is layout'):
+            print("No homelayout")
+            homelayout="-1"
+        print("Loading layouts...")
 
     def __save_layouts(self):
         
@@ -247,7 +254,7 @@ class ScreenSession(object):
         if not homelayout.startswith('This is layout'):
             print("No layouts to save")
             return False
-        print("Saving layouts")
+        print("Saving layouts...")
         homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
         homelayout = homelayout.strip()
         layoutname = layoutname.rsplit(')')[0]
@@ -259,7 +266,36 @@ class ScreenSession(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             print("currentlayout is %s (%s)"% (currentlayout,layoutname))
-            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
+            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname)) , shell=True)
+            region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+            print("region count=%d" % region_c)
+            win=[]
+            for i in range(0,region_c):
+                currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
+                windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+                offset=0
+                findactive=False
+                for i in range(windows.count('$')):
+                    index=windows.find('$',offset)
+                    if(index!=-1):
+                        if windows[index-1]=='*' or windows[index-2]=='*':
+                            findactive=True
+                            break
+                        else:
+                            offset=index+1
+
+                #currenttty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+                #print("currentnumber=%s currenttty=%s"%(currentnumber,currenttty))
+                if not findactive:
+                    currentnumber="-1\n"
+                win.append(currentnumber)
+                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
+
+            f=open(os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname+"_win"),"w")
+            f.writelines(win)
+            f.close()
+
+
             subprocess.Popen('screen -S %s -X layout next' % (self.pid) , shell=True)
             
             currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -270,9 +306,23 @@ class ScreenSession(object):
         print("Returned homelayout %s (%s)"% (homelayout,layoutname))
 
         return True
-            
+           
+#            hometty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+#            subprocess.Popen('screen -S %s -X focus top' % (self.pid) , shell=True)
+#            toptty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+#            currenttty=toptty
+#            ttylist=[]
+#            loop_exit_allowed2=False
+#            while currenttty!=toptty or not loop_exit_allowed2:
+#                loop_exit_allowed=True
+#                ttylist.append(currenttty)
+#                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
+#                currenttty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+#            
+#            f= open(os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname+"_"+tty),"w")
 
-    def __save_win(self,winid,time,group,type,title,cpids,pids_data,cppids):
+
+    def __save_win(self,winid,time,group,type,title,pids_data):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         print ("Saving window %s" % winid)
         
@@ -291,9 +341,9 @@ class ScreenSession(object):
                 for i,data in enumerate(pid):
                     if i == 2:
                         f.write(str(len(data.split('\0'))-1)+'\n')
-                        f.write(data+'\n')
+                        f.write(str(data)+'\n')
                     else:
-                        f.write(data+'\n')
+                        f.write(str(data)+'\n')
         f.close()
 
 
@@ -307,7 +357,13 @@ class ScreenSession(object):
         f=open(os.path.join(piddir,"cmdline"),"r")
         cmdline=f.read()
         f.close()
-        return (cwd,exe,cmdline)
+        (exehead,exetail)=os.path.split(exe)
+        if exetail in self.blacklist:
+            blacklist=True
+        else:
+            blacklist=False
+        
+        return (cwd,exe,cmdline,blacklist)
 
     def __setup_savedir(self,basedir,savefolder):
         savedir = os.path.join(basedir,savefolder)
