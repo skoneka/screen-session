@@ -12,11 +12,13 @@ class ScreenSession(object):
     maxwin=-1
     force=False
     lastdir="last"
+    layout = True
     
     primer="screen-session-primer"
     
     blacklist = ["screen-session","rm","shutdown"]
     
+    __wins_trans = {}
     __projectdir=""
     __scrollbacks=[]
     __layoutprefix="layout_"
@@ -32,17 +34,16 @@ class ScreenSession(object):
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
         self.__save_screen()
-        self.__save_layouts()
+        if layout:
+            self.__save_layouts()
         self.__scrollback_clean()
 
     def load(self):
         print('loading %s' % self.__projectdir)
         self.__load_screen()
+        if layout:
+            self.__load_layouts()
 
-    def wizard(self):
-        print("running window wizard")
-        pass
-    
     def __remove_and_escape_bad_chars(self,str):
         return str.replace('|','')#also need to escape "\" with "\\\\"
 
@@ -76,12 +77,11 @@ class ScreenSession(object):
             wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5]))
 
 
-        wins_trans = {}
         for win in wins:
-            wins_trans[win[0]]=self.__create_win(False,wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+            self.__wins_trans[win[0]]=self.__create_win(False,self.__wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
         for win in wins:
-            self.__order_group(wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
         
         print ("Rootwindow is "+rootwindow)
@@ -247,6 +247,26 @@ class ScreenSession(object):
             print("No homelayout")
             homelayout="-1"
         print("Loading layouts...")
+        for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
+            subprocess.Popen('screen -S %s -Q @layout new' % self.pid, shell=True, stdout=subprocess.PIPE)
+            subprocess.Popen('screen -S %s -X source \"%s\"' % (self.pid, filename) , shell=True)
+            (head,tail)=os.path.split(filename)
+            filename2=os.path.join(head,"win"+tail)
+            f=open(filename2,'r')
+            for line in f:
+                line=line.strip()
+                if not line=="-1":
+                    subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]), shell=True, stdout=subprocess.PIPE)
+                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
+            f.close()
+            layoutname=filename.split('_',2)[2]
+            subprocess.Popen('screen -S %s -Q @layout save %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE)
+        
+        if homelayout!="-1":
+            print("Returning homelayout %s"%homelayout)
+            subprocess.Popen('screen -S %s -Q @layout select %s' % (self.pid,homelayout), shell=True, stdout=subprocess.PIPE)
+
+
 
     def __save_layouts(self):
         
@@ -291,7 +311,7 @@ class ScreenSession(object):
                 win.append(currentnumber)
                 subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
 
-            f=open(os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname+"_win"),"w")
+            f=open(os.path.join(self.basedir,self.savedir,"win"+self.__layoutprefix+currentlayout+"_"+layoutname),"w")
             f.writelines(win)
             f.close()
 
@@ -382,6 +402,8 @@ class ScreenSession(object):
                     os.remove(filename)
                 for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
                     os.remove(filename)
+                for filename in glob.glob(os.path.join(basedir,savedir,'winlayout_*')):
+                    os.remove(filename)
                 
                 cwd=os.getcwd()
                 os.chdir(basedir)
@@ -429,7 +451,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "c:wfi:o:m:nwlsd:p:hv", ["current-session=","wait","force","in=", "out=","maxwin=","keep-numbers","wizard","load","save","dir=","pid=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "nic:wfi:o:m:lsd:p:hv", ["nolayout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","pid=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -438,6 +460,7 @@ if __name__=='__main__':
     current_session=None
     verbose = False
     force = False
+    layout = True
     keep_numbers=False
     mode = 0
     basedir =None
@@ -452,6 +475,8 @@ if __name__=='__main__':
             current_session = a
         elif o in ("-f","--force"):
             force = True
+        elif o in ("-n","--nolayout"):
+            layout = False
         elif o in ("-n","--keep-numbers"):
             keep_numbers = True
         elif o in ("-h","--help"):
@@ -465,8 +490,6 @@ if __name__=='__main__':
             mode = 1
         elif o in ("-l","--load"):
             mode = 2
-        elif o in ("-w","--wizard"):
-            mode = 3
         elif o in ("-p","--pid"):
             pid = a
         elif o in ("-d","--dir"):
@@ -524,12 +547,11 @@ if __name__=='__main__':
 
     scs.maxwin = maxwin
     scs.force = force
+    scs.layout=layout
     if mode==1:
         scs.save()
     elif mode==2:
         scs.load()
-    elif mode==3:
-        scs.wizard()
     else:
         print('No mode specified --load or --save')
 
