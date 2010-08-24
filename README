@@ -5,6 +5,11 @@ screen-session - GNU Screen session saver
 Requirements
 ------------
 screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
+screen-session requires a recent version of screen patched with screen-session.diff
+
+screen-session.diff changes:
+- add "tty" command
+- make "layout" "group" and "sessionname" queryable
 
 
 Installation
@@ -17,14 +22,28 @@ Afterwards enter the following command to build and install screen-session
 
     make clean install
 
+Make sure you have a recent version of Screen with necessary patch:
+
+    git clone git://git.sv.gnu.org/screen.git screen; cd screen
+    
+    git-apply screen-session.diff
+
+    cd src; autoreconf; autoheader; ./configure && make
+
+    sudo make install
+
 
 Running screen-session
 -------------
-Basic usage.
+screen-session currently supports saving of:
+groups and basic windows, directories, programs, layouts, scrollbacks
 
 Saving:
     # inside saved session
     screen-session --save --maxwin {biggest window number}
+    
+    # inside saved session with layouts
+    screen-session --save --layout --maxwin {biggest window number}
 
     # saving session with PID in mysavedsession folder
     screen-session --save --maxwin 20 --in PID --out mysavedsession
@@ -32,6 +51,9 @@ Saving:
 Loading:
     # last saved session inside target session
     screen-session --load
+    
+    # last saved session inside target session with layouts
+    screen-session --load --layout
 
     # session saved in folder mysavedsession loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
