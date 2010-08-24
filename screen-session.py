@@ -12,40 +12,37 @@ class ScreenSession(object):
     maxwin=-1
     force=False
     lastdir="last"
-    layout = True
+    enable_layout = False
     
     primer="screen-session-primer"
     
-    blacklist = ["screen-session","rm","shutdown"]
+    blacklist = ["rm","shutdown"]
     
     __wins_trans = {}
-    __projectdir=""
     __scrollbacks=[]
-    __layoutprefix="layout_"
 
     def __init__(self,pid,basedir,savedir):
         self.pid=str(pid)
         self.basedir=str(basedir)
         self.savedir=str(savedir)
-        self.__projectdir=os.path.join(self.basedir,self.savedir)
 
     def save(self):
         print('storing')
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
         self.__save_screen()
-        if layout:
+        if self.enable_layout:
             self.__save_layouts()
         self.__scrollback_clean()
 
     def load(self):
-        print('loading %s' % self.__projectdir)
+        print('loading %s' % os.path.join(self.basedir,self.savedir))
         self.__load_screen()
-        if layout:
+        if self.enable_layout:
             self.__load_layouts()
 
     def __remove_and_escape_bad_chars(self,str):
-        return str.replace('|','')#also need to escape "\" with "\\\\"
+        return str.replace('|','').replace('\\','/')# need to properly escape "\" with "\\\\"?
 
     def __load_screen(self):
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
@@ -68,7 +65,7 @@ class ScreenSession(object):
         print('number; time; group; type; title; processes;')
         wins=[]
 
-        for filename in glob.glob(os.path.join(self.__projectdir,'win_*')):
+        for filename in glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')):
             f=open(filename)
             win=list(f)[0:6]
             f.close()
@@ -285,7 +282,7 @@ class ScreenSession(object):
         if not homelayout.startswith('This is layout'):
             print("No layouts to save")
             return False
-        print("Saving layouts...")
+        print("Saving layouts.")
         homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
         homelayout = homelayout.strip()
         layoutname = layoutname.rsplit(')')[0]
@@ -297,16 +294,18 @@ class ScreenSession(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             print("currentlayout is %s (%s)"% (currentlayout,layoutname))
-            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname)) , shell=True)
-            region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
+            time.sleep(0.5)
+            region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             print("region count=%d" % region_c)
+            subprocess.Popen('screen -S %s -X focus top' % (self.pid) , shell=True)
             win=[]
             for i in range(0,region_c):
                 currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 offset=0
                 findactive=False
-                for i in range(windows.count('$')):
+                for j in range(windows.count('$')):
                     index=windows.find('$',offset)
                     if(index!=-1):
                         if windows[index-1]=='*' or windows[index-2]=='*':
@@ -319,10 +318,11 @@ class ScreenSession(object):
                 #print("currentnumber=%s currenttty=%s"%(currentnumber,currenttty))
                 if not findactive:
                     currentnumber="-1\n"
+                print("current region = %s; window number = %s"%(i,currentnumber.strip()))
                 win.append(currentnumber)
                 subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
 
-            f=open(os.path.join(self.basedir,self.savedir,"win"+self.__layoutprefix+currentlayout+"_"+layoutname),"w")
+            f=open(os.path.join(self.basedir,self.savedir,"win"+"layout_"+currentlayout+"_"+layoutname),"w")
             f.writelines(win)
             f.close()
 
@@ -449,7 +449,21 @@ def doexit(var=0,waitfor=True):
     sys.exit(var)
 
 def usage():
-    print('Usage:')
+    print('Usage:\n\
+  -l --load                            - loading mode\n\
+  -s --save                            - saving mode\n\
+  -i --in  <session or directory>      - input\n\
+  -o --out <session or directory>      - output\n\
+  -m --maxwin <number>                 - biggest window number\n\
+  -y --layout                          - enable layout saving/loading\n\
+  -d --dir                             - directory holding saved sessions\n\
+                                         (default: $HOME/.screen-sessions)\n\
+  -h --help                            - show this message\n\
+  \n\
+Examples:\n\
+$ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
+$ screen-session --load --in mysavedsession --out PID\n\
+\n')
 
 if __name__=='__main__':
     
@@ -462,7 +476,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "nic:wfi:o:m:lsd:p:hv", ["nolayout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","pid=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "yic:wfi:o:m:lsd:hv", ["layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -471,8 +485,7 @@ if __name__=='__main__':
     current_session=None
     verbose = False
     force = False
-    layout = True
-    keep_numbers=False
+    enable_layout = False
     mode = 0
     basedir =None
     savedir = None
@@ -486,10 +499,8 @@ if __name__=='__main__':
             current_session = a
         elif o in ("-f","--force"):
             force = True
-        elif o in ("-n","--nolayout"):
-            layout = False
-        elif o in ("-n","--keep-numbers"):
-            keep_numbers = True
+        elif o in ("-y","--layout"):
+            enable_layout = True
         elif o in ("-h","--help"):
             usage()
             doexit(0,waitfor)
@@ -501,8 +512,6 @@ if __name__=='__main__':
             mode = 1
         elif o in ("-l","--load"):
             mode = 2
-        elif o in ("-p","--pid"):
-            pid = a
         elif o in ("-d","--dir"):
             basedir = a
         elif o in ("-i","--in"):
@@ -557,7 +566,7 @@ if __name__=='__main__':
 
     scs.maxwin = maxwin
     scs.force = force
-    scs.layout=layout
+    scs.enable_layout=enable_layout
     if mode==1:
         scs.save()
     elif mode==2:

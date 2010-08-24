@@ -1,6 +1,6 @@
 #!/bin/sh
 # screen-session.py script starter
-# it is necessary to run it embedded in other screen session to be able to run it from saved/loaded screen session
+# it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
 
 # Absolute path to this script. /home/user/bin/foo.sh
 SCRIPT=$(readlink -f $0)

@@ -75,7 +75,7 @@ void userInput(int *menu_num, int *num) {
     char    ch;                     /* handles user input */
     char    buffer[MAXBUFFERSIZE];  /* sufficient to handle one line */
     int     char_count;             /* number of characters read for this line */
-    int     exit_flag = 0, valid_choice,number ;
+    int     exit_flag = 0, valid_choice,number=0 ;
     enum menu menu_choice=NONE;
 
     while( exit_flag  == 0 && menu_choice==NONE) {
@@ -270,6 +270,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     printf("\n");
     chdir(proc_cwd);
     execvp(proc_exe,proc_args);
+    return 1;
 
 }
 
@@ -278,7 +279,6 @@ int main(int argc, char **argv) {
 //./program -s datafile [processes..]
     int i;
     FILE *fp=NULL;
-    char ch;
     int c;
     if(argc==1) {
         printf("screen-session helper program\n");
@@ -342,7 +342,6 @@ int main(int argc, char **argv) {
     for(i=0;i<procs_c;i++) {
         fscanf(fp,"%s\n",buf); //read --
         printf("%s %d: ",buf,i);
-        int j;
 
         fscanf(fp,"%s\n",proc_cwd); //cwd exe args
         fscanf(fp,"%s\n",proc_exe);
