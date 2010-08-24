@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import subprocess,sys,os,getopt,glob
+import subprocess,sys,os,getopt,glob,time
 
 
 class ScreenSession(object):
@@ -146,7 +146,7 @@ class ScreenSession(object):
                 os.remove(f)
                 os.rename(ftmp,f)
             except:
-                print 'Unable to clean scrollback file: '+f
+                print ('Unable to clean scrollback file: '+f)
 
 
     def __save_screen(self):
@@ -243,27 +243,38 @@ class ScreenSession(object):
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
     def __load_layouts(self):
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+        time.sleep(1.0)
+        print homelayout
         if not homelayout.startswith('This is layout'):
             print("No homelayout")
             homelayout="-1"
+        else:
+            homelayout=homelayout.split(" ")[3]
         print("Loading layouts...")
         for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
-            subprocess.Popen('screen -S %s -Q @layout new' % self.pid, shell=True, stdout=subprocess.PIPE)
+            time.sleep(1.0)
+            layoutname=filename.split('_',2)[2]
+            subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE)
+            print("session %s sourcing %s"%(self.pid,filename))
+            currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
             subprocess.Popen('screen -S %s -X source \"%s\"' % (self.pid, filename) , shell=True)
+            print("after sourcing")
             (head,tail)=os.path.split(filename)
             filename2=os.path.join(head,"win"+tail)
             f=open(filename2,'r')
             for line in f:
                 line=line.strip()
                 if not line=="-1":
+                    currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
                     subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]), shell=True, stdout=subprocess.PIPE)
+                
+                time.sleep(1.0)
                 subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
             f.close()
-            layoutname=filename.split('_',2)[2]
-            subprocess.Popen('screen -S %s -Q @layout save %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE)
         
         if homelayout!="-1":
             print("Returning homelayout %s"%homelayout)
+            time.sleep(1.0)
             subprocess.Popen('screen -S %s -Q @layout select %s' % (self.pid,homelayout), shell=True, stdout=subprocess.PIPE)
 
 
@@ -516,7 +527,7 @@ if __name__=='__main__':
             if current_session:
                 input = current_session
             else:
-                print("for saving you must specify target Screen session PID as --input")
+                print("for saving you must specify target Screen session PID as --in")
                 doexit("Aborting",waitfor)
         pid = input
         if not output:
@@ -525,13 +536,12 @@ if __name__=='__main__':
             savedir = output
     elif mode == 2:
         if not input:
-            print("for loading you must specify saved Screen session as --input")
-            doexit("Aborting",waitfor)
+            input="last"
         if not output:
             if current_session:
                 output = current_session
             else:
-                print("for loading you must specify target Screen session PID as --output")
+                print("for loading you must specify target Screen session PID as --out")
                 doexit("Aborting",waitfor)
         pid = output
         savedir = input
