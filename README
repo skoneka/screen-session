@@ -26,7 +26,7 @@ Make sure you have a recent version of Screen with necessary patch:
 
     git clone git://git.sv.gnu.org/screen.git screen; cd screen
     
-    git-apply screen-session.diff
+    git-apply ../screen-session-${VERSION}/screen-session.diff
 
     cd src; autoreconf; autoheader; ./configure && make
 
