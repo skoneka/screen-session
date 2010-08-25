@@ -5,7 +5,7 @@ screen-session - GNU Screen session saver
 Requirements
 ------------
 screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
-screen-session requires a recent version of screen patched with screen-session.diff
+screen-session requires a recent version of Screen patched with screen-session.diff
 
 screen-session.diff changes:
 - add "tty" command
@@ -57,3 +57,8 @@ Loading:
 
     # session saved in folder mysavedsession loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
+
+
+Bugs
+------------
+Probably lots. Send patches and bug reports to admin<[at]>adb.cba.pl
