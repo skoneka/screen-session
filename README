@@ -36,7 +36,7 @@ Make sure you have a recent version of Screen with necessary patch:
 Running screen-session
 -------------
 screen-session currently supports saving of:
-groups and basic windows, directories, programs, layouts, scrollbacks
+groups and basic windows, directories, programs, layouts, scrollbacks, titles
 
 Saving:
     # inside saved session
