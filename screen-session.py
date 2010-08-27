@@ -56,8 +56,8 @@ class ScreenSession(object):
 
         #create root group and put it into host group
         rootgroup="restore_"+self.savedir
-        subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (self.pid,rootgroup,0 ) , shell=True)
-        subprocess.Popen('screen -S %s -X group %s' % (self.pid,hostgroup) , shell=True)
+        os.system('screen -S %s -X screen -t \"%s\" %s //group' % (self.pid,rootgroup,0 ) )
+        os.system('screen -S %s -X group %s' % (self.pid,hostgroup) )
         
         rootwindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("restoring Screen session inside window %s group %s -> %s" %(rootwindow,hostgroup,rootgroup))
@@ -85,7 +85,7 @@ class ScreenSession(object):
         #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
 
         print ("Returning homewindow " +homewindow)
-        subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE)
+        os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
 
 
 
@@ -99,16 +99,16 @@ class ScreenSession(object):
     def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
         if type=='basic':
             if keep_numbering:
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) , shell=True)
+                os.system('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) )
             else:
                 #subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s %s %s' % (pid,title,self.primer,os.path.join(basedir,savedir,"scrollback_"+win),os.path.join(basedir,savedir,"win_"+win)) , shell=True)
+                os.system('screen -S %s -X screen -t \"%s\" %s %s %s' % (pid,title,self.primer,os.path.join(basedir,savedir,"scrollback_"+win),os.path.join(basedir,savedir,"win_"+win)) )
 
         elif type=='group':
             if keep_numbering:
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,win ) , shell=True)
+                os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,win ) )
             else:
-                subprocess.Popen('screen -S %s -X screen -t \"%s\" //group' % (pid,title) , shell=True)
+                os.system('screen -S %s -X screen -t \"%s\" //group' % (pid,title) )
         else:
             print 'Unkown window type. Ignoring.'
             return -1
@@ -123,9 +123,9 @@ class ScreenSession(object):
     
     def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
         if group=="none":
-            subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) , shell=True)
+            os.system('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) )
         else:    
-            subprocess.Popen('screen -S %s -X at %s group %s' % (pid,newwin,group) , shell=True)
+            os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
             
     def __scrollback_clean(self):
         for f in self.__scrollbacks:
@@ -154,7 +154,7 @@ class ScreenSession(object):
         ctty=None
         cppids={}
         for i in range(0,self.maxwin+1):
-            subprocess.Popen('screen -S %s -X select %d' % (self.pid, i) , shell=True)
+            os.system('screen -S %s -X select %d' % (self.pid, i) )
             print('--')
             ctitle = subprocess.Popen('screen -S %s -Q @title' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
             prev_cwin=cwin
@@ -190,7 +190,7 @@ class ScreenSession(object):
                 
                 #save scrollback
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
-                subprocess.Popen('screen -S %s -X hardcopy -h %s' % (self.pid, scrollback_filename) , shell=True)
+                os.system('screen -S %s -X hardcopy -h %s' % (self.pid, scrollback_filename) )
                 self.__scrollbacks.append(scrollback_filename)
 
                 # sort window processes by parent pid
@@ -234,7 +234,7 @@ class ScreenSession(object):
 
 
         print ("Returning homewindow = " +homewindow)
-        subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,homewindow), shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
 #        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
 #        print ('current window = '+cwin)
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
@@ -251,10 +251,10 @@ class ScreenSession(object):
         for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
             time.sleep(1.0)
             layoutname=filename.split('_',2)[2]
-            subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE)
+            os.system('screen -S %s -Q @layout new %s' % (self.pid,layoutname))
             print("session %s sourcing %s"%(self.pid,filename))
             currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
-            subprocess.Popen('screen -S %s -X source \"%s\"' % (self.pid, filename) , shell=True)
+            os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
             print("after sourcing")
             (head,tail)=os.path.split(filename)
             filename2=os.path.join(head,"win"+tail)
@@ -263,16 +263,16 @@ class ScreenSession(object):
                 line=line.strip()
                 if not line=="-1":
                     currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
-                    subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]), shell=True, stdout=subprocess.PIPE)
+                    os.system('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]))
                 
                 time.sleep(1.0)
-                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
+                os.system('screen -S %s -X focus' % (self.pid) )
             f.close()
         
         if homelayout!="-1":
             print("Returning homelayout %s"%homelayout)
             time.sleep(1.0)
-            subprocess.Popen('screen -S %s -Q @layout select %s' % (self.pid,homelayout), shell=True, stdout=subprocess.PIPE)
+            os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
 
 
 
@@ -294,11 +294,11 @@ class ScreenSession(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             print("currentlayout is %s (%s)"% (currentlayout,layoutname))
-            subprocess.Popen('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True)
+            os.system('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             time.sleep(0.5)
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             print("region count=%d" % region_c)
-            subprocess.Popen('screen -S %s -X focus top' % (self.pid) , shell=True)
+            os.system('screen -S %s -X focus top' % (self.pid) )
             win=[]
             for i in range(0,region_c):
                 currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
@@ -320,14 +320,14 @@ class ScreenSession(object):
                     currentnumber="-1\n"
                 print("current region = %s; window number = %s"%(i,currentnumber.strip()))
                 win.append(currentnumber)
-                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
+                os.system('screen -S %s -X focus' % (self.pid) )
 
             f=open(os.path.join(self.basedir,self.savedir,"win"+"layout_"+currentlayout+"_"+layoutname),"w")
             f.writelines(win)
             f.close()
 
 
-            subprocess.Popen('screen -S %s -X layout next' % (self.pid) , shell=True)
+            os.system('screen -S %s -X layout next' % (self.pid) )
             
             currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
             currentlayout,layoutname = currentlayout.split('layout',1)[1].rsplit('(')
