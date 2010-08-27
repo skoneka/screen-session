@@ -263,10 +263,21 @@ class ScreenSession(object):
                 
                 os.system('screen -S %s -X focus' % (self.pid) )
             f.close()
-        
-        if homelayout!="-1":
-            print("Returning homelayout %s"%homelayout)
-            os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
+        if os.path.exists("last_layout"):
+            last=os.readlink(os.path.join(basedir,savedir,"last_layout"))
+            (lasthead,lasttail)=os.path.split(last)
+            last=lasttail.split("_",2)
+            lastname=last[2]
+            lastid=last[1]
+            print("Selecting last layout %s (%s)"%(lastid,lastname))
+            os.system('screen -S %s -Q @layout select %s' % (self.pid,lastid))
+            # numbering changes, create layout_trans={} !
+
+            
+
+        #if homelayout!="-1":
+        #    print("Returning homelayout %s"%homelayout)
+        #    os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
 
 
 
@@ -280,6 +291,7 @@ class ScreenSession(object):
         homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
         homelayout = homelayout.strip()
         layoutname = layoutname.rsplit(')')[0]
+        homelayoutname = layoutname
         print("Homelayout is %s (%s)"% (homelayout,layoutname))
         currentlayout=homelayout
        
@@ -327,7 +339,15 @@ class ScreenSession(object):
             currentlayout = currentlayout.strip()
             layoutname = layoutname.rsplit(')')[0]
         
-        print("Returned homelayout %s (%s)"% (homelayout,layoutname))
+        cwd=os.getcwd()
+        os.chdir(os.path.join(self.basedir,self.savedir))
+        try:
+            os.remove("last_layout")
+        except:
+            pass
+        os.symlink("layout_"+homelayout+"_"+homelayoutname,"last_layout")
+        os.chdir(cwd)
+        print("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
 
         return True
            
