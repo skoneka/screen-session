@@ -240,7 +240,6 @@ class ScreenSession(object):
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
     def __load_layouts(self):
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-        time.sleep(1.0)
         print homelayout
         if not homelayout.startswith('This is layout'):
             print("No homelayout")
@@ -249,11 +248,9 @@ class ScreenSession(object):
             homelayout=homelayout.split(" ")[3]
         print("Loading layouts...")
         for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
-            time.sleep(1.0)
             layoutname=filename.split('_',2)[2]
             os.system('screen -S %s -Q @layout new %s' % (self.pid,layoutname))
             print("session %s sourcing %s"%(self.pid,filename))
-            currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
             os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
             print("after sourcing")
             (head,tail)=os.path.split(filename)
@@ -262,16 +259,13 @@ class ScreenSession(object):
             for line in f:
                 line=line.strip()
                 if not line=="-1":
-                    currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
                     os.system('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]))
                 
-                time.sleep(1.0)
                 os.system('screen -S %s -X focus' % (self.pid) )
             f.close()
         
         if homelayout!="-1":
             print("Returning homelayout %s"%homelayout)
-            time.sleep(1.0)
             os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
 
 
@@ -295,7 +289,6 @@ class ScreenSession(object):
             loop_exit_allowed=True
             print("currentlayout is %s (%s)"% (currentlayout,layoutname))
             os.system('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
-            time.sleep(0.5)
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             print("region count=%d" % region_c)
             os.system('screen -S %s -X focus top' % (self.pid) )
