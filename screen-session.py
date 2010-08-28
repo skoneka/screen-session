@@ -85,12 +85,21 @@ class ScreenSession(object):
         for win in wins:
             self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
         
-        
         print ("Rootwindow is "+rootwindow)
+        os.system('screen -S %s -X select %s' % (self.pid,rootwindow))
+        
+        # select last selected window
+        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
+            (lasthead,lasttail)=os.path.split(last)
+            lastid=lasttail.split("_",1)[1]
+            print("Selecting last window %s (%s)"%(self.__wins_trans[lastid],lastid))
+            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
+        
         #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
-
-        print ("Returning homewindow " +homewindow)
-        os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
+        if self.restore_previous:
+            print ("Returning homewindow " +homewindow)
+            os.system('screen -S %s -X select %s' % (self.pid,homewindow))
 
 
 
@@ -180,6 +189,7 @@ class ScreenSession(object):
                     for i,pid in enumerate(cpids):
                         pid=pid[1:]
                         ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
+                        print pid
                         cppids[pid]=ppid
                         pidinfo=self.__get_pid_info(pid)
                         cpids[i]=pid
@@ -290,7 +300,7 @@ class ScreenSession(object):
             last=lasttail.split("_",2)
             lastname=last[2]
             lastid=last[1]
-            print("Selecting last layout %s (%s)"%(lastid,lastname))
+            print("Selecting last layout %s (%s) [previously %s]"%(layout_trans[lastid],lastname,lastid))
             os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
             # ^^ layout numbering may change, use layout_trans={} !
 
@@ -630,7 +640,7 @@ if __name__=='__main__':
     scs.maxwin = maxwin
     scs.force = force
     scs.enable_layout=enable_layout
-    scs.restore = restore
+    scs.restore_previous = restore
     if mode==1:
         scs.save()
     elif mode==2:
