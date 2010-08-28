@@ -1,7 +1,16 @@
 #!/usr/bin/env python
+# file: screen-session.py
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: GNU Screen session saving program
+
+'''
+issues:
+- 2 or more region in layout shouldn't point to the same window
+'''
+
 
 import subprocess,sys,os,getopt,glob,time,signal
-
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
