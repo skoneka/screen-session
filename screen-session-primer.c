@@ -292,6 +292,11 @@ int main(int argc, char **argv) {
         start(argv[0],argv[2],i-3,procs);
         return 0;
     }
+    else if (strcmp(argv[1],"-m")==0) {
+        //marker mode for ScreenSession.__get_focus_offset()
+        sleep(10);
+        return 0;
+    }
      
     fp=fopen(argv[1],"r");
     if(fp) {

@@ -2,23 +2,16 @@
 # screen-session.py script starter
 # it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
 
-# Absolute path to this script. /home/user/bin/foo.sh
-SCRIPT=$(readlink -f $0)
-# Absolute path this script is in. /home/user/bin
-SCRIPTPATH=`dirname $SCRIPT`
-cd $SCRIPTPATH
-
 rawargument=`screen -Q @sessionname`
 if [ `echo ${rawargument} | grep -c "^This"` -eq 1 ]; then
     echo "running inside patched Screen session"
     argument="--current-session "`screen -Q @sessionname | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
-    screen -m -c /dev/null ./screen-session.py --wait $argument $*
+    echo $argument $* | xargs screen-session.py $argument $*
+    #screen -m -c /dev/null screen-session.py --wait $argument $*
 else
     echo "not running inside patched Screen, this session cannot be saved properly"
     argument=""
     ./screen-session.py $argument $*
 fi
 
-echo 'finished screen-session'
-cd -
 
