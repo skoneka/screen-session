@@ -46,6 +46,13 @@ class ScreenSession(object):
             print("\n======LOADING___LAYOUTS======")
             self.__load_layouts()
 
+    def exists(self):
+        msg=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+        if msg.startswith('No screen session found'):
+            return False
+        else:
+            return True
+
     def __remove_and_escape_bad_chars(self,str):
         return str.replace('|','').replace('\\','/')# need to properly escape "\" with "\\\\"?
 
@@ -93,7 +100,7 @@ class ScreenSession(object):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
             lastid=lasttail.split("_",1)[1]
-            print("Selecting last window %s (%s)"%(self.__wins_trans[lastid],lastid))
+            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
         
         #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
@@ -266,49 +273,56 @@ class ScreenSession(object):
         for filename in glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')):
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
-            os.system('screen -S %s -Q @layout new %s' % (self.pid,layoutname))
-            #^^need to take care of "No more layouts"
-            currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-            currentlayout,currentlayoutname = currentlayout.split('layout',1)[1].rsplit('(')
-            currentlayout = currentlayout.strip()
-            currentlayoutname = layoutname.rsplit(')')[0]
-            
-            layout_trans[layoutnumber]=currentlayout
+            msg=subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE).communicate()[0]
+            print 'msg='+msg
+            if msg.startswith('No more layout'):
+                print('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
+            else:
+                currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+                print 'currentlayout='+currentlayout
+                currentlayout,currentlayoutname = currentlayout.split('layout',1)[1].rsplit('(')
+                currentlayout = currentlayout.strip()
+                currentlayoutname = layoutname.rsplit(')')[0]
+                
+                layout_trans[layoutnumber]=currentlayout
 
-            print("session %s sourcing %s"%(self.pid,filename))
-            os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
-            (head,tail)=os.path.split(filename)
-            
-            filename2=os.path.join(head,"win"+tail)
-            f=open(filename2,'r')
-            focus_offset=int(f.readline().split(" ")[1])
-            for line in f:
-                line=line.strip()
-                if not line=="-1":
-                    os.system('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]))
-                os.system('screen -S %s -X focus' % (self.pid) )
-            f.close()
-            
-            # restore focus on the right region
-            os.system('screen -S %s -X focus top' % (self.pid) )
-            for i in range(0,focus_offset):
-                os.system('screen -S %s -X focus' % (self.pid) )
-
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")):
+                print("session %s sourcing %s"%(self.pid,filename))
+                os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
+                (head,tail)=os.path.split(filename)
+                
+                filename2=os.path.join(head,"win"+tail)
+                f=open(filename2,'r')
+                focus_offset=int(f.readline().split(" ")[1])
+                for line in f:
+                    line=line.strip()
+                    if not line=="-1":
+                        os.system('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]))
+                    os.system('screen -S %s -X focus' % (self.pid) )
+                f.close()
+                
+                # restore focus on the right region
+                os.system('screen -S %s -X focus top' % (self.pid) )
+                for i in range(0,focus_offset):
+                    os.system('screen -S %s -X focus' % (self.pid) )
+        
+        # select last layout
+        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
             (lasthead,lasttail)=os.path.split(last)
             last=lasttail.split("_",2)
             lastname=last[2]
             lastid=last[1]
-            print("Selecting last layout %s (%s) [previously %s]"%(layout_trans[lastid],lastname,lastid))
+            print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid],lastname,lastid))
             os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
             # ^^ layout numbering may change, use layout_trans={} !
 
-            
+        if self.restore_previous:
+            if homelayout!="-1":
+                print("Returning homelayout %s"%homelayout)
+                os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
+            else:
+                print('No homelayout - unable to return.')
 
-        #if homelayout!="-1":
-        #    print("Returning homelayout %s"%homelayout)
-        #    os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
     def __terminate_processes(self,ident):
         #get list of subprograms and finish them all
         procs=subprocess.Popen('ps x |grep "%s"' % (ident), shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -633,6 +647,10 @@ if __name__=='__main__':
         doexit("Aborting",waitfor)
     
     scs=ScreenSession(pid,basedir,savedir)
+    if not scs.exists():
+        print('No such session: %s'%pid)
+        doexit(1,waitfor)
+        
     if savedir == scs.lastdir and mode==1:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
