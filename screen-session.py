@@ -434,6 +434,14 @@ class ScreenSession(object):
         self.__linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
         print("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
+        
+        # select last selected window
+        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
+            (lasthead,lasttail)=os.path.split(last)
+            lastid=lasttail.split("_",1)[1]
+            print("Selecting last window %s"%(lastid))
+            os.system('screen -S %s -X select %s' % (self.pid,lastid))
 
         return True
            

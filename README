@@ -1,6 +1,7 @@
 screen-session - GNU Screen session saver
 ============================
 
+Website: http://adb.cba.pl
 
 Requirements
 ------------
@@ -57,6 +58,9 @@ Loading:
 
     # session saved in folder mysavedsession loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
+
+Example bindings:
+bind S eval "exec sh -c 'sleep 1; screen-session --save --force --maxwin 100'" "other"
 
 
 Bugs
