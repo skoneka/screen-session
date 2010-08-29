@@ -11,7 +11,7 @@ INCS =
 LIBS = 
 
 # flags
-CPPFLAGS = -DVERSION=\"${VERSION}\" 
+CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
 CFLAGS = -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
 LDFLAGS = -s ${LIBS}
 

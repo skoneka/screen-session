@@ -45,10 +45,12 @@ class ScreenSession(object):
         if self.enable_layout:
             print("\n======SAVING___LAYOUTS======")
             self.__save_layouts()
+        print("\n======CLEANUP======")
         self.__scrollback_clean()
+        print('session "%s" saved as "%s" in "%s"'%(self.pid,self.savedir,self.basedir))
 
     def load(self):
-        print('loading %s' % os.path.join(self.basedir,self.savedir))
+        print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         print("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
         if self.enable_layout:
@@ -159,15 +161,19 @@ class ScreenSession(object):
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
             
     def __scrollback_clean(self):
+        #clean up scrollback files from empty lines in the beginning of file
         for f in self.__scrollbacks:
             try:
-                #clean up scrollback
                 ftmp=f+"_tmp"
                 temp=open(ftmp,'w')
                 thefile = open(f,'r')
+                beginning=True
                 for line in thefile:
-                    if cmp(line,'\n') == 0:
-                        line = line.replace('\n','')
+                    if beginning: 
+                        if cmp(line,'\n') == 0:
+                            line = line.replace('\n','')
+                        else:
+                            beginning=False
                     temp.write(line)
                 temp.close()
                 thefile.close()
@@ -178,7 +184,6 @@ class ScreenSession(object):
 
 
     def __save_screen(self):
-        #what if there is no homewindow?
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print "Homewindow is " + homewindow
 
@@ -261,8 +266,8 @@ class ScreenSession(object):
                                 break;
                     cpids_data=pids_data_sort
                     cpids=cpids_sort
-                #end sort
-                
+               
+
                 print('window = '+cwin+ '; saved on '+ctime+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
@@ -281,9 +286,6 @@ class ScreenSession(object):
 
         print ("Returning homewindow = " +homewindow)
         os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
-#        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-#        print ('current window = '+cwin)
-#        subprocess.Popen('screen -X select ' + homewindow , shell=True)
 
     def __load_layouts(self):
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -418,8 +420,6 @@ class ScreenSession(object):
                         else:
                             offset=index+1
 
-                #currenttty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-                #print("currentnumber=%s currenttty=%s"%(currentnumber,currenttty))
                 if not findactive:
                     currentnumber="-1\n"
                 print("current region = %s; window number = %s"%(i,currentnumber.strip()))
@@ -457,19 +457,6 @@ class ScreenSession(object):
 
         return True
            
-#            hometty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-#            subprocess.Popen('screen -S %s -X focus top' % (self.pid) , shell=True)
-#            toptty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-#            currenttty=toptty
-#            ttylist=[]
-#            loop_exit_allowed2=False
-#            while currenttty!=toptty or not loop_exit_allowed2:
-#                loop_exit_allowed=True
-#                ttylist.append(currenttty)
-#                subprocess.Popen('screen -S %s -X focus' % (self.pid) , shell=True)
-#                currenttty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-#            
-#            f= open(os.path.join(self.basedir,self.savedir,self.__layoutprefix+currentlayout+"_"+layoutname+"_"+tty),"w")
     def __linkify(self,dir,dest,targ):
         cwd=os.getcwd()
         os.chdir(dir)
@@ -530,7 +517,7 @@ class ScreenSession(object):
             os.makedirs(basedir)
 
         if os.path.exists(os.path.join(basedir,savedir)):
-            print("Session \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
+            print("Directory \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
             if self.force:
                 print('forcing..')
                 print('cleaning up \"%s\"' % savedir)
