@@ -5,12 +5,12 @@ Website: http://adb.cba.pl
 
 Requirements
 ------------
-screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
 screen-session requires a recent version of Screen patched with screen-session.diff
+screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
-- make "layout" "group" and "sessionname" queryable
+- make "layout" and "group" and "maxwin" and "sessionname" queryable
 
 
 Installation
@@ -40,27 +40,31 @@ screen-session currently supports saving of:
 groups and basic windows, directories, programs, layouts, scrollbacks, titles
 
 Saving:
-    # inside saved session
+    # save inside saved session 
+    screen-session --save --force
+    
+    # save inside saved session specifing --maxwin
     screen-session --save --maxwin {biggest window number}
     
-    # inside saved session with layouts
-    screen-session --save --layout --maxwin {biggest window number}
+    # save inside saved session without layouts
+    screen-session --save --layout 
 
-    # saving session with PID in mysavedsession folder
-    screen-session --save --maxwin 20 --in PID --out mysavedsession
+    # save saving session with PID in mysavedsession folder
+    screen-session --save --in PID --out mysavedsession
 
 Loading:
-    # last saved session inside target session
+    # load last saved session inside target session
     screen-session --load
     
-    # last saved session inside target session with layouts
+    # load last saved session inside target session without layouts
     screen-session --load --layout
 
-    # session saved in folder mysavedsession loaded to Screen with PID
+    # load session saved in folder mysavedsession loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
 
 Example bindings:
-bind S eval "exec sh -c 'sleep 1; screen-session --save --force --maxwin 100'" "other"
+    
+    bind S eval "exec sh -c 'sleep 1; screen-session --save --force'" "other"
 
 
 Bugs
