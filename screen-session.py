@@ -6,7 +6,7 @@
 
 '''
 issues:
-- 2 or more region in layout shouldn't point to the same window
+    - program won't recognize telnet and serial window types
 '''
 
 
@@ -63,7 +63,8 @@ class ScreenSession(object):
             return True
 
     def __remove_and_escape_bad_chars(self,str):
-        return str.replace('|','').replace('\\','/')# need to properly escape "\" with "\\\\"?
+        # some characters are causing problems when setting window titles
+        return str.replace('|','I').replace('\\','/')# how to properly escape "\"?
 
     def __load_screen(self):
         homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
@@ -184,15 +185,27 @@ class ScreenSession(object):
         cwin=-1
         ctty=None
         cppids={}
+        searching=False
         for i in range(0,self.maxwin+1):
             os.system('screen -S %s -X select %d' % (self.pid, i) )
-            print('--')
+            if not searching:
+                print('--')
             ctitle = subprocess.Popen('screen -S %s -Q @title' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
             prev_cwin=cwin
             cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
             if (cwin==prev_cwin):
-                print("No such window: window number %d"% i)
+                #no such window
+                if searching:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
+                else: 
+                    sys.stdout.write('\nSearching for windows (set --maxwin)...')
+                    searching=True
             else:
+                if(searching):
+                    searching=False
+                    print('\n--')
+
                 ctty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if(ctty=="telnet"):
                     ctype="group"
@@ -205,7 +218,6 @@ class ScreenSession(object):
                     for i,pid in enumerate(cpids):
                         pid=pid[1:]
                         ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
-                        print pid
                         cppids[pid]=ppid
                         pidinfo=self.__get_pid_info(pid)
                         cpids[i]=pid
@@ -264,13 +276,15 @@ class ScreenSession(object):
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
 
                 
-
         self.__linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        print('\n--')
+
         print ("Returning homewindow = " +homewindow)
         os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
 #        cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
 #        print ('current window = '+cwin)
 #        subprocess.Popen('screen -X select ' + homewindow , shell=True)
+
     def __load_layouts(self):
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
         if not homelayout.startswith('This is layout'):
@@ -283,12 +297,10 @@ class ScreenSession(object):
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
             msg=subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE).communicate()[0]
-            print 'msg='+msg
             if msg.startswith('No more layout'):
                 print('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:
                 currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-                print 'currentlayout='+currentlayout
                 currentlayout,currentlayoutname = currentlayout.split('layout',1)[1].rsplit('(')
                 currentlayout = currentlayout.strip()
                 currentlayoutname = layoutname.rsplit(')')[0]
@@ -556,7 +568,7 @@ def usage():
   -m --maxwin <number>                 - biggest window number\n\
   -f --force  <number>                 - force saving\n\
   -r --restore                         - restore windows after loading\n\
-  -y --layout                          - disable layout saving/loading\n\
+  -y --no-layout                          - disable layout saving/loading\n\
   -d --dir                             - directory holding saved sessions\n\
                                          (default: $HOME/.screen-sessions)\n\
   -h --help                            - show this message\n\
@@ -577,7 +589,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ryic:wfi:o:m:lsd:hv", ["restore","layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ryic:wfi:o:m:lsd:hv", ["restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -603,7 +615,7 @@ if __name__=='__main__':
             restore = True
         elif o in ("-f","--force"):
             force = True
-        elif o in ("-y","--layout"):
+        elif o in ("-y","--no-layout"):
             enable_layout = False
         elif o in ("-h","--help"):
             usage()
@@ -659,9 +671,6 @@ if __name__=='__main__':
         pid = output
         savedir = input
     
-    if (maxwin==-1) and (mode==1):
-        print("for saving specify --maxwin (biggest window number in session)")
-        doexit("Aborting",waitfor)
     
     scs=ScreenSession(pid,basedir,savedir)
     if not scs.exists():
@@ -671,6 +680,10 @@ if __name__=='__main__':
     if savedir == scs.lastdir and mode==1:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
+    
+    if (maxwin==-1) and (mode==1):
+        print("for saving specify --maxwin (biggest window number in session)")
+        maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
 
     scs.maxwin = maxwin
     scs.force = force

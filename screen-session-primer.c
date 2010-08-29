@@ -22,7 +22,30 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAXBUFFERSIZE   80
+
+#define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
+#define green_u "\033[4;32m"        /* 4 -> underline ;  32 -> green */
+#define blue_s  "\033[9;34m"        /* 9 -> strike ;  34 -> blue */
+#define blue_b  "\033[1;34m"        
+#define blue_r  "\033[7;34m"        
+#define green_b "\033[1;32m"        
+#define green_r "\033[7;32m"        
+#define red_b   "\033[1;31m"       
+#define red_r   "\033[7;31m"
+#define red_s   "\033[9;31m"
+
+
+#define red   "\033[0;31m"        /* 0 -> normal ;  31 -> red */
+#define green "\033[0;32m"        
+#define blue  "\033[0;34m"        /* 9 -> strike ;  34 -> blue */
+#define black  "\033[0;30m"
+#define brown  "\033[0;33m"
+#define magenta  "\033[0;35m"
+#define gray  "\033[0;37m"
+ 
+#define none   "\033[0m"        /* to flush the previous property */
+
+#define USERINPUTMAXBUFFERSIZE   80
 
 char buf[256];
 
@@ -73,7 +96,7 @@ int mygetch ( void )
 
 void userInput(int *menu_num, int *num) {
     char    ch;                     /* handles user input */
-    char    buffer[MAXBUFFERSIZE];  /* sufficient to handle one line */
+    char    buffer[USERINPUTMAXBUFFERSIZE];  /* sufficient to handle one line */
     int     char_count;             /* number of characters read for this line */
     int     exit_flag = 0, valid_choice,number=0 ;
     enum menu menu_choice=NONE;
@@ -81,10 +104,11 @@ void userInput(int *menu_num, int *num) {
     while( exit_flag  == 0 && menu_choice==NONE) {
         valid_choice = 0;
         while( valid_choice == 0 ) {
-            printf("[number] / [O]nly [number] / [A]ll / [E]xit / [R]eset?\n");
+            printf("[%sA%s]ll / [%sE%s]xit / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",red_b,none,red_b,none,red_b,none,blue,none,red_b,none,blue,none);
+            printf("> ");
             ch = getchar();
             char_count = 0;
-            while( (ch != '\n')  &&  (char_count < MAXBUFFERSIZE)) {
+            while( (ch != '\n')  &&  (char_count < USERINPUTMAXBUFFERSIZE)) {
                 if(ch!=' ')
                     buffer[char_count++] = ch;
                 ch = getchar();
@@ -300,17 +324,16 @@ int main(int argc, char **argv) {
      
     fp=fopen(argv[1],"r");
     if(fp) {
-        printf("BEGIN SCROLLBACK\n");
         while((c=fgetc(fp))!=EOF) {
             fputc(c,stdout);
         }
         fclose(fp);
-        printf("\nEND SCROLLBACK\n");
     }
     else {
         printf("Cannot open scrollback file.\n");
     }
     fp=NULL;
+    printf("%s*=======",red_r);
 
 
 
@@ -327,16 +350,21 @@ int main(int argc, char **argv) {
     while((c=fgetc(fp))!=EOF) {
         if(c=='\n') {
             nl_c++;
+            if(nl_c==2)
+            printf("=======*%s\nTitle: ",red_r);
         }
-        if (nl_c==1)
+        else if (nl_c==1) // print date
            fputc(c,stdout);
-        else if (nl_c > 4)
+        else if (nl_c==4)//print title
+            fputc(c,stdout);
+        if (nl_c > 4)
             break;
      //   fputc(c,stdout);
     }
+    printf("%s",none);
     
     fscanf(fp,"%d\n",&procs_c);
-    printf("\nThis window had %d programs running:\n",procs_c);
+    printf("\n%sThis window had%s %d %sprograms running:%s\n",blue_r,green_r,procs_c,blue_r,none);
 
     char proc_cwd[256];
     char proc_exe[256];
@@ -346,7 +374,7 @@ int main(int argc, char **argv) {
 
     for(i=0;i<procs_c;i++) {
         fscanf(fp,"%s\n",buf); //read --
-        printf("%s %d: ",buf,i);
+        printf("%s%s %d%s: ",blue_b,buf,i,none);
 
         fscanf(fp,"%s\n",proc_cwd); //cwd exe args
         fscanf(fp,"%s\n",proc_exe);
@@ -355,14 +383,13 @@ int main(int argc, char **argv) {
         while((c=fgetc(fp))!=EOF) {
             if(c=='\0') {
                 null_c++;
-                if(null_c%2)
+                if(null_c==1)
                     fputs(" \"",stdout);
                 else 
-                    fputs("\" ",stdout);
+                    fputs("\" \"",stdout);
             }
             else if(c=='\n') {
-                if(null_c%2)
-                    fputs("\" ",stdout);
+                fputs("\" ",stdout);
                 break;
             }
             else
@@ -376,9 +403,9 @@ int main(int argc, char **argv) {
         printf("\tCWD: %s\n",proc_cwd);
         printf("\tEXE: %s\n",proc_exe);
         if (strcmp(proc_blacklisted,"True")==0)
-            printf("\tBLACKLISTED\n");
+            printf("\t%sBLACKLISTED%s\n",magenta,none);
     }
-    printf("--Restore--\n");
+    printf("%s--RESTORE MENU--%s\n",green_b,none);
     int menu;
     int number;
     userInput(&menu,&number);

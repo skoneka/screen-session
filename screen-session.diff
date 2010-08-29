@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..8d03354 100644
+index 5f4af8a..2012254 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -194,7 +194,7 @@ struct comm comms[RC_LAST + 1] =
@@ -20,6 +20,15 @@ index 5f4af8a..8d03354 100644
    { "license",		NEED_LAYER|ARGS_0 },
  #ifdef LOCK
    { "lockscreen",	NEED_DISPLAY|ARGS_0 },
+@@ -232,7 +232,7 @@ struct comm comms[RC_LAST + 1] =
+ #ifdef COPY_PASTE
+   { "markkeys",		ARGS_1 },
+ #endif
+-  { "maxwin",		ARGS_01 },
++  { "maxwin",		CAN_QUERY|ARGS_01 },
+   { "meta",		NEED_LAYER|ARGS_0 },
+   { "monitor",		NEED_FORE|ARGS_01 },
+   { "mousetrack",	NEED_DISPLAY | ARGS_01 },
 @@ -287,7 +287,7 @@ struct comm comms[RC_LAST + 1] =
    { "scrollback",	NEED_FORE|ARGS_1 },
  #endif
