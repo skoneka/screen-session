@@ -21,6 +21,7 @@
 #include <termios.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #ifdef COLOR
     #define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
@@ -94,6 +95,20 @@ void cleartoendofline( void )
 }
 int parseNumber(char *buffer) {
         int number;
+        char *p;
+        number = strtol(buffer,&p,0);
+        if(strcmp("", p) != 0)
+        {
+            return -1;
+        }
+        else if(errno == ERANGE)
+        {
+            return -1;   
+        }
+        else if(errno == EINVAL)
+        {
+            return -1;   
+        }
         number = atoi( buffer );
         if( (number < 0) )
             number = 0;
@@ -116,7 +131,7 @@ int mygetch ( void )
 }
 
 
-void userInput(int *menu_num, int *num) {
+void userInput(int *menu_num, int *num,int max) {
     char    ch;                     /* handles user input */
     char    buffer[USERINPUTMAXBUFFERSIZE];  /* sufficient to handle one line */
     int     char_count;             /* number of characters read for this line */
@@ -153,7 +168,12 @@ void userInput(int *menu_num, int *num) {
                 case 'O':
                     menu_choice=ONLY;
                     number = parseNumber(buffer+1);
-                    valid_choice=1;
+                    if(number==-1)
+                        valid_choice=0;
+                    else if (number > max)
+                        valid_choice=0;
+                    else
+                        valid_choice=1;
                     break;
                 case 'e':
                 case 'E':
@@ -172,7 +192,12 @@ void userInput(int *menu_num, int *num) {
                 case '0':
                     menu_choice=NUMBER;
                     number = parseNumber(buffer);
-                    valid_choice=1;
+                    if(number==-1)
+                        valid_choice=0;
+                    else if (number > max)
+                        valid_choice=0;
+                    else
+                        valid_choice=1;
                     break;
                 default:
                     menu_choice=NONE;
@@ -198,20 +223,23 @@ char **make_arglist(char *program,char *arg1, char *arg2, int procs_n,int *procs
     int i;
     char **args=NULL;
     char buf[10];
-    args=malloc((2+procs_n)*sizeof(char*));
+    args=malloc((5+procs_n)*sizeof(char*));
     args[0]=malloc((strlen(program)+1)*sizeof(char));
     args[1]=malloc((strlen(arg1)+1)*sizeof(char));
-    args[2]=malloc((strlen(arg2)+1)*sizeof(char));
-    for(i=3;i<procs_n+3;i++) {
-        int i_procs=i-3;
+    //has to pass program name because nested programs do not get name in argv[0]
+    args[2]=malloc((strlen(program)+1)*sizeof(char)); 
+    args[3]=malloc((strlen(arg2)+1)*sizeof(char));
+    for(i=4;i<procs_n+4;i++) {
+        int i_procs=i-4;
         sprintf(buf,"%d",procs[i_procs]);
         args[i]=malloc((strlen(buf)+1)*sizeof(char));
         strcpy(args[i],buf);
     }
     strcpy(args[0],program);
     strcpy(args[1],arg1);
-    strcpy(args[2],arg2);
-    args[procs_n+3]=NULL;
+    strcpy(args[2],program);
+    strcpy(args[3],arg2);
+    args[procs_n+5-1]=NULL;
     return args;
 }
 int start(char *thisprogram,char *config,int procs_n,int *procs) {
@@ -248,7 +276,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     }
     proc_args = malloc((proc_args_n+1)*sizeof(char*));
     for(i=0;i<proc_args_n;i++) {
-        proc_args[i]=malloc(100*sizeof(char));
+        proc_args[i]=malloc(256*sizeof(char));
     }
     proc_args[proc_args_n]=NULL;
     int null_c=0;
@@ -288,6 +316,8 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
         char command[1000];
         strcpy(command,thisprogram);
         strcat(command," -s ");
+        strcat(command,thisprogram);
+        strcat(command," ");
         strcat(command,config);
         for(i=1;i<procs_n;i++) {
             char buf[10];
@@ -298,7 +328,6 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
         strcat(command,proc_exe);
 
         strcpy(proc_args[2],command);
-        
     }
     printf("\n");
     chdir(proc_cwd);
@@ -309,7 +338,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
 
 int main(int argc, char **argv) {
 //./program scrollbackfile datafile
-//./program -s datafile [processes..]
+//./program -s thisprogramname datafile [processes..]
     int i;
     FILE *fp=NULL;
     int c;
@@ -319,10 +348,10 @@ int main(int argc, char **argv) {
     }
     if (strcmp(argv[1],"-s")==0) {
         int *procs;
-        procs=malloc((argc-3)*sizeof(int));
-        for (i=3;i<argc;i++)
-            procs[i-3]=atoi(argv[i]);
-        start(argv[0],argv[2],i-3,procs);
+        procs=malloc((argc-4)*sizeof(int));
+        for (i=4;i<argc;i++)
+            procs[i-4]=atoi(argv[i]);
+        start(argv[2],argv[3],i-4,procs);
         return 0;
     }
     else if (strcmp(argv[1],"-m")==0) {
@@ -373,7 +402,7 @@ int main(int argc, char **argv) {
     printf("%s",none);
     
     fscanf(fp,"%d\n",&procs_c);
-    printf("\n%sThis window had%s %d %sprograms running:%s\n",blue_r,brown_r,procs_c,blue_r,none);
+    printf("\n%s %d %sprograms running:%s\n",green_r,procs_c,blue_r,none);
 
     char proc_cwd[256];
     char proc_exe[256];
@@ -417,30 +446,36 @@ int main(int argc, char **argv) {
     printf("%s--RESTORE MENU--%s\n",green_b,none);
     int menu;
     int number;
-    userInput(&menu,&number);
+    userInput(&menu,&number,procs_c);
     char *shell=NULL;
     char **arglist=NULL;
     int *args;
     args=malloc(procs_c*sizeof(int));
     switch(menu) {
+
         case EXIT:
             printf("Exiting...\n");
             return 0;
             break;
+
         case RESET:
             shell = getenv("SHELL");
+            arglist=malloc(2*sizeof(char*));
+            arglist[0]=malloc((strlen(shell)+1)*sizeof(char));
+            arglist[1]=NULL;
+            strcpy(arglist[0],shell);
             printf("Starting default shell(%s) in last cwd(%s)...\n",shell,proc_cwd);
-            //printf("Starting default shell in last working directory...\n");
             chdir(proc_cwd);
-            execl(shell,shell,NULL);
-            
+            execvp(shell,arglist);
             break;
+
         case ONLY:
             printf("Starting program %d...\n",number);
             args[0]=number;
             arglist=make_arglist(argv[0],"-s",argv[2],1,args);
             execvp(argv[0],arglist);
             break;
+
         case ALL:
             printf("Starting all programs...\n");
             for(i=0;i<procs_c;i++) {
@@ -450,6 +485,7 @@ int main(int argc, char **argv) {
             execvp(argv[0],arglist);
 
             break;
+
         case NUMBER:
             printf("Starting programs up to %d...\n",number);
             if(number>procs_c) {
