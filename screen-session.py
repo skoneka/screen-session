@@ -409,6 +409,7 @@ class ScreenSession(object):
             for i in range(0,region_c):
                 currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+                print('windows: '+ windows)
                 offset=0
                 findactive=False
                 for j in range(windows.count('$')):
@@ -416,6 +417,7 @@ class ScreenSession(object):
                     if(index!=-1):
                         if windows[index-1]=='*' or windows[index-2]=='*':
                             findactive=True
+                            print ('focus offset: '+str(offset))
                             break
                         else:
                             offset=index+1

@@ -64,7 +64,7 @@ Loading:
 
 Example bindings:
     
-    bind S eval "exec sh -c 'sleep 1; screen-session --save --force'" "other"
+    bind S eval "screen sh -c 'sleep 1; screen-session --save --force'" "other"
 
 
 Bugs
