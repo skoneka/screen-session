@@ -245,10 +245,8 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
     return args;
 }
 int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
-    printf("%s; %s; %s; %d;\n",basedir,thisprogram,config,procs_n);
     char *cwd=get_current_dir_name ();
-    printf("start dir: %s\n",cwd);
-    printf("base dir: %s\n",basedir);
+    printf("cwd: %s\n",cwd);
     if(procs_n==0)
         return 0;
     char proc_cwd[256];
@@ -261,6 +259,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     FILE *fp=NULL;
     chdir(basedir);
     fp=fopen(config,"r");
+    
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
         printf("Press any key to continue...\n");
@@ -322,8 +321,10 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
 
         char command[1000];
         strcpy(command,thisprogram);
-        strcat(command," -s ");
+        strcat(command," -s");
+        strcat(command," ");
         strcat(command,basedir);
+        strcat(command," ");
         strcat(command,thisprogram);
         strcat(command," ");
         strcat(command,config);

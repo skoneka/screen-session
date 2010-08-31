@@ -665,6 +665,11 @@ if __name__=='__main__':
     elif mode == 2:
         if not input:
             input="last"
+            try:
+                input=os.readlink(os.path.join(projectsdir,input))
+            except:
+                print("No recent session to load")
+                doexit("Aborting",waitfor)
         if not output:
             if current_session:
                 output = current_session
