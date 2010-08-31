@@ -243,7 +243,7 @@ class ScreenSession(object):
                 self.__scrollbacks.append(scrollback_filename)
 
                 # sort window processes by parent pid
-                # what if more than one process has no ppid?
+                # what if more than one process has no recognized ppid?
                 if cpids:
                     pids_data_sort=[]
                     pids_data_sort_index=0
@@ -276,6 +276,16 @@ class ScreenSession(object):
                             text="BLACKLISTED"
                         else: 
                             text=""
+                        if self.primer in cpids_data[i][2]:
+                            # clean zsh -c 'primer..' by removing '-c' 'primer..'
+                            l=cpids_data[i][2].split('\0')
+                            if l[1]=='-c' and l[2].startswith(self.primer):
+                                # print('REMOVE THIS ARG')
+                                s=str(l[0])+'\0'
+                                for j in range(3,len(l)):
+                                    s+=str(l[j])+'\0'
+                                newdata=(cpids_data[i][0],cpids_data[i][1],s)
+                                cpids_data[i]=newdata
                         print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                 
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
@@ -651,6 +661,10 @@ if __name__=='__main__':
     elif mode == 2:
         if not input:
             input="last"
+            try:
+                input=os.readlink(os.path.join(basedir,input))
+            except:
+                pass
         if not output:
             if current_session:
                 output = current_session
@@ -662,6 +676,7 @@ if __name__=='__main__':
     
     
     scs=ScreenSession(pid,basedir,savedir)
+    scs.lastdir="last"
     if not scs.exists():
         print('No such session: %s'%pid)
         doexit(1,waitfor)
@@ -680,8 +695,10 @@ if __name__=='__main__':
     scs.restore_previous = restore
     if mode==1:
         scs.save()
+        os.system('screen -S %s -X echo "screen-session finished saving"'%input)
     elif mode==2:
         scs.load()
+        os.system('screen -S %s -X echo "screen-session finished loading"'%input)
     else:
         print('No mode specified --load or --save')
 
