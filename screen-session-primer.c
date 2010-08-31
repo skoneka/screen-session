@@ -69,6 +69,7 @@
 #endif
 
 #define USERINPUTMAXBUFFERSIZE   80
+#define CMDLINE_BEGIN 20
 
 char buf[256];
 
@@ -82,7 +83,6 @@ enum menu
     NUMBER
 };
 
-void cleartoendofline( void );          /* ANSI function prototype */
 
 
 
@@ -244,6 +244,109 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
     args[procs_n+5]=NULL;
     return args;
 }
+
+int FileSearch(FILE* pFile, const char* lpszSearchString)
+{
+    //make sure we were passed a valid, if it isn't return -1
+    if ((!pFile)||(!lpszSearchString))
+    {
+        return -1;
+    }
+
+    unsigned long ulFileSize=0;
+
+    //get the size of the file
+    fseek(pFile,0,SEEK_END);
+
+    ulFileSize=ftell(pFile);
+
+    fseek(pFile,0,SEEK_SET);
+
+    //if the file is empty return -1
+    if (!ulFileSize)
+    {
+        return -1;
+    }
+
+    //get the length of the string we're looking for, this is
+    //the size the buffer will need to be
+    unsigned long ulBufferSize=strlen(lpszSearchString);
+
+    if (ulBufferSize>ulFileSize)
+    {
+        return -1;
+    }
+
+    //allocate the memory for the buffer
+    char* lpBuffer=(char*)malloc(ulBufferSize);
+
+    //if malloc() returned a null pointer (which probably means
+    //there is not enough memory) then return -1
+    if (!lpBuffer)
+    {
+        return -1;
+    }
+
+    unsigned long ulCurrentPosition=0;
+
+    //this is where the actual searching will happen, what happens
+    //here is we set the file pointer to the current position
+    //is incrimented by one each pass, then we read the size of
+    //the buffer into the buffer and compare it with the string
+    //we're searching for, if the string is found we return the
+    //position at which it is found
+    while (ulCurrentPosition<ulFileSize-ulBufferSize)
+    {
+        //set the pointer to the current position
+        fseek(pFile,ulCurrentPosition,SEEK_SET);
+
+        //read ulBufferSize bytes from the file
+        fread(lpBuffer,1,ulBufferSize,pFile);
+
+        //if the data read matches the string we're looking for
+        if (!memcmp(lpBuffer,lpszSearchString,ulBufferSize))
+        {
+            //free the buffer
+            free(lpBuffer);
+
+            //return the position the string was found at
+            return ulCurrentPosition;
+        }
+        
+        //incriment the current position by one
+        ulCurrentPosition++;
+    }
+
+    //if we made it this far the string was not found in the file
+    //so we free the buffer
+    free(lpBuffer);
+
+    //and return -1
+    return -1;
+} 
+
+int is_blacklisted(char *basedir,char *program) {
+    char *blackfile="BLACKLIST";
+    char *filepath=malloc((strlen(basedir)+strlen(blackfile)+2)*sizeof(char*));
+    strcpy(filepath,basedir);
+    strcat(filepath,"/");
+    strcat(filepath,blackfile);
+    FILE *fp=NULL;
+    fp=fopen(filepath,"r");
+    
+    if(!fp) {
+        printf("Cannot open blacklist '%s'.\n",filepath);
+        free(filepath);
+        return 0;
+    }
+    else
+        free(filepath);
+    int ret=FileSearch(fp,program);
+    return (ret==-1)? 0 : 1;
+
+
+}
+
 int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     char *cwd=get_current_dir_name ();
     printf("cwd: %s\n",cwd);
@@ -311,8 +414,13 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
             break;
     }
     fscanf(fp,"%s\n",proc_blacklisted);
+    fclose(fp);
+    printf("thisprogram: %s\n",thisprogram);
     if(strcmp(proc_blacklisted,"True")==0)
         return 0;
+    //else if ( is_blacklisted(basedir,thisprogram) )
+    //    return 0;
+    
     if(procs_n>1) {
         for(i=proc_args_n-1;i>3;i--) {
             strcpy(proc_args[i],proc_args[i-3]);
@@ -340,7 +448,6 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     }
     printf("\n");
     chdir(proc_cwd);
-    fclose(fp);
     //printf("exe:%s\n",proc_exe);
     //for(i=0;i<proc_arg_n;
     execvp(proc_exe,proc_args);
@@ -429,6 +536,8 @@ int main(int argc, char **argv) {
     char proc_cwd[256];
     char proc_exe[256];
     int proc_args_n;
+    char cmdline_begin[CMDLINE_BEGIN+1];
+    int cmdline_begin_c=0;
     char proc_blacklisted[10];
 
 
@@ -440,7 +549,13 @@ int main(int argc, char **argv) {
         fscanf(fp,"%s\n",proc_exe);
         fscanf(fp,"%d\n",&proc_args_n);
         int null_c=0;
+        cmdline_begin_c=0;
         while((c=fgetc(fp))!=EOF) {
+            if(cmdline_begin_c<CMDLINE_BEGIN) {
+                cmdline_begin[cmdline_begin_c]=c;
+                cmdline_begin[cmdline_begin_c+1]=0;
+                cmdline_begin_c++;
+            }
             if(c=='\0') {
                 null_c++;
                 if(null_c==1)
@@ -463,6 +578,8 @@ int main(int argc, char **argv) {
         printf("\tCWD: %s\n",proc_cwd);
         printf("\tEXE: %s\n",proc_exe);
         if (strcmp(proc_blacklisted,"True")==0)
+            printf("\t%sBLACKLISTED%s\n",magenta,none);
+        else if (is_blacklisted(fullpath,cmdline_begin))
             printf("\t%sBLACKLISTED%s\n",magenta,none);
     }
     printf("%s--RESTORE MENU--%s\n",green_b,none);

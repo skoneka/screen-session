@@ -666,7 +666,7 @@ if __name__=='__main__':
         if not input:
             input="last"
             try:
-                input=os.readlink(os.path.join(projectsdir,input))
+                input=os.readlink(os.path.join(os.path.expanduser('~'),projectsdir,input))
             except:
                 print("No recent session to load")
                 doexit("Aborting",waitfor)
