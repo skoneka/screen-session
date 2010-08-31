@@ -91,14 +91,17 @@ class ScreenSession(object):
 
         print('number; time; group; type; title; processes;')
         wins=[]
-
-        for filename in glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')):#this glob has to be sorted!!!
+        #files = sorted(glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')))
+        f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
+        for id in f:
+            filename=os.path.join(self.basedir,self.savedir,"win_"+id.strip())
             f=open(filename)
             win=list(f)[0:6]
             f.close()
             win=self.__striplist(win)
             print (str(win))
             wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5]))
+        f.close()
 
 
         for win in wins:
@@ -137,8 +140,7 @@ class ScreenSession(object):
             if keep_numbering:
                 os.system('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) )
             else:
-                #subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
-                print('creating: screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)))
+                #print('creating: screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)))
                 os.system('screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
 
         elif type=='group':
@@ -293,6 +295,7 @@ class ScreenSession(object):
                         print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                 
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data)
+
 
                 
         self.__linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
@@ -485,6 +488,9 @@ class ScreenSession(object):
 
 
     def __save_win(self,winid,time,group,type,title,pids_data):
+        fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
+        fh.write(str(winid)+'\n')
+        fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         print ("Saving window %s" % winid)
         
@@ -546,6 +552,8 @@ class ScreenSession(object):
                 for filename in glob.glob(os.path.join(basedir,savedir,'winlayout_*')):
                     os.remove(filename)
                 self.__linkify(basedir,savedir,self.lastlink)
+                f=open(os.path.join(basedir,savedir,'winlist'),'w')
+                f.close()
                 return True
             else:
                 print('Aborting.')
@@ -553,6 +561,8 @@ class ScreenSession(object):
         else:
             os.makedirs(os.path.join(basedir,savedir))
             self.__linkify(basedir,savedir,self.lastlink)
+            f=open('winlist','w')
+            f.close()
             return True
 
 
