@@ -16,11 +16,12 @@ class ScreenSession(object):
     """class storing GNU screen sessions"""
     pid=""
     basedir=""
+    projectsdir=".screen-sessions"
     savedir=""
     procdir="/proc"
     maxwin=-1
     force=False
-    lastdir="last"
+    lastlink="last"
     enable_layout = False
     restore_previous = False
     
@@ -31,10 +32,12 @@ class ScreenSession(object):
     __wins_trans = {}
     __scrollbacks=[]
 
-    def __init__(self,pid,basedir,savedir):
-        self.pid=str(pid)
-        self.basedir=str(basedir)
+    def __init__(self,pid,projectsdir,savedir):
+        self.homedir=os.path.expanduser('~')
+        self.projectsdir=str(projectsdir)
+        self.basedir=os.path.join(self.homedir,self.projectsdir)
         self.savedir=str(savedir)
+        self.pid=str(pid)
 
     def save(self):
         print("\n======CREATING___DIRECTORIES======")
@@ -89,7 +92,7 @@ class ScreenSession(object):
         print('number; time; group; type; title; processes;')
         wins=[]
 
-        for filename in glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')):
+        for filename in glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')):#this glob has to be sorted!!!
             f=open(filename)
             win=list(f)[0:6]
             f.close()
@@ -135,7 +138,8 @@ class ScreenSession(object):
                 os.system('screen -S %s -X screen -t \"%s\" %s sh' % (pid,title,win) )
             else:
                 #subprocess.Popen('screen -S %s -X screen -t \"%s\" sh' % (pid,title) , shell=True)
-                os.system('screen -S %s -X screen -t \"%s\" %s %s %s' % (pid,title,self.primer,os.path.join(self.basedir,self.savedir,"scrollback_"+win),os.path.join(self.basedir,self.savedir,"win_"+win)) )
+                print('creating: screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)))
+                os.system('screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
 
         elif type=='group':
             if keep_numbering:
@@ -541,14 +545,14 @@ class ScreenSession(object):
                     os.remove(filename)
                 for filename in glob.glob(os.path.join(basedir,savedir,'winlayout_*')):
                     os.remove(filename)
-                self.__linkify(basedir,savedir,self.lastdir)
+                self.__linkify(basedir,savedir,self.lastlink)
                 return True
             else:
                 print('Aborting.')
                 return False
         else:
             os.makedirs(os.path.join(basedir,savedir))
-            self.__linkify(basedir,savedir,self.lastdir)
+            self.__linkify(basedir,savedir,self.lastlink)
             return True
 
 
@@ -588,7 +592,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ryic:wfi:o:m:lsd:hv", ["restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -600,7 +604,7 @@ if __name__=='__main__':
     force = False
     enable_layout = True
     mode = 0
-    basedir =None
+    projectsdir =None
     savedir = None
     maxwin = -1
     input=None
@@ -628,7 +632,7 @@ if __name__=='__main__':
         elif o in ("-l","--load"):
             mode = 2
         elif o in ("-d","--dir"):
-            basedir = a
+            projectsdir = a
         elif o in ("-i","--in"):
             input = a
         elif o in ("-o","--out"):
@@ -637,11 +641,11 @@ if __name__=='__main__':
             doexit("Unhandled option",waitfor)
 
 
-    if not basedir:
-        print("basedir not specified, using default:")
-        directory = os.path.join(os.path.expanduser('~'),'.screen-sessions')
-        print(directory)
-        basedir = directory
+    if not projectsdir:
+        sys.stdout.write("projects directory: ")
+        directory = '.screen-sessions'
+        print('$HOME/'+directory)
+        projectsdir = directory
 
     if mode==0:
         usage()
@@ -661,10 +665,6 @@ if __name__=='__main__':
     elif mode == 2:
         if not input:
             input="last"
-            try:
-                input=os.readlink(os.path.join(basedir,input))
-            except:
-                pass
         if not output:
             if current_session:
                 output = current_session
@@ -675,13 +675,12 @@ if __name__=='__main__':
         savedir = input
     
     
-    scs=ScreenSession(pid,basedir,savedir)
-    scs.lastdir="last"
+    scs=ScreenSession(pid,projectsdir,savedir)
     if not scs.exists():
         print('No such session: %s'%pid)
         doexit(1,waitfor)
         
-    if savedir == scs.lastdir and mode==1:
+    if savedir == scs.lastlink and mode==1:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     

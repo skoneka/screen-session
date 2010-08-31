@@ -23,7 +23,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-#ifdef COLOR
+#ifdef COLOR /* if you dont want color remove '-DCOLOR' from config.mk */
     #define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
     #define green_u "\033[4;32m"        /* 4 -> underline ;  32 -> green */
     #define blue_s  "\033[9;34m"        /* 9 -> strike ;  34 -> blue */
@@ -219,7 +219,7 @@ char **make_arglist_simple(char *program) {
     strcpy(args[0],program);
     return args;
 }
-char **make_arglist(char *program,char *arg1, char *arg2, int procs_n,int *procs) {
+char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n,int *procs) {
     int i;
     char **args=NULL;
     char buf[10];
@@ -227,22 +227,28 @@ char **make_arglist(char *program,char *arg1, char *arg2, int procs_n,int *procs
     args[0]=malloc((strlen(program)+1)*sizeof(char));
     args[1]=malloc((strlen(arg1)+1)*sizeof(char));
     //has to pass program name because nested programs do not get name in argv[0]
-    args[2]=malloc((strlen(program)+1)*sizeof(char)); 
-    args[3]=malloc((strlen(arg2)+1)*sizeof(char));
-    for(i=4;i<procs_n+4;i++) {
-        int i_procs=i-4;
+    args[2]=malloc((strlen(arg2)+1)*sizeof(char)); 
+    args[3]=malloc((strlen(program)+1)*sizeof(char)); 
+    args[4]=malloc((strlen(arg3)+1)*sizeof(char));
+    for(i=5;i<procs_n+5;i++) {
+        int i_procs=i-5;
         sprintf(buf,"%d",procs[i_procs]);
         args[i]=malloc((strlen(buf)+1)*sizeof(char));
         strcpy(args[i],buf);
     }
     strcpy(args[0],program);
     strcpy(args[1],arg1);
-    strcpy(args[2],program);
-    strcpy(args[3],arg2);
-    args[procs_n+5-1]=NULL;
+    strcpy(args[2],arg2);
+    strcpy(args[3],program);
+    strcpy(args[4],arg3);
+    args[procs_n+5]=NULL;
     return args;
 }
-int start(char *thisprogram,char *config,int procs_n,int *procs) {
+int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
+    printf("%s; %s; %s; %d;\n",basedir,thisprogram,config,procs_n);
+    char *cwd=get_current_dir_name ();
+    printf("start dir: %s\n",cwd);
+    printf("base dir: %s\n",basedir);
     if(procs_n==0)
         return 0;
     char proc_cwd[256];
@@ -253,6 +259,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     int i,nl_c=0;
     char c;
     FILE *fp=NULL;
+    chdir(basedir);
     fp=fopen(config,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
@@ -308,14 +315,15 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     if(strcmp(proc_blacklisted,"True")==0)
         return 0;
     if(procs_n>1) {
-        for(i=proc_args_n-1;i>2;i--) {
-            strcpy(proc_args[i],proc_args[i-2]);
+        for(i=proc_args_n-1;i>3;i--) {
+            strcpy(proc_args[i],proc_args[i-3]);
         }
         strcpy(proc_args[1],"-c");
 
         char command[1000];
         strcpy(command,thisprogram);
         strcat(command," -s ");
+        strcat(command,basedir);
         strcat(command,thisprogram);
         strcat(command," ");
         strcat(command,config);
@@ -331,6 +339,9 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
     }
     printf("\n");
     chdir(proc_cwd);
+    fclose(fp);
+    //printf("exe:%s\n",proc_exe);
+    //for(i=0;i<proc_arg_n;
     execvp(proc_exe,proc_args);
     return 1;
 
@@ -338,7 +349,7 @@ int start(char *thisprogram,char *config,int procs_n,int *procs) {
 
 int main(int argc, char **argv) {
 //./program scrollbackfile datafile
-//./program -s thisprogramname datafile [processes..]
+//./program -s basedir thisprogramname datafile [processes..]
     int i;
     FILE *fp=NULL;
     int c;
@@ -348,10 +359,10 @@ int main(int argc, char **argv) {
     }
     if (strcmp(argv[1],"-s")==0) {
         int *procs;
-        procs=malloc((argc-4)*sizeof(int));
-        for (i=4;i<argc;i++)
-            procs[i-4]=atoi(argv[i]);
-        start(argv[2],argv[3],i-4,procs);
+        procs=malloc((argc-5)*sizeof(int));
+        for (i=5;i<argc;i++)
+            procs[i-5]=atoi(argv[i]);
+        start(argv[2],argv[3],argv[4],i-5,procs);
         return 0;
     }
     else if (strcmp(argv[1],"-m")==0) {
@@ -359,8 +370,19 @@ int main(int argc, char **argv) {
         sleep(10);
         return 0;
     }
-     
-    fp=fopen(argv[1],"r");
+    char *homedir=getenv("HOME");
+    char *workingdir=argv[1];
+    char *scrollbackfile=argv[2];
+    char *datafile=argv[3];
+    
+    char *fullpath=malloc((strlen(homedir)+strlen(workingdir)+2)*sizeof(char*));
+    strcpy(fullpath,homedir);
+    strcat(fullpath,"/");
+    strcat(fullpath,workingdir);
+    printf("chdir '%s'\n",fullpath);
+    chdir(fullpath);
+
+    fp=fopen(scrollbackfile,"r");
     if(fp) {
         while((c=fgetc(fp))!=EOF) {
             fputc(c,stdout);
@@ -371,11 +393,9 @@ int main(int argc, char **argv) {
         printf("Cannot open scrollback file.\n");
     }
     fp=NULL;
-    printf("%s*=======",red_r);
 
-
-
-    fp=fopen(argv[2],"r");
+    printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
+    fp=fopen(datafile,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
         printf("Press any key to continue...\n");
@@ -385,11 +405,12 @@ int main(int argc, char **argv) {
 
     int nl_c=0;
     int procs_c=0;
+    printf("%sSaved: ",green_r);
     while((c=fgetc(fp))!=EOF) {
         if(c=='\n') {
             nl_c++;
             if(nl_c==2)
-            printf("=======*%s\nTitle: ",red_r);
+            printf("%s\nTitle: ",red_r);
         }
         else if (nl_c==1) // print date
            fputc(c,stdout);
@@ -472,7 +493,7 @@ int main(int argc, char **argv) {
         case ONLY:
             printf("Starting program %d...\n",number);
             args[0]=number;
-            arglist=make_arglist(argv[0],"-s",argv[2],1,args);
+            arglist=make_arglist(argv[0],"-s",fullpath,datafile,1,args);
             execvp(argv[0],arglist);
             break;
 
@@ -481,7 +502,7 @@ int main(int argc, char **argv) {
             for(i=0;i<procs_c;i++) {
                 args[i]=i;
             }
-            arglist=make_arglist(argv[0],"-s",argv[2],procs_c,args);
+            arglist=make_arglist(argv[0],"-s",fullpath,datafile,procs_c,args);
             execvp(argv[0],arglist);
 
             break;
@@ -497,7 +518,7 @@ int main(int argc, char **argv) {
             for(i=0;i<number;i++) {
                 args[i]=i;
             }
-            arglist=make_arglist(argv[0],"-s",argv[2],number,args);
+            arglist=make_arglist(argv[0],"-s",fullpath,datafile,number,args);
             execvp(argv[0],arglist);
             break;
 
