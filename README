@@ -1,16 +1,31 @@
 screen-session - GNU Screen session saver
 ============================
 
+
+
 Website: http://adb.cba.pl
+
+
+
+Description
+-----------
+screen-session is GNU Screen session saver.
+
+screen-session currently supports saving of:
+groups and basic windows, directories, programs, layouts, scrollbacks, titles
+
+
 
 Requirements
 ------------
 screen-session requires a recent version of Screen patched with screen-session.diff
 screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
 
+
 screen-session.diff changes:
 - add "tty" command
 - make "layout" and "group" and "maxwin" and "sessionname" queryable
+
 
 
 Installation
@@ -18,10 +33,12 @@ Installation
 Edit config.mk to match your local setup (screen-session is installed into
 the /usr/local namespace by default).
 
+
 Afterwards enter the following command to build and install screen-session
 (if necessary as root):
 
     make clean install
+
 
 Make sure you have a recent version of Screen with necessary patch:
 
@@ -34,11 +51,13 @@ Make sure you have a recent version of Screen with necessary patch:
     sudo make install
 
 
+screen-session-primer uses linux color escapes. If you dont want color
+remove "-DCOLOR" from config.mk
+
+
+
 Running screen-session
 -------------
-screen-session currently supports saving of:
-groups and basic windows, directories, programs, layouts, scrollbacks, titles
-
 Saving:
     # save inside saved session 
     screen-session --save --force
@@ -52,6 +71,7 @@ Saving:
     # save saving session with PID in mysavedsession folder
     screen-session --save --in PID --out mysavedsession
 
+
 Loading:
     # load last saved session inside target session
     screen-session --load
@@ -62,9 +82,11 @@ Loading:
     # load session saved in folder mysavedsession loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
 
+
 Example bindings:
     
     bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
+
 
 
 Bugs
