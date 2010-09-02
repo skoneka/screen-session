@@ -22,6 +22,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <dirent.h>
 
 #ifdef COLOR /* if you dont want color remove '-DCOLOR' from config.mk */
     #define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
@@ -88,6 +89,71 @@ enum menu
 };
 
 
+int DirectoryExists( const char* pzPath )
+{
+    if ( pzPath == NULL) return 0;
+ 
+    DIR *pDir;
+    int bExists = 0;
+ 
+    pDir = opendir (pzPath);
+ 
+    if (pDir != NULL)
+    {
+        bExists = 1;    
+        (void) closedir (pDir);
+    }
+ 
+    return bExists;
+}
+
+
+int 
+requireSession(const char *basepath,const char *file_in_session)
+{   
+    char *file=malloc((strlen(file_in_session)+1)*sizeof(char));
+    char *session=malloc((strlen(file_in_session)+1)*sizeof(char));
+    char *basedir=malloc((strlen(basepath)+1)*sizeof(char));
+    
+    strcpy(basedir,basepath);
+    strcpy(file,file_in_session);
+
+
+    char *pch=NULL;
+    pch=strtok(file,"/");
+    if(pch)
+        strcpy(session,pch);
+    else {
+        free(file);
+        free(session);
+        free(basedir);
+        return 1;
+    }
+        
+    char *filepath=malloc((strlen(basedir)+strlen(session)+1)*sizeof(char));
+    strcpy(filepath,basedir);
+    strcat(filepath,"/");
+    strcat(filepath,session);
+
+    if(DirectoryExists(filepath)) {
+        free(file);
+        free(filepath);
+        free(session);
+        free(basedir);
+        return 0;
+    }
+    else {
+        free(filepath);
+        char *buf=malloc((strlen(basedir)+strlen(session)+1+34)*sizeof(char));
+        sprintf(buf,"screen-session.py --dir %s --unpack %s",basedir,session);
+        system(buf);
+        free(file);
+        free(buf);
+        free(session);
+        free(basedir);
+        return 0;
+    }
+}
 
 
 void cleartoendofline( void )
@@ -259,85 +325,6 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
     return args;
 }
 
-int FileSearch(FILE* pFile, const char* lpszSearchString)
-{
-    //make sure we were passed a valid, if it isn't return -1
-    if ((!pFile)||(!lpszSearchString))
-    {
-        return -1;
-    }
-
-    unsigned long ulFileSize=0;
-
-    //get the size of the file
-    fseek(pFile,0,SEEK_END);
-
-    ulFileSize=ftell(pFile);
-
-    fseek(pFile,0,SEEK_SET);
-
-    //if the file is empty return -1
-    if (!ulFileSize)
-    {
-        return -1;
-    }
-
-    //get the length of the string we're looking for, this is
-    //the size the buffer will need to be
-    unsigned long ulBufferSize=strlen(lpszSearchString);
-
-    if (ulBufferSize>ulFileSize)
-    {
-        return -1;
-    }
-
-    //allocate the memory for the buffer
-    char* lpBuffer=(char*)malloc(ulBufferSize);
-
-    //if malloc() returned a null pointer (which probably means
-    //there is not enough memory) then return -1
-    if (!lpBuffer)
-    {
-        return -1;
-    }
-
-    unsigned long ulCurrentPosition=0;
-
-    //this is where the actual searching will happen, what happens
-    //here is we set the file pointer to the current position
-    //is incrimented by one each pass, then we read the size of
-    //the buffer into the buffer and compare it with the string
-    //we're searching for, if the string is found we return the
-    //position at which it is found
-    while (ulCurrentPosition<ulFileSize-ulBufferSize)
-    {
-        //set the pointer to the current position
-        fseek(pFile,ulCurrentPosition,SEEK_SET);
-
-        //read ulBufferSize bytes from the file
-        fread(lpBuffer,1,ulBufferSize,pFile);
-
-        //if the data read matches the string we're looking for
-        if (!memcmp(lpBuffer,lpszSearchString,ulBufferSize))
-        {
-            //free the buffer
-            free(lpBuffer);
-
-            //return the position the string was found at
-            return ulCurrentPosition;
-        }
-        
-        //incriment the current position by one
-        ulCurrentPosition++;
-    }
-
-    //if we made it this far the string was not found in the file
-    //so we free the buffer
-    free(lpBuffer);
-
-    //and return -1
-    return -1;
-} 
 
 int filesearch_line(FILE *fp,char *s)
 {
@@ -411,6 +398,9 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     char c;
     FILE *fp=NULL;
     chdir(basedir);
+    requireSession(basedir,config);
+    char buf[10];
+    
     fp=fopen(config,"r");
     
     if(!fp) {
@@ -506,7 +496,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
 
 #ifndef TEST
 int main(int argc, char **argv) {
-//./program scrollbackfile datafile
+//./program workingdir scrollbackfile datafile
 //./program -s basedir thisprogramname datafile [processes..]
     int i;
     FILE *fp=NULL;
@@ -537,9 +527,8 @@ int main(int argc, char **argv) {
     strcpy(fullpath,homedir);
     strcat(fullpath,"/");
     strcat(fullpath,workingdir);
-    printf("chdir '%s'\n",fullpath);
     chdir(fullpath);
-
+    requireSession(fullpath,datafile);
     fp=fopen(scrollbackfile,"r");
     if(fp) {
         while((c=fgetc(fp))!=EOF) {
@@ -553,6 +542,7 @@ int main(int argc, char **argv) {
     fp=NULL;
 
     printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
+    requireSession(fullpath,datafile);
     fp=fopen(datafile,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");

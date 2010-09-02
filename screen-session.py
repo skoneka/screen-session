@@ -10,7 +10,7 @@ issues:
 '''
 
 
-import subprocess,sys,os,getopt,glob,time,signal
+import subprocess,sys,os,getopt,glob,time,signal,shutil
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
@@ -93,7 +93,6 @@ class ScreenSession(object):
 
         print('number; time; group; type; title; processes;')
         wins=[]
-        #files = sorted(glob.glob(os.path.join(os.path.join(self.basedir,self.savedir),'win_*')))
         f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
         for id in f:
             filename=os.path.join(self.basedir,self.savedir,"win_"+id.strip())
@@ -300,7 +299,7 @@ class ScreenSession(object):
 
 
                 
-        self.__linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        self.linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         print('\n--')
 
         print ("Returning homewindow = " +homewindow)
@@ -443,7 +442,7 @@ class ScreenSession(object):
 
                 if not findactive:
                     currentnumber="-1\n"
-                print("current region = %s; window number = %s"%(i,currentnumber.strip()))
+                print("region = %s; window number = %s"%(i,currentnumber.strip()))
                 win.append(currentnumber)
                 os.system('screen -S %s -X focus' % (self.pid) )
 
@@ -464,7 +463,7 @@ class ScreenSession(object):
             currentlayout = currentlayout.strip()
             layoutname = layoutname.rsplit(')')[0]
         
-        self.__linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
+        self.linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
         print("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
         
@@ -478,7 +477,7 @@ class ScreenSession(object):
 
         return True
            
-    def __linkify(self,dir,dest,targ):
+    def linkify(self,dir,dest,targ):
         cwd=os.getcwd()
         os.chdir(dir)
         try:
@@ -555,7 +554,7 @@ class ScreenSession(object):
                     os.remove(filename)
                 for filename in glob.glob(os.path.join(basedir,savedir,'winlayout_*')):
                     os.remove(filename)
-                self.__linkify(basedir,savedir,self.lastlink)
+                self.linkify(basedir,savedir,self.lastlink)
                 f=open(os.path.join(basedir,savedir,'winlist'),'w')
                 f.close()
                 return True
@@ -564,12 +563,17 @@ class ScreenSession(object):
                 return False
         else:
             os.makedirs(os.path.join(basedir,savedir))
-            self.__linkify(basedir,savedir,self.lastlink)
+            self.linkify(basedir,savedir,self.lastlink)
             f=open('winlist','w')
             f.close()
             return True
 
 
+def unpackme(home,projectsdir,savedir,archiveend):
+    cwd=os.getcwd()
+    os.chdir(os.path.join(home,projectsdir))
+    os.system('tar xjf %s%s'%(savedir,archiveend))
+    os.chdir(cwd)
 
 def doexit(var=0,waitfor=True):
     if waitfor:
@@ -617,13 +621,16 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
         doexit(2,waitfor)
-    
+    home=os.path.expanduser('~')
+    archiveend='.tar.bz2'
+    unpack=None
     current_session=None
+    
     restore = False
     verbose = False
     log=None
@@ -640,6 +647,8 @@ if __name__=='__main__':
             verbose = True
         elif o in ("--log"):
             log = a
+        elif o in ("--unpack"):
+            unpack = a
         elif o in ("-c","--current-session"):
             current_session = a
         elif o in ("-r","--restore"):
@@ -671,14 +680,19 @@ if __name__=='__main__':
     if log:
         sys.stdout=open(log,'w')
 
+
     if not projectsdir:
         sys.stdout.write("projects directory: ")
         directory = '.screen-sessions'
         print('$HOME/'+directory)
         projectsdir = directory
-
+    
     if mode==0:
-        usage()
+        if unpack:
+            print 'unpacking'
+            unpackme(home,projectsdir,unpack,archiveend)
+        else:
+            usage()
         doexit(0,waitfor)
     elif mode==1:
         if not input:
@@ -696,7 +710,7 @@ if __name__=='__main__':
         if not input:
             input="last"
             try:
-                input=os.readlink(os.path.join(os.path.expanduser('~'),projectsdir,input))
+                input=os.readlink(os.path.join(home,projectsdir,input)).rsplit('.',2)[0]
             except:
                 print("No recent session to load")
                 doexit("Aborting",waitfor)
@@ -711,6 +725,7 @@ if __name__=='__main__':
     
     
     scs=ScreenSession(pid,projectsdir,savedir)
+
     if not scs.exists():
         print('No such session: %s'%pid)
         doexit(1,waitfor)
@@ -730,15 +745,42 @@ if __name__=='__main__':
     scs.force = force
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
+
     if mode==1:
         scs.save()
+        
+        cwd=os.getcwd()
+        os.chdir(os.path.join(home,projectsdir))
+        os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
+        os.chdir(cwd)
+        shutil.rmtree(os.path.join(home,projectsdir,savedir))
+        os.remove(os.path.join(home,projectsdir,scs.lastlink))
+        scs.linkify(os.path.join(home,projectsdir),savedir+archiveend,scs.lastlink)
+        
         os.system('screen -S %s -X echo "screen-session finished saving"'%input)
     elif mode==2:
+        cwd=os.getcwd()
+        os.chdir(os.path.join(home,projectsdir))
+        files_all=glob.glob(os.path.join(home,projectsdir,'*'))
+        files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
+        files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,scs.blacklistfile),os.path.join(home,projectsdir,scs.lastlink)]))
+        for file in files_remove:
+            try:
+                shutil.rmtree(file)
+            except:
+                pass
+
+        os.system('tar xjf %s%s'%(savedir,archiveend))
+        os.chdir(cwd)
+        
         scs.load()
+        #shhutil.rmtree(os.path.join(home,projectsdir,savedir)
+        
         os.system('screen -S %s -X echo "screen-session finished loading"'%input)
     else:
         print('No mode specified --load or --save')
 
     doexit(0,waitfor)
+
 
 
