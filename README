@@ -64,10 +64,10 @@ Loading:
 
 Example bindings:
     
-    bind S eval "screen sh -c 'sleep 1; screen-session --save --force'" "other"
+    bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
 
 
 Bugs
 ------------
 There are no bugs, only features.
- Send patches to admin<[at]>adb.cba.pl
+Send patches to admin<[at]>adb.cba.pl
