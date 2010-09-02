@@ -27,6 +27,8 @@ class ScreenSession(object):
     
     primer="screen-session-primer"
     
+    blacklistfile="BLACKLIST"
+    
     blacklist = ["rm","shutdown"]
     
     __wins_trans = {}
@@ -537,6 +539,8 @@ class ScreenSession(object):
         print ("Setting up session directory %s" % savedir)
         if not os.path.exists(basedir):
             os.makedirs(basedir)
+            f=open(os.path.join(basedir,self.blacklistfile),'w')
+            f.close()
 
         if os.path.exists(os.path.join(basedir,savedir)):
             print("Directory \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
@@ -712,6 +716,9 @@ if __name__=='__main__':
         doexit(1,waitfor)
         
     if savedir == scs.lastlink and mode==1:
+        print("savedir cannot be named \"%s\". Aborting." % savedir)
+        doexit(1,waitfor)
+    elif savedir == scs.blacklistfile:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     

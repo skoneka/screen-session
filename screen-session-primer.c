@@ -70,8 +70,12 @@
 
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
+#define BLACKLIST 100
 
 char buf[256];
+
+int blacklist[BLACKLIST];
+int blacklist_c=0;
 
 enum menu
 {
@@ -232,6 +236,16 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
     args[4]=malloc((strlen(arg3)+1)*sizeof(char));
     for(i=5;i<procs_n+5;i++) {
         int i_procs=i-5;
+        int blacklisted=0;
+        int j;
+        for(j=0;j<blacklist_c;j++) {
+            if(blacklist[j] == procs[i_procs]) {
+                blacklisted=1;
+                break;
+            }
+        }
+        if(blacklisted)
+            break;
         sprintf(buf,"%d",procs[i_procs]);
         args[i]=malloc((strlen(buf)+1)*sizeof(char));
         strcpy(args[i],buf);
@@ -325,7 +339,37 @@ int FileSearch(FILE* pFile, const char* lpszSearchString)
     return -1;
 } 
 
-int is_blacklisted(char *basedir,char *program) {
+int filesearch_line(FILE *fp,char *s)
+{
+    fseek(fp,0,SEEK_SET);
+    char line[CMDLINE_BEGIN];
+    int nl_c=0;
+    int line_c=0;
+    char c;
+
+    while((c=fgetc(fp))!=EOF) {
+        if(c=='\n') {
+            if(strncmp(s,line,line_c)==0)
+                return 1;
+            nl_c++;
+            line_c=0;
+        }
+        else {
+            line[line_c]=c;
+            line_c++;
+            line[line_c]=0;
+
+        }
+    }
+    if(line_c!=0) {
+        if(strncmp(s,line,line_c))
+            return 1;
+    }
+
+    return 0;
+}
+
+int is_blacklisted(char *basedir,char *program,int programid) {
     char *blackfile="BLACKLIST";
     char *filepath=malloc((strlen(basedir)+strlen(blackfile)+2)*sizeof(char*));
     strcpy(filepath,basedir);
@@ -341,8 +385,14 @@ int is_blacklisted(char *basedir,char *program) {
     }
     else
         free(filepath);
-    int ret=FileSearch(fp,program);
-    return (ret==-1)? 0 : 1;
+    //int ret=FileSearch(fp,program);
+    //return (ret==-1)? 0 : 1;
+    int ret=filesearch_line(fp,program);
+    if(ret) {
+        blacklist[blacklist_c]=programid;
+        blacklist_c++;
+    }
+    return ret;
 
 
 }
@@ -415,7 +465,6 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     }
     fscanf(fp,"%s\n",proc_blacklisted);
     fclose(fp);
-    printf("thisprogram: %s\n",thisprogram);
     if(strcmp(proc_blacklisted,"True")==0)
         return 0;
     //else if ( is_blacklisted(basedir,thisprogram) )
@@ -455,6 +504,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
 
 }
 
+#ifndef TEST
 int main(int argc, char **argv) {
 //./program scrollbackfile datafile
 //./program -s basedir thisprogramname datafile [processes..]
@@ -577,10 +627,9 @@ int main(int argc, char **argv) {
         printf("\n");
         printf("\tCWD: %s\n",proc_cwd);
         printf("\tEXE: %s\n",proc_exe);
-        if (strcmp(proc_blacklisted,"True")==0)
-            printf("\t%sBLACKLISTED%s\n",magenta,none);
-        else if (is_blacklisted(fullpath,cmdline_begin))
-            printf("\t%sBLACKLISTED%s\n",magenta,none);
+        if (strncmp(proc_blacklisted,"True",4)==0 || is_blacklisted(fullpath,cmdline_begin,i))
+            printf("\t%sBLACKLISTED - program and child processes\n\
+                    \tcannot be started (use [O]nly)%s\n",magenta,none);
     }
     printf("%s--RESTORE MENU--%s\n",green_b,none);
     int menu;
@@ -644,5 +693,7 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+#endif
 
 
