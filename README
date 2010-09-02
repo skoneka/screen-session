@@ -26,7 +26,7 @@ windows.
 
 After session loading, in every new window starts screen-session-primer 
 (small C program) which displays list of processes and asks user what to do
-(whether to start none, part of or all window's processes).                                                                       
+(whether to start none, part of or all window's processes).  
 
 There is also a blacklist for programs which may not be started
 (file $HOME./screen-sessions/BLACKLIST).
@@ -102,7 +102,7 @@ Loading:
 
 
 Example bindings:
-    
+    # start screen-session in new window logging output and quickly to return to previous window
     bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
 
 
