@@ -574,17 +574,28 @@ def doexit(var=0,waitfor=True):
 
 def usage():
     print('Usage:\n\
-  -l --load                            - loading mode\n\
-  -s --save                            - saving mode\n\
-  -i --in     <session or directory>   - input\n\
-  -o --out    <session or directory>   - output\n\
-  -m --maxwin <number>                 - biggest window number\n\
-  -f --force  <number>                 - force saving\n\
-  -r --restore                         - restore windows after loading\n\
-  -y --no-layout                          - disable layout saving/loading\n\
-  -d --dir                             - directory holding saved sessions\n\
-                                         (default: $HOME/.screen-sessions)\n\
-  -h --help                            - show this message\n\
+  -l --load\n\
+    loading mode\n\
+  -s --save\n\
+    saving mode\n\
+  -i --in     <session or directory>\n\
+    input session(saving) or directory(loading)\n\
+  -o --out    <session or directory>\n\
+    output session(loading) or directory(saving)\n\
+  -m --maxwin <number>\n\
+    biggest window number\n\
+  -f --force  <number>\n\
+    force saving\n\
+  -r --restore\n\
+    restore windows after loading\n\
+  -y --no-layout\n\
+    disable layout saving/loading\n\
+  --log       <file>\n\
+    output to log instead stdout\n\
+  -d --dir\n\
+    directory holding saved sessions (default: $HOME/.screen-sessions)\n\
+  -h --help\n\
+    show this message\n\
   \n\
 Examples:\n\
 $ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
@@ -602,7 +613,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -611,6 +622,7 @@ if __name__=='__main__':
     current_session=None
     restore = False
     verbose = False
+    log=None
     force = False
     enable_layout = True
     mode = 0
@@ -622,6 +634,8 @@ if __name__=='__main__':
     for o, a in opts:
         if o == "-v":
             verbose = True
+        elif o in ("--log"):
+            log = a
         elif o in ("-c","--current-session"):
             current_session = a
         elif o in ("-r","--restore"):
@@ -649,7 +663,9 @@ if __name__=='__main__':
             output = a
         else:
             doexit("Unhandled option",waitfor)
-
+    
+    if log:
+        sys.stdout=open(log,'w')
 
     if not projectsdir:
         sys.stdout.write("projects directory: ")
