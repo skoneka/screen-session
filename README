@@ -39,7 +39,7 @@ remove "-DCOLOR" from config.mk
 Requirements
 ------------
 screen-session REQUIRES a recent version of Screen patched with screen-session.diff.
-screen-session.py depends on "lsof", "grep" and reads /proc filesystem.
+screen-session.py depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 
 screen-session.diff changes:
