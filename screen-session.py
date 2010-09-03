@@ -74,10 +74,10 @@ class ScreenSession(object):
         if self.exact:
             if self.exactkill:
                 print('Killing windows...')
-                self.__move_all_windows(newwindows+1,scs.group_other,True)
+                self.__move_all_windows(newwindows+1,self.group_other,True)
             else:
                 print('Moving windows...')
-                self.__move_all_windows(newwindows+1,scs.group_other,False)
+                self.__move_all_windows(newwindows+1,self.group_other,False)
             
         print("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
@@ -108,7 +108,7 @@ class ScreenSession(object):
             hostgroup = "none"
 
         #create root group and put it into host group
-        if scs.exact:
+        if self.exact:
             rootgroup='none'
             hostgroup='none'
         else:
@@ -687,34 +687,41 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir),archiveend))
     os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))
     os.chdir(cwd)
+    removeit(os.path.join(home,projectsdir,savedir))
+    os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+
+def removeit(path):
     try:
-        os.remove(os.path.join(home,projectsdir,savedir))
+        shutil.rmtree(path)
     except:
         try:
-            shutil.rmtree(os.path.join(home,projectsdir,savedir))
+            os.remove(path)
         except:
             pass
         pass
-    os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+
 
 def archiveme(home,projectsdir,savedir,archiveend,lastlink):
     cwd=os.getcwd()
     os.chdir(os.path.join(home,projectsdir))
-    try:
-        shutil.rmtree(os.path.join(home,projectsdir,savedir+'__tmp'))
-    except:
-        pass
+   
+    removeit(os.path.join(home,projectsdir,savedir+'__tmp'))
+    
     os.mkdir(savedir+'__tmp')
     for win in glob.glob(os.path.join(savedir,'win_*')):
         os.rename(win,os.path.join(savedir+'__tmp',os.path.split(win)[1]))
+    
     os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
-    shutil.rmtree(os.path.join(home,projectsdir,savedir))
+    removeit(os.path.join(home,projectsdir,savedir))
     os.rename(savedir+'__tmp',savedir)
+    
     os.system('tar cjf %s__win%s %s'%(savedir,archiveend,savedir))
-    shutil.rmtree(os.path.join(home,projectsdir,savedir))
+    removeit(os.path.join(home,projectsdir,savedir))
+    
     os.chdir(cwd)
     os.remove(os.path.join(home,projectsdir,lastlink))
     linkify(os.path.join(home,projectsdir),savedir+archiveend,lastlink)
+
 
 def list_sessions(home,projectsdir,archiveend):
     files=glob.glob(os.path.join(home,projectsdir,'*'+archiveend))
@@ -815,8 +822,7 @@ $ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
 $ screen-session --load --in mysavedsession --out PID\n\
 \n')
 
-if __name__=='__main__':
-    
+def main():    
     if len(sys.argv)>1:
         if sys.argv[1]=='--wait':
             waitfor=True
@@ -1005,10 +1011,7 @@ if __name__=='__main__':
                 pass
         files_remove=glob.glob(os.path.join(tmpdir,'*'))
         for file in files_remove:
-            try:
-                shutil.rmtree(file)
-            except:
-                pass
+            removeit(file)
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
         ret = scs.load()
@@ -1023,3 +1026,5 @@ if __name__=='__main__':
 
 
 
+if __name__=='__main__':
+    main()

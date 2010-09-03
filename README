@@ -110,5 +110,9 @@ Example bindings:
 Bugs
 ------------
 There are no bugs, only features.
+
+Do not try to save/load detached session with enabled layouts - it will crash.
+Disable layouts loading/saving with --no-layout flag.
+
 Send patches to admin<[at]>adb.cba.pl
 
