@@ -53,14 +53,21 @@ class ScreenSession(object):
         print("\n======CLEANUP======")
         self.__scrollback_clean()
         print('session "%s" saved as "%s" in "%s"'%(self.pid,self.savedir,self.basedir))
+        return True
 
     def load(self):
         print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
+        try:
+            f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
+        except:
+            print('Unable to open.')
+            return False
         print("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
         if self.enable_layout:
             print("\n======LOADING___LAYOUTS======")
             self.__load_layouts()
+        return True
 
     def exists(self):
         msg=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -580,9 +587,9 @@ def linkify(dir,dest,targ):
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
-    else:
-        shutil.rmtree(tmpdir)
-        os.makedirs(tmpdir)
+    if os.path.exists(os.path.join(tmpdir,savedir)):
+        shutil.rmtree(os.path.join(tmpdir,savedir))
+        os.makedirs(os.path.join(tmpdir,savedir))
 
     cwd=os.getcwd()
     os.chdir(os.path.join(tmpdir))
@@ -864,13 +871,15 @@ if __name__=='__main__':
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     
-
+    ret=0
     if mode==1: #mode save
         # save and archivize
-        scs.save()
-        archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
-        
-        os.system('screen -S %s -X echo "screen-session finished saving"'%input)
+        ret = scs.save()
+        if not ret:
+            print('session saving failed')
+        else:    
+            archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
+            os.system('screen -S %s -X echo "screen-session finished saving"'%input)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
         files_all=glob.glob(os.path.join(home,projectsdir,'*'))
@@ -889,13 +898,15 @@ if __name__=='__main__':
                 pass
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
-        scs.load()
-        
-        os.system('screen -S %s -X echo "screen-session finished loading"'%input)
+        ret = scs.load()
+        if not ret:
+            print('session loading failed')
+        else:    
+            os.system('screen -S %s -X echo "screen-session finished loading"'%input)
     else:
         print('No mode specified --load or --save')
 
-    doexit(0,waitfor)
+    doexit(ret,waitfor)
 
 
 
