@@ -5,6 +5,7 @@ screen-session - GNU Screen session saver
 
 Website: http://adb.cba.pl
 Repository: http://github.com/skoneka/screen-session
+Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 
 
@@ -33,7 +34,6 @@ There is also a blacklist for programs which may not be started
  
 screen-session-primer uses linux color escapes. If you dont want color
 remove "-DCOLOR" from config.mk
-
 
 
 Requirements
@@ -102,7 +102,7 @@ Loading:
 
 
 Example bindings:
-    # start screen-session in new window logging output and quickly to return to previous window
+    # start screen-session in new window logging output and quickly return to previous window
     bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
 
 
