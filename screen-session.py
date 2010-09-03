@@ -581,7 +581,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     else:
-        os.rmtree(tmpdir)
+        shutil.rmtree(tmpdir)
         os.makedirs(tmpdir)
 
     cwd=os.getcwd()
@@ -594,7 +594,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         os.remove(os.path.join(home,projectsdir,savedir))
     except:
         try:
-            os.rmtree(os.path.join(home,projectsdir,savedir))
+            shutil.rmtree(os.path.join(home,projectsdir,savedir))
         except:
             pass
         pass
@@ -619,35 +619,91 @@ def archiveme(home,projectsdir,savedir,archiveend,lastlink):
     os.remove(os.path.join(home,projectsdir,lastlink))
     linkify(os.path.join(home,projectsdir),savedir+archiveend,lastlink)
 
+def list_sessions(home,projectsdir,archiveend):
+    files=glob.glob(os.path.join(home,projectsdir,'*'+archiveend))
+    files_noshow=glob.glob(os.path.join(home,projectsdir,'*__win'+archiveend))
+    files=list(set(files)-set(files_noshow))
+    
+    date_file_list=[]
+    for file in files:
+        # retrieves the stats for the current file as a tuple
+        # (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime)
+        # the tuple element mtime at index 8 is the last-modified-date
+        stats = os.stat(file)
+        # create tuple (year yyyy, month(1-12), day(1-31), hour(0-23), minute(0-59), second(0-59),
+        # weekday(0-6, 0 is monday), Julian day(1-366), daylight flag(-1,0 or 1)) from seconds since epoch
+        # note: this tuple can be sorted properly by date and time
+        lastmod_date = time.localtime(stats[8])
+        #print image_file, lastmod_date # test
+        # create list of tuples ready for sorting by date
+        date_file_tuple = lastmod_date, file
+        date_file_list.append(date_file_tuple)
+    
+    date_file_list.sort()
+    
+    if len(date_file_list)>0:
+        print('There are saved sessions:')
+    else:
+        print('There are no saved sessions.')
+    
+    for file in date_file_list:
+        # extract just the filename
+        file_name = os.path.split(file[1])[1]
+        file_name = file_name[:len(file_name)-len(archiveend)]
+        # convert date tuple to MM/DD/YYYY HH:MM:SS format
+        file_date = time.strftime("%m/%d/%y %H:%M:%S", file[0])
+        print("\t%-30s %s" % (file_name, file_date))
+    
+    if len(date_file_list)>0:
+        print('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
+
+
+
 def doexit(var=0,waitfor=True):
     if waitfor:
         raw_input('Press any key to exit...')
     sys.exit(var)
 
 def usage():
-    print('Usage:\n\
+    print('Options:\n\
+  --ls\n\
+  \tlist saved sessions\n\
+    \n\
   -l --load\n\
-    loading mode\n\
+  \tloading mode\n\
+    \n\
   -s --save\n\
-    saving mode\n\
+  \tsaving mode\n\
+    \n\
   -i --in     <session or directory>\n\
-    input session(saving) or directory(loading)\n\
+  \tinput session(saving) or directory(loading)\n\
+    \n\
   -o --out    <session or directory>\n\
-    output session(loading) or directory(saving)\n\
+  \toutput session(loading) or directory(saving)\n\
+    \n\
   -m --maxwin <number>\n\
-    biggest window number\n\
+  \tbiggest window number\n\
+    \n\
   -f --force  <number>\n\
-    force saving\n\
+  \tforce saving\n\
+    \n\
   -r --restore\n\
-    restore windows after loading\n\
+  \trestore windows after loading\n\
+    \n\
   -y --no-layout\n\
-    disable layout saving/loading\n\
+  \tdisable layout saving/loading\n\
+    \n\
   --log       <file>\n\
-    output to log instead stdout\n\
+  \toutput to log instead stdout\n\
+    \n\
   -d --dir\n\
-    directory holding saved sessions (default: $HOME/.screen-sessions)\n\
+  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
+    \n\
+  -w --wait\n\
+  \twait for any key when finished\n\
+    \n\
   -h --help\n\
-    show this message\n\
+  \tshow this message\n\
   \n\
 Examples:\n\
 $ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
@@ -665,7 +721,7 @@ if __name__=='__main__':
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ryi:c:wfi:o:m:lsd:hv", ["ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         usage()
@@ -676,8 +732,9 @@ if __name__=='__main__':
     archiveend='.tar.bz2'
     unpack=None
     current_session=None
-    
-    
+    bHelp=False
+    bGetopt=False
+    bList=False
     restore = False
     verbose = False
     log=None
@@ -692,9 +749,13 @@ if __name__=='__main__':
     for o, a in opts:
         if o == "-v":
             verbose = True
-        elif o in ("--log"):
+        elif o == "--getopt":
+            bGetopt=True
+        elif o == "--ls":
+            bList=True
+        elif o == "--log":
             log = a
-        elif o in ("--unpack"):
+        elif o == "--unpack":
             unpack = a
         elif o in ("-c","--current-session"):
             current_session = a
@@ -705,8 +766,7 @@ if __name__=='__main__':
         elif o in ("-y","--no-layout"):
             enable_layout = False
         elif o in ("-h","--help"):
-            usage()
-            doexit(0,waitfor)
+            bHelp=True
         elif o in ("-w","--wait"):
             waitfor = True
         elif o in ("-m","--maxwin"):
@@ -723,16 +783,27 @@ if __name__=='__main__':
             output = a
         else:
             doexit("Unhandled option",waitfor)
+
+    if bGetopt:
+        if bList or bHelp:
+            sys.exit(1)
+        else:
+            sys.exit(0)
     
     if log:
         sys.stdout=open(log,'w')
-
-
+    
+    if bHelp:        
+        usage()
+        doexit(0,waitfor)
+    
     if not projectsdir:
-        sys.stdout.write("projects directory: ")
         directory = '.screen-sessions'
-        print('$HOME/'+directory)
         projectsdir = directory
+    
+    if bList:
+        list_sessions(home,projectsdir,archiveend)
+        doexit(0,waitfor)
     
     if mode==0:
         if unpack:
