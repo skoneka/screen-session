@@ -10,7 +10,7 @@ issues:
 '''
 
 
-import subprocess,sys,os,getopt,glob,time,signal,shutil
+import subprocess,sys,os,getopt,glob,time,signal,shutil,tempfile
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
@@ -568,12 +568,34 @@ class ScreenSession(object):
             f.close()
             return True
 
+def linkify(dir,dest,targ):
+    cwd=os.getcwd()
+    os.chdir(dir)
+    try:
+        os.remove(targ)
+    except:
+        pass
+    os.symlink(dest,targ)
+    os.chdir(cwd)
 
-def unpackme(home,projectsdir,savedir,archiveend):
+def unpackme(home,projectsdir,savedir,archiveend,tmpdir):
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+
+    cwd=os.getcwd()
+    os.chdir(os.path.join(tmpdir))
+    os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir),archiveend))
+    os.chdir(cwd)
+    os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+
+def archiveme(home,projectsdir,savedir,archiveend,lastlink):
     cwd=os.getcwd()
     os.chdir(os.path.join(home,projectsdir))
-    os.system('tar xjf %s%s'%(savedir,archiveend))
+    os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
     os.chdir(cwd)
+    shutil.rmtree(os.path.join(home,projectsdir,savedir))
+    os.remove(os.path.join(home,projectsdir,lastlink))
+    linkify(os.path.join(home,projectsdir),savedir+archiveend,lastlink)
 
 def doexit(var=0,waitfor=True):
     if waitfor:
@@ -745,36 +767,34 @@ if __name__=='__main__':
     scs.force = force
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
+    
+    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
 
     if mode==1:
         scs.save()
         
-        cwd=os.getcwd()
-        os.chdir(os.path.join(home,projectsdir))
-        os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
-        os.chdir(cwd)
-        shutil.rmtree(os.path.join(home,projectsdir,savedir))
-        os.remove(os.path.join(home,projectsdir,scs.lastlink))
-        scs.linkify(os.path.join(home,projectsdir),savedir+archiveend,scs.lastlink)
+        archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
         
         os.system('screen -S %s -X echo "screen-session finished saving"'%input)
     elif mode==2:
-        cwd=os.getcwd()
-        os.chdir(os.path.join(home,projectsdir))
         files_all=glob.glob(os.path.join(home,projectsdir,'*'))
         files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
         files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,scs.blacklistfile),os.path.join(home,projectsdir,scs.lastlink)]))
+        for file in files_remove:
+            try:
+                os.remove(file)
+            except:
+                pass
+        files_remove=glob.glob(os.path.join(tmpdir,'*'))
         for file in files_remove:
             try:
                 shutil.rmtree(file)
             except:
                 pass
 
-        os.system('tar xjf %s%s'%(savedir,archiveend))
-        os.chdir(cwd)
         
+        unpackme(home,projectsdir,savedir,archiveend,tmpdir)
         scs.load()
-        #shhutil.rmtree(os.path.join(home,projectsdir,savedir)
         
         os.system('screen -S %s -X echo "screen-session finished loading"'%input)
     else:

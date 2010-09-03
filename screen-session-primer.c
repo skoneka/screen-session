@@ -358,7 +358,7 @@ int filesearch_line(FILE *fp,char *s)
 
 int is_blacklisted(char *basedir,char *program,int programid) {
     char *blackfile="BLACKLIST";
-    char *filepath=malloc((strlen(basedir)+strlen(blackfile)+2)*sizeof(char*));
+    char *filepath=malloc((strlen(basedir)+strlen(blackfile)+2)*sizeof(char));
     strcpy(filepath,basedir);
     strcat(filepath,"/");
     strcat(filepath,blackfile);
@@ -399,7 +399,6 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     FILE *fp=NULL;
     chdir(basedir);
     requireSession(basedir,config);
-    char buf[10];
     
     fp=fopen(config,"r");
     
@@ -523,7 +522,7 @@ int main(int argc, char **argv) {
     char *scrollbackfile=argv[2];
     char *datafile=argv[3];
     
-    char *fullpath=malloc((strlen(homedir)+strlen(workingdir)+2)*sizeof(char*));
+    char *fullpath=malloc((strlen(homedir)+strlen(workingdir)+2)*sizeof(char));
     strcpy(fullpath,homedir);
     strcat(fullpath,"/");
     strcat(fullpath,workingdir);
