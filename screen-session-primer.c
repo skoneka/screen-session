@@ -185,6 +185,8 @@ int parseNumber(char *buffer) {
         return number;
 }
 
+
+
 int mygetch ( void ) 
 {
   int ch;
@@ -192,6 +194,8 @@ int mygetch ( void )
   
   tcgetattr ( STDIN_FILENO, &oldt );
   newt = oldt;
+  newt.c_cc[VMIN]=1;
+  newt.c_cc[VTIME]=0;
   newt.c_lflag &= ~( ICANON | ECHO );
   tcsetattr ( STDIN_FILENO, TCSANOW, &newt );
   ch = getchar();
@@ -281,14 +285,6 @@ void userInput(int *menu_num, int *num,int max) {
     *menu_num=menu_choice;
 }
 
-char **make_arglist_simple(char *program) {
-    char **args=NULL;
-    args=malloc(2*sizeof(char*));
-    args[0]=malloc((strlen(program)+1)*sizeof(char));
-    args[1]=NULL;    
-    strcpy(args[0],program);
-    return args;
-}
 char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n,int *procs) {
     int i;
     char **args=NULL;
@@ -296,8 +292,8 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
     args=malloc((5+procs_n)*sizeof(char*));
     args[0]=malloc((strlen(program)+1)*sizeof(char));
     args[1]=malloc((strlen(arg1)+1)*sizeof(char));
-    //has to pass program name because nested programs do not get name in argv[0]
     args[2]=malloc((strlen(arg2)+1)*sizeof(char)); 
+    //has to pass program name because nested programs do not get name in argv[0]
     args[3]=malloc((strlen(program)+1)*sizeof(char)); 
     args[4]=malloc((strlen(arg3)+1)*sizeof(char));
     for(i=5;i<procs_n+5;i++) {
@@ -403,7 +399,9 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     fp=fopen(config,"r");
     
     if(!fp) {
+
         printf("Cannot open data file. Aborting.\n");
+        char buf[10];
         printf("Press any key to continue...\n");
         mygetch();
         return 1;

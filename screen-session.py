@@ -150,7 +150,7 @@ class ScreenSession(object):
             else:
                 os.system('screen -S %s -X screen -t \"%s\" //group' % (pid,title) )
         else:
-            print 'Unkown window type. Ignoring.'
+            print ('Unkown window type. Ignoring.')
             return -1
        
 
@@ -427,7 +427,6 @@ class ScreenSession(object):
             for i in range(0,region_c):
                 currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-                print('windows: '+ windows)
                 offset=0
                 findactive=False
                 for j in range(windows.count('$')):
@@ -578,22 +577,45 @@ def linkify(dir,dest,targ):
     os.symlink(dest,targ)
     os.chdir(cwd)
 
-def unpackme(home,projectsdir,savedir,archiveend,tmpdir):
+def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+    else:
+        os.rmtree(tmpdir)
         os.makedirs(tmpdir)
 
     cwd=os.getcwd()
     os.chdir(os.path.join(tmpdir))
-    os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir),archiveend))
+    if full:
+        os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir),archiveend))
+    os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))
     os.chdir(cwd)
+    try:
+        os.remove(os.path.join(home,projectsdir,savedir))
+    except:
+        try:
+            os.rmtree(os.path.join(home,projectsdir,savedir))
+        except:
+            pass
+        pass
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
 
 def archiveme(home,projectsdir,savedir,archiveend,lastlink):
     cwd=os.getcwd()
     os.chdir(os.path.join(home,projectsdir))
+    try:
+        shutil.rmtree(os.path.join(home,projectsdir,savedir+'__tmp'))
+    except:
+        pass
+    os.mkdir(savedir+'__tmp')
+    for win in glob.glob(os.path.join(savedir,'win_*')):
+        os.rename(win,os.path.join(savedir+'__tmp',os.path.split(win)[1]))
     os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
-    os.chdir(cwd)
     shutil.rmtree(os.path.join(home,projectsdir,savedir))
+    os.rename(savedir+'__tmp',savedir)
+    os.system('tar cjf %s__win%s %s'%(savedir,archiveend,savedir))
+    shutil.rmtree(os.path.join(home,projectsdir,savedir))
+    os.chdir(cwd)
     os.remove(os.path.join(home,projectsdir,lastlink))
     linkify(os.path.join(home,projectsdir),savedir+archiveend,lastlink)
 
@@ -649,9 +671,12 @@ if __name__=='__main__':
         usage()
         doexit(2,waitfor)
     home=os.path.expanduser('~')
+    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
+    
     archiveend='.tar.bz2'
     unpack=None
     current_session=None
+    
     
     restore = False
     verbose = False
@@ -711,8 +736,8 @@ if __name__=='__main__':
     
     if mode==0:
         if unpack:
-            print 'unpacking'
-            unpackme(home,projectsdir,unpack,archiveend)
+            print('unpacking...')
+            unpackme(home,projectsdir,unpack,archiveend,tmpdir,False)
         else:
             usage()
         doexit(0,waitfor)
@@ -768,15 +793,15 @@ if __name__=='__main__':
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
 
-    if mode==1:
+    if mode==1: #mode save
+        # save and archivize
         scs.save()
-        
         archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
         
         os.system('screen -S %s -X echo "screen-session finished saving"'%input)
-    elif mode==2:
+    elif mode==2: #mode load
+        #cleanup old temporary files and directories
         files_all=glob.glob(os.path.join(home,projectsdir,'*'))
         files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
         files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,scs.blacklistfile),os.path.join(home,projectsdir,scs.lastlink)]))
@@ -791,9 +816,8 @@ if __name__=='__main__':
                 shutil.rmtree(file)
             except:
                 pass
-
-        
-        unpackme(home,projectsdir,savedir,archiveend,tmpdir)
+        # unpack and load
+        unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
         scs.load()
         
         os.system('screen -S %s -X echo "screen-session finished loading"'%input)
