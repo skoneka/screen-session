@@ -785,6 +785,8 @@ def list_sessions(home,projectsdir,archiveend):
 def doexit(var=0,waitfor=True):
     if waitfor:
         raw_input('Press any key to exit...')
+    if sys.stdout!=sys.__stdout__:
+        sys.stdout.close()
     sys.exit(var)
 
 def usage():

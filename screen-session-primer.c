@@ -15,6 +15,8 @@
  *
  * =====================================================================================
  */
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -375,6 +377,7 @@ int is_blacklisted(char *basedir,char *program,int programid) {
         blacklist[blacklist_c]=programid;
         blacklist_c++;
     }
+    fclose(fp);
     return ret;
 
 
@@ -401,7 +404,6 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     if(!fp) {
 
         printf("Cannot open data file. Aborting.\n");
-        char buf[10];
         printf("Press any key to continue...\n");
         mygetch();
         return 1;
@@ -618,6 +620,7 @@ int main(int argc, char **argv) {
             printf("\t%sBLACKLISTED - program and child processes\n\
                     \tcannot be started (use [O]nly)%s\n",magenta,none);
     }
+    fclose(fp);
     printf("%s--RESTORE MENU--%s\n",green_b,none);
     int menu;
     int number;
