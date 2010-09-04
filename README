@@ -1,12 +1,11 @@
 screen-session - GNU Screen session saver
 =========================================
 
-
-
 Website: http://adb.cba.pl
-Repository: http://github.com/skoneka/screen-session
-Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
+Repository: http://github.com/skoneka/screen-session
+
+Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 -----------------------------------------------------------------------
 Description
@@ -34,8 +33,8 @@ There is also a blacklist for programs which may not be started
 screen-session-primer uses linux color escapes. If you dont want color
 remove "-DCOLOR" from config.mk
 
-Normally screen-session does not restore exact window numbers. If you want
-to force verbatim restoring use --exact flag.
+Normally screen-session does not restore exact window numbers. If you 
+want to force verbatim restoring use --exact flag.
 
 Savefiels are .tar.bz2 archives. It is so because scrollbacks can take 
 a *lot* of space. During reading temporary files are stored in 
@@ -52,7 +51,6 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 screen-session.diff changes:
 - add "tty" command
 - make "layout" and "group" and "maxwin" and "sessionname" queryable
-
 
 
 -----------------------------------------------------------------------
@@ -78,8 +76,6 @@ Make sure you have a recent version of Screen and apply necessary patch:
     cd src; autoreconf; autoheader; ./configure && make
 
     sudo make install
-
-
 
 
 -----------------------------------------------------------------------
@@ -119,14 +115,13 @@ Example bindings:
     bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
 
 
-
 -----------------------------------------------------------------------
 Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
 
 - Do not try to save/load completly detached session with enabled 
-  layouts - it will crash (this is a Screen bug).
+  layouts in screen-session  - it will crash (this is a Screen bug).
   Disable layouts saving/loading with --no-layout flag.
 
 Send suggestions to admin<[at]>adb.cba.pl

@@ -60,7 +60,7 @@ class ScreenSession(object):
 
     def load(self):
         print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
-        #check if saved session exists and get biggest saved window number and number of saved windows
+        #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
         newwindows=0
         try:
@@ -669,6 +669,13 @@ class ScreenSession(object):
             f.close()
             return True
 
+
+def touch(fname, times = None):
+    try:
+        os.utime(fname,times)
+    except:
+        pass
+
 def linkify(dir,dest,targ):
     cwd=os.getcwd()
     os.chdir(dir)
@@ -689,8 +696,9 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     cwd=os.getcwd()
     os.chdir(os.path.join(tmpdir))
     if full:
-        os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir),archiveend))
+        os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__data'),archiveend))
     os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))
+    touch(os.path.join(tmpdir,savedir))
     os.chdir(cwd)
     removeit(os.path.join(home,projectsdir,savedir))
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
@@ -706,19 +714,26 @@ def removeit(path):
             pass
         pass
 
-def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink):
+def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
     #cleanup old temporary files and directories
+    ctime=time.time()
     files_all=glob.glob(os.path.join(home,projectsdir,'*'))
     files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
     files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,blacklistfile),os.path.join(home,projectsdir,lastlink)]))
     for file in files_remove:
-        try:
-            os.remove(file)
-        except:
-            pass
+        delta=ctime-os.path.getmtime(file)
+        print ('1 '+file+' delta='+str(delta))
+        if delta > timeout: # if seconds passed since last modification
+            try:
+                os.remove(file)
+            except:
+                pass
     files_remove=glob.glob(os.path.join(tmpdir,'*'))
     for file in files_remove:
-        removeit(file)
+        delta=ctime-os.path.getmtime(file)
+        print ('2 '+file+' delta='+str(delta))
+        if delta > timeout: # if seconds passed since last modification
+            removeit(file)
 
 
 def archiveme(home,projectsdir,savedir,archiveend,lastlink):
@@ -731,7 +746,7 @@ def archiveme(home,projectsdir,savedir,archiveend,lastlink):
     for win in glob.glob(os.path.join(savedir,'win_*')):
         os.rename(win,os.path.join(savedir+'__tmp',os.path.split(win)[1]))
     
-    os.system('tar cjf %s%s %s'%(savedir,archiveend,savedir))
+    os.system('tar cjf %s__data%s %s'%(savedir,archiveend,savedir))
     removeit(os.path.join(home,projectsdir,savedir))
     os.rename(savedir+'__tmp',savedir)
     
@@ -744,9 +759,7 @@ def archiveme(home,projectsdir,savedir,archiveend,lastlink):
 
 
 def list_sessions(home,projectsdir,archiveend):
-    files=glob.glob(os.path.join(home,projectsdir,'*'+archiveend))
-    files_noshow=glob.glob(os.path.join(home,projectsdir,'*__win'+archiveend))
-    files=list(set(files)-set(files_noshow))
+    files=glob.glob(os.path.join(home,projectsdir,'*__win'+archiveend))
     
     date_file_list=[]
     for file in files:
@@ -770,10 +783,11 @@ def list_sessions(home,projectsdir,archiveend):
     else:
         print('There are no saved sessions.')
     
+    fileending_l=len(archiveend)+len('__win')
     for file in date_file_list:
         # extract just the filename
         file_name = os.path.split(file[1])[1]
-        file_name = file_name[:len(file_name)-len(archiveend)]
+        file_name = file_name[:len(file_name)-fileending_l]
         # convert date tuple to MM/DD/YYYY HH:MM:SS format
         file_date = time.strftime("%m/%d/%y %H:%M:%S", file[0])
         print("\t%-30s %s" % (file_name, file_date))
@@ -856,8 +870,6 @@ def main():
     except getopt.GetoptError, err:
         print('Bad options.')
         doexit(2,waitfor)
-    home=os.path.expanduser('~')
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
     
     archiveend='.tar.bz2'
     unpack=None
@@ -929,6 +941,9 @@ def main():
             sys.exit(1)
         else:
             sys.exit(0)
+
+    home=os.path.expanduser('~')
+    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
     
     if log:
         sys.stdout=open(log,'w')
@@ -1016,21 +1031,23 @@ def main():
         ret = scs.save()
         if not ret:
             print('session saving failed')
-            os.system('screen -S %s -X echo "screen-session FAILED"'%input)
+            os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
             archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
-            os.system('screen -S %s -X echo "screen-session finished saving"'%input)
+            os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink)
+        removeit(os.path.join(home,projectsdir,savedir))
+        removeit(os.path.join(tmpdir,savedir))
+        cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink,200)
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
         ret = scs.load()
         if not ret:
             print('session loading failed')
-            os.system('screen -S %s -X echo "screen-session FAILED"'%input)
+            os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
-            os.system('screen -S %s -X echo "screen-session finished loading"'%input)
+            os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
     else:
         print('No mode specified --load or --save')
 
