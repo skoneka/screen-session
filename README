@@ -1,5 +1,5 @@
 screen-session - GNU Screen session saver
-============================
+=========================================
 
 
 
@@ -8,26 +8,25 @@ Repository: http://github.com/skoneka/screen-session
 Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 
-
+-----------------------------------------------------------------------
 Description
------------
+-----------------------------------------------------------------------
 screen-session is a GNU Screen session saver.
 
 screen-session currently supports saving of:
-groups and basic windows, directories, programs, layouts, scrollbacks, titles
-
-It recognizes groups and regular windows. Currently there is no support for 
-serial and telnet window types (because so far I didn't manage to use them) 
-but they would be probably easy to add. 
+groups and basic windows, directories, programs, layouts, scrollbacks,
+titles. It recognizes groups and regular windows. Currently there is no
+support for serial and telnet window types (because so far I didn't
+manage to use them) but they would be probably easy to add.
 
 screen-session saves directories and programs by directly reading /proc 
-filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent pid. 
-There is no "stuffing" and there is totally no interaction with programs in
-windows.
+filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
+pid. There is no "stuffing" and there is totally no interaction with 
+programs in windows.
 
 After session loading, in every new window starts screen-session-primer 
-(small C program) which displays list of processes and asks user what to do
-(whether to start none, part of or all window's processes).  
+(small C program) which displays list of processes and asks user what 
+to do (whether to start none, part of or all window's processes).  
 
 There is also a blacklist for programs which may not be started
 (file $HOME./screen-sessions/BLACKLIST).
@@ -35,11 +34,19 @@ There is also a blacklist for programs which may not be started
 screen-session-primer uses linux color escapes. If you dont want color
 remove "-DCOLOR" from config.mk
 
+Normally screen-session does not restore exact window numbers. If you want
+to force verbatim restoring use --exact flag.
 
+Savefiels are .tar.bz2 archives. It is so because scrollbacks can take 
+a *lot* of space. During reading temporary files are stored in 
+/tmp/screen-session-$USER.
+
+
+-----------------------------------------------------------------------
 Requirements
-------------
-screen-session REQUIRES a recent version of Screen patched with screen-session.diff.
-screen-session.py depends on "lsof", "tar", "grep" and reads /proc filesystem.
+-----------------------------------------------------------------------
+Requires a recent version of Screen patched with screen-session.diff.
+Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 
 screen-session.diff changes:
@@ -48,15 +55,16 @@ screen-session.diff changes:
 
 
 
+-----------------------------------------------------------------------
 Installation
-------------
-Edit config.mk to match your local setup (screen-session is installed into
-the /usr/local namespace by default), you can also disable colors by removing
-"-DCOLOR".
+-----------------------------------------------------------------------
+Edit config.mk to match your local setup (screen-session is installed 
+into the /usr/local namespace by default), you can also disable colors 
+by removing "-DCOLOR".
 
 
-Afterwards enter the following command to build and install screen-session
-(if necessary as root):
+Afterwards enter the following command to build and install 
+screen-session (if necessary as root):
 
     make clean install
 
@@ -74,8 +82,9 @@ Make sure you have a recent version of Screen and apply necessary patch:
 
 
 
+-----------------------------------------------------------------------
 Running screen-session
--------------
+-----------------------------------------------------------------------
 Saving:
     # save inside saved session 
     screen-session --save --force
@@ -94,25 +103,31 @@ Loading:
     # load last saved session inside target session
     screen-session --load
     
+    # load last saved session with exactly the same window numbers 
+    screen-session --load --exact --maxwin {biggest window number}
+    
     # load last saved session inside target session without layouts
     screen-session --load --layout
 
-    # load session saved in folder mysavedsession loaded to Screen with PID
+    # load session from savefile loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
 
 
 Example bindings:
-    # start screen-session in new window logging output and quickly return to previous window
+    # start screen-session in new window logging output and quickly 
+    # return to previous window
     bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
 
 
 
+-----------------------------------------------------------------------
 Bugs
-------------
+-----------------------------------------------------------------------
 There are no bugs, only features.
 
-Do not try to save/load detached session with enabled layouts - it will crash.
-Disable layouts loading/saving with --no-layout flag.
+- Do not try to save/load completly detached session with enabled 
+  layouts - it will crash (this is a Screen bug).
+  Disable layouts saving/loading with --no-layout flag.
 
-Send patches to admin<[at]>adb.cba.pl
+Send suggestions to admin<[at]>adb.cba.pl
 

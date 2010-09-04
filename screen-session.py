@@ -60,24 +60,29 @@ class ScreenSession(object):
 
     def load(self):
         print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
-        #check if saved session exists
+        #check if saved session exists and get biggest saved window number and number of saved windows
+        maxnewwindow=0
+        newwindows=0
         try:
             f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
+            winlist=f.readlines()
+            newwindows=len(winlist)
+            maxnewwindow=int(winlist[newwindows-1])
             f.close()
+            print('%d new windows'%newwindows)
         except:
             print('Unable to open.')
             return False
         
-        newwindows=len(glob.glob1(os.path.join(self.basedir,self.savedir),'win_*'))
-        print('%d new windows'%newwindows)
+
         # keep original numbering - move or kill other windows
         if self.exact:
             if self.exactkill:
                 print('Killing windows...')
-                self.__move_all_windows(newwindows+1,self.group_other,True)
+                self.__move_all_windows(maxnewwindow+1,self.group_other,True)
             else:
                 print('Moving windows...')
-                self.__move_all_windows(newwindows+1,self.group_other,False)
+                self.__move_all_windows(maxnewwindow+1,self.group_other,False)
             
         print("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
@@ -680,7 +685,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if os.path.exists(os.path.join(tmpdir,savedir)):
         shutil.rmtree(os.path.join(tmpdir,savedir))
         os.makedirs(os.path.join(tmpdir,savedir))
-
+    
     cwd=os.getcwd()
     os.chdir(os.path.join(tmpdir))
     if full:
@@ -689,6 +694,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     os.chdir(cwd)
     removeit(os.path.join(home,projectsdir,savedir))
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+
 
 def removeit(path):
     try:
@@ -699,6 +705,20 @@ def removeit(path):
         except:
             pass
         pass
+
+def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink):
+    #cleanup old temporary files and directories
+    files_all=glob.glob(os.path.join(home,projectsdir,'*'))
+    files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
+    files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,blacklistfile),os.path.join(home,projectsdir,lastlink)]))
+    for file in files_remove:
+        try:
+            os.remove(file)
+        except:
+            pass
+    files_remove=glob.glob(os.path.join(tmpdir,'*'))
+    for file in files_remove:
+        removeit(file)
 
 
 def archiveme(home,projectsdir,savedir,archiveend,lastlink):
@@ -996,27 +1016,19 @@ def main():
         ret = scs.save()
         if not ret:
             print('session saving failed')
+            os.system('screen -S %s -X echo "screen-session FAILED"'%input)
         else:    
             archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
             os.system('screen -S %s -X echo "screen-session finished saving"'%input)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        files_all=glob.glob(os.path.join(home,projectsdir,'*'))
-        files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
-        files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,scs.blacklistfile),os.path.join(home,projectsdir,scs.lastlink)]))
-        for file in files_remove:
-            try:
-                os.remove(file)
-            except:
-                pass
-        files_remove=glob.glob(os.path.join(tmpdir,'*'))
-        for file in files_remove:
-            removeit(file)
+        cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink)
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
         ret = scs.load()
         if not ret:
             print('session loading failed')
+            os.system('screen -S %s -X echo "screen-session FAILED"'%input)
         else:    
             os.system('screen -S %s -X echo "screen-session finished loading"'%input)
     else:
