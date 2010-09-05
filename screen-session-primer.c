@@ -401,8 +401,6 @@ int is_blacklisted(char *basedir,char *program,int programid) {
 }
 
 int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
-    char *cwd=get_current_dir_name ();
-    printf("cwd: %s\n",cwd);
     if(procs_n==0)
         return 0;
     size_t proc_cwd_s=0;
@@ -482,6 +480,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         else {
             fputc(c,stdout);
             proc_args[null_c][word_c]=c;
+            proc_args[null_c][word_c+1]=0;
             word_c++;
             
         }
@@ -490,6 +489,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     }
     fscanf(fp,"%s\n",proc_blacklisted);
     fclose(fp);
+    
     if(strcmp(proc_blacklisted,"True")==0)
         return 0;
     //else if ( is_blacklisted(basedir,thisprogram) )
