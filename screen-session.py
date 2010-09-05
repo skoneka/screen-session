@@ -10,7 +10,7 @@ issues:
 '''
 
 
-import subprocess,sys,os,getopt,glob,time,signal,shutil,tempfile
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
@@ -154,9 +154,12 @@ class ScreenSession(object):
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
         
         #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
-        if self.restore_previous:
-            print ("Returning homewindow " +homewindow)
-            os.system('screen -S %s -X select %s' % (self.pid,homewindow))
+        print ("Returning homewindow " +homewindow)
+        os.system('screen -S %s -X select %s' % (self.pid,homewindow))
+       
+        if not self.restore_previous: 
+            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
 
 
 
@@ -168,24 +171,20 @@ class ScreenSession(object):
 
 
     def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
+        if keep_numbering:
+            winarg=win
+        else:
+            winarg=""
+        
         if type=='basic':
-            if keep_numbering:
-                os.system('screen -S %s -X screen -t \"%s\" %s %s %s %s %s' % (pid,title,win,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
-            else:
-                #print('creating: screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)))
-                os.system('screen -S %s -X screen -t \"%s\" %s %s %s %s' % (pid,title,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
-
+            os.system('screen -S %s -X screen -t \"%s\" %s %s %s %s %s' % (pid,title,winarg,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
         elif type=='group':
-            if keep_numbering:
-                os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,win ) )
-            else:
-                os.system('screen -S %s -X screen -t \"%s\" //group' % (pid,title) )
+            os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,winarg ) )
         else:
             print ('Unkown window type. Ignoring.')
             return -1
        
         newwin = subprocess.Popen('screen -S %s -Q @number' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-
         return newwin
     
     def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
@@ -439,6 +438,8 @@ class ScreenSession(object):
                     os.system('screen -S %s -X focus' % (self.pid) )
         
         # select last layout
+        lastname=None
+        lastid=None
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
             (lasthead,lasttail)=os.path.split(last)
@@ -449,12 +450,18 @@ class ScreenSession(object):
             os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
             # ^^ layout numbering may change, use layout_trans={} !
 
-        if self.restore_previous:
-            if homelayout!="-1":
-                print("Returning homelayout %s"%homelayout)
-                os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
-            else:
-                print('No homelayout - unable to return.')
+        if homelayout!="-1":
+            print("Returning homelayout %s"%homelayout)
+            os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
+        else:
+            print('No homelayout - unable to return.')
+        
+        if not self.restore_previous:
+            try:
+                print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid],lastname,lastid))
+                os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
+            except:
+                pass
 
     def __terminate_processes(self,ident):
         #get list of subprograms and finish them all
@@ -711,18 +718,24 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
     files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
     files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,blacklistfile),os.path.join(home,projectsdir,lastlink)]))
     for file in files_remove:
-        delta=ctime-os.path.getmtime(file)
+        try:
+            delta=ctime-os.path.getmtime(file)
+        except:
+            delta=-1
         print ('1 '+file+' delta='+str(delta))
-        if delta > timeout: # if seconds passed since last modification
+        if delta > timeout or delta < 0: # if seconds passed since last modification
             try:
                 os.remove(file)
             except:
                 pass
     files_remove=glob.glob(os.path.join(tmpdir,'*'))
     for file in files_remove:
-        delta=ctime-os.path.getmtime(file)
+        try:
+            delta=ctime-os.path.getmtime(file)
+        except:
+            delta=-1
         print ('2 '+file+' delta='+str(delta))
-        if delta > timeout: # if seconds passed since last modification
+        if delta > timeout or delta < 0: # if seconds passed since last modification
             removeit(file)
 
 
@@ -924,7 +937,6 @@ def main():
             sys.exit(0)
 
     home=os.path.expanduser('~')
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+os.getlogin())
     
     if log:
         sys.stdout=open(log,'w')
@@ -940,6 +952,8 @@ def main():
     if bList:
         list_sessions(home,projectsdir,archiveend)
         doexit(0,waitfor)
+    
+    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
     
     if mode==0:
         if unpack:
@@ -996,7 +1010,7 @@ def main():
         maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
     elif (maxwin==-1) and (mode==2) and bExact==True:
         print("--exact mode requires --maxwin (biggest window number in current session)")
-        doexit(1,waitfor)
+        maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
 
 
     scs.maxwin = maxwin
