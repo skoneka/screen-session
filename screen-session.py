@@ -662,7 +662,7 @@ class ScreenSession(object):
         else:
             os.makedirs(os.path.join(basedir,savedir))
             self.linkify(basedir,savedir,self.lastlink)
-            f=open('winlist','w')
+            f=open(os.path.join(basedir,savedir,'winlist'),'w')
             f.close()
             return True
 
@@ -739,26 +739,32 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
             removeit(file)
 
 
-def archiveme(home,projectsdir,savedir,archiveend,lastlink):
+def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink):
     cwd=os.getcwd()
-    os.chdir(os.path.join(home,projectsdir))
-   
-    removeit(os.path.join(home,projectsdir,savedir+'__tmp'))
-    
+    workingpath=tmpdir
+    os.chdir(workingpath)
+    removeit(os.path.join(workingpath,savedir))
+    removeit(os.path.join(workingpath,savedir+'__tmp'))
+    os.remove(os.path.join(home,projectsdir,lastlink))
+    shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath,savedir))
     os.mkdir(savedir+'__tmp')
     for win in glob.glob(os.path.join(savedir,'win_*')):
         os.rename(win,os.path.join(savedir+'__tmp',os.path.split(win)[1]))
+    os.rename(os.path.join(savedir,'last_win'),os.path.join(savedir+'__tmp','last_win'))
     
     os.system('tar cjf %s__data%s %s'%(savedir,archiveend,savedir))
-    removeit(os.path.join(home,projectsdir,savedir))
-    os.rename(savedir+'__tmp',savedir)
+    removeit(os.path.join(workingpath,savedir))
+    shutil.move(savedir+'__tmp',savedir)
     
     os.system('tar cjf %s__win%s %s'%(savedir,archiveend,savedir))
-    removeit(os.path.join(home,projectsdir,savedir))
+    removeit(os.path.join(workingpath,savedir))
     
+    for file in glob.glob('*'+archiveend):
+        removeit(os.path.join(home,projectsdir,file))
+        os.rename(file,os.path.join(home,projectsdir,file))
+
     os.chdir(cwd)
-    os.remove(os.path.join(home,projectsdir,lastlink))
-    linkify(os.path.join(home,projectsdir),savedir+archiveend,lastlink)
+    linkify(os.path.join(home,projectsdir),savedir+'__win'+archiveend,lastlink)
 
 
 def list_sessions(home,projectsdir,archiveend):
@@ -978,7 +984,7 @@ def main():
         if not input:
             input="last"
             try:
-                input=os.readlink(os.path.join(home,projectsdir,input)).rsplit('.',2)[0]
+                input=os.readlink(os.path.join(home,projectsdir,input)).rsplit('__',1)[0]
             except:
                 print("No recent session to load")
                 doexit("Aborting",waitfor)
@@ -1021,13 +1027,16 @@ def main():
     
     ret=0
     if mode==1: #mode save
+        removeit(os.path.join(home,projectsdir,savedir))
+        removeit(os.path.join(tmpdir,savedir))
         # save and archivize
         ret = scs.save()
         if not ret:
             print('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
-        else:    
-            archiveme(home,projectsdir,savedir,archiveend,scs.lastlink)
+        else:
+            pass
+            archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink)
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
