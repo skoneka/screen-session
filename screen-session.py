@@ -231,20 +231,21 @@ class ScreenSession(object):
 
         if self.maxwin>0:
             r=range(0,self.maxwin+1)
-            r.reverse()
             
             
-            # create wrap group
+            # create wrap group for existing windows
             print 'screen -S %s -X screen -t \"%s\" //group' % (self.pid,group)
             os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
             os.system('screen -S %s -X group %s' % (self.pid, 'none') )
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
             group=group+'_'+str(cwin)
             os.system('screen -S %s -X title %s' % (self.pid, group) )
-            r.insert(0,cwin)
-
+            r.append(cwin)
+            r.sort()
+            r.reverse()
+            
+            # move windows by shift and put them in wrap group
             for i in r:
-                print 'screen -S %s -X select %d' % (self.pid, i) 
                 os.system('screen -S %s -X select %d' % (self.pid, i) )
                 if not searching:
                     print('--')
@@ -272,9 +273,9 @@ class ScreenSession(object):
                     command='screen -S %s -X number +%d' % (self.pid, shift) 
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
-                    cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+                    cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
                     prev_cwin=cwin
-                    print('cwin='+cwin)
+                    print('cwin='+str(cwin))
 
         os.system('screen -S %s -Q @select %d' % (self.pid,homewindow))
 
