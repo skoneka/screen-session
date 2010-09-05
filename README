@@ -25,7 +25,18 @@ programs in windows.
 
 After session loading, in every new window starts screen-session-primer 
 (small C program) which displays list of processes and asks user what 
-to do (whether to start none, part of or all window's processes).  
+to do (whether to start none, part of or all window's processes).
+Then, primer tries to restore the string of processes by execing
+'program -c "/command/;program" arguments' for nodes and simply
+'program arguments' for leafs. Entire string of processes can only be
+properly restored if every non-leaf accepts '-c command' switch.
+
+Can be restored completly:
+0 zsh -> 1 bash -> 2 vim hello.c 
+
+Only up to 1:
+0 zsh -> 1 man hello -> 2 less
+
 
 There is also a blacklist for programs which may not be started
 (file $HOME./screen-sessions/BLACKLIST).
@@ -36,7 +47,7 @@ remove "-DCOLOR" from config.mk
 Normally screen-session does not restore exact window numbers. If you 
 want to force verbatim restoring use --exact flag.
 
-Savefiels are .tar.bz2 archives. It is so because scrollbacks can take 
+Savefiles are .tar.bz2 archives. Scrollbacks can take 
 a *lot* of space. During reading temporary files are stored in 
 /tmp/screen-session-$USER.
 
@@ -44,7 +55,7 @@ a *lot* of space. During reading temporary files are stored in
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
-Requires a recent version of Screen patched with screen-session.diff.
+Requires a recent version of Screen patched with screen-session.diff
 Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 
@@ -120,8 +131,8 @@ Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
 
-- Do not try to save/load completly detached session with enabled 
-  layouts in screen-session  - it will crash (this is a Screen bug).
+- Do not try to save/load a completly detached session with enabled 
+  layouts in screen-session because Screen will crash.
   Disable layouts saving/loading with --no-layout flag.
 
 Send suggestions to admin<[at]>adb.cba.pl
