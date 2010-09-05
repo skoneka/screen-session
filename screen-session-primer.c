@@ -73,11 +73,10 @@
 
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
-#define BLACKLIST 100
+#define BLACKLISTMAX 100
 
-char buf[256];
 
-int blacklist[BLACKLIST];
+int blacklist[BLACKLISTMAX];
 int blacklist_c=0;
 
 enum menu
@@ -90,6 +89,24 @@ enum menu
     NUMBER
 };
 
+/*----------trim (char) c from right-side of string *p------------------*/
+char *strtrim_right( register char *p, register char c)
+{
+    register char *end;
+    register int len;
+
+    len = strlen( p);
+    while ( *p && len)
+    {
+        end = p + len-1;
+        if( c == *end)
+            *end = 0;
+        else
+            break;
+        len = strlen( p);
+    }
+    return( p);
+}
 
 int DirectoryExists( const char* pzPath )
 {
@@ -388,10 +405,12 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     printf("cwd: %s\n",cwd);
     if(procs_n==0)
         return 0;
-    char proc_cwd[256];
-    char proc_exe[256];
+    size_t proc_cwd_s=0;
+    size_t proc_exe_s=0;
+    char *proc_cwd=NULL;
+    char *proc_exe=NULL;
     int proc_args_n;
-    char proc_blacklisted[10];
+    char proc_blacklisted[7];
     char **proc_args;
     int i,nl_c=0;
     char c;
@@ -415,17 +434,34 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         else if (nl_c > (5+(procs[0]*6)))
             break;
     }
+    c=fgetc(fp);
     printf("starting: ");
-    fscanf(fp,"%s\n",proc_cwd); //cwd exe args
-    fscanf(fp,"%s\n",proc_exe);
+    getline(&proc_cwd,&proc_cwd_s,fp);
+    proc_cwd=strtrim_right(proc_cwd,'\n');
+    //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
+    getline(&proc_exe,&proc_exe_s,fp);
+    proc_exe=strtrim_right(proc_exe,'\n');
     fscanf(fp,"%d\n",&proc_args_n);
     if(procs_n>1) {
         proc_args_n+=2;
     }
     proc_args = malloc((proc_args_n+1)*sizeof(char*));
+    
+    long file_pos=ftell(fp);
+    char *buf=NULL;
+    size_t buf_size=0;
+    getline(&buf,&buf_size,fp);
+    printf("1 scanning: %s\n",buf);
+    fseek(fp,file_pos,SEEK_SET);
+    int l=0,prev_l=0;
+
+    /* get length of program arguments */
     for(i=0;i<proc_args_n;i++) {
-        proc_args[i]=malloc(256*sizeof(char));
+        l = strlen(buf+prev_l);
+        prev_l+=l+1;
+        proc_args[i]=malloc((l+1)*sizeof(char));
     }
+
     proc_args[proc_args_n]=NULL;
     int null_c=0;
     int word_c=0;
@@ -464,8 +500,8 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
             strcpy(proc_args[i],proc_args[i-3]);
         }
         strcpy(proc_args[1],"-c");
-
-        char command[1000];
+        
+        char *command=malloc(((procs_n-1)*4+(2*strlen(thisprogram))+strlen(basedir)+strlen(config)+strlen(proc_exe)+10)*sizeof(char));
         strcpy(command,thisprogram);
         strcat(command," -s");
         strcat(command," ");
@@ -475,14 +511,14 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         strcat(command," ");
         strcat(command,config);
         for(i=1;i<procs_n;i++) {
-            char buf[10];
+            char buf[4];
             sprintf(buf," %d",procs[i]);
             strcat(command,buf);
         }
         strcat(command,"; ");
         strcat(command,proc_exe);
-
-        strcpy(proc_args[2],command);
+        proc_args[2]=command;
+        //strcpy(proc_args[2],command);
     }
     printf("\n");
     chdir(proc_cwd);
@@ -572,20 +608,24 @@ int main(int argc, char **argv) {
     fscanf(fp,"%d\n",&procs_c);
     printf("\n%s %d %sprograms running:%s\n",green_r,procs_c,blue_r,none);
 
-    char proc_cwd[256];
-    char proc_exe[256];
+    size_t proc_cwd_s=0;
+    size_t proc_exe_s=0;
+    char *proc_cwd=NULL;
+    char *proc_exe=NULL;
     int proc_args_n;
     char cmdline_begin[CMDLINE_BEGIN+1];
     int cmdline_begin_c=0;
-    char proc_blacklisted[10];
+    char proc_blacklisted[7];
 
-
+    char buf[5];
     for(i=0;i<procs_c;i++) {
         fscanf(fp,"%s\n",buf); //read --
         printf("%s%s %d%s: ",blue_b,buf,i,none);
-
-        fscanf(fp,"%s\n",proc_cwd); //cwd exe args
-        fscanf(fp,"%s\n",proc_exe);
+        //cwd exe args
+        getline(&proc_cwd,&proc_cwd_s,fp);
+        proc_cwd=strtrim_right(proc_cwd,'\n');
+        getline(&proc_exe,&proc_exe_s,fp);
+        proc_exe=strtrim_right(proc_exe,'\n');
         fscanf(fp,"%d\n",&proc_args_n);
         int null_c=0;
         cmdline_begin_c=0;
