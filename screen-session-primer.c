@@ -163,8 +163,8 @@ requireSession(const char *basepath,const char *file_in_session)
     }
     else {
         free(filepath);
-        char *buf=malloc((strlen(basedir)+strlen(session)+1+34)*sizeof(char));
-        sprintf(buf,"screen-session.py --dir %s --unpack %s",basedir,session);
+        char *buf=malloc((strlen(basedir)+strlen(session)+1+50)*sizeof(char));
+        sprintf(buf,"screen-session.py --no-nest --dir %s --unpack %s",basedir,session);
         system(buf);
         free(file);
         free(buf);
@@ -449,7 +449,6 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     char *buf=NULL;
     size_t buf_size=0;
     getline(&buf,&buf_size,fp);
-    printf("1 scanning: %s\n",buf);
     fseek(fp,file_pos,SEEK_SET);
     int l=0,prev_l=0;
 

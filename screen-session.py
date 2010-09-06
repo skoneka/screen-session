@@ -684,6 +684,9 @@ def linkify(dir,dest,targ):
     os.chdir(cwd)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
+    print('unpacking...')
+    removeit(os.path.join(home,projectsdir,savedir))
+    removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     if os.path.exists(os.path.join(tmpdir,savedir)):
@@ -721,21 +724,16 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
         try:
             delta=ctime-os.path.getmtime(file)
         except:
-            delta=-1
-        print ('1 '+file+' delta='+str(delta))
-        if delta > timeout or delta < 0: # if seconds passed since last modification
-            try:
-                os.remove(file)
-            except:
-                pass
+            delta=timeout+1
+        if delta > timeout: # if seconds passed since last modification
+            removeit(file)
     files_remove=glob.glob(os.path.join(tmpdir,'*'))
     for file in files_remove:
         try:
             delta=ctime-os.path.getmtime(file)
         except:
-            delta=-1
-        print ('2 '+file+' delta='+str(delta))
-        if delta > timeout or delta < 0: # if seconds passed since last modification
+            delta=timeout+1
+        if delta > timeout: # if seconds passed since last modification
             removeit(file)
 
 
@@ -963,7 +961,6 @@ def main():
     
     if mode==0:
         if unpack:
-            print('unpacking...')
             unpackme(home,projectsdir,unpack,archiveend,tmpdir,False)
         else:
             usage()
@@ -1024,6 +1021,9 @@ def main():
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     scs.exact=bExact
+
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
     
     ret=0
     if mode==1: #mode save
@@ -1040,8 +1040,6 @@ def main():
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        removeit(os.path.join(home,projectsdir,savedir))
-        removeit(os.path.join(tmpdir,savedir))
         cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink,200)
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
