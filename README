@@ -89,6 +89,9 @@ Make sure you have a recent version of Screen and apply necessary patch:
     sudo make install
 
 
+Make sure you have "lsof" installed.
+
+
 -----------------------------------------------------------------------
 Running screen-session
 -----------------------------------------------------------------------
