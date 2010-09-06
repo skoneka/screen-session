@@ -12,7 +12,7 @@ LIBS =
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
-CFLAGS = -ggdb -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
+CFLAGS = -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
 LDFLAGS = -s ${LIBS}
 
 
