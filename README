@@ -13,10 +13,10 @@ Description
 screen-session is a GNU Screen session saver.
 
 screen-session currently supports saving of:
-groups and basic windows, directories, programs, layouts, scrollbacks,
-titles. It recognizes groups and regular windows. Currently there is no
-support for serial and telnet window types (because so far I didn't
-manage to use them) but they would be probably easy to add.
+directories, programs, layouts, scrollbacks, titles
+ 
+It recognizes groups and regular windows. Currently there is no support 
+for serial and telnet window types.
 
 screen-session saves directories and programs by directly reading /proc 
 filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
@@ -39,7 +39,7 @@ Only up to 1:
 
 
 There is also a blacklist for programs which may not be started
-(file $HOME./screen-sessions/BLACKLIST).
+(file $HOME/.screen-sessions/BLACKLIST).
  
 screen-session-primer uses linux color escapes. If you dont want color
 remove "-DCOLOR" from config.mk
