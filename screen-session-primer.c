@@ -552,6 +552,11 @@ int main(int argc, char **argv) {
         sleep(10);
         return 0;
     }
+    else if (strcmp(argv[1],"-r")==0) {
+        //requireSession
+        requireSession(argv[2],argv[3]);
+        return 0;
+    }
     char *homedir=getenv("HOME");
     char *workingdir=argv[1];
     char *scrollbackfile=argv[2];
