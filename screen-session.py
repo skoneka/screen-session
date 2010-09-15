@@ -26,6 +26,7 @@ class ScreenSession(object):
     restore_previous = False
     exact=False
     group_other='OTHER_WINDOWS'
+    homewindow=""
     
     primer="screen-session-primer"
     
@@ -44,6 +45,7 @@ class ScreenSession(object):
         self.pid=str(pid)
 
     def save(self):
+        self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
@@ -74,13 +76,15 @@ class ScreenSession(object):
         
 
         # keep original numbering, move existing windows
+        self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         if self.exact:
             print('Biggest new window number: %d'%maxnewwindow)
             if self.enable_layout:
                 self.__remove_all_layouts()
             print('Moving windows...')
             self.__move_all_windows(maxnewwindow+1,self.group_other,False)
-            
+        
+        self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
         if self.enable_layout:
@@ -100,7 +104,7 @@ class ScreenSession(object):
         return str.replace('|','I').replace('\\','/')# how to properly escape "\"?
 
     def __load_screen(self):
-        homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        homewindow=self.homewindow
         print ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
@@ -147,7 +151,6 @@ class ScreenSession(object):
         print ("Rootwindow is "+rootwindow)
         os.system('screen -S %s -X select %s' % (self.pid,rootwindow))
         
-        os.system('screen -S %s -X next' % (self.pid))
         # select last selected window
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
@@ -156,7 +159,6 @@ class ScreenSession(object):
             print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
         
-        #subprocess.Popen('screen -S %s -Q @select %s' % (self.pid,rootwindow), shell=True, stdout=subprocess.PIPE)
         print ("Returning homewindow " +homewindow)
         os.system('screen -S %s -X select %s' % (self.pid,homewindow))
        
@@ -223,7 +225,7 @@ class ScreenSession(object):
 
 
     def __move_all_windows(self,shift,group,kill=False):
-        homewindow=int(subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+        homewindow=int(self.homewindow)
         cwin=-1
         ctty=None
         cppids={}
@@ -235,7 +237,6 @@ class ScreenSession(object):
             
             
             # create wrap group for existing windows
-            print 'screen -S %s -X screen -t \"%s\" //group' % (self.pid,group)
             os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
             os.system('screen -S %s -X group %s' % (self.pid, 'none') )
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
@@ -245,7 +246,7 @@ class ScreenSession(object):
             r.sort()
             r.reverse()
             
-            # move windows by shift and put them in wrap group
+            # move windows by shift and put them in a wrap group
             for i in r:
                 os.system('screen -S %s -X select %d' % (self.pid, i) )
                 if not searching:
@@ -267,6 +268,8 @@ class ScreenSession(object):
                         searching=False
                         print('\n--')
                     print('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
+                    if cwin==homewindow:
+                        homewindow=cwin+shift
                     try:
                         cgroup = subprocess.Popen('screen -S %s -Q @group' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" (",1)[1].rsplit(")",1)[0]
                     except:
@@ -284,8 +287,8 @@ class ScreenSession(object):
 
 
     def __save_screen(self):
-        homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        print "Homewindow is " + homewindow
+        homewindow=self.homewindow
+        print ("Homewindow is " + homewindow)
 
         cwin=-1
         ctty=None
@@ -378,7 +381,6 @@ class ScreenSession(object):
                         else: 
                             text=""
                         if self.primer in cpids_data[i][2]:
-                            #cpids_data[i][1]=str(int(cpids_data[i][1])-1)
                             # clean zsh -c 'primer..' by removing '-c' 'primer..'
                             l=cpids_data[i][2].split('\0')
                             if l[1]=='-c' and l[2].startswith(self.primer):
@@ -392,7 +394,7 @@ class ScreenSession(object):
                         print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                
                         if(cpids_data[i][2].startswith(self.primer)):
-                            print('OMG rollback')
+                            print('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
                 
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data,rollback)
@@ -412,9 +414,7 @@ class ScreenSession(object):
         requireme(self.primer,self.homedir,cmdline[1], cmdline[3])
         fhead,ftail=os.path.split(cmdline[3])
         fhhead,fhtail=os.path.split(fhead)
-        print ('copy path: %s'%path)
         target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
-        print ('target path: %s'%target)
         shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
         if os.path.isfile(target):
             return target
@@ -423,6 +423,7 @@ class ScreenSession(object):
         
 
     def __load_layouts(self):
+        homewindow=self.homewindow
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
         if not homelayout.startswith('This is layout'):
             print("No homelayout")
@@ -468,15 +469,15 @@ class ScreenSession(object):
         
         # select last layout
         lastname=None
-        lastid=None
+        lastid_l=None
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
             (lasthead,lasttail)=os.path.split(last)
             last=lasttail.split("_",2)
             lastname=last[2]
-            lastid=last[1]
-            print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid],lastname,lastid))
-            os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
+            lastid_l=last[1]
+            print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+            os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid_l]))
             # ^^ layout numbering may change, use layout_trans={} !
 
         if homelayout!="-1":
@@ -487,10 +488,25 @@ class ScreenSession(object):
         
         if not self.restore_previous:
             try:
-                print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid],lastname,lastid))
-                os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid]))
+                print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+                os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid_l]))
             except:
                 pass
+        
+        # select last selected window
+        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
+            (lasthead,lasttail)=os.path.split(last)
+            lastid=lasttail.split("_",1)[1]
+            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
+        
+        print ("Returning homewindow " +homewindow)
+        os.system('screen -S %s -X select %s' % (self.pid,homewindow))
+       
+        if not self.restore_previous: 
+            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
 
     def __terminate_processes(self,ident):
         #get list of subprograms and finish them all
@@ -528,7 +544,6 @@ class ScreenSession(object):
 
 
     def __save_layouts(self):
-        
         homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
         if not homelayout.startswith('This is layout'):
             print("No layouts to save. Create layouts with \":layout new\"")
@@ -643,7 +658,6 @@ class ScreenSession(object):
                 for pid in pids_data:
                     f.write("-\n")
                     for i,data in enumerate(pid):
-                        print 'data[%d]:%s'%(i,data)
                         if i == 2:
                             if data.endswith('\0\0'):
                                 data=data[:len(data)-1]
