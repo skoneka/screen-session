@@ -10,7 +10,7 @@ issues:
 '''
 
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
@@ -239,7 +239,7 @@ class ScreenSession(object):
             os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
             os.system('screen -S %s -X group %s' % (self.pid, 'none') )
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-            group=group+'_'+str(cwin)
+            group=group+'_'+str(int(time.time()))
             os.system('screen -S %s -X title %s' % (self.pid, group) )
             r.append(cwin)
             r.sort()
@@ -378,14 +378,17 @@ class ScreenSession(object):
                         else: 
                             text=""
                         if self.primer in cpids_data[i][2]:
+                            #cpids_data[i][1]=str(int(cpids_data[i][1])-1)
                             # clean zsh -c 'primer..' by removing '-c' 'primer..'
                             l=cpids_data[i][2].split('\0')
                             if l[1]=='-c' and l[2].startswith(self.primer):
                                 s=str(l[0])+'\0'
                                 for j in range(3,len(l)):
                                     s+=str(l[j])+'\0'
-                                newdata=(cpids_data[i][0],cpids_data[i][1],s)
+                                    print('appending: %s'%str(l[j]))
+                                newdata=(cpids_data[i][0],cpids_data[i][1],s,cpids_data[i][3])
                                 cpids_data[i]=newdata
+
                         print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                
                         if(cpids_data[i][2].startswith(self.primer)):
@@ -640,7 +643,10 @@ class ScreenSession(object):
                 for pid in pids_data:
                     f.write("-\n")
                     for i,data in enumerate(pid):
+                        print 'data[%d]:%s'%(i,data)
                         if i == 2:
+                            if data.endswith('\0\0'):
+                                data=data[:len(data)-1]
                             f.write(str(len(data.split('\0'))-1)+'\n')
                             f.write(str(data)+'\n')
                         else:
@@ -1090,7 +1096,15 @@ def main():
                 print('Savefile exists. Forcing...')
         scs.savedir=savedir_tmp
         savedir=savedir_tmp
-        ret = scs.save()
+        try:
+            ret = scs.save()
+        except:
+            ret=0
+            traceback.print_exc(file=sys.stdout)
+            print('session saving totally failed')
+            os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
+            doexit(1,waitfor)
+
         if not ret:
             print('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
@@ -1105,7 +1119,15 @@ def main():
         cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink,200)
         # unpack and load
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
-        ret = scs.load()
+        try:
+            ret = scs.load()
+        except:
+            ret=0
+            traceback.print_exc(file=sys.stdout)
+            print('session loading totally failed')
+            os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
+            doexit(1,waitfor)
+
         if not ret:
             print('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
