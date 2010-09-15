@@ -54,7 +54,6 @@ class ScreenSession(object):
             self.__save_layouts()
         print("\n======CLEANUP======")
         self.__scrollback_clean()
-        print('session "%s" saved as "%s" in "%s"'%(self.pid,self.savedir,self.basedir))
         return True
 
     def load(self):
@@ -775,32 +774,42 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
             removeit(file)
 
 
-def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink):
+def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     cwd=os.getcwd()
     workingpath=tmpdir
+    workingpath2=os.path.join(tmpdir,'__tmp_pack')
+    if not os.path.exists(workingpath2):
+        os.makedirs(workingpath2)
+    
     os.chdir(workingpath)
     removeit(os.path.join(workingpath,savedir))
     removeit(os.path.join(workingpath,savedir+'__tmp'))
+    removeit(os.path.join(workingpath2,savedir_real))
+    removeit(os.path.join(workingpath2,savedir_real+'__tmp'))
+
     os.remove(os.path.join(home,projectsdir,lastlink))
-    shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath,savedir))
-    os.mkdir(savedir+'__tmp')
-    for win in glob.glob(os.path.join(savedir,'win_*')):
-        os.rename(win,os.path.join(savedir+'__tmp',os.path.split(win)[1]))
-    os.rename(os.path.join(savedir,'last_win'),os.path.join(savedir+'__tmp','last_win'))
+    shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath2,savedir_real))
+    os.chdir(workingpath2)
+    os.mkdir(savedir_real+'__tmp')
+    for win in glob.glob(os.path.join(savedir_real,'win_*')):
+        os.rename(win,os.path.join(savedir_real+'__tmp',os.path.split(win)[1]))
+    os.rename(os.path.join(savedir_real,'last_win'),os.path.join(savedir_real+'__tmp','last_win'))
     
-    os.system('tar cjf %s__data%s %s'%(savedir,archiveend,savedir))
-    removeit(os.path.join(workingpath,savedir))
-    shutil.move(savedir+'__tmp',savedir)
+    os.system('tar cjf %s__data%s %s'%(savedir_real,archiveend,savedir_real))
+    removeit(os.path.join(workingpath2,savedir_real))
+    shutil.move(savedir_real+'__tmp',savedir_real)
     
-    os.system('tar cjf %s__win%s %s'%(savedir,archiveend,savedir))
-    removeit(os.path.join(workingpath,savedir))
+    os.system('tar cjf %s__win%s %s'%(savedir_real,archiveend,savedir_real))
+    removeit(os.path.join(workingpath2,savedir_real))
     
     for file in glob.glob('*'+archiveend):
         removeit(os.path.join(home,projectsdir,file))
         os.rename(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)
-    linkify(os.path.join(home,projectsdir),savedir+'__win'+archiveend,lastlink)
+    #os.rename(os.path.join(home,projectsdir,savedir+'__win'+archiveend),os.path.join(home,projectsdir,savedir_real+'__win'+archiveend))
+    #os.rename(os.path.join(home,projectsdir,savedir+'__data'+archiveend),os.path.join(home,projectsdir,savedir_real+'__data'+archiveend))
+    linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
 
 def list_sessions(home,projectsdir,archiveend):
@@ -906,7 +915,7 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "xryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "txryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         doexit(2,waitfor)
@@ -937,7 +946,7 @@ def main():
             bNest=False
         elif o == "--getopt":
             bGetopt=True
-        elif o == "--ls":
+        elif o in ("-t","--ls"):
             bList=True
         elif o == "--log":
             log = a
@@ -1065,8 +1074,12 @@ def main():
     
     ret=0
     if mode==1: #mode save
-        removeit(os.path.join(home,projectsdir,savedir))
-        removeit(os.path.join(tmpdir,savedir))
+        savedir_tmp=savedir+'__tmp'
+        savedir_real=savedir
+        removeit(os.path.join(home,projectsdir,savedir_real))
+        removeit(os.path.join(tmpdir,savedir_real))
+        removeit(os.path.join(home,projectsdir,savedir_tmp))
+        removeit(os.path.join(tmpdir,savedir_tmp))
         # save and archivize
         if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
             if force==False:
@@ -1075,12 +1088,17 @@ def main():
                 doexit(1,waitfor)
             else:
                 print('Savefile exists. Forcing...')
+        scs.savedir=savedir_tmp
+        savedir=savedir_tmp
         ret = scs.save()
         if not ret:
             print('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
-            archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink)
+            archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink,savedir_real)
+            scs.savedir=savedir_real
+            savedir=savedir_real
+            print('session "%s" saved as "%s" in "%s"'%(scs.pid,scs.savedir,scs.basedir))
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
