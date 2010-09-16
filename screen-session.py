@@ -45,6 +45,7 @@ class ScreenSession(object):
         self.pid=str(pid)
 
     def save(self):
+        os.system('screen -S %s -X msgminwait %s' % (self.pid,"0"))
         self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
@@ -59,6 +60,7 @@ class ScreenSession(object):
         return True
 
     def load(self):
+        os.system('screen -S %s -X msgminwait %s' % (self.pid,"0"))
         print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
@@ -248,12 +250,11 @@ class ScreenSession(object):
             
             # move windows by shift and put them in a wrap group
             for i in r:
-                os.system('screen -S %s -X select %d' % (self.pid, i) )
+                cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if not searching:
                     print('--')
-                cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
                 #print('cwin=%s ; prev=%s'%(cwin,prev_cwin))
-                if (cwin==prev_cwin):
+                if (len(cselect)>0):
                     #no such window
                     if searching:
                         sys.stdout.write('.')
@@ -267,6 +268,7 @@ class ScreenSession(object):
                     if(searching):
                         searching=False
                         print('\n--')
+                    cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
                     print('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
                         homewindow=cwin+shift
@@ -283,7 +285,7 @@ class ScreenSession(object):
                     prev_cwin=cwin
                     print('cwin='+str(cwin))
 
-        os.system('screen -S %s -Q @select %d' % (self.pid,homewindow))
+        os.system('screen -S %s -X select %d' % (self.pid,homewindow))
 
 
     def __save_screen(self):
@@ -296,13 +298,10 @@ class ScreenSession(object):
         searching=False
         rollback=None
         for i in range(0,self.maxwin+1):
-            os.system('screen -S %s -X select %d' % (self.pid, i) )
+            cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
             if not searching:
                 print('--')
-            ctitle = subprocess.Popen('screen -S %s -Q @title' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-            prev_cwin=cwin
-            cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-            if (cwin==prev_cwin):
+            if (len(cselect)>0):
                 #no such window
                 if searching:
                     sys.stdout.write('.')
@@ -314,7 +313,8 @@ class ScreenSession(object):
                 if(searching):
                     searching=False
                     print('\n--')
-
+                cwin=subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+                ctitle = subprocess.Popen('screen -S %s -Q @title' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 ctty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if(ctty=="telnet"):
                     ctype="group"
@@ -406,7 +406,7 @@ class ScreenSession(object):
         print('\n--')
 
         print ("Returning homewindow = " +homewindow)
-        os.system('screen -S %s -Q @select %s' % (self.pid,homewindow))
+        os.system('screen -S %s -X select %s' % (self.pid,homewindow))
     
     def __rollback(self,cmdline):
         cmdline=cmdline.split('\0')
