@@ -95,7 +95,7 @@ class ScreenSession(object):
         return True
 
     def exists(self):
-        msg=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+        msg=subprocess.Popen('screen -S %s -Q @echo test' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
         if msg.startswith('No screen session found'):
             return False
         else:
@@ -232,7 +232,6 @@ class ScreenSession(object):
         ctty=None
         cppids={}
         searching=False
-        prev_cwin=-1
 
         if self.maxwin>0:
             r=range(0,self.maxwin+1)
@@ -253,7 +252,6 @@ class ScreenSession(object):
                 cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if not searching:
                     print('--')
-                #print('cwin=%s ; prev=%s'%(cwin,prev_cwin))
                 if (len(cselect)>0):
                     #no such window
                     if searching:
@@ -282,7 +280,6 @@ class ScreenSession(object):
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
                     cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-                    prev_cwin=cwin
                     print('cwin='+str(cwin))
 
         os.system('screen -S %s -X select %d' % (self.pid,homewindow))
@@ -315,10 +312,14 @@ class ScreenSession(object):
 
     def __get_group(self,win):
         os.system('screen -S %s -X at %s group' % (self.pid, win) )
+        msg = self.__get_lastmsg()
         try:
-            msg = self.__get_lastmsg()
-            if msg.startswith("command"):
+            if msg.endswith('no group'):
+                raise Exception
+            elif msg.startswith("command"):
                 group = subprocess.Popen('screen -S %s -Q @group' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].rsplit(")",1)[0].split("(",1)[1]
+                if group.endswith('no group'):
+                    raise Exception
             else:
                 group = msg.rsplit(")",1)[0].split("(",1)[1]
         except:
@@ -338,10 +339,10 @@ class ScreenSession(object):
         rollback=None
         ctime=subprocess.Popen('screen -S %s -Q @time' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
         for i in range(0,self.maxwin+1):
-            i=str(i)
+            id=str(i)
             if not searching:
                 print('--')
-            cwin,ctitle=self.__get_number_and_title(i)
+            cwin,ctitle=self.__get_number_and_title(id)
             if (cwin==-1):
                 #no such window
                 if searching:
@@ -355,7 +356,7 @@ class ScreenSession(object):
                     searching=False
                     print('\n--')
 
-                ctty = self.__get_tty(i)
+                ctty = self.__get_tty(id)
                 if(ctty=="telnet"):
                     ctype="group"
                     cpids = None
@@ -374,7 +375,7 @@ class ScreenSession(object):
                         cpids_data.append(pidinfo)
 
                 
-                cgroup = self.__get_group(i)
+                cgroup = self.__get_group(id)
                 
                 
                 #save scrollback
@@ -408,7 +409,7 @@ class ScreenSession(object):
                     cpids=cpids_sort
                
 
-                print('window = '+cwin+ '; saved on '+ctime+\
+                print('window = '+cwin+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if(cpids):
                     for i,pid in enumerate(cpids):
@@ -437,9 +438,9 @@ class ScreenSession(object):
                 rollback=None
 
 
-                
         self.linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         print('\n--')
+        print('saved on '+ctime)
     
     def __rollback(self,cmdline):
         cmdline=cmdline.split('\0')
@@ -455,7 +456,7 @@ class ScreenSession(object):
         
         fhead,ftail=os.path.split(cmdline[2])
         fhhead,fhtail=os.path.split(fhead)
-        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
+        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail)
         try:
             shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
         except:
@@ -680,8 +681,6 @@ class ScreenSession(object):
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
-        print ("Saving window %s" % winid)
-        
         
         basedata=(winid,time,group,type,title)
         f=open(fname,"w")
