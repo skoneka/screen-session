@@ -444,11 +444,23 @@ class ScreenSession(object):
     def __rollback(self,cmdline):
         cmdline=cmdline.split('\0')
         path=os.path.join(self.homedir,cmdline[1],cmdline[3])
-        requireme(self.primer,self.homedir,cmdline[1], cmdline[3])
+        requireme(self.homedir,cmdline[1], cmdline[3],True)
         fhead,ftail=os.path.split(cmdline[3])
         fhhead,fhtail=os.path.split(fhead)
         target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
-        shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
+        try:
+            shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
+        except:
+            pass
+        
+        fhead,ftail=os.path.split(cmdline[2])
+        fhhead,fhtail=os.path.split(fhead)
+        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
+        try:
+            shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+        except:
+            pass
+
         if os.path.isfile(target):
             return target
         else:
@@ -770,8 +782,15 @@ def linkify(dir,dest,targ):
     os.symlink(dest,targ)
     os.chdir(cwd)
 
-def requireme(primer,home,projectsdir,file_in_session):
-    os.system("%s -r %s %s"%(primer, os.path.join(home,projectsdir),file_in_session))
+def requireme(home,projectsdir,file_in_session,full=False):
+    global archiveend
+    global tmpdir
+    #os.system("%s -r %s %s"%(primer, os.path.join(home,projectsdir),file_in_session))
+    fhead,ftail = os.path.split(file_in_session)
+    if os.path.isdir(os.path.join(home,projectsdir,fhead)):
+        return
+    else:
+        unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     print('unpacking...')
@@ -958,6 +977,9 @@ $ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
 $ screen-session --load --in mysavedsession --out PID\n\
 \n')
 
+archiveend=''
+tmpdir=''
+
 def main():    
     if len(sys.argv)>1:
         if sys.argv[1]=='--wait':
@@ -973,6 +995,8 @@ def main():
         print('Bad options.')
         doexit(2,waitfor)
     
+    global archiveend
+    global tmpdir
     archiveend='.tar.bz2'
     unpack=None
     current_session=None
