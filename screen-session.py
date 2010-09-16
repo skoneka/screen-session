@@ -200,7 +200,7 @@ class ScreenSession(object):
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
             
     def __scrollback_clean(self):
-        '''clean up scrollbacks files from empty lines in the beginning of file'''
+        '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
         for f in self.__scrollbacks:
             try:
                 ftmp=f+"_tmp"
@@ -216,8 +216,33 @@ class ScreenSession(object):
                     temp.write(line)
                 temp.close()
                 thefile.close()
-                os.remove(f)
-                os.rename(ftmp,f)
+
+                temp = open( ftmp, 'r' )
+                endmark=-1
+                lockmark=False
+                for i,line in enumerate(temp):
+                    if cmp(line,'\n') == 0:
+                        if not lockmark:
+                            endmark=i
+                            lockmark=True
+                    else:
+                        endmark=-1
+                        lockmark=False
+                temp.close()
+
+                if endmark > 1:
+                    thefile = open(f , 'w')
+                    temp=open(ftmp,'r')
+                    for i,line in enumerate(temp):
+                        if i == endmark:
+                            break;
+                        else:
+                            thefile.write(line)
+                    thefile.close()
+                    temp.close()
+                else:
+                    os.remove(f)
+                    os.rename(ftmp,f)
             except:
                 print ('Unable to clean scrollback file: '+f)
 
