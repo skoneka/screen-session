@@ -297,7 +297,10 @@ class ScreenSession(object):
             number = number.strip().rsplit(" ",1)[1]
             title = title.rsplit(")",1)[0]
         except:
+            cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+            os.system('screen -S %s -X select %s' % (self.pid,win))
             msg=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+            os.system('screen -S %s -X select %s' % (self.pid,cwin))
             number,title = msg.split("(",1)
             number = number.strip()
             title = title.rsplit(")",1)[0]
@@ -307,7 +310,10 @@ class ScreenSession(object):
         os.system('screen -S %s -X at %s tty' % (self.pid, win) )
         tty = self.__get_lastmsg().strip()
         if tty.startswith("command"):
+            cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+            os.system('screen -S %s -X select %s' % (self.pid,win))
             tty=subprocess.Popen('screen -S %s -Q @tty' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+            os.system('screen -S %s -X select %s' % (self.pid,cwin))
         return tty
 
     def __get_group(self,win):
@@ -317,7 +323,10 @@ class ScreenSession(object):
             if msg.endswith('no group'):
                 raise Exception
             elif msg.startswith("command"):
+                cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+                os.system('screen -S %s -X select %s' % (self.pid,win))
                 group = subprocess.Popen('screen -S %s -Q @group' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].rsplit(")",1)[0].split("(",1)[1]
+                os.system('screen -S %s -X select %s' % (self.pid,cwin))
                 if group.endswith('no group'):
                     raise Exception
             else:
@@ -380,7 +389,7 @@ class ScreenSession(object):
                 
                 #save scrollback
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
-                os.system('screen -S %s -X hardcopy -h %s' % (self.pid, scrollback_filename) )
+                os.system('screen -S %s -X at %s hardcopy -h %s' % (self.pid, cwin, scrollback_filename) )
                 self.__scrollbacks.append(scrollback_filename)
 
                 # sort window processes by parent pid
@@ -502,7 +511,7 @@ class ScreenSession(object):
                     line=line.strip()
                     if not line=="-1":
                         try:
-                            os.system('screen -S %s -Q @select %s' % (self.pid,self.__wins_trans[line]))
+                            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[line]))
                         except:
                             print('Unable to set focus for: %s'%line)
                     os.system('screen -S %s -X focus' % (self.pid) )
@@ -512,7 +521,7 @@ class ScreenSession(object):
                 os.system('screen -S %s -X focus top' % (self.pid) )
                 for i in range(0,focus_offset):
                     os.system('screen -S %s -X focus' % (self.pid) )
-        
+        print self.__wins_trans
         # select last layout
         lastname=None
         lastid_l=None
