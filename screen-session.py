@@ -25,6 +25,7 @@ class ScreenSession(object):
     enable_layout = False
     restore_previous = False
     exact=False
+    bKill=False
     group_other='OTHER_WINDOWS'
     homewindow=""
     
@@ -250,6 +251,14 @@ class ScreenSession(object):
             os.system('screen -S %s -X layout next' % (self.pid) )
             currentlayout,currentlayoutname=self.get_layout_number()
 
+    def __kill_windows(self,kill_list):
+        for w in kill_list:
+            print('killing: '+str(w))
+            if w!=9:
+                os.system('screen -S %s -X at %s kill' % (self.pid, w) )
+    def kill_old_windows(self):
+        print ('killing: '+str(self.__kill_list))
+        self.__kill_windows(self.__kill_list)
 
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
@@ -261,6 +270,9 @@ class ScreenSession(object):
         if self.maxwin>0:
             r=range(0,self.maxwin+1)
             
+            if self.bKill:
+                self.__kill_list=[]
+                self.__kill_list.append(homewindow+shift)
             
             # create wrap group for existing windows
             os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
@@ -272,7 +284,6 @@ class ScreenSession(object):
                 r.append(cwin)
             r.sort()
             r.reverse()
-            
             # move windows by shift and put them in a wrap group
             for i in r:
                 cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -296,6 +307,8 @@ class ScreenSession(object):
                     print('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
                         homewindow=cwin+shift
+                    elif self.bKill:
+                        self.__kill_list.append(cwin+shift)
                     
                     cgroup = self.get_group(cwin)
                     if cgroup=="none":
@@ -304,6 +317,9 @@ class ScreenSession(object):
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
                     cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+
+            if self.bKill:
+                self.__kill_list.reverse()
 
         os.system('screen -S %s -X select %d' % (self.pid,homewindow))
 
@@ -1048,6 +1064,9 @@ def usage():
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
   \n\
+  -X --exact-kill-other\n\
+  \tsame as exact, but kills all existing windows\n\
+  \n\
   -r --restore\n\
   \treturn to home window and home layout after session loading\n\
     \n\
@@ -1084,7 +1103,7 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "txryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "txXryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         print('Bad options.')
         doexit(2,waitfor)
@@ -1096,6 +1115,7 @@ def main():
     current_session=None
     bNest=True
     bExact=False
+    bKill=False
     bHelp=False
     bGetopt=False
     bList=False
@@ -1127,6 +1147,9 @@ def main():
             current_session = a
         elif o in ("-x","--exact"):
             bExact = True
+        elif o in ("-X","--exact-kill-other"):
+            bExact = True
+            bKill=True
         elif o in ("-r","--restore"):
             restore = True
         elif o in ("-f","--force"):
@@ -1239,6 +1262,7 @@ def main():
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     scs.exact=bExact
+    scs.bKill=bKill
 
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
@@ -1286,6 +1310,8 @@ def main():
         unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
         try:
             ret = scs.load()
+            if scs.bKill:
+                scs.kill_old_windows()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)
