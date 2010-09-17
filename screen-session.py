@@ -268,7 +268,8 @@ class ScreenSession(object):
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
             group=group+'_'+str(int(time.time()))
             os.system('screen -S %s -X title %s' % (self.pid, group) )
-            r.append(cwin)
+            if cwin not in r:
+                r.append(cwin)
             r.sort()
             r.reverse()
             
@@ -277,7 +278,7 @@ class ScreenSession(object):
                 cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if not searching:
                     print('--')
-                if (len(cselect)>0):
+                if len(cselect)>0 and not cselect.startswith('This'):
                     #no such window
                     if searching:
                         sys.stdout.write('.')
@@ -285,7 +286,7 @@ class ScreenSession(object):
                     else:
                         msg='Searching for windows (set --maxwin)...'
                         sys.stdout.write('\n'+msg)
-                        os.system('screen -S %s -X echo %s' % (self.pid,msg))
+                        os.system('screen -S %s -X echo \"%s\"' % (self.pid,msg))
                         searching=True
                 else:
                     if(searching):
