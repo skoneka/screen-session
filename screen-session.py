@@ -309,12 +309,22 @@ class ScreenSession(object):
 
     def get_lastmsg(self):
         return subprocess.Popen('screen -S %s -Q @lastmsg' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+
+    def query_at(self,win,command):
+        o=subprocess.Popen('screen -S %s -Q at %s %s' % (self.pid,win,command) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+        if o.startswith('-X:'):
+            #no such window
+            return -1
+        else:
+            l=self.get_lastmsg()
+            if l.startswith('command from'):
+                o=o.rsplit('command from')[0]
+            return o
     
     def get_number_and_title(self,win):
-        os.system('screen -S %s -X at %s number' % (self.pid, win) )
+        msg=self.query_at(win,'number')
         try:
-            msg = self.get_lastmsg()
-            if msg.startswith('-X:'):
+            if msg==-1:
                 return -1,-1
             number,title = msg.split("(",1)
             number = number.strip().rsplit(" ",1)[1]
@@ -330,8 +340,8 @@ class ScreenSession(object):
         return number,title
 
     def get_tty(self,win):
-        os.system('screen -S %s -X at %s tty' % (self.pid, win) )
-        tty = self.get_lastmsg().strip()
+        msg=self.query_at(win,'tty')
+        tty = msg.strip()
         if tty.startswith("command"):
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
             os.system('screen -S %s -X select %s' % (self.pid,win))
@@ -381,8 +391,7 @@ class ScreenSession(object):
             return True
 
     def get_group(self,win):
-        os.system('screen -S %s -X at %s group' % (self.pid, win) )
-        msg = self.get_lastmsg()
+        msg=self.query_at(win,'group')
         try:
             if msg.endswith('no group'):
                 raise Exception
