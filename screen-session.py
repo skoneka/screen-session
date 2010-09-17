@@ -339,58 +339,33 @@ class ScreenSession(object):
     
     def get_number_and_title(self,win):
         msg=self.query_at(win,'number')
-        try:
-            if msg==-1:
-                return -1,-1
-            number,title = msg.split("(",1)
-            number = number.strip().rsplit(" ",1)[1]
-            title = title.rsplit(")",1)[0]
-        except:
-            cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-            os.system('screen -S %s -X select %s' % (self.pid,win))
-            msg=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-            os.system('screen -S %s -X select %s' % (self.pid,cwin))
-            number,title = msg.split("(",1)
-            number = number.strip()
-            title = title.rsplit(")",1)[0]
+        if msg==-1:
+            return -1,-1
+        number,title = msg.split("(",1)
+        number = number.strip()
+        title = title.rsplit(")",1)[0]
         return number,title
 
     def get_tty(self,win):
         msg=self.query_at(win,'tty')
         tty = msg.strip()
-        if tty.startswith("command"):
-            cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-            os.system('screen -S %s -X select %s' % (self.pid,win))
-            tty=subprocess.Popen('screen -S %s -Q @tty' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-            os.system('screen -S %s -X select %s' % (self.pid,cwin))
         return tty
 
     def get_maxwin(self):
         os.system('screen -S %s -X maxwin ' % (self.pid) )
         msg = self.get_lastmsg()
-        if msg.startswith("command"):
-            maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
-        else:
-            maxwin=int(msg.split(':')[1].strip())
+        maxwin=int(msg.split(':')[1].strip())
         return maxwin
     
     def get_layout_number(self):
         os.system('screen -S %s -X layout number' % (self.pid) )
         msg = self.get_lastmsg()
         try:
-            if msg.startswith("command"):
-                msg=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-                if not msg.startswith('This is layout'):
-                    raise Exception
-                currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
-                currentlayout = currentlayout.strip()
-                currentlayoutname = currentlayoutname.rsplit(')')[0]
-            else:
-                if not msg.startswith('This is layout'):
-                    raise Exception
-                currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
-                currentlayout = currentlayout.strip()
-                currentlayoutname = currentlayoutname.rsplit(')')[0]
+            if not msg.startswith('This is layout'):
+                raise Exception
+            currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
+            currentlayout = currentlayout.strip()
+            currentlayoutname = currentlayoutname.rsplit(')')[0]
         except:
             return -1,-1
 
@@ -399,8 +374,6 @@ class ScreenSession(object):
     def get_layout_new(self):
         os.system('screen -S %s -X layout new' % (self.pid) )
         msg = self.get_lastmsg()
-        if msg.startswith("command"):
-            msg=subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE).communicate()[0]
         if msg.startswith('No more'):
             return False
         else:
@@ -411,13 +384,6 @@ class ScreenSession(object):
         try:
             if msg.endswith('no group'):
                 raise Exception
-            elif msg.startswith("command"):
-                cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-                os.system('screen -S %s -X select %s' % (self.pid,win))
-                group = subprocess.Popen('screen -S %s -Q @group' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].rsplit(")",1)[0].split("(",1)[1]
-                os.system('screen -S %s -X select %s' % (self.pid,cwin))
-                if group.endswith('no group'):
-                    raise Exception
             else:
                 group = msg.rsplit(")",1)[0].split("(",1)[1]
         except:
@@ -614,7 +580,7 @@ class ScreenSession(object):
             lastname=last[2]
             lastid_l=last[1]
             print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-            os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid_l]))
+            os.system('screen -S %s -X layout select %s' % (self.pid,layout_trans[lastid_l]))
             # ^^ layout numbering may change, use layout_trans={} !
 
         if homelayout!=-1:
@@ -626,7 +592,7 @@ class ScreenSession(object):
         if not self.restore_previous:
             try:
                 print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-                os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid_l]))
+                os.system('screen -S %s -X layout select %s' % (self.pid,layout_trans[lastid_l]))
             except:
                 pass
         
