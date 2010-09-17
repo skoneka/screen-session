@@ -5,13 +5,14 @@
 # description: screen-session.py script starter
 # it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
 
-screen -Q sessionname
+screen -X sessionname
 rawargument=`screen -Q @lastmsg`
 
-screen-session.py --getopt $*
+testargument=`screen -Q @tty`
 
+screen-session.py --getopt $*
 if [ $? -eq 0 ]; then
-    if [ `echo ${rawargument} | grep -c "^This"` -eq 1 ]; then
+    if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
         echo "running inside patched Screen session"
         argument="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
         #echo $argument $* | xargs screen-session.py $argument $*
