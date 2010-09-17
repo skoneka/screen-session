@@ -10,7 +10,7 @@ issues:
 '''
 
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
@@ -110,10 +110,7 @@ class ScreenSession(object):
         print ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
-        try:
-            hostgroup = subprocess.Popen('screen -S %s -Q @group' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" (",1)[1].rsplit(")",1)[0]
-        except:
-            hostgroup = "none"
+        hostgroup = self.get_group(homewindow)
 
         #create root group and put it into host group
         if self.exact:
@@ -296,27 +293,24 @@ class ScreenSession(object):
                     print('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
                         homewindow=cwin+shift
-                    try:
-                        cgroup = subprocess.Popen('screen -S %s -Q @group' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" (",1)[1].rsplit(")",1)[0]
-                    except:
-                        cgroup = "none"
+                    
+                    cgroup = self.get_group(cwin)
                     if cgroup=="none":
                         os.system('screen -S %s -X group %s' % (self.pid, group) )
                     command='screen -S %s -X number +%d' % (self.pid, shift) 
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
                     cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-                    print('cwin='+str(cwin))
 
         os.system('screen -S %s -X select %d' % (self.pid,homewindow))
 
-    def __get_lastmsg(self):
+    def get_lastmsg(self):
         return subprocess.Popen('screen -S %s -Q @lastmsg' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
     
-    def __get_number_and_title(self,win):
+    def get_number_and_title(self,win):
         os.system('screen -S %s -X at %s number' % (self.pid, win) )
         try:
-            msg = self.__get_lastmsg()
+            msg = self.get_lastmsg()
             if msg.startswith('-X:'):
                 return -1,-1
             number,title = msg.split("(",1)
@@ -332,9 +326,9 @@ class ScreenSession(object):
             title = title.rsplit(")",1)[0]
         return number,title
 
-    def __get_tty(self,win):
+    def get_tty(self,win):
         os.system('screen -S %s -X at %s tty' % (self.pid, win) )
-        tty = self.__get_lastmsg().strip()
+        tty = self.get_lastmsg().strip()
         if tty.startswith("command"):
             cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
             os.system('screen -S %s -X select %s' % (self.pid,win))
@@ -342,9 +336,50 @@ class ScreenSession(object):
             os.system('screen -S %s -X select %s' % (self.pid,cwin))
         return tty
 
-    def __get_group(self,win):
+    def get_maxwin(self):
+        os.system('screen -S %s -X maxwin ' % (self.pid) )
+        msg = self.get_lastmsg()
+        if msg.startswith("command"):
+            maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
+        else:
+            maxwin=int(msg.split(':')[1].strip())
+        return maxwin
+    
+    def get_layout_number(self):
+        os.system('screen -S %s -X layout number' % (self.pid) )
+        msg = self.get_lastmsg()
+        try:
+            if msg.startswith("command"):
+                msg=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
+                if not msg.startswith('This is layout'):
+                    raise Exception
+                currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
+                currentlayout = currentlayout.strip()
+                currentlayoutname = currentlayoutname.rsplit(')')[0]
+            else:
+                if not msg.startswith('This is layout'):
+                    raise Exception
+                currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
+                currentlayout = currentlayout.strip()
+                currentlayoutname = currentlayoutname.rsplit(')')[0]
+        except:
+            return -1,-1
+
+        return currentlayout,currentlayoutname
+    
+    def get_layout_new(self):
+        os.system('screen -S %s -X layout new' % (self.pid) )
+        msg = self.get_lastmsg()
+        if msg.startswith("command"):
+            msg=subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE).communicate()[0]
+        if msg.startswith('No more'):
+            return False
+        else:
+            return True
+
+    def get_group(self,win):
         os.system('screen -S %s -X at %s group' % (self.pid, win) )
-        msg = self.__get_lastmsg()
+        msg = self.get_lastmsg()
         try:
             if msg.endswith('no group'):
                 raise Exception
@@ -377,7 +412,7 @@ class ScreenSession(object):
             id=str(i)
             if not searching:
                 print('--')
-            cwin,ctitle=self.__get_number_and_title(id)
+            cwin,ctitle=self.get_number_and_title(id)
             if (cwin==-1):
                 #no such window
                 if searching:
@@ -391,7 +426,7 @@ class ScreenSession(object):
                     searching=False
                     print('\n--')
 
-                ctty = self.__get_tty(id)
+                ctty = self.get_tty(id)
                 if(ctty=="telnet"):
                     ctype="group"
                     cpids = None
@@ -410,7 +445,7 @@ class ScreenSession(object):
                         cpids_data.append(pidinfo)
 
                 
-                cgroup = self.__get_group(id)
+                cgroup = self.get_group(id)
                 
                 
                 #save scrollback
@@ -505,24 +540,18 @@ class ScreenSession(object):
 
     def __load_layouts(self):
         homewindow=self.homewindow
-        homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-        if not homelayout.startswith('This is layout'):
+        homelayout,homelayoutname=self.get_layout_number()
+        if homelayout==-1:
             print("No homelayout")
-            homelayout="-1"
-        else:
-            homelayout=homelayout.split(" ")[3]
         layout_trans={}
         for filename in glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')):
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
-            msg=subprocess.Popen('screen -S %s -Q @layout new %s' % (self.pid,layoutname), shell=True, stdout=subprocess.PIPE).communicate()[0]
-            if msg.startswith('No more layout'):
+            stat=self.get_layout_new()
+            if not stat:
                 print('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:
-                currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-                currentlayout,currentlayoutname = currentlayout.split('layout',1)[1].rsplit('(')
-                currentlayout = currentlayout.strip()
-                currentlayoutname = layoutname.rsplit(')')[0]
+                currentlayout,currentlayoutname=self.get_layout_number()
                 
                 layout_trans[layoutnumber]=currentlayout
 
@@ -547,7 +576,6 @@ class ScreenSession(object):
                 os.system('screen -S %s -X focus top' % (self.pid) )
                 for i in range(0,focus_offset):
                     os.system('screen -S %s -X focus' % (self.pid) )
-        print self.__wins_trans
         # select last layout
         lastname=None
         lastid_l=None
@@ -561,9 +589,9 @@ class ScreenSession(object):
             os.system('screen -S %s -Q @layout select %s' % (self.pid,layout_trans[lastid_l]))
             # ^^ layout numbering may change, use layout_trans={} !
 
-        if homelayout!="-1":
+        if homelayout!=-1:
             print("Returning homelayout %s"%homelayout)
-            os.system('screen -S %s -Q @layout select %s' % (self.pid,homelayout))
+            os.system('screen -S %s -X layout select %s' % (self.pid,homelayout))
         else:
             print('No homelayout - unable to return.')
         
@@ -623,17 +651,43 @@ class ScreenSession(object):
         self.__terminate_processes(ident)
         return focus_offset
 
+    def parse_windows(self,windows):
+        winendings=re.escape('$*-&@ ')
+        winendingsactive=re.escape('*')
+
+        winregex='\s\s\d+[%s]'%(winendings)
+        firstwinregex='^\d+[%s]'%(winendings)
+        firstwinactiveregex='^\d+[%s][%s]'%(winendingsactive,winendings)
+        winactiveregex='\s\s\d+[%s][%s]'%(winendingsactive,winendings)
+        
+        winids=re.compile(winregex).findall(windows)
+        winfirst=re.compile(firstwinregex).findall(windows)
+        winactive=re.compile(winactiveregex).findall(windows)
+        winactivefirst=re.compile(firstwinactiveregex).findall(windows)
+        
+        if len(winfirst)>0:
+            winnumbers=[int(re.compile('\d+').findall(winfirst[0])[0])]
+        else:
+            winnumbers=[]
+        for id in winids:
+            winnumbers.append(int(re.compile('\d+').findall(id)[0]))
+        
+        winactivenumbers=-1
+        if len(winactivefirst)>0:
+            winactivenumbers=int(re.compile('\d+').findall(winactivefirst[0])[0])
+        elif len(winactive)>0:
+            winactivenumbers=int(re.compile('\d+').findall(winactive[0])[0])
+
+        return winnumbers,winactivenumbers
 
     def __save_layouts(self):
-        homelayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-        if not homelayout.startswith('This is layout'):
+        homelayout,homelayoutname=self.get_layout_number()
+        layoutname=homelayoutname
+        
+        if homelayout==-1:
             print("No layouts to save. Create layouts with \":layout new\"")
             return False
-        homelayout,layoutname = homelayout.split('layout',1)[1].rsplit('(')
-        homelayout = homelayout.strip()
-        layoutname = layoutname.rsplit(')')[0]
-        homelayoutname = layoutname
-        print("Homelayout is %s (%s)"% (homelayout,layoutname))
+        print("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
        
 
@@ -653,15 +707,11 @@ class ScreenSession(object):
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 offset=0
                 findactive=False
-                for j in range(windows.count('$')):
-                    index=windows.find('$',offset)
-                    if(index!=-1):
-                        if windows[index-1]=='*' or windows[index-2]=='*':
-                            findactive=True
-                            print ('focus offset: '+str(offset))
-                            break
-                        else:
-                            offset=index+1
+                wnums,wactive=self.parse_windows(windows)
+                if wactive==-1:
+                    findactive=False
+                else:
+                    findactive=True
 
                 if not findactive:
                     currentnumber="-1\n"
@@ -681,10 +731,7 @@ class ScreenSession(object):
 
             os.system('screen -S %s -X layout next' % (self.pid) )
             
-            currentlayout=subprocess.Popen('screen -S %s -Q @layout number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0]
-            currentlayout,layoutname = currentlayout.split('layout',1)[1].rsplit('(')
-            currentlayout = currentlayout.strip()
-            layoutname = layoutname.rsplit(')')[0]
+            currentlayout,layoutname=self.get_layout_number()
         
         self.linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
@@ -1168,10 +1215,10 @@ def main():
     
     if (maxwin==-1) and (mode==1):
         print("for saving specify --maxwin (biggest window number in session)")
-        maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
+        maxwin=scs.get_maxwin()
     elif (maxwin==-1) and (mode==2) and bExact==True:
         print("--exact mode requires --maxwin (biggest window number in current session)")
-        maxwin=int(subprocess.Popen('screen -S %s -Q @maxwin' % scs.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(':')[1].strip())
+        maxwin=scs.get_maxwin()
 
 
     scs.maxwin = maxwin
