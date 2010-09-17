@@ -244,8 +244,11 @@ class ScreenSession(object):
                 print ('Unable to clean scrollback file: '+f)
 
     def __remove_all_layouts(self):
-        for i in range(0,10):
+        currentlayout=0
+        while currentlayout!=-1:
             os.system('screen -S %s -X layout remove' % (self.pid) )
+            os.system('screen -S %s -X layout next' % (self.pid) )
+            currentlayout,currentlayoutname=self.get_layout_number()
 
 
     def __move_all_windows(self,shift,group,kill=False):
