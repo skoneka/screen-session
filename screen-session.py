@@ -841,14 +841,10 @@ class ScreenSession(object):
             if self.force:
                 print('forcing..')
                 print('cleaning up \"%s\"' % savedir)
-                for filename in glob.glob(os.path.join(basedir,savedir,'win_*')):
-                    os.remove(filename)
-                for filename in glob.glob(os.path.join(basedir,savedir,'scrollback_*')):
-                    os.remove(filename)
-                for filename in glob.glob(os.path.join(basedir,savedir,'layout_*')):
-                    os.remove(filename)
-                for filename in glob.glob(os.path.join(basedir,savedir,'winlayout_*')):
-                    os.remove(filename)
+                map(os.remove,glob.glob(os.path.join(basedir,savedir,'win_*')))
+                map(os.remove,glob.glob(os.path.join(basedir,savedir,'scrollback_*')))
+                map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
+                map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
                 self.linkify(basedir,savedir,self.lastlink)
                 f=open(os.path.join(basedir,savedir,'winlist'),'w')
                 f.close()
