@@ -638,6 +638,7 @@ class ScreenSession(object):
     __get_focus_offset_c=0
     def __get_focus_offset(self):
         focus_offset=0
+        cnum=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         os.system('screen -S %s -X screen %s -m %d-%d'%(self.pid,self.primer,os.getpid(),self.__get_focus_offset_c))
         ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
@@ -652,6 +653,7 @@ class ScreenSession(object):
                 os.system('screen -S %s -X focus' % (self.pid) )
                 focus_offset+=1
         self.__terminate_processes(ident)
+        os.system('screen -S %s -X select %s' % (self.pid,cnum))
         return focus_offset
 
     def parse_windows(self,windows):
@@ -694,15 +696,15 @@ class ScreenSession(object):
         currentlayout=homelayout
        
 
+        print('--')
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
-            print('--')
             print("layout = %s (%s)"% (currentlayout,layoutname))
             os.system('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
-            print("regions (%d):" % region_c)
             focus_offset=self.__get_focus_offset()
+            print("regions (%d); focus offset (%s)" % (region_c,focus_offset))
             os.system('screen -S %s -X focus top' % (self.pid) )
             win=[]
             for i in range(0,region_c):
@@ -711,6 +713,8 @@ class ScreenSession(object):
                 offset=0
                 findactive=False
                 wnums,wactive=self.parse_windows(windows)
+                #print 'cnum='+currentnumber.strip()+'; wactive='+str(wactive)
+                #print windows
                 if wactive==-1:
                     findactive=False
                 else:
@@ -735,6 +739,7 @@ class ScreenSession(object):
             os.system('screen -S %s -X layout next' % (self.pid) )
             
             currentlayout,layoutname=self.get_layout_number()
+            print('--')
         
         self.linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
