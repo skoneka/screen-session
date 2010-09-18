@@ -252,8 +252,10 @@ class ScreenSession(object):
             currentlayout,currentlayoutname=self.get_layout_number()
 
     def __kill_windows(self,kill_list):
+        #kill_list.pop(len(kill_list)-1)
         for w in kill_list:
-            print('killing: '+str(w))
+            number,title=self.get_number_and_title(w)
+            print('killing: '+str(w)+ ':'+number+':'+title)
             os.system('screen -S %s -X at %s kill' % (self.pid, w) )
     def kill_old_windows(self):
         print ('killing: '+str(self.__kill_list))
@@ -272,15 +274,18 @@ class ScreenSession(object):
             if self.bKill:
                 self.__kill_list=[]
                 #self.__kill_list.append(homewindow+shift)
+                os.system('screen -S %s -X at %d group %s' % (self.pid,homewindow,'none') )
+                
             
             # create wrap group for existing windows
-            os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
-            os.system('screen -S %s -X group %s' % (self.pid, 'none') )
-            cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-            group=group+'_'+str(int(time.time()))
-            os.system('screen -S %s -X title %s' % (self.pid, group) )
-            if cwin not in r:
-                r.append(cwin)
+            if not self.bKill:
+                os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
+                os.system('screen -S %s -X group %s' % (self.pid, 'none') )
+                cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+                group=group+'_'+str(int(time.time()))
+                os.system('screen -S %s -X title %s' % (self.pid, group) )
+                if cwin not in r:
+                    r.append(cwin)
             r.sort()
             r.reverse()
             # move windows by shift and put them in a wrap group

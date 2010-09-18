@@ -122,6 +122,9 @@ Loading:
     # load session from savefile loaded to Screen with PID
     screen-session --load --in mysavedsession --out PID
 
+    # load saved session into new Screen session
+    screen -m screen-session --load --exact-kill-other
+
 
 Example bindings:
     # start screen-session in new window logging output and quickly 
