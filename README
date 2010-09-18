@@ -61,7 +61,7 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
-- make "layout" and "group" and "maxwin" and "sessionname" queryable
+- make "at" and "group" queryable
 
 
 -----------------------------------------------------------------------

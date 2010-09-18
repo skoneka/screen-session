@@ -104,7 +104,7 @@ class ScreenSession(object):
 
     def __remove_and_escape_bad_chars(self,str):
         # some characters are causing problems when setting window titles
-        return str.replace('|','I').replace('\\','/')# how to properly escape "\"?
+        return str.replace('\\','\\\\\\\\').replace('|','I')# how to properly escape "|"?
 
     def __load_screen(self):
         homewindow=self.homewindow
@@ -120,7 +120,7 @@ class ScreenSession(object):
         else:
             rootgroup="restore_"+self.savedir
             os.system('screen -S %s -X screen -t \"%s\" %s //group' % (self.pid,rootgroup,0 ) )
-            os.system('screen -S %s -X group %s' % (self.pid,hostgroup) )
+            os.system('screen -S %s -X group \"%s\"' % (self.pid,hostgroup) )
         
         rootwindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
@@ -254,8 +254,7 @@ class ScreenSession(object):
     def __kill_windows(self,kill_list):
         for w in kill_list:
             print('killing: '+str(w))
-            if w!=9:
-                os.system('screen -S %s -X at %s kill' % (self.pid, w) )
+            os.system('screen -S %s -X at %s kill' % (self.pid, w) )
     def kill_old_windows(self):
         print ('killing: '+str(self.__kill_list))
         self.__kill_windows(self.__kill_list)
@@ -272,7 +271,7 @@ class ScreenSession(object):
             
             if self.bKill:
                 self.__kill_list=[]
-                self.__kill_list.append(homewindow+shift)
+                #self.__kill_list.append(homewindow+shift)
             
             # create wrap group for existing windows
             os.system('screen -S %s -X screen -t \"%s\" //group' % (self.pid,group) )
