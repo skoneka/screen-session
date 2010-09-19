@@ -1212,7 +1212,7 @@ def main():
         print('No such session: %s'%pid)
         doexit(1,waitfor)
         
-    if savedir == scs.lastlink and mode==1:
+    if savedir in (scs.lastlink,'__tmp_pack') and mode==1:
         print("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     elif savedir == scs.blacklistfile:
