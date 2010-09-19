@@ -61,7 +61,6 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
-- make "at" and "group" queryable
 
 
 -----------------------------------------------------------------------

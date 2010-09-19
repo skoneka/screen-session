@@ -330,23 +330,22 @@ class ScreenSession(object):
     def get_lastmsg(self):
         return subprocess.Popen('screen -S %s -Q @lastmsg' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
 
+
     def query_at(self,win,command):
-        o=subprocess.Popen('screen -S %s -Q at %s %s' % (self.pid,win,command) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-        if o.startswith('-X:'):
+        os.system('screen -S %s -p %s -X %s'% (self.pid,win,command)) 
+        l=self.get_lastmsg()
+        if l.startswith('Could not'):
             #no such window
             return -1
         else:
-            l=self.get_lastmsg()
-            if l.startswith('command from'):
-                o=o.rsplit('command from')[0]
-            return o
+            return l
     
     def get_number_and_title(self,win):
         msg=self.query_at(win,'number')
         if msg==-1:
             return -1,-1
         number,title = msg.split("(",1)
-        number = number.strip()
+        number = number.strip().rsplit(' ',1)[1]
         title = title.rsplit(")",1)[0]
         return number,title
 

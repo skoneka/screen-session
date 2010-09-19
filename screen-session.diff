@@ -1,25 +1,7 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..2fbaada 100644
+index 5f4af8a..7a9cd18 100644
 --- a/src/comm.c
 +++ b/src/comm.c
-@@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
- #endif
-   { "allpartial",	NEED_DISPLAY|ARGS_1 },
-   { "altscreen",	ARGS_01 },
--  { "at",		ARGS_2|ARGS_ORMORE },
-+  { "at",		CAN_QUERY|ARGS_2|ARGS_ORMORE },
- #ifdef COLOR
-   { "attrcolor",	ARGS_12 },
- #endif
-@@ -194,7 +194,7 @@ struct comm comms[RC_LAST + 1] =
-   { "focus",		NEED_DISPLAY|ARGS_01 },
-   { "focusminsize",	ARGS_02 },
-   { "gr",		NEED_FORE|ARGS_01 },
--  { "group",            NEED_FORE|ARGS_01 },
-+  { "group",            CAN_QUERY|NEED_FORE|ARGS_01 },
-   { "hardcopy",		NEED_FORE|ARGS_012 },
-   { "hardcopy_append",	ARGS_1 },
-   { "hardcopydir",	ARGS_01 },
 @@ -313,6 +313,7 @@ struct comm comms[RC_LAST + 1] =
    { "terminfo",		ARGS_23 },
    { "time",		CAN_QUERY|ARGS_01 },
@@ -29,7 +11,7 @@ index 5f4af8a..2fbaada 100644
    { "unbindall",	ARGS_0 },
    { "unsetenv",		ARGS_1 },
 diff --git a/src/process.c b/src/process.c
-index da9188d..fdfb8cf 100644
+index da9188d..418e30d 100644
 --- a/src/process.c
 +++ b/src/process.c
 @@ -2661,6 +2661,15 @@ int key;
@@ -48,21 +30,3 @@ index da9188d..fdfb8cf 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -4237,13 +4246,10 @@ int key;
- 	  WindowChanged((struct win *)0, 'W');
- 	  WindowChanged((struct win *)0, 0);
- 	}
--      if (msgok)
--	{
--	  if (fore->w_group)
--	    OutputMsg(0, "window group is %d (%s)\n", fore->w_group->w_number, fore->w_group->w_title);
--	  else
--	    OutputMsg(0, "window belongs to no group");
--	}
-+    if (fore->w_group)
-+      OutputMsg(0, "window group is %d (%s)\n", fore->w_group->w_number, fore->w_group->w_title);
-+    else
-+      OutputMsg(0, "window belongs to no group");
-       break;
-     case RC_LAYOUT:
-       if (!strcmp(args[0], "title"))
