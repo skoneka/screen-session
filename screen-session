@@ -10,17 +10,35 @@ rawargument=`screen -Q @lastmsg`
 
 testargument=`screen -Q @tty`
 
+scsfiledir="/tmp/screen-sessions-$USER"
+scsfile="$scsfiledir/___scspipe-$$"
+
 screen-session.py --getopt $*
-if [ $? -eq 0 ]; then
+testrun=$?
+if [ $testrun -le 5 ]; then
     if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
-        echo "running inside patched Screen session"
-        argument="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+        echo "--- running inside patched Screen session"
+        argument0=""
+        argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
         #echo $argument $* | xargs screen-session.py $argument $*
         #screen -m -c /dev/null screen-session.py --wait $argument $*
-        #mkfifo /tmp/scspipe
-        screen -m -d -c /dev/null screen-session.py --log scspipe $argument $* 
+        if [ $testrun -eq 0 ]; then
+            argument0="--logpipe $scsfile"
+            if [ ! -d "$scsfiledir" ]; then
+                mkdir $scsfiledir
+            fi
+            if [ -d "$scsfile" ]; then
+                rm $scsfile
+            fi
+            mkfifo $scsfile
+        fi
+        screen -m -d -c /dev/null screen-session.py $argument0 $argument1 $* 
+        if [ $testrun -eq 0 ]; then
+            cat $scsfile
+            rm $scsfile
+        fi
     else
-        echo "not running inside patched Screen, this session cannot be saved properly"
+        echo "--- not running inside patched Screen, this session cannot be saved properly"
         argument=""
         screen-session.py $argument $*
     fi

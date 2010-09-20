@@ -12,6 +12,10 @@ issues:
 
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
 
+def out(str,verbose=False):
+    sys.stdout.write(str+'\n')
+    sys.stdout.flush()
+
 class ScreenSession(object):
     """class storing GNU screen sessions"""
     pid=""
@@ -48,23 +52,23 @@ class ScreenSession(object):
     def save(self):
         os.system('screen -S %s -X msgminwait %s' % (self.pid,"0"))
         self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        print("\n======CREATING___DIRECTORIES======")
+        out("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
-        print("\n======SAVING___SCREEN___SESSION======")
+        out("\n======SAVING___SCREEN___SESSION======")
         self.__save_screen()
         
         if self.enable_layout:
-            print("\n======SAVING___LAYOUTS======")
+            out("\n======SAVING___LAYOUTS======")
             self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
             self.__save_layouts()
-        print("\n======CLEANUP======")
+        out("\n======CLEANUP======")
         self.__scrollback_clean()
         return True
 
     def load(self):
         os.system('screen -S %s -X msgminwait %s' % (self.pid,"0"))
-        print('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
+        out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
         newwindows=0
@@ -74,26 +78,26 @@ class ScreenSession(object):
             newwindows=len(winlist)
             maxnewwindow=int(winlist[newwindows-1])
             f.close()
-            print('%d new windows'%newwindows)
+            out('%d new windows'%newwindows)
         except:
-            print('Unable to open.')
+            out('Unable to open.')
             return False
         
 
         # keep original numbering, move existing windows
         self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         if self.exact:
-            print('Biggest new window number: %d'%maxnewwindow)
+            out('Biggest new window number: %d'%maxnewwindow)
             if self.enable_layout:
                 self.__remove_all_layouts()
-            print('Moving windows...')
+            out('Moving windows...')
             self.__move_all_windows(maxnewwindow+1,self.group_other,False)
         
         self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        print("\n======LOADING___SCREEN___SESSION======")
+        out("\n======LOADING___SCREEN___SESSION======")
         self.__load_screen()
         if self.enable_layout:
-            print("\n======LOADING___LAYOUTS======")
+            out("\n======LOADING___LAYOUTS======")
             self.__load_layouts()
         return True
 
@@ -110,7 +114,7 @@ class ScreenSession(object):
 
     def __load_screen(self):
         homewindow=self.homewindow
-        print ("Homewindow is " +homewindow)
+        out ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
         hostgroup = self.get_group(homewindow)
@@ -125,9 +129,9 @@ class ScreenSession(object):
             os.system('screen -S %s -X group \"%s\"' % (self.pid,hostgroup) )
         
         rootwindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
-        print("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
+        out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
-        print('number; time; group; type; title; filter; processes;')
+        out('number; time; group; type; title; filter; processes;')
         wins=[]
         f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
         for id in f:
@@ -137,10 +141,10 @@ class ScreenSession(object):
                 win=list(f)[0:7]
                 f.close()
                 win=self.__striplist(win)
-                print (str(win))
+                out (str(win))
                 wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5], win[6]))
             except:
-                print('Unable to load window %s'%id)
+                out('Unable to load window %s'%id)
         f.close()
 
 
@@ -150,7 +154,7 @@ class ScreenSession(object):
         for win in wins:
             self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5], win[6])
         
-        print ("Rootwindow is "+rootwindow)
+        out ("Rootwindow is "+rootwindow)
         os.system('screen -S %s -X select %s' % (self.pid,rootwindow))
         
         # select last selected window
@@ -158,14 +162,14 @@ class ScreenSession(object):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
             lastid=lasttail.split("_",1)[1]
-            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
         
-        print ("Returning homewindow " +homewindow)
+        out ("Returning homewindow " +homewindow)
         os.system('screen -S %s -X select %s' % (self.pid,homewindow))
        
         if not self.restore_previous: 
-            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
 
 
@@ -187,7 +191,7 @@ class ScreenSession(object):
         elif type=='group':
             os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,winarg ) )
         else:
-            print ('Unkown window type. Ignoring.')
+            out ('Unkown window type. Ignoring.')
             return -1
        
         newwin = subprocess.Popen('screen -S %s -Q @number' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
@@ -244,7 +248,7 @@ class ScreenSession(object):
                     os.remove(f)
                     os.rename(ftmp,f)
             except:
-                print ('Unable to clean scrollback file: '+f)
+                out ('Unable to clean scrollback file: '+f)
 
     def __remove_all_layouts(self):
         currentlayout=0
@@ -257,10 +261,10 @@ class ScreenSession(object):
         #kill_list.pop(len(kill_list)-1)
         for w in kill_list:
             number,title=self.get_number_and_title(w)
-            print('killing: '+str(w)+ ':'+number+':'+title)
+            out('killing: '+str(w)+ ':'+number+':'+title)
             os.system('screen -S %s -X at %s kill' % (self.pid, w) )
     def kill_old_windows(self):
-        print ('killing: '+str(self.__kill_list))
+        out ('killing: '+str(self.__kill_list))
         self.__kill_windows(self.__kill_list)
 
     def __move_all_windows(self,shift,group,kill=False):
@@ -294,7 +298,7 @@ class ScreenSession(object):
             for i in r:
                 cselect = subprocess.Popen('screen -S %s -Q @select %d' % (self.pid,i) , shell=True, stdout=subprocess.PIPE).communicate()[0]
                 if not searching:
-                    print('--')
+                    out('--')
                 if len(cselect)>0 and not cselect.startswith('This'):
                     #no such window
                     if searching:
@@ -308,9 +312,9 @@ class ScreenSession(object):
                 else:
                     if(searching):
                         searching=False
-                        print('\n--')
+                        out('\n--')
                     cwin=int(subprocess.Popen('screen -S %s -Q @number' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
-                    print('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
+                    out('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
                         homewindow=cwin+shift
                     elif self.bKill:
@@ -399,7 +403,7 @@ class ScreenSession(object):
 
     def __save_screen(self):
         homewindow=self.homewindow
-        print ("Homewindow is " + homewindow)
+        out ("Homewindow is " + homewindow)
 
         cwin=-1
         ctty=None
@@ -410,7 +414,7 @@ class ScreenSession(object):
         for i in range(0,self.maxwin+1):
             id=str(i)
             if not searching:
-                print('--')
+                out('--')
             cwin,ctitle=self.get_number_and_title(id)
             if (cwin==-1):
                 #no such window
@@ -423,7 +427,7 @@ class ScreenSession(object):
             else:
                 if(searching):
                     searching=False
-                    print('\n--')
+                    out('\n--')
 
                 ctty = self.get_tty(id)
                 if(ctty=="telnet"):
@@ -479,10 +483,10 @@ class ScreenSession(object):
                     cpids=cpids_sort
                
 
-                print('window = '+cwin+\
+                out('window = '+cwin+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if cfilter!=-1:
-                    print('filter: exec %s'%(cfilter))
+                    out('filter: exec %s'%(cfilter))
                     f = open('/tmp/scstest','w')
                     f.write(cfilter)
                     f.close()
@@ -503,14 +507,14 @@ class ScreenSession(object):
                                 s=str(l[0])+'\0'
                                 for j in range(3,len(l)):
                                     s+=str(l[j])+'\0'
-                                    print('appending: %s'%str(l[j]))
+                                    out('appending: %s'%str(l[j]))
                                 newdata=(cpids_data[i][0],cpids_data[i][1],s,cpids_data[i][3])
                                 cpids_data[i]=newdata
 
-                        print('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
+                        out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                
                         if(cpids_data[i][2].startswith(self.primer)):
-                            print('Instance of primer detected. Importing files.')
+                            out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
                 
                 self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback)
@@ -518,8 +522,8 @@ class ScreenSession(object):
 
 
         self.linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
-        print('\n--')
-        print('saved on '+ctime)
+        out('\n--')
+        out('saved on '+ctime)
     
     def __rollback(self,cmdline):
         cmdline=cmdline.split('\0')
@@ -551,20 +555,20 @@ class ScreenSession(object):
         homewindow=self.homewindow
         homelayout,homelayoutname=self.get_layout_number()
         if homelayout==-1:
-            print("No homelayout")
+            out("No homelayout")
         layout_trans={}
         for filename in glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')):
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
             stat=self.get_layout_new()
             if not stat:
-                print('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
+                out('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:
                 currentlayout,currentlayoutname=self.get_layout_number()
                 
                 layout_trans[layoutnumber]=currentlayout
 
-                print("session %s sourcing %s"%(self.pid,filename))
+                out("session %s sourcing %s"%(self.pid,filename))
                 os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
                 (head,tail)=os.path.split(filename)
                 
@@ -577,7 +581,7 @@ class ScreenSession(object):
                         try:
                             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[line]))
                         except:
-                            print('Unable to set focus for: %s'%line)
+                            out('Unable to set focus for: %s'%line)
                     os.system('screen -S %s -X focus' % (self.pid) )
                 f.close()
                 
@@ -594,19 +598,19 @@ class ScreenSession(object):
             last=lasttail.split("_",2)
             lastname=last[2]
             lastid_l=last[1]
-            print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+            out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
             os.system('screen -S %s -X layout select %s' % (self.pid,layout_trans[lastid_l]))
             # ^^ layout numbering may change, use layout_trans={} !
 
         if homelayout!=-1:
-            print("Returning homelayout %s"%homelayout)
+            out("Returning homelayout %s"%homelayout)
             os.system('screen -S %s -X layout select %s' % (self.pid,homelayout))
         else:
-            print('No homelayout - unable to return.')
+            out('No homelayout - unable to return.')
         
         if not self.restore_previous:
             try:
-                print("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+                out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
                 os.system('screen -S %s -X layout select %s' % (self.pid,layout_trans[lastid_l]))
             except:
                 pass
@@ -616,14 +620,14 @@ class ScreenSession(object):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
             lastid=lasttail.split("_",1)[1]
-            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
         
-        print ("Returning homewindow " +homewindow)
+        out ("Returning homewindow " +homewindow)
         os.system('screen -S %s -X select %s' % (self.pid,homewindow))
        
         if not self.restore_previous: 
-            print("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
+            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
             os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[lastid]))
 
     def __terminate_processes(self,ident):
@@ -696,21 +700,21 @@ class ScreenSession(object):
         layoutname=homelayoutname
         
         if homelayout==-1:
-            print("No layouts to save. Create layouts with \":layout new\"")
+            out("No layouts to save. Create layouts with \":layout new\"")
             return False
-        print("Homelayout is %s (%s)"% (homelayout,homelayoutname))
+        out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
        
 
-        print('--')
+        out('--')
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
-            print("layout = %s (%s)"% (currentlayout,layoutname))
+            out("layout = %s (%s)"% (currentlayout,layoutname))
             os.system('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.__get_focus_offset()
-            print("regions (%d); focus offset (%s)" % (region_c,focus_offset))
+            out("regions (%d); focus offset (%s)" % (region_c,focus_offset))
             os.system('screen -S %s -X focus top' % (self.pid) )
             win=[]
             for i in range(0,region_c):
@@ -719,8 +723,8 @@ class ScreenSession(object):
                 offset=0
                 findactive=False
                 wnums,wactive=self.parse_windows(windows)
-                #print 'cnum='+currentnumber.strip()+'; wactive='+str(wactive)
-                #print windows
+                #out 'cnum='+currentnumber.strip()+'; wactive='+str(wactive)
+                #out windows
                 if wactive==-1:
                     findactive=False
                 else:
@@ -728,7 +732,7 @@ class ScreenSession(object):
 
                 if not findactive:
                     currentnumber="-1\n"
-                print("region = %s; window number = %s"%(i,currentnumber.strip()))
+                out("region = %s; window number = %s"%(i,currentnumber.strip()))
                 win.append(currentnumber)
                 os.system('screen -S %s -X focus' % (self.pid) )
 
@@ -745,18 +749,18 @@ class ScreenSession(object):
             os.system('screen -S %s -X layout next' % (self.pid) )
             
             currentlayout,layoutname=self.get_layout_number()
-            print('--')
+            out('--')
         
         self.linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
-        print("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
+        out("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
         
         # select last selected window
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
             lastid=lasttail.split("_",1)[1]
-            print("Selecting last window %s"%(lastid))
+            out("Selecting last window %s"%(lastid))
             os.system('screen -S %s -X select %s' % (self.pid,lastid))
 
         return True
@@ -828,17 +832,17 @@ class ScreenSession(object):
         return (cwd,exe,cmdline,blacklist)
 
     def __setup_savedir(self,basedir,savedir):
-        print ("Setting up session directory %s" % savedir)
+        out ("Setting up session directory %s" % savedir)
         if not os.path.exists(basedir):
             os.makedirs(basedir)
             f=open(os.path.join(basedir,self.blacklistfile),'w')
             f.close()
 
         if os.path.exists(os.path.join(basedir,savedir)):
-            print("Directory \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
+            out("Directory \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
             if self.force:
-                print('forcing..')
-                print('cleaning up \"%s\"' % savedir)
+                out('forcing..')
+                out('cleaning up \"%s\"' % savedir)
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'win_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'scrollback_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
@@ -848,7 +852,7 @@ class ScreenSession(object):
                 f.close()
                 return True
             else:
-                print('Aborting.')
+                out('Aborting.')
                 return False
         else:
             os.makedirs(os.path.join(basedir,savedir))
@@ -885,7 +889,7 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
-    print('unpacking...')
+    out('unpacking...')
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(tmpdir):
@@ -993,9 +997,9 @@ def list_sessions(home,projectsdir,archiveend):
     date_file_list.sort()
     
     if len(date_file_list)>0:
-        print('There are saved sessions:')
+        out('There are saved sessions:')
     else:
-        print('There are no saved sessions.')
+        out('There are no saved sessions.')
     
     fileending_l=len(archiveend)+len('__win')
     for file in date_file_list:
@@ -1004,10 +1008,10 @@ def list_sessions(home,projectsdir,archiveend):
         file_name = file_name[:len(file_name)-fileending_l]
         # convert date tuple to MM/DD/YYYY HH:MM:SS format
         file_date = time.strftime("%m/%d/%y %H:%M:%S", file[0])
-        print("\t%-30s %s" % (file_name, file_date))
+        out("\t%-30s %s" % (file_name, file_date))
     
     if len(date_file_list)>0:
-        print('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
+        out('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
 
 
 
@@ -1019,7 +1023,7 @@ def doexit(var=0,waitfor=True):
     sys.exit(var)
 
 def usage():
-    print('Options:\n\
+    out('Options:\n\
   --ls\n\
   \tlist saved sessions\n\
     \n\
@@ -1077,6 +1081,13 @@ tmpdir=''
 
 VERSION='0.56'
 
+class flushfile(object):
+  def __init__(self, f):
+    self.f = f
+  def write(self, x):
+    self.f.write(x)
+    self.f.flush()
+
 def main():    
     if len(sys.argv)>1:
         if sys.argv[1]=='--wait':
@@ -1087,9 +1098,9 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "txXryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "txXryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","exact-kill-other","ls","getopt","unpack=","log=","logpipe=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
-        print('Bad options.')
+        out('Bad options.')
         doexit(2,waitfor)
     
     global archiveend
@@ -1106,6 +1117,7 @@ def main():
     restore = False
     verbose = False
     log=None
+    logpipe=None
     force = False
     enable_layout = True
     mode = 0
@@ -1125,6 +1137,8 @@ def main():
             bList=True
         elif o == "--log":
             log = a
+        elif o == "--logpipe":
+            logpipe = a
         elif o == "--unpack":
             unpack = a
         elif o in ("-c","--current-session"):
@@ -1161,17 +1175,25 @@ def main():
 
     if bGetopt:
         if bList or bHelp or not bNest:
-            sys.exit(1)
+            sys.exit(6)
         else:
-            sys.exit(0)
+            if log:
+                print 'log'
+                sys.exit(1)
+            else:
+                print 'nolog'
+                sys.exit(0)
 
     home=os.path.expanduser('~')
     
     if log:
         sys.stdout=open(log,'w')
+    elif logpipe:
+        sys.stdout=open(logpipe,'w')
+        
 
-    print('screen-session version '+VERSION)
-    print('written by Artur Skonecki admin<[at]>adb.cba.pl')
+    out('screen-session version '+VERSION)
+    out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
     
     if bHelp:        
         usage()
@@ -1198,7 +1220,7 @@ def main():
             if current_session:
                 input = current_session
             else:
-                print("for saving you must specify target Screen session PID as --in")
+                out("for saving you must specify target Screen session PID as --in")
                 doexit("Aborting",waitfor)
         pid = input
         if not output:
@@ -1211,13 +1233,13 @@ def main():
             try:
                 input=os.readlink(os.path.join(home,projectsdir,input)).rsplit('__',1)[0]
             except:
-                print("No recent session to load")
+                out("No recent session to load")
                 doexit("Aborting",waitfor)
         if not output:
             if current_session:
                 output = current_session
             else:
-                print("for loading you must specify target Screen session PID as --out")
+                out("for loading you must specify target Screen session PID as --out")
                 doexit("Aborting",waitfor)
         pid = output
         savedir = input
@@ -1226,21 +1248,21 @@ def main():
     scs=ScreenSession(pid,projectsdir,savedir)
 
     if not scs.exists():
-        print('No such session: %s'%pid)
+        out('No such session: %s'%pid)
         doexit(1,waitfor)
         
     if savedir in (scs.lastlink,'__tmp_pack') and mode==1:
-        print("savedir cannot be named \"%s\". Aborting." % savedir)
+        out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     elif savedir == scs.blacklistfile:
-        print("savedir cannot be named \"%s\". Aborting." % savedir)
+        out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     
     if (maxwin==-1) and (mode==1):
-        print("for saving specify --maxwin (biggest window number in session)")
+        out("for saving specify --maxwin (biggest window number in session)")
         maxwin=scs.get_maxwin()
     elif (maxwin==-1) and (mode==2) and bExact==True:
-        print("--exact mode requires --maxwin (biggest window number in current session)")
+        out("--exact mode requires --maxwin (biggest window number in current session)")
         maxwin=scs.get_maxwin()
 
 
@@ -1264,23 +1286,23 @@ def main():
         if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
             if force==False:
                 os.system('screen -S %s -X echo "screen-session saving FAILED. Savefile exists."'%scs.pid)
-                print('Savefile exists. Use --force to overwrite')
+                out('Savefile exists. Use --force to overwrite')
                 doexit(1,waitfor)
             else:
-                print('Savefile exists. Forcing...')
+                out('Savefile exists. Forcing...')
         scs.savedir=savedir_tmp
         savedir=savedir_tmp
         try:
             ret = scs.save()
         except:
             ret=0
-            traceback.print_exc(file=sys.stdout)
-            print('session saving totally failed')
+            traceback.out_exc(file=sys.stdout)
+            out('session saving totally failed')
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
 
         if not ret:
-            print('session saving failed')
+            out('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
             removeit(os.path.join(home,projectsdir,savedir_real))
@@ -1288,7 +1310,7 @@ def main():
             archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink,savedir_real)
             scs.savedir=savedir_real
             savedir=savedir_real
-            print('session "%s" saved as "%s" in "%s"'%(scs.pid,scs.savedir,scs.basedir))
+            out('session "%s" saved as "%s" in "%s"'%(scs.pid,scs.savedir,scs.basedir))
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
@@ -1301,18 +1323,18 @@ def main():
                 scs.kill_old_windows()
         except:
             ret=0
-            traceback.print_exc(file=sys.stdout)
-            print('session loading totally failed')
+            traceback.out_exc(file=sys.stdout)
+            out('session loading totally failed')
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
 
         if not ret:
-            print('session loading failed')
+            out('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
     else:
-        print('No mode specified --load or --save')
+        out('No mode specified --load or --save')
 
     doexit(ret,waitfor)
 
