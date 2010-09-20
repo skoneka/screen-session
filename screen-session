@@ -14,7 +14,7 @@ screen-session.py --getopt $*
 if [ $? -eq 0 ]; then
     if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
         echo "running inside patched Screen session"
-        argument="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
+        argument="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
         #echo $argument $* | xargs screen-session.py $argument $*
         #screen -m -c /dev/null screen-session.py --wait $argument $*
         screen -m -c /dev/null screen-session.py $argument $*
