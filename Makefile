@@ -31,6 +31,7 @@ dist: clean
 	@echo creating dist tarball
 	@mkdir -p screen-session-${VERSION}
 	@cp -R LICENSE Makefile README config.mk screen-session.diff screen-session screen-session.py ${SRC} screen-session-${VERSION}
+	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/screen-session.py
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}

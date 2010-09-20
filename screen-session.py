@@ -1079,7 +1079,7 @@ $ screen-session --load --in mysavedsession --out PID\n\
 archiveend=''
 tmpdir=''
 
-VERSION='0.56'
+VERSION='git'
 
 class flushfile(object):
   def __init__(self, f):
@@ -1192,7 +1192,7 @@ def main():
         sys.stdout=open(logpipe,'w')
         
 
-    out('screen-session version '+VERSION)
+    out('SCREEN-SESSION ('+VERSION+') - GNU Screen session saver')
     out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
     
     if bHelp:        
