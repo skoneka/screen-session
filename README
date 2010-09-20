@@ -13,7 +13,7 @@ Description
 screen-session is a GNU Screen session saver.
 
 screen-session currently supports saving of:
-directories, programs, layouts, scrollbacks, titles
+directories, programs, layouts, scrollbacks, titles and filters
  
 It recognizes groups and regular windows. Currently there is no support 
 for serial and telnet window types.
@@ -61,6 +61,7 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
+- make "group" queryable
 
 
 -----------------------------------------------------------------------

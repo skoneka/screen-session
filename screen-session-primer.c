@@ -74,6 +74,7 @@
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
+#define BASEDATA_LINES 6
 
 
 int blacklist[BLACKLISTMAX];
@@ -425,11 +426,13 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         mygetch();
         return 1;
     }
+
+    // skip not important lines
     while((c=fgetc(fp))!=EOF) {
         if(c=='\n') {
             nl_c++;
         }
-        else if (nl_c > (5+(procs[0]*6)))
+        else if (nl_c > (BASEDATA_LINES+(procs[0]*6)))
             break;
     }
     c=fgetc(fp);
@@ -592,6 +595,8 @@ int main(int argc, char **argv) {
 
     int nl_c=0;
     int procs_c=0;
+    size_t filter_s=20;
+    char *filter=malloc(filter_s*sizeof(char));
     printf("%sSaved: ",green_r);
     while((c=fgetc(fp))!=EOF) {
         if(c=='\n') {
@@ -603,14 +608,17 @@ int main(int argc, char **argv) {
            fputc(c,stdout);
         else if (nl_c==4)//print title
             fputc(c,stdout);
-        if (nl_c > 4)
+        if (nl_c > BASEDATA_LINES-2)
             break;
      //   fputc(c,stdout);
     }
+    getline(&filter,&filter_s,fp);
+    filter=strtrim_right(filter,'\n');
+    printf("\nFilter: %s\n", filter);
     printf("%s",none);
     
     fscanf(fp,"%d\n",&procs_c);
-    printf("\n%s %d %sprograms running:%s\n",green_r,procs_c,blue_r,none);
+    printf("%s %d %sprograms running:%s\n",green_r,procs_c,blue_r,none);
 
     size_t proc_cwd_s=0;
     size_t proc_exe_s=0;
@@ -672,6 +680,20 @@ int main(int argc, char **argv) {
     char *shell=NULL;
     char **arglist=NULL;
     int *args;
+    
+    // execute filter
+    if( strncmp(filter,"-1",2)!=0 ) {
+        printf("Setting up filter...\n");
+        char command0[]="screen -X stuff \"exec ";
+        char command1[]="\"^M";
+        char *command=malloc((strlen(command0)+strlen(filter)+strlen(command1)+1)*sizeof(char));
+        strcpy(command,command0);
+        strcat(command,filter);
+        strcat(command,command1);
+        system("screen -X colon");
+        system(command);
+    }
+
     args=malloc(procs_c*sizeof(int));
     switch(menu) {
 

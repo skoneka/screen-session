@@ -53,8 +53,10 @@ class ScreenSession(object):
             return False
         print("\n======SAVING___SCREEN___SESSION======")
         self.__save_screen()
+        
         if self.enable_layout:
             print("\n======SAVING___LAYOUTS======")
+            self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
             self.__save_layouts()
         print("\n======CLEANUP======")
         self.__scrollback_clean()
@@ -132,21 +134,21 @@ class ScreenSession(object):
             try:
                 filename=os.path.join(self.basedir,self.savedir,"win_"+id.strip())
                 f=open(filename)
-                win=list(f)[0:6]
+                win=list(f)[0:7]
                 f.close()
                 win=self.__striplist(win)
                 print (str(win))
-                wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5]))
+                wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5], win[6]))
             except:
                 print('Unable to load window %s'%id)
         f.close()
 
 
         for win in wins:
-            self.__wins_trans[win[0]]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+            self.__wins_trans[win[0]]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5],win[6])
         
         for win in wins:
-            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5])
+            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5], win[6])
         
         print ("Rootwindow is "+rootwindow)
         os.system('screen -S %s -X select %s' % (self.pid,rootwindow))
@@ -174,7 +176,7 @@ class ScreenSession(object):
         return([x.strip() for x in l])
 
 
-    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
+    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,processes):
         if keep_numbering:
             winarg=win
         else:
@@ -191,12 +193,12 @@ class ScreenSession(object):
         newwin = subprocess.Popen('screen -S %s -Q @number' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         return newwin
     
-    def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,processes):
+    def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,filter,processes):
         if group=="none":
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) )
         else:    
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
-            
+    
     def __scrollback_clean(self):
         '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
         for f in self.__scrollbacks:
@@ -363,15 +365,11 @@ class ScreenSession(object):
     def get_layout_number(self):
         os.system('screen -S %s -X layout number' % (self.pid) )
         msg = self.get_lastmsg()
-        try:
-            if not msg.startswith('This is layout'):
-                raise Exception
-            currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
-            currentlayout = currentlayout.strip()
-            currentlayoutname = currentlayoutname.rsplit(')')[0]
-        except:
+        if not msg.startswith('This is layout'):
             return -1,-1
-
+        currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
+        currentlayout = currentlayout.strip()
+        currentlayoutname = currentlayoutname.rsplit(')')[0]
         return currentlayout,currentlayoutname
     
     def get_layout_new(self):
@@ -384,15 +382,19 @@ class ScreenSession(object):
 
     def get_group(self,win):
         msg=self.query_at(win,'group')
-        try:
-            if msg.endswith('no group'):
-                raise Exception
-            else:
-                group = msg.rsplit(")",1)[0].split("(",1)[1]
-        except:
-            group = "none"
+        if msg.endswith('no group'):
+            group = 'none'
+        else:
+            group = msg.rsplit(")",1)[0].split("(",1)[1]
         return group
 
+    def get_exec(self,win):
+        msg=self.query_at(win,'exec')
+        msg = msg.split(':',1)[1].strip()
+        if msg.startswith('(none)'):
+            return -1
+        else:
+            return msg
 
 
     def __save_screen(self):
@@ -443,6 +445,7 @@ class ScreenSession(object):
 
                 
                 cgroup = self.get_group(id)
+                cfilter = self.get_exec(id)
                 
                 
                 #save scrollback
@@ -478,6 +481,11 @@ class ScreenSession(object):
 
                 print('window = '+cwin+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
+                if cfilter!=-1:
+                    print('filter: '+cfilter)
+                else:
+                    cfilter='-1'
+                
                 if(cpids):
                     for i,pid in enumerate(cpids):
                         if(cpids_data[i][3]):
@@ -501,7 +509,7 @@ class ScreenSession(object):
                             print('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
                 
-                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cpids_data,rollback)
+                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback)
                 rollback=None
 
 
@@ -760,13 +768,14 @@ class ScreenSession(object):
         os.chdir(cwd)
 
 
-    def __save_win(self,winid,time,group,type,title,pids_data,rollback):
+    def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback):
         fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         
-        basedata=(winid,time,group,type,title)
+        basedata=(winid,time,group,type,title,filter)
+
         f=open(fname,"w")
         for data in basedata:
             f.write(data+'\n')
