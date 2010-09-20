@@ -17,7 +17,8 @@ if [ $? -eq 0 ]; then
         argument="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
         #echo $argument $* | xargs screen-session.py $argument $*
         #screen -m -c /dev/null screen-session.py --wait $argument $*
-        screen -m -c /dev/null screen-session.py $argument $*
+        #mkfifo /tmp/scspipe
+        screen -m -d -c /dev/null screen-session.py --log scspipe $argument $* 
     else
         echo "not running inside patched Screen, this session cannot be saved properly"
         argument=""

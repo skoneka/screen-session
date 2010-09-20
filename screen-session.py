@@ -127,7 +127,7 @@ class ScreenSession(object):
         rootwindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         print("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
-        print('number; time; group; type; title; processes;')
+        print('number; time; group; type; title; filter; processes;')
         wins=[]
         f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
         for id in f:
@@ -482,7 +482,11 @@ class ScreenSession(object):
                 print('window = '+cwin+\
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if cfilter!=-1:
-                    print('filter: '+cfilter)
+                    print('filter: exec %s'%(cfilter))
+                    f = open('/tmp/scstest','w')
+                    f.write(cfilter)
+                    f.close()
+
                 else:
                     cfilter='-1'
                 
@@ -1071,6 +1075,8 @@ $ screen-session --load --in mysavedsession --out PID\n\
 archiveend=''
 tmpdir=''
 
+VERSION='0.56'
+
 def main():    
     if len(sys.argv)>1:
         if sys.argv[1]=='--wait':
@@ -1163,6 +1169,9 @@ def main():
     
     if log:
         sys.stdout=open(log,'w')
+
+    print('screen-session version '+VERSION)
+    print('written by Artur Skonecki admin<[at]>adb.cba.pl')
     
     if bHelp:        
         usage()
@@ -1249,8 +1258,6 @@ def main():
     if mode==1: #mode save
         savedir_tmp=savedir+'__tmp'
         savedir_real=savedir
-        removeit(os.path.join(home,projectsdir,savedir_real))
-        removeit(os.path.join(tmpdir,savedir_real))
         removeit(os.path.join(home,projectsdir,savedir_tmp))
         removeit(os.path.join(tmpdir,savedir_tmp))
         # save and archivize
@@ -1276,6 +1283,8 @@ def main():
             print('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
+            removeit(os.path.join(home,projectsdir,savedir_real))
+            removeit(os.path.join(tmpdir,savedir_real))
             archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink,savedir_real)
             scs.savedir=savedir_real
             savedir=savedir_real
