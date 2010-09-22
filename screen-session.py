@@ -337,8 +337,12 @@ class ScreenSession(object):
         return subprocess.Popen('screen -S %s -Q @lastmsg' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
 
 
-    def query_at(self,win,command):
-        os.system('screen -S %s -p %s -X %s'% (self.pid,win,command)) 
+    def command_at(self,command,win="-1"):
+        if win=="-1":
+            win=""
+        else:
+            win="-p %s"%win
+        os.system('screen -S %s %s -X %s'% (self.pid,win,command)) 
         l=self.get_lastmsg()
         if l.startswith('Could not'):
             #no such window
@@ -347,7 +351,7 @@ class ScreenSession(object):
             return l
     
     def get_number_and_title(self,win):
-        msg=self.query_at(win,'number')
+        msg=self.command_at('number',win)
         if msg==-1:
             return -1,-1
         number,title = msg.split("(",1)
@@ -356,19 +360,62 @@ class ScreenSession(object):
         return number,title
 
     def get_tty(self,win):
-        msg=self.query_at(win,'tty')
+        msg=self.command_at('tty',win)
         tty = msg.strip()
         return tty
 
     def get_maxwin(self):
-        os.system('screen -S %s -X maxwin ' % (self.pid) )
-        msg = self.get_lastmsg()
+        msg=self.command_at('maxwin')
         maxwin=int(msg.split(':')[1].strip())
         return maxwin
+    '''
+    def get_info(self,win):
+       
+        msg=self.command_at('info',win)
+        return msg
+    '''
+    def get_info(self,win="-1"):
+        msg=self.command_at('info',win)
+        if not msg.endswith('no window'):
+            r=[]
+            head,tail=msg.split(' ',1)
+            size1,size2=head.split('/')
+            size2,size3=size2.split(')')
+            size1x,size1y=size1.strip('()').split(',')
+            size2x,size2y=size2.strip('()').split(',')
+            flow,encoding,number_title=tail.strip().split(' ',2)
+            number,title=number_title.split('(',1)
+            title.strip(')')
+            return  size1x,size1y,size2x,size2y,size3,flow,encoding,number,title
+        else:
+            return None
     
+    def get_dinfo(self):
+        msg=self.command_at('dinfo')
+        msg = msg.split(' ')
+        nmsg=msg.pop(0).strip('(').rstrip(')').split(',',1)
+        nmsg=nmsg+msg
+        return nmsg
+    
+    def stuff(self,args='',win="-1"):
+        msg=self.command_at('stuff "%s"'%args,win)
+
+    def colon(self,args='',win="-1"):
+        msg=self.command_at('colon "%s"'%args,win)
+    
+    def resize(self,args='',win="-1"):
+        msg=self.command_at('resize %s'%args)
+
+    def fit(self):
+        msg=self.command_at('fit')
+
+    def focusminsize(self,args=''):
+        msg=self.command_at('focusminsize %s'%args)
+        #msg.rsplit(' ',2)
+        #return msg
+
     def get_layout_number(self):
-        os.system('screen -S %s -X layout number' % (self.pid) )
-        msg = self.get_lastmsg()
+        msg=self.command_at('layout number')
         if not msg.startswith('This is layout'):
             return -1,-1
         currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
@@ -377,15 +424,14 @@ class ScreenSession(object):
         return currentlayout,currentlayoutname
     
     def get_layout_new(self):
-        os.system('screen -S %s -X layout new' % (self.pid) )
-        msg = self.get_lastmsg()
+        msg=self.command_at('layout new')
         if msg.startswith('No more'):
             return False
         else:
             return True
 
     def get_group(self,win):
-        msg=self.query_at(win,'group')
+        msg=self.command_at('group',win)
         if msg.endswith('no group'):
             group = 'none'
         else:
@@ -393,7 +439,7 @@ class ScreenSession(object):
         return group
 
     def get_exec(self,win):
-        msg=self.query_at(win,'exec')
+        msg=self.command_at('exec',win)
         msg = msg.split(':',1)[1].strip()
         if msg.startswith('(none)'):
             return -1
@@ -432,7 +478,7 @@ class ScreenSession(object):
                 # has to follow get_number_and_title() to recognize zombie windows
                 ctty = self.get_tty(id) 
                 if ctty.startswith('This'):
-                    print('Zombie window. Ignoring.')
+                    out('Zombie window. Ignoring.')
                     ctype="zombie"
                     continue;
                 elif(ctty=="telnet"):
@@ -553,12 +599,17 @@ class ScreenSession(object):
         
 
     def __load_layouts(self):
+        cdinfo=map(int,self.get_dinfo()[0:2])
+        out('Terminal size: %s %s'%(cdinfo[0],cdinfo[1]))
         homewindow=self.homewindow
         homelayout,homelayoutname=self.get_layout_number()
         if homelayout==-1:
             out("No homelayout")
         layout_trans={}
-        for filename in glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')):
+        out('--')
+        layout_c=len(glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')))
+        for i in range(0,layout_c):
+            filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
             stat=self.get_layout_new()
@@ -573,23 +624,48 @@ class ScreenSession(object):
                 os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
                 (head,tail)=os.path.split(filename)
                 
-                filename2=os.path.join(head,"win"+tail)
+                filename2=os.path.join(head,"win"+tail) #read winlayout
                 f=open(filename2,'r')
                 focus_offset=int(f.readline().split(" ")[1])
+                dinfo=map(int,f.readline().split(" ")[1:])
+                regions_size=[]
+                winlist=[]
                 for line in f:
-                    line=line.strip()
-                    if not line=="-1":
+                    window,sizex,sizey=line.split(' ')
+                    winlist.append(window)
+                    nsizex=(int(sizex)*cdinfo[0])/dinfo[0]
+                    nsizey=(int(sizey)*cdinfo[1])/dinfo[1]
+                    regions_size.append((nsizex,nsizey))
+                    if not window=="-1":
                         try:
-                            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[line]))
+                            # __wins_trans may be incomplete
+                            os.system('screen -S %s -X select %s' % (self.pid,self.__wins_trans[window]))
                         except:
-                            out('Unable to set focus for: %s'%line)
+                            out('Unable to set focus for: %s'%window)
                     os.system('screen -S %s -X focus' % (self.pid) )
                 f.close()
+                
+
+                # set region dimensions
+                os.system('screen -S %s -X focus top' % (self.pid) )
+                for size in regions_size:
+                    if size[0]>0:
+                        out('setting region size: %d %d'%(size[0],size[1]))
+                        self.resize('-h %d'%(size[0]))
+                        self.resize('-v %d'%(size[1]))
+                        self.fit()
+                    os.system('screen -S %s -X focus' % (self.pid) )
+
                 
                 # restore focus on the right region
                 os.system('screen -S %s -X focus top' % (self.pid) )
                 for i in range(0,focus_offset):
                     os.system('screen -S %s -X focus' % (self.pid) )
+
+                out('--')
+
+
+
         # select last layout
         lastname=None
         lastid_l=None
@@ -700,7 +776,10 @@ class ScreenSession(object):
 
     def __save_layouts(self):
         homelayout,homelayoutname=self.get_layout_number()
+        dinfo=self.get_dinfo()
         layoutname=homelayoutname
+        out('dinfo: '+str(self.get_dinfo()))
+        out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
@@ -721,8 +800,10 @@ class ScreenSession(object):
             os.system('screen -S %s -X focus top' % (self.pid) )
             win=[]
             for i in range(0,region_c):
-                currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]+'\n'
+                currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+                self.fit()
+                cinfo=self.get_info(currentnumber)
                 offset=0
                 findactive=False
                 wnums,wactive=self.parse_windows(windows)
@@ -734,13 +815,24 @@ class ScreenSession(object):
                     findactive=True
 
                 if not findactive:
-                    currentnumber="-1\n"
-                out("region = %s; window number = %s"%(i,currentnumber.strip()))
-                win.append(currentnumber)
+                    currentnumber="-1"
+                    #cinfo="-1"
+                out("region = %s; window number = %s"%(i,currentnumber))
+                if cinfo and findactive:
+                    s=str(cinfo)
+                    sizex=cinfo[2]
+                    sizey=cinfo[3]
+                else:
+                    s='no window'
+                    sizex="-1"
+                    sizey="-1"
+                out('info: '+s)
+                win.append("%s %s %s\n"%(currentnumber,sizex,sizey))
                 os.system('screen -S %s -X focus' % (self.pid) )
 
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
             f.writelines("offset %d\n"%focus_offset)
+            f.writelines("dinfo %s %s\n"%(dinfo[0],dinfo[1]))
             f.writelines(win)
             f.close()
             
@@ -1181,10 +1273,8 @@ def main():
             sys.exit(6)
         else:
             if log:
-                print 'log'
                 sys.exit(1)
             else:
-                print 'nolog'
                 sys.exit(0)
 
     home=os.path.expanduser('~')
@@ -1331,7 +1421,7 @@ def main():
                 scs.kill_old_windows()
         except:
             ret=0
-            traceback.out_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stdout)
             out('session loading totally failed')
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
