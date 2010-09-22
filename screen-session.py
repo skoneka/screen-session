@@ -18,7 +18,7 @@ def out(str,verbosity=0):
 
 class ScreenSession(object):
     """class storing GNU screen sessions"""
-    pid=""
+    pid="" # actually it is sessionname
     basedir=""
     projectsdir=".screen-sessions"
     savedir=""
@@ -429,12 +429,17 @@ class ScreenSession(object):
                     searching=False
                     out('\n--')
 
-                ctty = self.get_tty(id)
-                if(ctty=="telnet"):
+                # has to follow get_number_and_title() to recognize zombie windows
+                ctty = self.get_tty(id) 
+                if ctty.startswith('This'):
+                    print('Zombie window. Ignoring.')
+                    ctype="zombie"
+                    continue;
+                elif(ctty=="telnet"):
                     ctype="group"
                     cpids = None
                     cpids_data=None
-                else:
+                elif len(ctty) > 0:
                     ctype="basic"
                     cpids=subprocess.Popen('lsof -F p %s' % (ctty) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')
                     cpids_data=[]
@@ -512,8 +517,8 @@ class ScreenSession(object):
                         if(cpids_data[i][2].startswith(self.primer)):
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
-                
-                self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback)
+                if ctype!="zombie":
+                    self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback)
                 rollback=None
 
 
@@ -1186,8 +1191,11 @@ def main():
     
     if log:
         sys.stdout=open(log,'w')
+        sys.stderr=sys.stdout
     elif logpipe:
         sys.stdout=open(logpipe,'w')
+        sys.stderr=sys.stdout
+
         
 
     out('SCREEN-SESSION ('+VERSION+') - GNU Screen session saver')
@@ -1294,7 +1302,7 @@ def main():
             ret = scs.save()
         except:
             ret=0
-            traceback.out_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stdout)
             out('session saving totally failed')
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
@@ -1306,6 +1314,8 @@ def main():
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(tmpdir,savedir_real))
             archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink,savedir_real)
+            removeit(os.path.join(home,projectsdir,savedir_tmp))
+            removeit(os.path.join(tmpdir,savedir_tmp))
             scs.savedir=savedir_real
             savedir=savedir_real
             out('session "%s" saved as "%s" in "%s"'%(scs.pid,scs.savedir,scs.basedir))
