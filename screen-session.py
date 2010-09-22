@@ -12,7 +12,7 @@ issues:
 
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
 
-def out(str,verbose=False):
+def out(str,verbosity=0):
     sys.stdout.write(str+'\n')
     sys.stdout.flush()
 
@@ -487,10 +487,6 @@ class ScreenSession(object):
                         '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
                 if cfilter!=-1:
                     out('filter: exec %s'%(cfilter))
-                    f = open('/tmp/scstest','w')
-                    f.write(cfilter)
-                    f.close()
-
                 else:
                     cfilter='-1'
                 
@@ -650,9 +646,10 @@ class ScreenSession(object):
         focus_offset=0
         cnum=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         os.system('screen -S %s -X screen %s -m %d-%d'%(self.pid,self.primer,os.getpid(),self.__get_focus_offset_c))
-        ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
+        #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
         markertty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+        markernum=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
         os.system('screen -S %s -X focus top' % (self.pid) )
 
         while True:
@@ -662,7 +659,8 @@ class ScreenSession(object):
             else:
                 os.system('screen -S %s -X focus' % (self.pid) )
                 focus_offset+=1
-        self.__terminate_processes(ident)
+        #self.__terminate_processes(ident)
+        os.system('screen -S %s -X at %s kill'%(self.pid,markernum))
         os.system('screen -S %s -X select %s' % (self.pid,cnum))
         return focus_offset
 
