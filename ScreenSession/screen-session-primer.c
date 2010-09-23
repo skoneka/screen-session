@@ -127,6 +127,17 @@ int DirectoryExists( const char* pzPath )
     return bExists;
 }
 
+int file_exists(const char * filename)
+{
+    FILE *file=NULL;
+    if (file = fopen(filename, "r")) 
+    {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
 
 int 
 requireSession(const char *basepath,const char *file_in_session)
@@ -150,9 +161,10 @@ requireSession(const char *basepath,const char *file_in_session)
         return 1;
     }
         
-    char *filepath=malloc((strlen(basedir)+strlen(session)+1)*sizeof(char));
+    char *filepath=malloc((strlen(basedir)+strlen(session)+2)*sizeof(char));
     strcpy(filepath,basedir);
     strcat(filepath,"/");
+    //strcat(filepath,file_in_session);
     strcat(filepath,session);
 
     if(DirectoryExists(filepath)) {
