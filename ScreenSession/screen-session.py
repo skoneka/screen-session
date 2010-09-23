@@ -1112,69 +1112,48 @@ def doexit(var=0,waitfor=True):
 
 def usage():
     out('Options:\n\
-  --ls\n\
+--ls\n\
   \tlist saved sessions\n\
-    \n\
-  -l --load\n\
+-l --load\n\
   \tloading mode\n\
-    \n\
-  -s --save\n\
+-s --save\n\
   \tsaving mode\n\
-    \n\
-  -i --in     <session or directory>\n\
-  \tinput from session(saving) or savefile(loading)\n\
-    \n\
-  -o --out    <session or directory>\n\
-  \toutput to session(loading) or savefile(saving)\n\
-    \n\
-  -m --maxwin <number>\n\
+-i --in     <session or directory>\n\
+  \tsessionname(saving) or savefile(loading)\n\
+-o --out    <session or directory>\n\
+  \tsessionname(loading) or savefile(saving)\n\
+-m --maxwin <number>\n\
   \tsupply biggest window number in your session\n\
-    \n\
-  -f --force  <number>\n\
+-f --force  <number>\n\
   \tforce saving even if savefile with the same\n\
   \talready exists name exists\n\
-    \n\
-  -x --exact\n\
+-x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
-  \n\
-  -X --exact-kill-other\n\
+-X --exact-kill-other\n\
   \tsame as exact, but kills all existing windows\n\
-  \n\
-  -r --restore\n\
+-r --restore\n\
   \treturn to home window and home layout after session loading\n\
-    \n\
-  -y --no-layout\n\
+-y --no-layout\n\
   \tdisable layout saving/loading\n\
-    \n\
-  --log       <file>\n\
+--log       <file>\n\
   \toutput to file instead stdout\n\
-    \n\
-  -d --dir\n\
+-d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-    \n\
-  -w --wait\n\
+-w --wait\n\
   \twait for any key when finished\n\
-    \n\
-  -h --help\n\
+-h --help\n\
   \tshow this message\n\
   \n\
 Examples:\n\
-$ screen-session --save --maxwin 20 --in PID --out mysavedsession\n\
-$ screen-session --load --in mysavedsession --out PID\n\
+$ screen-session --save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
+$ screen-session --load --in mysavedsession --out SESSIONNAME\n\
 \n')
 
 archiveend=''
 tmpdir=''
 
 VERSION='git'
-
-class flushfile(object):
-  def __init__(self, f):
-    self.f = f
-  def write(self, x):
-    self.f.write(x)
-    self.f.flush()
 
 def main():    
     if len(sys.argv)>1:

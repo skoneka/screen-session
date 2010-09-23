@@ -20,7 +20,7 @@ testargument=`screen -Q @tty`
 scsfiledir="/tmp/screen-sessions-$USER"
 scsfile="$scsfiledir/___scspipe-$$"
 
-screen-session.py --getopt $*
+./screen-session.py --getopt $*
 testrun=$?
 if [ $testrun -le 5 ]; then
     if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
