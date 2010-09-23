@@ -389,6 +389,9 @@ class ScreenSession(object):
             return  size1x,size1y,size2x,size2y,size3,flow,encoding,number,title
         else:
             return None
+    def get_regionsize(self,win="-1"):
+        msg=self.command_at('regionsize',win)
+        return msg.split(' ')
     
     def get_dinfo(self):
         msg=self.command_at('dinfo')
@@ -776,14 +779,13 @@ class ScreenSession(object):
 
     def __save_layouts(self):
         homelayout,homelayoutname=self.get_layout_number()
-        dinfo=self.get_dinfo()
         layoutname=homelayoutname
-        out('dinfo: '+str(self.get_dinfo()))
-        out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
             return False
+        dinfo=self.get_dinfo()
+        out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
        
@@ -802,8 +804,7 @@ class ScreenSession(object):
             for i in range(0,region_c):
                 currentnumber=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
                 windows = subprocess.Popen('screen -S %s -Q @windows' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-                self.fit()
-                cinfo=self.get_info(currentnumber)
+                csize=self.get_regionsize(currentnumber)
                 offset=0
                 findactive=False
                 wnums,wactive=self.parse_windows(windows)
@@ -816,18 +817,10 @@ class ScreenSession(object):
 
                 if not findactive:
                     currentnumber="-1"
-                    #cinfo="-1"
-                out("region = %s; window number = %s"%(i,currentnumber))
-                if cinfo and findactive:
-                    s=str(cinfo)
-                    sizex=cinfo[2]
-                    sizey=cinfo[3]
-                else:
-                    s='no window'
-                    sizex="-1"
-                    sizey="-1"
-                out('info: '+s)
-                win.append("%s %s %s\n"%(currentnumber,sizex,sizey))
+                sizex=int(csize[0])
+                sizey=int(csize[1])
+                win.append("%s %d %d\n"%(currentnumber,sizex+1,sizey+1))
+                out("region = %s; window number = %s; size = (%d,%d)"%(i,currentnumber,sizex,sizey))
                 os.system('screen -S %s -X focus' % (self.pid) )
 
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
