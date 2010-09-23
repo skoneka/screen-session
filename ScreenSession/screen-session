@@ -5,6 +5,13 @@
 # description: screen-session.py script starter
 # it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
 
+# Absolute path to this script. /home/user/bin/foo.sh
+SCRIPT=$(readlink -f $0)
+# Absolute path this script is in. /home/user/bin
+SCRIPTPATH=`dirname $SCRIPT`
+
+cd $SCRIPTPATH
+
 screen -X sessionname
 rawargument=`screen -Q @lastmsg`
 
@@ -32,7 +39,7 @@ if [ $testrun -le 5 ]; then
             fi
             mkfifo $scsfile
         fi
-        screen -m -d -c /dev/null screen-session.py $argument0 $argument1 $* 
+        screen -m -d -c /dev/null ./screen-session.py $argument0 $argument1 $* 
         if [ $testrun -eq 0 ]; then
             cat $scsfile
             rm $scsfile
@@ -40,10 +47,10 @@ if [ $testrun -le 5 ]; then
     else
         echo "--- not running inside patched Screen, this session cannot be saved properly"
         argument=""
-        screen-session.py $argument $*
+        ./screen-session.py $argument $*
     fi
 else
-    screen-session.py  $*
+    ./screen-session.py  $*
 fi
 
 

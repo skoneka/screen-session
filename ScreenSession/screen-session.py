@@ -481,7 +481,7 @@ class ScreenSession(object):
                 # has to follow get_number_and_title() to recognize zombie windows
                 ctty = self.get_tty(id) 
                 if ctty.startswith('This'):
-                    out('Zombie window. Ignoring.')
+                    out('%s is a zombie window. Ignoring.'%(cwin))
                     ctype="zombie"
                     continue;
                 elif(ctty=="telnet"):

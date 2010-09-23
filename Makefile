@@ -2,7 +2,9 @@
 
 include config.mk
 
-SRC = screen-session-primer.c
+SRCDIR = ScreenSession
+SRC = ${SRCDIR}/screen-session-primer.c
+OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen-session.py
 OBJ = ${SRC:.c=.o}
 
 all: options screen-session-primer
@@ -15,13 +17,13 @@ options:
 
 .c.o:
 	@echo CC $<
-	@${CC} -c ${CFLAGS} $<
+	${CC} -o $@ -c ${CFLAGS} $<
 
 ${OBJ}: config.mk
 
 screen-session-primer: ${OBJ}
-	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	@echo CC -o ${SRCDIR}/$@
+	${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
@@ -30,24 +32,32 @@ clean:
 dist: clean
 	@echo creating dist tarball
 	@mkdir -p screen-session-${VERSION}
-	@cp -R LICENSE Makefile README config.mk screen-session.diff screen-session screen-session.py ${SRC} screen-session-${VERSION}
-	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/screen-session.py
+	@mkdir -p screen-session-${VERSION}/${SRCDIR}
+	@cp -R LICENSE Makefile README config.mk screen-session.diff  screen-session-${VERSION}
+	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
+	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session.py
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}
 
 install: all
-	@echo installing executables file to ${DESTDIR}${PREFIX}/bin
+	@echo installing files to ${INSTFOLDER}/
+	@mkdir -p ${INSTFOLDER}
+	@cp -f ${SRCDIR}/screen-session-primer ${OTHSRC} ${INSTFOLDER}
+	@chmod 755 ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session ${INSTFOLDER}/screen-session.py
+	@echo linking executables to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f screen-session ${DESTDIR}${PREFIX}/bin
-	@cp -f screen-session-primer ${DESTDIR}${PREFIX}/bin
-	@cp -f screen-session.py ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/screen-session
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/screen-session-primer
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/screen-session.py
+	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
+	@ln -sf ${INSTFOLDER}/screen-session-primer ${DESTDIR}${PREFIX}/bin
 
 uninstall:
-	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
+	@echo removing files from ${INSTFOLDER}
+	@rm -f ${INSTFOLDER}/screen-session
+	@rm -f ${INSTFOLDER}/screen-session-primer
+	@rm -f ${INSTFOLDER}/screen-session.py
+	@echo removing directory  ${INSTFOLDER}
+	@rm -r ${INSTFOLDER}
+	@echo removing files from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session-primer
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session.py
