@@ -1,7 +1,7 @@
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 
-from util import out
+from util import out,requireme
 
 class ScreenSaver(object):
     """class storing GNU screen sessions"""
@@ -338,7 +338,7 @@ class ScreenSaver(object):
         else:
             return l
     
-    def get_number_and_title(self,win):
+    def get_number_and_title(self,win="-1"):
         msg=self.command_at('number',win)
         if msg==-1:
             return -1,-1
@@ -346,6 +346,9 @@ class ScreenSaver(object):
         number = number.strip().rsplit(' ',1)[1]
         title = title.rsplit(")",1)[0]
         return number,title
+
+    def get_sessionname(self):
+        return self.command_at('number',win).strip("'").split("'",1)[1]
 
     def get_tty(self,win):
         msg=self.command_at('tty',win)
@@ -857,7 +860,8 @@ class ScreenSaver(object):
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
-        
+        if rollback!=None:
+            time=linecache.getline(rollback,2).strip()
         basedata=(winid,time,group,type,title,filter)
 
         f=open(fname,"w")
@@ -867,7 +871,7 @@ class ScreenSaver(object):
         if rollback!=None:
             target=rollback
             fr=open(target,'r')
-            for line in fr.readlines()[5:]:
+            for line in fr.readlines()[6:]:
                 f.write(line)
             os.remove(target)
         else:

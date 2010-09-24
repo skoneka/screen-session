@@ -126,6 +126,23 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     #os.rename(os.path.join(home,projectsdir,savedir+'__data'+archiveend),os.path.join(home,projectsdir,savedir_real+'__data'+archiveend))
     linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
+def command_at(command,win=None,session=None):
+    if session:
+        screen='screen -S %s'%session
+    else:
+        screen='screen'
+    if win:
+        win="-p %s"%win
+    else:
+        win=""
+    os.system('%s %s -X %s'% (screen,win,command)) 
+    l=subprocess.Popen('%s -Q @lastmsg' % (screen) , shell=True, stdout=subprocess.PIPE).communicate()[0]
+    if l.startswith('Could not'):
+        #no such window
+        return -1
+    else:
+        return l
+
 
 def list_sessions(home,projectsdir,archiveend):
     files=glob.glob(os.path.join(home,projectsdir,'*__win'+archiveend))
