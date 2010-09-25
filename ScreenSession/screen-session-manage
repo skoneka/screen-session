@@ -100,7 +100,7 @@ def print2ui(line):
     global ui2pipe
     os.write(ui2pipe,'%s\n'%line)
     pass
-def logic(fifoname,fifoname2,session):
+def logic(scs,fifoname,fifoname2,session):
     global ui2pipe
     sys.stdout=open('/tmp/scs_logicout','w')
     sys.stderr=sys.stdout
@@ -108,10 +108,9 @@ def logic(fifoname,fifoname2,session):
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
     print 'run printing'
-    from ScreenSaver import ScreenSaver
-    scs=ScreenSaver(session,'/dev/null','/dev/null')
     scs.split('-v')
     scs.split()
+    time.sleep(0.1)
     scs.focus()
     scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
@@ -119,11 +118,9 @@ def logic(fifoname,fifoname2,session):
     sys.stdout=os.fdopen(pipeout,'w')
     print2ui('test test')
     scs.focus('top')
-    #scs.stuff('hello hello hello')
     try:
         while 1:
             line = pipein.readline()[:-1]            # blocks until data sent
-            #scs.stuff('hello hello hello')
             if not line:
                 break;
             else:
@@ -154,7 +151,7 @@ def eval_command(scs,command):
         
 
 
-def ui(fifoname):
+def ui1(fifoname):
     print 'start opening [%s]'%fifoname
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
@@ -166,7 +163,7 @@ def ui(fifoname):
     #os.close(pipeout)
 
        
-def attach_ui(session):
+def attach_ui(scs,session):
     os.popen('screen -r %s'%(session))
     
 if __name__=='__main__':
@@ -178,14 +175,16 @@ if __name__=='__main__':
         if not os.path.exists(fifoname2):
             os.mkfifo(fifoname2)
         session=prime(fifoname)
+        from ScreenSaver import ScreenSaver
+        scs=ScreenSaver(session,'/dev/null','/dev/null')
         if os.fork()==0:
-            logic(fifoname,fifoname2,session)
+            logic(scs,fifoname,fifoname2,session)
         else:
-            attach_ui(session)
+            attach_ui(scs,session)
 
     elif sys.argv[1]=='ui':
         fifoname=sys.argv[2]
-        ui(fifoname)
+        ui1(fifoname)
     elif sys.argv[1]=='ui2':
         fifoname=sys.argv[2]
         ui2(fifoname)

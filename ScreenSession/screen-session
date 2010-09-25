@@ -12,6 +12,18 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 
+# parse command line arguments
+while getopts ":w": OPT; do
+    case "$OPT" in
+    w)  echo 'hello'
+        waitfor="1"
+        ;;
+    esac
+done
+
+
+
+
 screen -X sessionname
 rawargument=`screen -Q @lastmsg`
 
@@ -54,3 +66,7 @@ else
 fi
 
 
+if [ $waitfor = "1" ]; then
+    echo 'Press any key...'
+    stty cbreak -echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
+fi

@@ -54,7 +54,7 @@ def usage():
   \toutput to file instead stdout\n\
 -d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
--w --wait\n\
+-w\n\
   \twait for any key when finished\n\
 -h --help\n\
   \tshow this message\n\
@@ -135,7 +135,9 @@ def main():
         elif o in ("-h","--help"):
             bHelp=True
         elif o in ("-w","--wait"):
-            waitfor = True
+            # ignore, currently handled in wrapper script
+            #waitfor = True
+            pass
         elif o in ("-b","--backtick"):
             backtick = a
         elif o in ("-m","--maxwin"):

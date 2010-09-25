@@ -420,6 +420,10 @@ class ScreenSaver(object):
         msg=self.command_at('screen %s'%args,win)
         return msg
 
+    def source(self,args=''):
+        msg=self.command_at('source %s'%args)
+        return msg
+
     def backtick(self,id,lifespan='',autorefresh='',args=''):
         msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
 
