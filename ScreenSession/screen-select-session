@@ -58,7 +58,7 @@ def menu_tmp():
                 if inputstring.startswith(':'):
                     command=inputstring[1:]
                     break
-                choice=eval(command)
+                choice=eval(inputstring)
                 if choice >= 0 and choice < i:
                     break
                 else:
@@ -144,6 +144,7 @@ def logic(fifoname,fifoname2,session):
         if not line:
             break;
         else:
+            eval_command(scs,line)
             scs.focus('bottom')
             print('Trying to attach [%s]'%line)
             scs.screen('screen -x %s'%line)
@@ -162,10 +163,10 @@ def eval_command(scs,command):
     else:
         args=None
     if mode=='attach':
-
-
-        
         pass
+    elif mode=='quit':
+        scs.quit()
+        
 
 
 def ui(fifoname):

@@ -1,5 +1,5 @@
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,string
 
 archiveend=''
 tmpdir=''
@@ -176,3 +176,41 @@ def list_sessions(home,projectsdir,archiveend):
     
     if len(date_file_list)>0:
         out('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
+
+def find_in_path(file, path=None):
+  """find_in_path(file[, path=os.environ['PATH']]) -> list
+
+  Finds all files with a specified name that exist in the operating system's
+  search path (os.environ['PATH']), and returns them as a list in the same
+  order as the path.  Instead of using the operating system's search path,
+  the path argument can specify an alternative path, either as a list of paths
+  of directories, or as a single string seperated by the character os.pathsep.
+
+  If you want to limit the found files to those with particular properties,
+  use filter() or which()."""
+
+  if path is None:
+    path = os.environ.get('PATH', '')
+  if type(path) is type(''):
+    path = string.split(path, os.pathsep)
+  return filter(os.path.exists,
+                map(lambda dir, file=file: os.path.join(dir, file), path))
+
+def which(file, mode=os.F_OK | os.X_OK, path=None):
+  """which(file[, mode][, path=os.environ['PATH']]) -> list
+
+  Finds all executable files in the operating system's search path
+  (os.environ['PATH']), and returns them as a list in the same order as the
+  path.  Like the UNIX shell command 'which'.  Instead of using the operating
+  system's search path, the path argument can specify an alternative path,
+  either as a list of paths of directories, or as a single string seperated by
+  the character os.pathsep.
+
+  Alternatively, mode can be changed to a different os.access mode to
+  check for files or directories other than "executable files".  For example,
+  you can additionally enforce that the file be readable by specifying
+  mode = os.F_OK | os.X_OK | os.R_OK."""
+
+  return filter(lambda path, mode=mode: os.access(path, mode),
+                find_in_path(file, path))
+
