@@ -1,7 +1,7 @@
 
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 
-from util import out,requireme
+from util import out,requireme,linkify
 
 class ScreenSaver(object):
     """class storing GNU screen sessions"""
@@ -397,11 +397,28 @@ class ScreenSaver(object):
     def colon(self,args='',win="-1"):
         msg=self.command_at('colon "%s"'%args,win)
     
-    def resize(self,args='',win="-1"):
+    def resize(self,args=''):
         msg=self.command_at('resize %s'%args)
+
+    def focus(self,args=''):
+        msg=self.command_at('focus %s'%args)
+
+    def kill(self,args='',win="-1"):
+        msg=self.command_at('kill %s'%args,win)
+        return msg
+
+    def quit(self):
+        msg=self.command_at('quit')
 
     def fit(self):
         msg=self.command_at('fit')
+
+    def split(self,args=''):
+        msg=self.command_at('split %s'%args)
+
+    def screen(self,args='',win="-1"):
+        msg=self.command_at('screen %s'%args,win)
+        return msg
 
     def focusminsize(self,args=''):
         msg=self.command_at('focusminsize %s'%args)
@@ -562,7 +579,7 @@ class ScreenSaver(object):
                 rollback=None
 
 
-        self.linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         out('\n--')
         out('saved on '+ctime)
     
@@ -830,7 +847,7 @@ class ScreenSaver(object):
             currentlayout,layoutname=self.get_layout_number()
             out('--')
         
-        self.linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
+        linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
         out("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
         
@@ -844,17 +861,6 @@ class ScreenSaver(object):
 
         return True
            
-    def linkify(self,dir,dest,targ):
-        cwd=os.getcwd()
-        os.chdir(dir)
-        try:
-            os.remove(targ)
-        except:
-            pass
-        os.symlink(dest,targ)
-        os.chdir(cwd)
-
-
     def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback):
         fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
         fh.write(str(winid)+'\n')
@@ -927,7 +933,7 @@ class ScreenSaver(object):
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'scrollback_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
-                self.linkify(basedir,savedir,self.lastlink)
+                linkify(basedir,savedir,self.lastlink)
                 f=open(os.path.join(basedir,savedir,'winlist'),'w')
                 f.close()
                 return True
@@ -936,7 +942,7 @@ class ScreenSaver(object):
                 return False
         else:
             os.makedirs(os.path.join(basedir,savedir))
-            self.linkify(basedir,savedir,self.lastlink)
+            linkify(basedir,savedir,self.lastlink)
             f=open(os.path.join(basedir,savedir,'winlist'),'w')
             f.close()
             return True
