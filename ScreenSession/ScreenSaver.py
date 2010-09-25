@@ -420,9 +420,6 @@ class ScreenSaver(object):
         msg=self.command_at('screen %s'%args,win)
         return msg
 
-    def backtick(self,id,lifespan='',autorefresh='',args=''):
-        msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
-
     def focusminsize(self,args=''):
         msg=self.command_at('focusminsize %s'%args)
         #msg.rsplit(' ',2)
