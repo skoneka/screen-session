@@ -5,23 +5,6 @@ import commands, os, re, sys,time
 import GNUScreen as sc
 import util
 
-    
-
-
-def child_fifo( ):
-    pipeout = os.open(fifoname, os.O_WRONLY)     # open fifo pipe file as fd
-    zzz = 0
-    while 1:
-        time.sleep(zzz)
-        os.write(pipeout, 'Spam %03d\n' % zzz)
-        zzz = (zzz+1) % 5
-
-def parent_fifo( ):
-    pipein = open(fifoname, 'r')                 # open fifo as stdio object
-    while 1:
-        line = pipein.readline( )[:-1]            # blocks until data sent
-        print 'Parent %d got "%s" at %s' % (os.getpid(), line, time.time( ))
-
 
 def menu_tmp():
     PREFIX = "/usr"
@@ -81,11 +64,11 @@ def menu_tmp():
             return command
         if choice == i-1 or choice==0:
             # Create a new session
-            return None
+            return "quit"
             os.execv(PREFIX+"/bin/screen", ["", SHELL])
         else:
             # Attach to the chosen session; must use the 'screen' binary
-            return sessions[choice-1]
+            return "attach "+sessions[choice-1]
             os.execv(PREFIX+"/bin/screen", ["", "-AOxRR", sessions[choice-1]])
 
     # No valid selection, default to the youngest session, create if necessary
@@ -137,35 +120,37 @@ def logic(fifoname,fifoname2,session):
     print2ui('test test')
     scs.focus('top')
     #scs.stuff('hello hello hello')
-
-    while 1:
-        line = pipein.readline()[:-1]            # blocks until data sent
-        #scs.stuff('hello hello hello')
-        if not line:
-            break;
-        else:
-            eval_command(scs,line)
-            scs.focus('bottom')
-            print('Trying to attach [%s]'%line)
-            scs.screen('screen -x %s'%line)
-            cnum=scs.get_number_and_title()[0]
-            scs.focus('top')
-            print 'RUN parent %d got "%s" at %s' % (os.getpid(), line, time.time( ))
-            print2ui('UI: %s\n'%line)
-    pipein.close()
-    scs.quit()
+    try:
+        while 1:
+            line = pipein.readline()[:-1]            # blocks until data sent
+            #scs.stuff('hello hello hello')
+            if not line:
+                break;
+            else:
+                print2ui('UI: %s'%line)
+                eval_command(scs,line)
+    except SystemExit:
+        pipein.close()
+        scs.quit()
 
 def eval_command(scs,command):
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
-        args=command[1].split(' ')
+        args=[]
+        for arg in command[1].split(' '):
+            args.append(arg)
     else:
         args=None
     if mode=='attach':
-        pass
+        scs.focus('bottom')
+        scs.screen('screen -x %s'%args[0])
+        cnum=scs.get_number_and_title()[0]
+        scs.focus('top')
+    elif mode=='kill':
+        scs.kill('',args[0])
     elif mode=='quit':
-        scs.quit()
+        raise SystemExit
         
 
 
@@ -175,23 +160,11 @@ def ui(fifoname):
     selection=''
     print 'start selecting'
     while selection!=None:
-        '''
-        os.system('screen -X focus bottom')
-        os.system('screen -X screen screen  -x %s'%(selection))
-        #os.system('screen -X focus bottom')
-        #os.system('screen -X title \"%s\"'%(selection))
-        print 'cnum='+str(cnum)
-        os.system('screen -X focus top')
-        os.system('screen -p %s -X kill'%cnum)
-        os.system('screen -X quit')
-        '''
         selection=menu_tmp()
         if selection:
             os.write(pipeout,'%s\n'%selection)
     #os.close(pipeout)
-        
 
-        #need to move all this to primer because unable to "focus" and gather data in the same session
        
 def attach_ui(session):
     os.popen('screen -r %s'%(session))
