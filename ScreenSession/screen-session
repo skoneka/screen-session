@@ -60,7 +60,7 @@ shift 1 $*
 if [ $mode = "manage" ]; then
     python ./screen-session-manage p
 elif [ $mode = "grab" ]; then
-    ./screen-session-grab $*
+    sh ./screen-session-grab $*
 elif [ $mode = "regions" ]; then
     if [ $1 = "--help" ]; then
         showhelp_regions
@@ -69,9 +69,9 @@ elif [ $mode = "regions" ]; then
     argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
     screen -m -d -c /dev/null python ./screen-display-regions.py $argument $*
 elif [ $mode = "regions-helper" ]; then
-    ./screen-display-regions-helper $*
+    sh ./screen-display-regions-helper $*
 elif [ $mode = "dir" ]; then
-    ./screen-in-dir $*
+    sh ./screen-in-dir $*
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`

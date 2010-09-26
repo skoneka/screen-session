@@ -4,7 +4,7 @@ include config.mk
 
 SRCDIR = ScreenSession
 SRC = ${SRCDIR}/screen-session-primer.c
-OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen-session.py
+OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen-session.py ${SRCDIR}/screen-in-dir ${SRCDIR}/screen-display-regions.py ${SRCDIR}/screen-display-regions-helper ${SRCDIR}/screen-session-grab ${SRCDIR}/screen-session-manage  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py
 OBJ = ${SRC:.c=.o}
 
 all: options screen-session-primer
@@ -44,7 +44,7 @@ install: all
 	@echo installing files to ${INSTFOLDER}/
 	@mkdir -p ${INSTFOLDER}
 	@cp -f ${SRCDIR}/screen-session-primer ${OTHSRC} ${INSTFOLDER}
-	@chmod 755 ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session ${INSTFOLDER}/screen-session.py
+	@chmod 755 ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session
 	@echo linking executables to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
@@ -54,12 +54,10 @@ uninstall:
 	@echo removing files from ${INSTFOLDER}
 	@rm -f ${INSTFOLDER}/screen-session
 	@rm -f ${INSTFOLDER}/screen-session-primer
-	@rm -f ${INSTFOLDER}/screen-session.py
 	@echo removing directory  ${INSTFOLDER}
 	@rm -r ${INSTFOLDER}
 	@echo removing files from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session-primer
-	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session.py
 
 .PHONY: all options clean dist install uninstall
