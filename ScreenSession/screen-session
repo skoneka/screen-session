@@ -59,12 +59,12 @@ if [ $logpipe -eq 1 ]; then
     fi
     mkfifo $scsfile
 
-    screen -m -d -c /dev/null ./screen-session.py $argument0 $argument1 $* 
+    screen -m -d -c /dev/null python ./screen-session.py $argument0 $argument1 $* 
     
     cat $scsfile
     rm $scsfile
 else
-    ./screen-session.py $argument0 $argument1 $*
+    python ./screen-session.py $argument0 $argument1 $*
 fi
 
 
