@@ -76,12 +76,13 @@ def main():
     else:
         waitfor = False
 
+    bad_arg=None
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[2:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
-        out('Bad options.')
-        doexit(2,waitfor)
+        bad_arg='BAD OPTIONS'
     
+    mode = 0
     util.archiveend='.tar.bz2'
     unpack=None
     current_session=None
@@ -96,7 +97,6 @@ def main():
     logpipe=None
     force = False
     enable_layout = True
-    mode = 0
     projectsdir =None
     savedir = None
     maxwin = -1
@@ -152,7 +152,8 @@ def main():
         elif o in ("-o","--out"):
             output = a
         else:
-            doexit("Unhandled option",waitfor)
+            bad_arg=o
+            break;
 
     home=os.path.expanduser('~')
     
@@ -169,6 +170,22 @@ def main():
 
     out('SCREEN-SESSION ('+VERSION+') - GNU Screen session saver')
     out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
+
+    if bad_arg:
+        print('Unhandled option: %s'%bad_arg)
+        doexit(1,waitfor)
+
+    if sys.argv[1] in ('save','s'):
+        mode=1
+    elif sys.argv[1] in ('load','l'):
+        mode=2
+    elif sys.argv[1] in ('list','ls'):
+        mode=0
+        bList=True
+    else:
+        print('Usage: screen-session [manage|save|load|list] [options]')
+        print('More: screen-session --help')
+        doexit(1,waitfor)
     
     if bHelp:        
         usage()

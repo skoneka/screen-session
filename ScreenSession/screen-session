@@ -12,6 +12,7 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 
+
 # parse command line arguments
 waitfor=0
 nonest=0
@@ -30,43 +31,47 @@ while getopts ":wnp:": OPT; do
     esac
 done
 
-
-screen -X sessionname
-rawargument=`screen -Q @lastmsg`
-
-testargument=`screen -Q @tty`
-
-scsfiledir="/tmp/screen-sessions-$USER"
-scsfile="$scsfiledir/___scspipe-$$"
-
-argument0=""
-argument1=""
-
-if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
-    echo "--- running inside patched Screen session"
-    argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+mode=$1
+shift 1 $*
+if [ $mode = "manage" ]; then
+    python ./screen-session-manage p
 else
-    echo "--- not running inside patched Screen, this session cannot be saved properly"
-fi
+    screen -X sessionname
+    rawargument=`screen -Q @lastmsg`
 
-if [ $logpipe -eq 1 ]; then
-    argument0="-p $scsfile"
-    if [ ! -d "$scsfiledir" ]; then
-        mkdir $scsfiledir
+    testargument=`screen -Q @tty`
+
+    scsfiledir="/tmp/screen-sessions-$USER"
+    scsfile="$scsfiledir/___scspipe-$$"
+
+    argument0=""
+    argument1=""
+
+    if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
+        echo "--- running inside patched Screen session"
+        argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+    else
+        echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
-    if [ -d "$scsfile" ]; then
+
+    if [ $logpipe -eq 1 ]; then
+        argument0="-p $scsfile"
+        if [ ! -d "$scsfiledir" ]; then
+            mkdir $scsfiledir
+        fi
+        if [ -d "$scsfile" ]; then
+            rm $scsfile
+        fi
+        mkfifo $scsfile
+
+        screen -m -d -c /dev/null python ./screen-session.py $mode $argument0 $argument1 $* 
+        
+        cat $scsfile
         rm $scsfile
+    else
+        python ./screen-session.py $mode $argument0 $argument1 $*
     fi
-    mkfifo $scsfile
-
-    screen -m -d -c /dev/null python ./screen-session.py $argument0 $argument1 $* 
-    
-    cat $scsfile
-    rm $scsfile
-else
-    python ./screen-session.py $argument0 $argument1 $*
 fi
-
 
 if [ $waitfor -eq 1 ]; then
     echo 'Press any key...'
