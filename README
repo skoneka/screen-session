@@ -18,40 +18,6 @@ directories, programs, layouts, scrollbacks, titles and filters
 It recognizes groups and regular windows. Currently there is no support 
 for serial and telnet window types.
 
-screen-session saves directories and programs by directly reading /proc 
-filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
-pid. There is no "stuffing" and there is totally no interaction with 
-programs in windows.
-
-After session loading, in every new window starts screen-session-primer 
-(small C program) which displays list of processes and asks user what 
-to do (whether to start none, part of or all window's processes).
-Then, primer tries to restore the string of processes by execing
-'program -c "/command/;program" arguments' for nodes and simply
-'program arguments' for leafs. Entire string of processes can only be
-properly restored if every non-leaf accepts '-c command' switch.
-
-Can be restored completly:
-0 zsh -> 1 bash -> 2 vim hello.c 
-
-Only up to 1:
-0 zsh -> 1 man hello -> 2 less
-
-
-There is also a blacklist for programs which may not be started
-(file $HOME/.screen-sessions/BLACKLIST).
- 
-screen-session-primer uses linux color escapes. If you dont want color
-remove "-DCOLOR" from config.mk
-
-Normally screen-session does not restore exact window numbers. If you 
-want to force verbatim restoring use --exact flag.
-
-Savefiles are .tar.bz2 archives. Scrollbacks can take 
-a *lot* of space. During reading temporary files are stored in 
-/tmp/screen-session-$USER.
-
-
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
@@ -61,6 +27,7 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
+- add "regionsize" command
 - make "group" queryable
 
 
@@ -109,6 +76,11 @@ Saving:
     screen-session --save --in PID --out mysavedsession
 
 
+Automated saving:
+    # save session after 3 minutes of inactivity. Notice the "-w" switch.
+    :idle 180  exec sh -c "screen-session -w --save --force > /dev/null"
+
+
 Loading:
     # load last saved session inside target session
     screen-session --load
@@ -133,6 +105,42 @@ Example bindings:
 
 
 -----------------------------------------------------------------------
+Detailed Description
+-----------------------------------------------------------------------
+screen-session saves directories and programs by directly reading /proc 
+filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
+pid. There is no "stuffing" and there is totally no interaction with 
+programs in windows.
+
+After session loading, in every new window starts screen-session-primer 
+(small C program) which displays list of processes and asks user what 
+to do (whether to start none, part of or all window's processes).
+Then, primer tries to restore the string of processes by execing
+'program -c "/command/;program" arguments' for nodes and simply
+'program arguments' for leafs. Entire string of processes can only be
+properly restored if every non-leaf accepts '-c command' switch.
+
+Can be restored completly:
+0 zsh -> 1 bash -> 2 vim hello.c 
+
+Only up to 1:
+0 zsh -> 1 man hello -> 2 less
+
+
+There is also a blacklist for programs which may not be started
+(file $HOME/.screen-sessions/BLACKLIST).
+ 
+screen-session-primer uses linux color escapes. If you dont want color
+remove "-DCOLOR" from config.mk
+
+Normally screen-session does not restore exact window numbers. If you 
+want to force verbatim restoring use --exact flag.
+
+Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space). 
+During reading temporary files are stored in  /tmp/screen-session-$USER.
+
+
+-----------------------------------------------------------------------
 Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
@@ -141,5 +149,6 @@ There are no bugs, only features.
   layouts in screen-session because Screen will crash.
   Disable layouts saving/loading with --no-layout flag.
 
-Send suggestions to admin<[at]>adb.cba.pl
+Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
+http://github.com/skoneka/screen-session/issues
 
