@@ -17,17 +17,17 @@ options:
 
 .c.o:
 	@echo CC $<
-	${CC} -o $@ -c ${CFLAGS} $<
+	@${CC} -o $@ -c ${CFLAGS} $<
 
 ${OBJ}: config.mk
 
 screen-session-primer: ${OBJ}
 	@echo CC -o ${SRCDIR}/$@
-	${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
+	@${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
-	@rm -f screen-session-primer ${OBJ} screen-session-${VERSION}.tar.gz
+	@rm -f ${SRCDIR}/screen-session-primer ${OBJ} screen-session-${VERSION}.tar.gz
 
 dist: clean
 	@echo creating dist tarball
