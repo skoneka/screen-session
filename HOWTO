@@ -47,7 +47,7 @@ Loading:
     # load session from savefile loaded to Screen with PID
     screen-session load --in mysavedsession --out PID
 
-    # load saved session into new Screen session
+    # load saved session into a new Screen session
     screen -m screen-session load --exact-kill-other
 
 

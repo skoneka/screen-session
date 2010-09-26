@@ -17,14 +17,15 @@ session saver currently supports saving of:
 directories, programs, layouts, scrollbacks, titles and filters
 It recognizes groups and regular windows. Currently there is no support 
 for serial and telnet window types.
-screen-session modes:
+
+Available screen-session modes:
 
 manage:
     sessions manager (screenie like) but featuring session preview in a
     split window
 
 regions:
-    script reassembling functionality of tmux display-panes
+    script reassembling the functionality of tmux display-panes
 
 dir:
     start new Screen window in the same working directory
@@ -34,6 +35,9 @@ save:
 
 load:
     load sessions from disk
+
+ls:
+    list saved sessions
 
 
 -----------------------------------------------------------------------
