@@ -130,7 +130,7 @@ int DirectoryExists( const char* pzPath )
 int file_exists(const char * filename)
 {
     FILE *file=NULL;
-    if (file = fopen(filename, "r")) 
+    if ((file = fopen(filename, "r"))) 
     {
         fclose(file);
         return 1;
@@ -177,7 +177,7 @@ requireSession(const char *basepath,const char *file_in_session)
     else {
         free(filepath);
         char *buf=malloc((strlen(basedir)+strlen(session)+1+50)*sizeof(char));
-        sprintf(buf,"screen-session.py --no-nest --dir %s --unpack %s",basedir,session);
+        sprintf(buf,"screen-session.py -n --dir %s --unpack %s",basedir,session);
         system(buf);
         free(file);
         free(buf);

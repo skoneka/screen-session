@@ -77,7 +77,7 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "b:txXryi:c:wfi:o:m:lsd:hv", ["backtick=","no-nest","exact","exact-kill-other","ls","getopt","unpack=","log=","logpipe=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "nb:txXryi:c:wfi:o:m:lsd:hvp:", ["backtick=","exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('Bad options.')
         doexit(2,waitfor)
@@ -107,15 +107,19 @@ def main():
     for o, a in opts:
         if o == "-v":
             verbose = True
-        elif o == "--no-nest":
-            bNest=False
+        elif o == "-n":
+            # no-nest, do not wrap in a screen session
+            # ignore, currently handled in wrapper script
+            # bNest=False
+            pass
         elif o == "--getopt":
             bGetopt=True
         elif o in ("-t","--ls"):
             bList=True
         elif o == "--log":
             log = a
-        elif o == "--logpipe":
+        elif o == "-p":
+            #logpipe
             logpipe = a
         elif o == "--unpack":
             unpack = a
@@ -134,9 +138,10 @@ def main():
             enable_layout = False
         elif o in ("-h","--help"):
             bHelp=True
-        elif o in ("-w","--wait"):
+        elif o in ("-w"):
+            # wait for any key press
             # ignore, currently handled in wrapper script
-            #waitfor = True
+            # waitfor = True
             pass
         elif o in ("-b","--backtick"):
             backtick = a
@@ -169,6 +174,8 @@ def main():
     if log:
         sys.stdout=open(log,'w')
         sys.stderr=sys.stdout
+        if logpipe:
+            l=open(logpipe,'w')
     elif logpipe:
         sys.stdout=open(logpipe,'w')
         sys.stderr=sys.stdout
