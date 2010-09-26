@@ -14,6 +14,10 @@ import copy
 
 global win_history
 
+def showhelp():
+    print('script reassembling the functionality of tmux display-panes\n\
+            Usage: screen-session regions')
+
 def local_copysign(x, y):
     "Return x with the sign of y. Backported from Python 2.6."
     if y >= 0:

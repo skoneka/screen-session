@@ -25,15 +25,15 @@ def doexit(var=0,waitfor=True):
     sys.exit(var)
 
 def usageMode():
-    out('Usage: screen-session [manage|save|load|list] [options]')
+    out('Usage: screen-session [save|load|ls] [options]')
 
 def usage():
     out('Options:\n\
---ls\n\
+ls\n\
   \tlist saved sessions\n\
--l --load\n\
+load\n\
   \tloading mode\n\
--s --save\n\
+save\n\
   \tsaving mode\n\
 -i --in     <session or directory>\n\
   \tsessionname(saving) or savefile(loading)\n\

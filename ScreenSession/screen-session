@@ -12,6 +12,25 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 
+showhelp() {
+    echo "Collection of tools for GNU Screen.\n"
+    echo "Usage: screen-session [mode] [options]\n\
+Help: screen-session [mode] --help\n\
+    \n\
+Available modes:\n\
+    save\t- save sessions to disk\n\
+    load\t- load session from savefile\n\
+    ls\t\t- list saved sessions\n\
+    manage\t- sessions manager\n\
+    dir\t\t- start Screen window in the same working directory\n\
+    regions\t- like tmux display-panes
+    "
+}
+
+showhelp_regions() {
+    echo "script reassembling the functionality of tmux display-panes\n\
+Usage: screen-session regions"
+}
 
 # parse command line arguments
 waitfor=0
@@ -30,9 +49,8 @@ while getopts ":wnp:": OPT; do
         ;;
     esac
 done
-
 if [ $# -eq 0 ]; then
-    echo "help: screen-session [mode] --help"
+    showhelp
     exit 1
 fi
 
@@ -44,13 +62,17 @@ if [ $mode = "manage" ]; then
 elif [ $mode = "grab" ]; then
     ./screen-session-grab $*
 elif [ $mode = "regions" ]; then
+    if [ $1 = "--help" ]; then
+        showhelp_regions
+        exit 0
+    fi
     argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
     screen -m -d -c /dev/null python ./screen-display-regions.py $argument $*
 elif [ $mode = "regions-helper" ]; then
     ./screen-display-regions-helper $*
 elif [ $mode = "dir" ]; then
     ./screen-in-dir $*
-else
+elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`
 
@@ -85,6 +107,8 @@ else
     else
         python ./screen-session.py $mode $argument0 $argument1 $*
     fi
+else
+    showhelp
 fi
 
 if [ $waitfor -eq 1 ]; then
