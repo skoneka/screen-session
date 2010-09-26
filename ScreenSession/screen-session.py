@@ -77,7 +77,7 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "nb:txXryi:c:wfi:o:m:lsd:hvp:", ["backtick=","exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('Bad options.')
         doexit(2,waitfor)
@@ -85,7 +85,6 @@ def main():
     util.archiveend='.tar.bz2'
     unpack=None
     current_session=None
-    backtick=None
     bNest=True
     bExact=False
     bKill=False
@@ -143,8 +142,6 @@ def main():
             # ignore, currently handled in wrapper script
             # waitfor = True
             pass
-        elif o in ("-b","--backtick"):
-            backtick = a
         elif o in ("-m","--maxwin"):
             maxwin = int(a)
         elif o in ("-s","--save"):
@@ -238,31 +235,6 @@ def main():
 
     
     scs=ScreenSaver(pid,projectsdir,savedir)
-    if backtick:
-        #scs.backtick(str(os.getpid()),'0',backtick,'${HOME}/bin/screen-session --save --force --in %s --out testtick'%(input))
-        #scs.backtick('57','0',backtick,'${HOME}/bin/screen-session --save --force --in %s --out testtick'%(input))
-        #scs.backtick('57','0',backtick,'echo HELLO')
-        #os.system('screen -S %s -X backtick 57 0 0 /a/bin/screen-session -s -f -in %s -out testtick'%(input,input))
-        #d_args_s=
-        d_args_d=('-b','-i','--current-session','--logpipe','--backtick','--input')
-        nargv=[]
-        bSkipNext=False
-        for arg in sys.argv:
-            if arg in d_args_d:
-                bSkipNext=True
-            elif bSkipNext:
-                bSkipNext=False
-            else:
-                nargv.append(arg)
-        nargv[0]=util.which('screen-session')[0]
-        scscall=nargv.pop(0)
-        scscall+=" --in "+input
-        for arg in nargv:
-            scscall+=" "+arg
-        command='screen -S %s -X backtick 56 %s 0 %s'%(input,backtick,scscall)
-        print command
-        os.system(command)
-        return 0
 
     if not scs.exists():
         out('No such session: %s'%pid)
