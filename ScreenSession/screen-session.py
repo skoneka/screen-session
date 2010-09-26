@@ -77,7 +77,7 @@ def main():
         waitfor = False
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","getopt","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[1:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('Bad options.')
         doexit(2,waitfor)
@@ -89,7 +89,6 @@ def main():
     bExact=False
     bKill=False
     bHelp=False
-    bGetopt=False
     bList=False
     restore = False
     verbose = False
@@ -111,8 +110,6 @@ def main():
             # ignore, currently handled in wrapper script
             # bNest=False
             pass
-        elif o == "--getopt":
-            bGetopt=True
         elif o in ("-t","--ls"):
             bList=True
         elif o == "--log":
@@ -156,15 +153,6 @@ def main():
             output = a
         else:
             doexit("Unhandled option",waitfor)
-
-    if bGetopt:
-        if bList or bHelp or not bNest:
-            sys.exit(6)
-        else:
-            if log:
-                sys.exit(1)
-            else:
-                sys.exit(0)
 
     home=os.path.expanduser('~')
     
