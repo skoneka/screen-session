@@ -24,6 +24,9 @@ def doexit(var=0,waitfor=True):
         sys.stdout.close()
     sys.exit(var)
 
+def usageMode():
+    out('Usage: screen-session [manage|save|load|list] [options]')
+
 def usage():
     out('Options:\n\
 --ls\n\
@@ -68,20 +71,25 @@ $ screen-session --load --in mysavedsession --out SESSIONNAME\n\
 VERSION='git'
 
 def main():    
-    if len(sys.argv)>1:
-        if sys.argv[1]=='--wait':
-            waitfor=True
-        else:
-            waitfor=False
-    else:
-        waitfor = False
 
     bad_arg=None
+    logpipe=None
+    '''
+    if "-p" == sys.argv[1]:
+        logpipe=sys.argv[2]:
+    elif "-p" == sys.argv[2]:
+        logpipe=sys.argv[3]:
+    elif "-p" == sys.argv[3]:
+        logpipe=sys.argv[4]:
+    '''
+
+
     try :
         opts,args = getopt.getopt(sys.argv[2:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         bad_arg='BAD OPTIONS'
     
+    waitfor=False
     mode = 0
     util.archiveend='.tar.bz2'
     unpack=None
@@ -94,7 +102,6 @@ def main():
     restore = False
     verbose = False
     log=None
-    logpipe=None
     force = False
     enable_layout = True
     projectsdir =None
@@ -172,7 +179,7 @@ def main():
     out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
 
     if bad_arg:
-        print('Unhandled option: %s'%bad_arg)
+        out('Unhandled option: %s'%bad_arg)
         doexit(1,waitfor)
 
     if sys.argv[1] in ('save','s'):
@@ -182,9 +189,10 @@ def main():
     elif sys.argv[1] in ('list','ls'):
         mode=0
         bList=True
+    elif sys.argv[1] in ('--help','-h'):
+        bHelp=True
     else:
-        print('Usage: screen-session [manage|save|load|list] [options]')
-        print('More: screen-session --help')
+        usageMode()
         doexit(1,waitfor)
     
     if bHelp:        
@@ -200,7 +208,6 @@ def main():
         doexit(0,waitfor)
     
     util.tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
-    print util.tmpdir
     
     if mode==0:
         if unpack:

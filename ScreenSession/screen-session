@@ -31,10 +31,25 @@ while getopts ":wnp:": OPT; do
     esac
 done
 
+if [ $# -eq 0 ]; then
+    echo "help: screen-session [mode] --help"
+    exit 1
+fi
+
 mode=$1
 shift 1 $*
+
 if [ $mode = "manage" ]; then
     python ./screen-session-manage p
+elif [ $mode = "grab" ]; then
+    ./screen-session-grab $*
+elif [ $mode = "regions" ]; then
+    argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
+    screen -m -d -c /dev/null python ./screen-display-regions.py $argument $*
+elif [ $mode = "regions-helper" ]; then
+    ./screen-display-regions-helper $*
+elif [ $mode = "dir" ]; then
+    ./screen-in-dir $*
 else
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`
@@ -48,7 +63,6 @@ else
     argument1=""
 
     if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
-        echo "--- running inside patched Screen session"
         argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
     else
         echo "--- not running inside patched Screen, this session cannot be saved properly"
@@ -63,7 +77,7 @@ else
             rm $scsfile
         fi
         mkfifo $scsfile
-
+        #echo "python ./screen-session.py $mode $argument0 $argument1 $*"
         screen -m -d -c /dev/null python ./screen-session.py $mode $argument0 $argument1 $* 
         
         cat $scsfile
