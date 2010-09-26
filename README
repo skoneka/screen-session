@@ -30,6 +30,9 @@ regions:
 dir:
     start new Screen window in the same working directory
 
+grab:
+    change tty of a process to this terminal
+
 save:
     save Screen sessions to disk
 

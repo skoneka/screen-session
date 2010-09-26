@@ -1,6 +1,16 @@
 -----------------------------------------------------------------------
 other tools
 -----------------------------------------------------------------------
+manage
+    # start sessions manager
+    screen-session manage
+
+grab:
+    # grabs pid into Screen session
+    screen-session grab PID
+    # then on the previous shell type
+    disown
+
 dir:
     # start new window running zsh with the same working directory
     screen-session dir zsh
@@ -8,9 +18,6 @@ dir:
 regions:
     screen-session regions
 
-manage
-    # start sessions manager
-    screen-session manage
 
 -----------------------------------------------------------------------
 session saver
