@@ -620,7 +620,7 @@ class ScreenSaver(object):
         oldsavedir=fhead
         
         try:
-            shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
+            shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
         except:
             pass
         
@@ -628,7 +628,7 @@ class ScreenSaver(object):
         fhhead,fhtail=os.path.split(fhead)
         target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
         try:
-            shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+            shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
         except:
             pass
 
@@ -637,7 +637,7 @@ class ScreenSaver(object):
         if os.path.isfile(source3):
             target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
             try:
-                shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+                shutil.move(source3,target3)
             except:
                 pass
 
