@@ -36,7 +36,11 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
-    out('unpacking...')
+    if full:
+        fullstr=" full"
+    else:
+        fullstr=""
+    out('unpacking%s...'%fullstr)
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(tmpdir):

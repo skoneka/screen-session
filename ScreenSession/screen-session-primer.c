@@ -157,7 +157,7 @@ get_session(const char *file_in_session)
 }
 
 int 
-requireSession(const char *basepath,const char *file_in_session)
+requireSession(const char *basepath,const char *file_in_session,int full)
 {   
     char *file=malloc((strlen(file_in_session)+1)*sizeof(char));
     char *session=malloc((strlen(file_in_session)+1)*sizeof(char));
@@ -179,22 +179,30 @@ requireSession(const char *basepath,const char *file_in_session)
     }
         
     char *filepath=malloc((strlen(basedir)+strlen(session)+2)*sizeof(char));
+    char *testfilepath=malloc((strlen(basedir)+strlen(session)+strlen(file_in_session)+2)*sizeof(char));
     strcpy(filepath,basedir);
     strcat(filepath,"/");
-    //strcat(filepath,file_in_session);
     strcat(filepath,session);
 
-    if(DirectoryExists(filepath)) {
+    strcpy(testfilepath,basedir);
+    strcat(testfilepath,"/");
+    strcat(testfilepath,file_in_session);
+    if(file_exists(testfilepath)) {
         free(file);
         free(filepath);
+        free(testfilepath);
         free(session);
         free(basedir);
         return 0;
     }
     else {
         free(filepath);
-        char *buf=malloc((strlen(basedir)+strlen(session)+1+50)*sizeof(char));
-        sprintf(buf,"screen-session.py other -n --dir %s --unpack %s",basedir,session);
+        char *fullstr="--full";
+        char *buf=malloc((strlen(basedir)+strlen(session)+strlen(fullstr)+1+55)*sizeof(char));
+        if (full)
+            sprintf(buf,"screen-session other -n --dir %s --unpack %s %s",basedir,session,fullstr);
+        else
+            sprintf(buf,"screen-session other -n --dir %s --unpack %s",basedir,session);
         system(buf);
         free(file);
         free(buf);
@@ -445,7 +453,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     char c;
     FILE *fp=NULL;
     chdir(basedir);
-    requireSession(basedir,config);
+    requireSession(basedir,config,0);
     
     fp=fopen(config,"r");
     
@@ -536,6 +544,12 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         strcat(proc_args[proc_args_n+1],session);
         strcat(proc_args[proc_args_n+1],"/");
         strcat(proc_args[proc_args_n+1],proc_vim);
+        char *buf=malloc((strlen(session)+strlen(proc_vim)+5)*sizeof(char));
+        strcpy(buf,session);
+        strcat(buf,"/");
+        strcat(buf,proc_vim);
+        requireSession(basedir,buf,1);
+        free(buf);
     }
     
     if(strcmp(proc_blacklisted,"True")==0)
@@ -603,7 +617,12 @@ int main(int argc, char **argv) {
     }
     else if (strcmp(argv[1],"-r")==0) {
         //requireSession
-        requireSession(argv[2],argv[3]);
+        requireSession(argv[2],argv[3],0);
+        return 0;
+    }
+    else if (strcmp(argv[1],"-rf")==0) {
+        //requireSession
+        requireSession(argv[2],argv[3],1);
         return 0;
     }
     char *homedir=getenv("HOME");
@@ -616,7 +635,7 @@ int main(int argc, char **argv) {
     strcat(fullpath,"/");
     strcat(fullpath,workingdir);
     chdir(fullpath);
-    requireSession(fullpath,datafile);
+    requireSession(fullpath,datafile,0);
     fp=fopen(scrollbackfile,"r");
     if(fp) {
         while((c=fgetc(fp))!=EOF) {
@@ -630,7 +649,7 @@ int main(int argc, char **argv) {
     fp=NULL;
 
     printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-    requireSession(fullpath,datafile);
+    requireSession(fullpath,datafile,0);
     fp=fopen(datafile,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");

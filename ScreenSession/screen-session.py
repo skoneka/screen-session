@@ -93,7 +93,7 @@ def main():
         sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -108,6 +108,7 @@ def main():
     bKill=False
     bHelp=False
     bList=False
+    bFull=False
     restore = False
     verbose = False
     log=None
@@ -137,6 +138,8 @@ def main():
             unpack = a
         elif o in ("-c","--current-session"):
             current_session = a
+        elif o == "--full":
+            bFull = True
         elif o in ("-x","--exact"):
             bExact = True
         elif o in ("-X","--exact-kill-other"):
@@ -218,7 +221,7 @@ def main():
     
     if mode==0:
         if unpack:
-            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,False)
+            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,bFull)
         else:
             usage()
         doexit(0,waitfor)
