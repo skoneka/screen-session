@@ -410,7 +410,6 @@ int is_blacklisted(char *basedir,char *program,int programid) {
     fclose(fp);
     return ret;
 
-
 }
 
 int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {

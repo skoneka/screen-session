@@ -93,7 +93,7 @@ def main():
         sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","daxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -150,7 +150,7 @@ def main():
             enable_layout = False
         elif o in ("-h","--help"):
             bHelp=True
-        elif o in ("-w"):
+        elif o in ("-W"):
             # wait for any key press
             # ignore, currently handled in wrapper script
             # waitfor = True

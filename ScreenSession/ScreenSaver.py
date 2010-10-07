@@ -22,8 +22,10 @@ class ScreenSaver(object):
     
     primer="screen-session-primer"
     
+    # blacklist and files in projects directory
     blacklistfile="BLACKLIST"
     
+    # old static blacklist
     blacklist = ["rm","shutdown"]
     
     __wins_trans = {}
