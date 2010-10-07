@@ -26,8 +26,9 @@ class ScreenSaver(object):
     blacklistfile="BLACKLIST"
     
     # old static blacklist
-    blacklist = ["rm","shutdown"]
-    
+    blacklist = ("rm","shutdown")
+   
+    vim_names = ('vi','vim')
     __wins_trans = {}
     __scrollbacks=[]
 
@@ -588,12 +589,18 @@ class ScreenSaver(object):
                                 cpids_data[i]=newdata
 
                         out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
-               
-                        if(cpids_data[i][2].startswith(self.primer)):
+                        vim_name=str(None)
+                        arg0=cpids_data[i][2].split('\0')[0]
+                        if self.primer==arg0:
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
+                        elif arg0 in self.vim_names:
+                            vim_name=self.__save_vim(cwin)
+                        
+                        cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
+
                 if ctype!="zombie":
-                    self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback)
+                    self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename)
                 rollback=None
 
 
@@ -608,6 +615,10 @@ class ScreenSaver(object):
         fhead,ftail=os.path.split(cmdline[3])
         fhhead,fhtail=os.path.split(fhead)
         target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
+        
+        number=ftail.split('_')[1]
+        oldsavedir=fhead
+        
         try:
             shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
         except:
@@ -615,14 +626,23 @@ class ScreenSaver(object):
         
         fhead,ftail=os.path.split(cmdline[2])
         fhhead,fhtail=os.path.split(fhead)
-        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail)
+        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
         try:
             shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
         except:
             pass
 
+        source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
+        target3=None
+        if os.path.isfile(source3):
+            target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
+            try:
+                shutil.copy(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+            except:
+                pass
+
         if os.path.isfile(target):
-            return target
+            return target,target2,target3
         else:
             return None
         
@@ -880,22 +900,35 @@ class ScreenSaver(object):
             os.system('screen -S %s -X select %s' % (self.pid,lastid))
 
         return True
+
+    def __save_vim(self,winid):
+        name="vim_%s"%(winid)
+        fname=os.path.join(self.basedir,self.savedir,name)
+        self.stuff('^[^[:mksession %s^M'%fname,winid)
+        return name
            
-    def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback):
+    def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback,scrollback_filename):
         fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
-        if rollback!=None:
-            time=linecache.getline(rollback,2).strip()
+        if rollback:
+            time=linecache.getline(rollback[0],2).strip()
+            #copy scrollback
+            shutil.move(rollback[1],scrollback_filename)
+            try:
+                vim_fname=os.path.join(self.basedir,self.savedir,"vim_"+winid)
+                shutil.move(rollback[2],vim_fname)
+            except:
+                pass
         basedata=(winid,time,group,type,title,filter)
 
         f=open(fname,"w")
         for data in basedata:
             f.write(data+'\n')
         
-        if rollback!=None:
-            target=rollback
+        if rollback:
+            target=rollback[0]
             fr=open(target,'r')
             for line in fr.readlines()[6:]:
                 f.write(line)
