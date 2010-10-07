@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# screen-in-dir sessionname [program] [args..]
 import os,sys
 import GNUScreen as sc
 
@@ -13,12 +14,15 @@ print windows_old
 f = os.popen('screen %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
-
-f = os.popen('lsof -F p %s | cut -c2- | tail -1' % ctty)
-thedir = f.readline().strip()
+print ctty
+f = os.popen('lsof -F p %s | cut -c2-' % ctty)
+pids=f.read().strip()
 f.close()
+pids=pids.split('\n')
+pids=sc.sort_by_ppid(pids)
+thepid = pids[len(pids)-1]
 
-thedir = '/proc/%s/cwd' % thedir
+thedir = '/proc/%s/cwd' % thepid
 print thedir
 
 os.chdir(thedir)
@@ -29,7 +33,7 @@ command='screen'
 for arg in sys.argv[2:]:
     command+=' '+arg
 print command
-os.system(command)
+#os.system(command)
 
 windows_new=sc.parse_windows(sc.get_windows(session))[0]
 print windows_new

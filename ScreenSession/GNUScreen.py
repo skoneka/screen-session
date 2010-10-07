@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 import os,subprocess,re
 
+def sort_by_ppid(cpids):
+    print cpids
+    cppids={}
+    for i,pid in enumerate(cpids):
+        print pid
+        ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1]
+        cppids[pid]=ppid
+        cpids[i]=pid
+
+    pid_tail=-1
+    pid_tail_c=-1
+    cpids_sort=[]
+    for i,pid in enumerate(cpids):
+        if cppids[pid] not in cppids.keys():
+            cpids_sort.append(pid)
+            pid_tail=pid
+            break;
+    
+    for j in range(len(cpids)):
+        for i,pid in enumerate(cpids):
+            if pid_tail==cppids[pid]:
+                pid_tail=pid
+                cpids_sort.append(pid)
+                break;
+    cpids=cpids_sort
+    return cpids
+
 def get_session_list():
     screen="screen"
     w=subprocess.Popen('%s -ls' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -170,6 +197,7 @@ def get_regions_count(dumpfile,Session=None):
     return regions_c
 
 def get_regions_count_no_layout(session=None):
+    #broken
     if session:
         screen="screen -S %s "%session
     else:
