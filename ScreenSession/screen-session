@@ -101,7 +101,6 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o "other" ]; then
             rm $scsfile
         fi
         mkfifo $scsfile
-        #echo "python ./screen-session.py $mode $argument0 $argument1 $*"
         screen -m -d -c /dev/null python ./screen-session.py $mode $argument0 $argument1 $* 
         
         cat $scsfile
@@ -116,5 +115,4 @@ fi
 if [ $waitfor -eq 1 ]; then
     echo 'Press any key...'
     stty cbreak -echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
-    #read a
 fi

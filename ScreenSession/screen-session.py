@@ -77,14 +77,7 @@ def main():
 
     bad_arg=None
     logpipe=None
-    '''
-    if "-p" == sys.argv[1]:
-        logpipe=sys.argv[2]:
-    elif "-p" == sys.argv[2]:
-        logpipe=sys.argv[3]:
-    elif "-p" == sys.argv[3]:
-        logpipe=sys.argv[4]:
-    '''
+    
     logpipe=sys.argv[2].split('=')[1]
     global logpipeh
     if logpipe:
