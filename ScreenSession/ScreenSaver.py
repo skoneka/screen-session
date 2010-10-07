@@ -22,8 +22,10 @@ class ScreenSaver(object):
     
     primer="screen-session-primer"
     
+    # blacklist and files in projects directory
     blacklistfile="BLACKLIST"
     
+    # old static blacklist
     blacklist = ["rm","shutdown"]
     
     __wins_trans = {}
@@ -350,7 +352,7 @@ class ScreenSaver(object):
     def get_sessionname(self):
         return self.command_at('number',win).strip("'").split("'",1)[1]
 
-    def get_tty(self,win):
+    def get_tty(self,win="-1"):
         msg=self.command_at('tty',win)
         tty = msg.strip()
         return tty
@@ -419,6 +421,13 @@ class ScreenSaver(object):
     def screen(self,args='',win="-1"):
         msg=self.command_at('screen %s'%args,win)
         return msg
+
+    def source(self,args=''):
+        msg=self.command_at('source %s'%args)
+        return msg
+
+    def backtick(self,id,lifespan='',autorefresh='',args=''):
+        msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
 
     def focusminsize(self,args=''):
         msg=self.command_at('focusminsize %s'%args)
@@ -492,33 +501,49 @@ class ScreenSaver(object):
                     out('%s is a zombie window. Ignoring.'%(cwin))
                     ctype="zombie"
                     continue;
-                elif(ctty=="telnet"):
+
+                cgroup = self.get_group(id)
+                cfilter = self.get_exec(id)
+                
+                # save scrollback
+                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
+                os.system('screen -S %s -X at %s hardcopy -h %s' % (self.pid, cwin, scrollback_filename) )
+                self.__scrollbacks.append(scrollback_filename)
+                
+                # display some output
+                out('window = '+cwin+\
+                        '\ntty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
+                if cfilter!=-1:
+                    out('filter: exec %s'%(cfilter))
+                else:
+                    cfilter='-1'
+
+                if(ctty=="telnet"):
                     ctype="group"
                     cpids = None
                     cpids_data=None
                 elif len(ctty) > 0:
                     ctype="basic"
+                    # get pids in window
                     cpids=subprocess.Popen('lsof -F p %s' % (ctty) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')
+                    print('pids = '+str(cpids))
                     cpids_data=[]
-                    for i,pid in enumerate(cpids):
-                        pid=pid[1:]
-                        ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
-                        cppids[pid]=ppid
-                        pidinfo=self.__get_pid_info(pid)
-                        cpids[i]=pid
-
-                        cpids_data.append(pidinfo)
-
+                    # get ppid
+                    ncpids=[]
+                    for pid in cpids:
+                        try:
+                            pid=pid[1:]
+                            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
+                            cppids[pid]=ppid
+                            pidinfo=self.__get_pid_info(pid)
+                            cpids_data.append(pidinfo)
+                            ncpids.append(pid)
+                        except:
+                            print('Unable to get parent pid for [%s]'%pid)
+                    cpids=ncpids
+                print('type = '+ctype)
                 
-                cgroup = self.get_group(id)
-                cfilter = self.get_exec(id)
                 
-                
-                #save scrollback
-                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
-                os.system('screen -S %s -X at %s hardcopy -h %s' % (self.pid, cwin, scrollback_filename) )
-                self.__scrollbacks.append(scrollback_filename)
-
                 # sort window processes by parent pid
                 # what if more than one process has no recognized ppid?
                 if cpids:
@@ -545,13 +570,6 @@ class ScreenSaver(object):
                     cpids=cpids_sort
                
 
-                out('window = '+cwin+\
-                        '\ntty = '+ctty  +';  group = '+cgroup+';  type = '+ctype+';  pids = '+str(cpids)+';  title = '+ctitle)
-                if cfilter!=-1:
-                    out('filter: exec %s'%(cfilter))
-                else:
-                    cfilter='-1'
-                
                 if(cpids):
                     for i,pid in enumerate(cpids):
                         if(cpids_data[i][3]):
@@ -740,9 +758,11 @@ class ScreenSaver(object):
         os.system('screen -S %s -X screen %s -m %d-%d'%(self.pid,self.primer,os.getpid(),self.__get_focus_offset_c))
         #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
-        markertty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-        markernum=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        markertty = self.get_tty()
+        markernum,markertitle=self.get_number_and_title()
+        print('markernum=%s; title=%s;'%(markernum,markertitle))
         os.system('screen -S %s -X focus top' % (self.pid) )
+
 
         while True:
             ctty = subprocess.Popen('screen -S %s -Q @tty' % (self.pid) , shell=True, stdout=subprocess.PIPE).communicate()[0]
@@ -752,7 +772,7 @@ class ScreenSaver(object):
                 os.system('screen -S %s -X focus' % (self.pid) )
                 focus_offset+=1
         #self.__terminate_processes(ident)
-        os.system('screen -S %s -X at %s kill'%(self.pid,markernum))
+        os.system('screen -S %s -p %s -X kill'%(self.pid,markernum))
         os.system('screen -S %s -X select %s' % (self.pid,cnum))
         return focus_offset
 

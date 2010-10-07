@@ -12,45 +12,109 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 
-screen -X sessionname
-rawargument=`screen -Q @lastmsg`
+showhelp() {
+    echo "Collection of tools for GNU Screen.\n"
+    echo "Usage: screen-session [mode] [options]\n\
+Help: screen-session [mode] --help\n\
+    \n\
+Available modes:\n\
+    save\t- save sessions to disk\n\
+    load\t- load session from savefile\n\
+    ls\t\t- list saved sessions\n\
+    manage\t- sessions manager\n\
+    dir\t\t- start Screen window in the same working directory\n\
+    regions\t- like tmux display-panes
+    "
+}
 
-testargument=`screen -Q @tty`
+showhelp_regions() {
+    echo "script reassembling the functionality of tmux display-panes\n\
+Usage: screen-session regions"
+}
 
-scsfiledir="/tmp/screen-sessions-$USER"
-scsfile="$scsfiledir/___scspipe-$$"
+waitfor=0
+nonest=0
+logpipe=1
 
-./screen-session.py --getopt $*
-testrun=$?
-if [ $testrun -le 5 ]; then
-    if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
-        echo "--- running inside patched Screen session"
-        argument0=""
-        argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
-        #echo $argument $* | xargs screen-session.py $argument $*
-        #screen -m -c /dev/null screen-session.py --wait $argument $*
-        if [ $testrun -eq 0 ]; then
-            argument0="--logpipe $scsfile"
-            if [ ! -d "$scsfiledir" ]; then
-                mkdir $scsfiledir
-            fi
-            if [ -d "$scsfile" ]; then
-                rm $scsfile
-            fi
-            mkfifo $scsfile
-        fi
-        screen -m -d -c /dev/null ./screen-session.py $argument0 $argument1 $* 
-        if [ $testrun -eq 0 ]; then
-            cat $scsfile
-            rm $scsfile
-        fi
-    else
-        echo "--- not running inside patched Screen, this session cannot be saved properly"
-        argument=""
-        ./screen-session.py $argument $*
-    fi
-else
-    ./screen-session.py  $*
+if [ $# -eq 0 ]; then
+    showhelp
+    exit 1
 fi
 
+mode=$1
+shift 1 $*
 
+# parse command line arguments
+while getopts ":WNP:": OPT; do
+    case "$OPT" in
+    W)  echo 'wait'
+        waitfor=1
+        ;;
+    N)  echo 'nonest'
+        logpipe=0
+        ;;
+    P)  echo 'pipe'
+        logpipe=1
+        ;;
+    esac
+done
+
+if [ $mode = "manage" ]; then
+    python ./screen-session-manage p
+elif [ $mode = "grab" ]; then
+    sh ./screen-session-grab $*
+elif [ $mode = "regions" ]; then
+    if [ $1 = "--help" ]; then
+        showhelp_regions
+        exit 0
+    fi
+    argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
+    screen -m -d -c /dev/null python ./screen-display-regions.py $argument $*
+elif [ $mode = "regions-helper" ]; then
+    sh ./screen-display-regions-helper $*
+elif [ $mode = "dir" ]; then
+    ./screen-in-dir $*
+elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o "other" ]; then
+    screen -X sessionname
+    rawargument=`screen -Q @lastmsg`
+
+    testargument=`screen -Q @tty`
+
+    scsfiledir="/tmp/screen-sessions-$USER"
+    scsfile="$scsfiledir/___scspipe-$$"
+
+    argument0=""
+    argument1=""
+
+    if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
+        argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+    else
+        echo "--- not running inside patched Screen, this session cannot be saved properly"
+    fi
+
+    argument0="logpipe=$scsfile"
+    if [ $logpipe -eq 1 ]; then
+        if [ ! -d "$scsfiledir" ]; then
+            mkdir $scsfiledir
+        fi
+        if [ -d "$scsfile" ]; then
+            rm $scsfile
+        fi
+        mkfifo $scsfile
+        #echo "python ./screen-session.py $mode $argument0 $argument1 $*"
+        screen -m -d -c /dev/null python ./screen-session.py $mode $argument0 $argument1 $* 
+        
+        cat $scsfile
+        rm $scsfile
+    else
+        python ./screen-session.py $mode $argument0 $argument1 $*
+    fi
+else
+    showhelp
+fi
+
+if [ $waitfor -eq 1 ]; then
+    echo 'Press any key...'
+    stty cbreak -echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
+    #read a
+fi

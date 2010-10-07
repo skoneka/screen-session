@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Usage: screen-move-process PID
+# moves a process into screen session
+
+#screen -X screen injcode -m retty $1
+injcode -m retty $1
+sleep 1
+kill -s STOP "$1"
+sleep 1
+kill -s CONT "$1"

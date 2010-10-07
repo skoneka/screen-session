@@ -1,0 +1,190 @@
+#!/usr/bin/env python
+# harvested from byobu
+# screen-select-session script
+import commands, os, re, sys,time
+import GNUScreen as sc
+import util
+
+
+def menu_tmp():
+    PREFIX = "/usr"
+    SHELL = os.getenv("SHELL", "/bin/zsh")
+    choice = ""
+    sessions = []
+    text = []
+    i = 0
+    output = commands.getoutput('screen -ls ')
+    if output:
+        for s in output.split("\n"):
+            s = re.sub(r'\s+', ' ', s)
+            if s.find(" ") == 0 and len(s) > 1:
+                text.append(s)
+                items = s.split(" ")
+                sessions.append(items[1])
+                i += 1
+    command=None
+    inputstring=None
+    if i > 1:
+        sys.stdout.write("\nGNU Screen sessions...\n\n")
+        tries = 0
+        while tries < 3:
+            i = 1
+            for s in text:
+                sys.stdout.write("  %d. %s\n" % (i, s))
+                i += 1
+            sys.stdout.write("  %d.  Create a new session\n" % i)
+            i += 1
+            try:
+                command=None
+                inputstring=None
+                inputstring = raw_input("\nChoose 1-%d [1]: " % (i-1))
+                if inputstring.startswith(':'):
+                    command=inputstring[1:]
+                    break
+                choice=eval(inputstring)
+                if choice >= 0 and choice < i:
+                    break
+                else:
+                    tries += 1
+                    choice = ""
+                    sys.stderr.write("\nERROR: Invalid input\n");
+            except KeyboardInterrupt:
+                print
+                sys.exit(0)
+            except:
+                if choice == "":
+                    choice = 1
+                    break
+                tries += 1
+                choice = ""
+                sys.stderr.write("\nERROR: Invalid input\n");
+
+    if inputstring:
+        if command:
+            return command
+        if choice == i-1 or choice==0:
+            # Create a new session
+            return "quit"
+            os.execv(PREFIX+"/bin/screen", ["", SHELL])
+        else:
+            # Attach to the chosen session; must use the 'screen' binary
+            return "attach "+sessions[choice-1]
+            os.execv(PREFIX+"/bin/screen", ["", "-AOxRR", sessions[choice-1]])
+
+    # No valid selection, default to the youngest session, create if necessary
+    #os.execv(PREFIX+"/bin/byobu", ["", "-AOxRR"])
+
+
+def prime(fifoname):
+    l1=sc.get_session_list()
+    os.popen('screen -m -d -c /a/.screenrc_screensession %s %s %s'%(sys.argv[0],'ui',fifoname))
+    l2=sc.get_session_list()
+    session=sc.find_new_session(l1,l2)
+    print ('session: %s'%session)
+    return session
+
+def ui2(fifoname):
+    print('ui2 transmitting through %s'%fifoname)
+    pipein = open(fifoname, 'r')                 # open fifo as stdio object
+    while 1:
+        line = pipein.readline( )[:-1]            # blocks until data sent
+        print(line)
+        #print 'Parent %d got "%s" at %s' % (os.getpid(), line, time.time( ))
+
+ui2pipe=None
+def ui2out(pipeout,line):
+    os.write(pipeout,'%s\n'%line)
+    pass
+
+def print2ui(line):
+    global ui2pipe
+    os.write(ui2pipe,'%s\n'%line)
+    pass
+def logic(scs,fifoname,fifoname2,session):
+    global ui2pipe
+    sys.stdout=open('/tmp/scs_logicout','w')
+    sys.stderr=sys.stdout
+    #os.system('screen -X split -v')
+    print 'run opening [%s]'%fifoname
+    pipein = open(fifoname, 'r')
+    print 'run printing'
+    scs.split('-v')
+    scs.split()
+    time.sleep(0.1)
+    scs.focus()
+    scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
+    pipeout = os.open(fifoname2, os.O_WRONLY)
+    ui2pipe=pipeout
+    sys.stdout=os.fdopen(pipeout,'w')
+    print2ui('test test')
+    scs.focus('top')
+    try:
+        while 1:
+            line = pipein.readline()[:-1]            # blocks until data sent
+            if not line:
+                break;
+            else:
+                print2ui('UI: %s'%line)
+                eval_command(scs,line)
+    except SystemExit:
+        pipein.close()
+        scs.quit()
+
+def eval_command(scs,command):
+    command=command.split(' ',1)
+    mode=command[0]
+    if len(command)>1:
+        args=[]
+        for arg in command[1].split(' '):
+            args.append(arg)
+    else:
+        args=None
+    if mode=='attach':
+        scs.focus('bottom')
+        scs.screen('screen -x %s'%args[0])
+        cnum=scs.get_number_and_title()[0]
+        scs.focus('top')
+    elif mode=='kill':
+        scs.kill('',args[0])
+    elif mode=='quit':
+        raise SystemExit
+        
+
+
+def ui1(fifoname):
+    print 'start opening [%s]'%fifoname
+    pipeout = os.open(fifoname, os.O_WRONLY)
+    selection=''
+    print 'start selecting'
+    while selection!=None:
+        selection=menu_tmp()
+        if selection:
+            os.write(pipeout,'%s\n'%selection)
+    #os.close(pipeout)
+
+       
+def attach_ui(scs,session):
+    os.popen('screen -r %s'%(session))
+    
+if __name__=='__main__':
+    if sys.argv[1]=='p':
+        fifoname='/tmp/scstmpfifo'
+        fifoname2='/tmp/scstmpfifo2'
+        if not os.path.exists(fifoname):
+            os.mkfifo(fifoname)
+        if not os.path.exists(fifoname2):
+            os.mkfifo(fifoname2)
+        session=prime(fifoname)
+        from ScreenSaver import ScreenSaver
+        scs=ScreenSaver(session,'/dev/null','/dev/null')
+        if os.fork()==0:
+            logic(scs,fifoname,fifoname2,session)
+        else:
+            attach_ui(scs,session)
+
+    elif sys.argv[1]=='ui':
+        fifoname=sys.argv[2]
+        ui1(fifoname)
+    elif sys.argv[1]=='ui2':
+        fifoname=sys.argv[2]
+        ui2(fifoname)

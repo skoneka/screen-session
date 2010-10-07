@@ -12,24 +12,31 @@ issues:
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
 from ScreenSaver import ScreenSaver
 from util import *
+import util
 
 
-
+logpipeh=None
 
 def doexit(var=0,waitfor=True):
+    global logpipeh
+    if logpipeh:
+        logpipeh.close()
     if waitfor:
         raw_input('Press any key to exit...')
     if sys.stdout!=sys.__stdout__:
         sys.stdout.close()
     sys.exit(var)
 
+def usageMode():
+    out('Usage: screen-session [save|load|ls] [options]')
+
 def usage():
     out('Options:\n\
---ls\n\
+ls\n\
   \tlist saved sessions\n\
--l --load\n\
+load\n\
   \tloading mode\n\
--s --save\n\
+save\n\
   \tsaving mode\n\
 -i --in     <session or directory>\n\
   \tsessionname(saving) or savefile(loading)\n\
@@ -53,7 +60,7 @@ def usage():
   \toutput to file instead stdout\n\
 -d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
--w --wait\n\
+-w\n\
   \twait for any key when finished\n\
 -h --help\n\
   \tshow this message\n\
@@ -67,38 +74,45 @@ $ screen-session --load --in mysavedsession --out SESSIONNAME\n\
 VERSION='git'
 
 def main():    
-    if len(sys.argv)>1:
-        if sys.argv[1]=='--wait':
-            waitfor=True
-        else:
-            waitfor=False
-    else:
-        waitfor = False
+
+    bad_arg=None
+    logpipe=None
+    '''
+    if "-p" == sys.argv[1]:
+        logpipe=sys.argv[2]:
+    elif "-p" == sys.argv[2]:
+        logpipe=sys.argv[3]:
+    elif "-p" == sys.argv[3]:
+        logpipe=sys.argv[4]:
+    '''
+    logpipe=sys.argv[2].split('=')[1]
+    global logpipeh
+    if logpipe:
+        logpipeh=open(logpipe,'w')
+        sys.stdout=logpipeh
+        sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[1:], "txXryi:c:wfi:o:m:lsd:hv", ["no-nest","exact","exact-kill-other","ls","getopt","unpack=","log=","logpipe=","restore","no-layout","current-session=","wait","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
-        out('Bad options.')
-        doexit(2,waitfor)
+        out('BAD OPTIONS')
+        raise SystemExit
     
-    global archiveend
-    global tmpdir
-    archiveend='.tar.bz2'
+    waitfor=False
+    mode = 0
+    util.archiveend='.tar.bz2'
     unpack=None
     current_session=None
     bNest=True
     bExact=False
     bKill=False
     bHelp=False
-    bGetopt=False
     bList=False
     restore = False
     verbose = False
     log=None
-    logpipe=None
     force = False
     enable_layout = True
-    mode = 0
     projectsdir =None
     savedir = None
     maxwin = -1
@@ -107,15 +121,17 @@ def main():
     for o, a in opts:
         if o == "-v":
             verbose = True
-        elif o == "--no-nest":
-            bNest=False
-        elif o == "--getopt":
-            bGetopt=True
+        elif o == "-n":
+            # no-nest, do not wrap in a screen session
+            # ignore, currently handled in wrapper script
+            # bNest=False
+            pass
         elif o in ("-t","--ls"):
             bList=True
         elif o == "--log":
             log = a
-        elif o == "--logpipe":
+        elif o == "-p":
+            #logpipe
             logpipe = a
         elif o == "--unpack":
             unpack = a
@@ -134,9 +150,12 @@ def main():
             enable_layout = False
         elif o in ("-h","--help"):
             bHelp=True
-        elif o in ("-w","--wait"):
-            waitfor = True
-        elif o in ("-m","--maxwin"):
+        elif o in ("-W"):
+            # wait for any key press
+            # ignore, currently handled in wrapper script
+            # waitfor = True
+            pass
+        elif o in ("-M","--maxwin","--daxwin"):
             maxwin = int(a)
         elif o in ("-s","--save"):
             mode = 1
@@ -149,30 +168,39 @@ def main():
         elif o in ("-o","--out"):
             output = a
         else:
-            doexit("Unhandled option",waitfor)
-
-    if bGetopt:
-        if bList or bHelp or not bNest:
-            sys.exit(6)
-        else:
-            if log:
-                sys.exit(1)
-            else:
-                sys.exit(0)
+            out('Error parsing: '+o)
+            raise SystemExit
+            break;
 
     home=os.path.expanduser('~')
     
     if log:
         sys.stdout=open(log,'w')
         sys.stderr=sys.stdout
-    elif logpipe:
-        sys.stdout=open(logpipe,'w')
-        sys.stderr=sys.stdout
 
         
 
     out('SCREEN-SESSION ('+VERSION+') - GNU Screen session saver')
     out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
+
+    if bad_arg:
+        out('Unhandled option: %s'%bad_arg)
+        doexit(1,waitfor)
+
+    if sys.argv[1] in ('save','s'):
+        mode=1
+    elif sys.argv[1] in ('load','l'):
+        mode=2
+    elif sys.argv[1] in ('list','ls'):
+        mode=0
+        bList=True
+    elif sys.argv[1] in ('--help','-h'):
+        bHelp=True
+    elif sys.argv[1] == 'other':
+        pass
+    else:
+        usageMode()
+        doexit(1,waitfor)
     
     if bHelp:        
         usage()
@@ -183,14 +211,14 @@ def main():
         projectsdir = directory
     
     if bList:
-        list_sessions(home,projectsdir,archiveend)
+        list_sessions(home,projectsdir,util.archiveend)
         doexit(0,waitfor)
     
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
+    util.tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
     
     if mode==0:
         if unpack:
-            unpackme(home,projectsdir,unpack,archiveend,tmpdir,False)
+            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,False)
         else:
             usage()
         doexit(0,waitfor)
@@ -223,6 +251,7 @@ def main():
         pid = output
         savedir = input
     
+
     
     scs=ScreenSaver(pid,projectsdir,savedir)
 
@@ -252,17 +281,17 @@ def main():
     scs.exact=bExact
     scs.bKill=bKill
 
-    if not os.path.exists(tmpdir):
-        os.makedirs(tmpdir)
+    if not os.path.exists(util.tmpdir):
+        os.makedirs(util.tmpdir)
     
     ret=0
     if mode==1: #mode save
         savedir_tmp=savedir+'__tmp'
         savedir_real=savedir
         removeit(os.path.join(home,projectsdir,savedir_tmp))
-        removeit(os.path.join(tmpdir,savedir_tmp))
+        removeit(os.path.join(util.tmpdir,savedir_tmp))
         # save and archivize
-        if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
+        if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+util.archiveend)):
             if force==False:
                 os.system('screen -S %s -X echo "screen-session saving FAILED. Savefile exists."'%scs.pid)
                 out('Savefile exists. Use --force to overwrite')
@@ -285,19 +314,20 @@ def main():
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
             removeit(os.path.join(home,projectsdir,savedir_real))
-            removeit(os.path.join(tmpdir,savedir_real))
-            archiveme(tmpdir,home,projectsdir,savedir,archiveend,scs.lastlink,savedir_real)
+            removeit(os.path.join(util.tmpdir,savedir_real))
+            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,scs.lastlink,savedir_real)
             removeit(os.path.join(home,projectsdir,savedir_tmp))
-            removeit(os.path.join(tmpdir,savedir_tmp))
+            removeit(os.path.join(util.tmpdir,savedir_tmp))
             scs.savedir=savedir_real
             savedir=savedir_real
-            out('session "%s" saved as "%s" in "%s"'%(scs.pid,scs.savedir,scs.basedir))
+            out('session "%s"'%scs.pid) 
+            out('saved as "%s"'%(scs.pid))
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        cleantmp(tmpdir,home,projectsdir,archiveend,scs.blacklistfile,scs.lastlink,200)
+        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,scs.lastlink,200)
         # unpack and load
-        unpackme(home,projectsdir,savedir,archiveend,tmpdir,True)
+        unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
         try:
             ret = scs.load()
             if scs.bKill:
@@ -316,7 +346,6 @@ def main():
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
     else:
         out('No mode specified --load or --save')
-
     doexit(ret,waitfor)
 
 

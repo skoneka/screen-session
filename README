@@ -10,46 +10,37 @@ Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 -----------------------------------------------------------------------
 Description
 -----------------------------------------------------------------------
-screen-session is a GNU Screen session saver.
+screen-session is a collection of tools for GNU Screen, including
+session saver.
 
-screen-session currently supports saving of:
+session saver currently supports saving of:
 directories, programs, layouts, scrollbacks, titles and filters
- 
 It recognizes groups and regular windows. Currently there is no support 
 for serial and telnet window types.
 
-screen-session saves directories and programs by directly reading /proc 
-filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
-pid. There is no "stuffing" and there is totally no interaction with 
-programs in windows.
+Available screen-session modes:
 
-After session loading, in every new window starts screen-session-primer 
-(small C program) which displays list of processes and asks user what 
-to do (whether to start none, part of or all window's processes).
-Then, primer tries to restore the string of processes by execing
-'program -c "/command/;program" arguments' for nodes and simply
-'program arguments' for leafs. Entire string of processes can only be
-properly restored if every non-leaf accepts '-c command' switch.
+manage:
+    sessions manager (screenie like) but featuring session preview in a
+    split window
 
-Can be restored completly:
-0 zsh -> 1 bash -> 2 vim hello.c 
+regions:
+    script reassembling the functionality of tmux display-panes
 
-Only up to 1:
-0 zsh -> 1 man hello -> 2 less
+dir:
+    start new Screen window in the same working directory
 
+grab:
+    change tty of a process to this terminal
 
-There is also a blacklist for programs which may not be started
-(file $HOME/.screen-sessions/BLACKLIST).
- 
-screen-session-primer uses linux color escapes. If you dont want color
-remove "-DCOLOR" from config.mk
+save:
+    save Screen sessions to disk
 
-Normally screen-session does not restore exact window numbers. If you 
-want to force verbatim restoring use --exact flag.
+load:
+    load sessions from disk
 
-Savefiles are .tar.bz2 archives. Scrollbacks can take 
-a *lot* of space. During reading temporary files are stored in 
-/tmp/screen-session-$USER.
+ls:
+    list saved sessions
 
 
 -----------------------------------------------------------------------
@@ -61,6 +52,7 @@ Depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 screen-session.diff changes:
 - add "tty" command
+- add "regionsize" command
 - make "group" queryable
 
 
@@ -95,41 +87,46 @@ Make sure you have "lsof" installed.
 -----------------------------------------------------------------------
 Running screen-session
 -----------------------------------------------------------------------
-Saving:
-    # save inside saved session 
-    screen-session --save --force
-    
-    # save inside saved session specifing --maxwin
-    screen-session --save --maxwin {biggest window number}
-    
-    # save inside saved session without layouts
-    screen-session --save --layout 
+see HOWTO
 
-    # save saving session with PID in mysavedsession folder
-    screen-session --save --in PID --out mysavedsession
+-----------------------------------------------------------------------
+Detailed Description
+-----------------------------------------------------------------------
+session saver saves directories and programs by directly reading /proc 
+filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
+pid. There is no "stuffing" and there is totally no interaction with 
+programs in windows.
 
+After session loading, in every new window starts screen-session-primer 
+(small C program) which displays a list of processes and asks user what 
+to do (whether to start none, part of or all window's processes).
+Then, primer tries to restore the string of processes by execing 
+for nodes:
+$ shell -c "program args; shell" 
+and for leafs:
+$ program args 
 
-Loading:
-    # load last saved session inside target session
-    screen-session --load
-    
-    # load last saved session with exactly the same window numbers 
-    screen-session --load --exact --maxwin {biggest window number}
-    
-    # load last saved session inside target session without layouts
-    screen-session --load --layout
+Entire string of processes can only be only properly restored if every 
+non-leaf is a shell which accepts '-c command' switch.
 
-    # load session from savefile loaded to Screen with PID
-    screen-session --load --in mysavedsession --out PID
+Can be restored completly:
+0 zsh -> 1 bash -> 2 vim hello.c 
 
-    # load saved session into new Screen session
-    screen -m screen-session --load --exact-kill-other
+Only up to 1:
+0 zsh -> 1 man hello -> 2 less
 
 
-Example bindings:
-    # start screen-session in new window logging output and quickly 
-    # return to previous window
-    bind S eval "screen sh -c 'sleep 1; screen-session --save --force --log /tmp/screen-session-log'" "other"
+There is also a blacklist for programs which may not be started
+(file $HOME/.screen-sessions/BLACKLIST).
+ 
+screen-session-primer uses linux color escapes. If you dont want color
+remove "-DCOLOR" from config.mk
+
+Normally screen-session does not restore exact window numbers. If you 
+want to force verbatim restoring use --exact flag.
+
+Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space). 
+During reading temporary files are stored in  /tmp/screen-session-$USER.
 
 
 -----------------------------------------------------------------------
@@ -141,5 +138,6 @@ There are no bugs, only features.
   layouts in screen-session because Screen will crash.
   Disable layouts saving/loading with --no-layout flag.
 
-Send suggestions to admin<[at]>adb.cba.pl
+Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
+http://github.com/skoneka/screen-session/issues
 
