@@ -15,9 +15,12 @@ from util import *
 import util
 
 
-
+logpipeh=None
 
 def doexit(var=0,waitfor=True):
+    global logpipeh
+    if logpipeh:
+        logpipeh.close()
     if waitfor:
         raw_input('Press any key to exit...')
     if sys.stdout!=sys.__stdout__:
@@ -82,12 +85,18 @@ def main():
     elif "-p" == sys.argv[3]:
         logpipe=sys.argv[4]:
     '''
-
+    logpipe=sys.argv[2].split('=')[1]
+    global logpipeh
+    if logpipe:
+        logpipeh=open(logpipe,'w')
+        sys.stdout=logpipeh
+        sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[2:], "M:ntxXryi:c:wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","daxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","daxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
-        bad_arg='BAD OPTIONS'
+        out('BAD OPTIONS')
+        raise SystemExit
     
     waitfor=False
     mode = 0
@@ -159,18 +168,14 @@ def main():
         elif o in ("-o","--out"):
             output = a
         else:
-            bad_arg=o
+            out('Error parsing: '+o)
+            raise SystemExit
             break;
 
     home=os.path.expanduser('~')
     
     if log:
         sys.stdout=open(log,'w')
-        sys.stderr=sys.stdout
-        if logpipe:
-            l=open(logpipe,'w')
-    elif logpipe:
-        sys.stdout=open(logpipe,'w')
         sys.stderr=sys.stdout
 
         
@@ -341,7 +346,6 @@ def main():
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
     else:
         out('No mode specified --load or --save')
-
     doexit(ret,waitfor)
 
 

@@ -37,8 +37,8 @@ Saving:
 
 
 Automated saving:
-    # save session after 3 minutes of inactivity. Notice the "-w" switch.
-    :idle 180 exec sh -c "screen-session save -w --force > /dev/null"
+    # save session after 3 minutes of inactivity. Notice the "-W" switch.
+    :idle 180 exec sh -c "screen-session save -W --force > /dev/null"
 
 
 Loading:

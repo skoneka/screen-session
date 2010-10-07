@@ -45,15 +45,15 @@ mode=$1
 shift 1 $*
 
 # parse command line arguments
-while getopts ":wnp:": OPT; do
+while getopts ":WNP:": OPT; do
     case "$OPT" in
-    w)  echo 'wait'
+    W)  echo 'wait'
         waitfor=1
         ;;
-    n)  echo 'nonest'
+    N)  echo 'nonest'
         logpipe=0
         ;;
-    p)  echo 'pipe'
+    P)  echo 'pipe'
         logpipe=1
         ;;
     esac
@@ -92,8 +92,8 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o "other" ]; then
         echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
 
+    argument0="logpipe=$scsfile"
     if [ $logpipe -eq 1 ]; then
-        argument0="-p $scsfile"
         if [ ! -d "$scsfiledir" ]; then
             mkdir $scsfiledir
         fi
