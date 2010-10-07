@@ -177,7 +177,7 @@ requireSession(const char *basepath,const char *file_in_session)
     else {
         free(filepath);
         char *buf=malloc((strlen(basedir)+strlen(session)+1+50)*sizeof(char));
-        sprintf(buf,"screen-session.py -n --dir %s --unpack %s",basedir,session);
+        sprintf(buf,"screen-session.py other -n --dir %s --unpack %s",basedir,session);
         system(buf);
         free(file);
         free(buf);

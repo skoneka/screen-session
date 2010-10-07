@@ -74,7 +74,7 @@ elif [ $mode = "regions-helper" ]; then
     sh ./screen-display-regions-helper $*
 elif [ $mode = "dir" ]; then
     ./screen-in-dir $*
-elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" ]; then
+elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o "other" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`
 

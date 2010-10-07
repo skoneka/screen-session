@@ -85,7 +85,7 @@ def main():
 
 
     try :
-        opts,args = getopt.getopt(sys.argv[2:], "ntxXryi:c:wfi:o:m:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[2:], "M:ntxXryi:c:wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","daxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         bad_arg='BAD OPTIONS'
     
@@ -146,7 +146,7 @@ def main():
             # ignore, currently handled in wrapper script
             # waitfor = True
             pass
-        elif o in ("-m","--maxwin"):
+        elif o in ("-M","--maxwin","--daxwin"):
             maxwin = int(a)
         elif o in ("-s","--save"):
             mode = 1
@@ -191,6 +191,8 @@ def main():
         bList=True
     elif sys.argv[1] in ('--help','-h'):
         bHelp=True
+    elif sys.argv[1] == 'other':
+        pass
     else:
         usageMode()
         doexit(1,waitfor)
