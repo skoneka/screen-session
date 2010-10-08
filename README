@@ -25,7 +25,8 @@ manage:
     split window
 
 regions:
-    script reassembling the functionality of tmux display-panes
+    script reassembling the functionality of tmux display-panes.
+    Needs toilet tool (figlet like printing).
 
 dir:
     start new Screen window in the same working directory
@@ -46,8 +47,9 @@ ls:
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
-Requires a recent version of Screen patched with screen-session.diff
-Depends on "lsof", "tar", "grep" and reads /proc filesystem.
+screen-session is tested on linux and requires a recent version of Screen 
+patched with screen-session.diff
+Session saver depends on "lsof", "tar", "grep" and reads /proc filesystem.
 
 
 screen-session.diff changes:
@@ -59,29 +61,7 @@ screen-session.diff changes:
 -----------------------------------------------------------------------
 Installation
 -----------------------------------------------------------------------
-Edit config.mk to match your local setup (screen-session is installed 
-into the /usr/local namespace by default), you can also disable colors 
-by removing "-DCOLOR".
-
-
-Afterwards enter the following command to build and install 
-screen-session (if necessary as root):
-
-    make clean install
-
-
-Make sure you have a recent version of Screen and apply necessary patch:
-
-    git clone git://git.sv.gnu.org/screen.git screen; cd screen
-    
-    git-apply ../screen-session-${VERSION}/screen-session.diff
-
-    cd src; autoreconf; autoheader; ./configure && make
-
-    sudo make install
-
-
-Make sure you have "lsof" installed.
+see INSTALL
 
 
 -----------------------------------------------------------------------
@@ -89,12 +69,13 @@ Running screen-session
 -----------------------------------------------------------------------
 see HOWTO
 
+
 -----------------------------------------------------------------------
 Detailed Description
 -----------------------------------------------------------------------
 session saver saves directories and programs by directly reading /proc 
 filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
-pid. There is no "stuffing" and there is totally no interaction with 
+pid. There is almost no "stuffing" so there is no interaction with 
 programs in windows.
 
 After session loading, in every new window starts screen-session-primer 
@@ -127,6 +108,8 @@ want to force verbatim restoring use --exact flag.
 
 Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space). 
 During reading temporary files are stored in  /tmp/screen-session-$USER.
+
+By default session saver also tries to save vim sessions using ":mksession"
 
 
 -----------------------------------------------------------------------

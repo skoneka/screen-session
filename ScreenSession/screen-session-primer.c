@@ -75,6 +75,7 @@
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
 #define BASEDATA_LINES 6
+#define PROCLINES 7
 
 
 int blacklist[BLACKLISTMAX];
@@ -138,9 +139,25 @@ int file_exists(const char * filename)
     return 0;
 }
 
+char * 
+get_session(const char *file_in_session)
+{   
+    char *file=malloc((strlen(file_in_session)+1)*sizeof(char));
+    char *session=malloc((strlen(file_in_session)+1)*sizeof(char));
+    
+    strcpy(file,file_in_session);
+
+
+    char *pch=NULL;
+    pch=strtok(file,"/");
+    if(pch)
+        strcpy(session,pch);
+    free(file);
+    return session;
+}
 
 int 
-requireSession(const char *basepath,const char *file_in_session)
+requireSession(const char *basepath,const char *file_in_session,int full)
 {   
     char *file=malloc((strlen(file_in_session)+1)*sizeof(char));
     char *session=malloc((strlen(file_in_session)+1)*sizeof(char));
@@ -162,22 +179,30 @@ requireSession(const char *basepath,const char *file_in_session)
     }
         
     char *filepath=malloc((strlen(basedir)+strlen(session)+2)*sizeof(char));
+    char *testfilepath=malloc((strlen(basedir)+strlen(session)+strlen(file_in_session)+2)*sizeof(char));
     strcpy(filepath,basedir);
     strcat(filepath,"/");
-    //strcat(filepath,file_in_session);
     strcat(filepath,session);
 
-    if(DirectoryExists(filepath)) {
+    strcpy(testfilepath,basedir);
+    strcat(testfilepath,"/");
+    strcat(testfilepath,file_in_session);
+    if(file_exists(testfilepath)) {
         free(file);
         free(filepath);
+        free(testfilepath);
         free(session);
         free(basedir);
         return 0;
     }
     else {
         free(filepath);
-        char *buf=malloc((strlen(basedir)+strlen(session)+1+50)*sizeof(char));
-        sprintf(buf,"screen-session.py other -n --dir %s --unpack %s",basedir,session);
+        char *fullstr="--full";
+        char *buf=malloc((strlen(basedir)+strlen(session)+strlen(fullstr)+1+55)*sizeof(char));
+        if (full)
+            sprintf(buf,"screen-session other -n --dir %s --unpack %s %s",basedir,session,fullstr);
+        else
+            sprintf(buf,"screen-session other -n --dir %s --unpack %s",basedir,session);
         system(buf);
         free(file);
         free(buf);
@@ -417,8 +442,10 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         return 0;
     size_t proc_cwd_s=0;
     size_t proc_exe_s=0;
+    size_t proc_vim_s=0;
     char *proc_cwd=NULL;
     char *proc_exe=NULL;
+    char *proc_vim=NULL;
     int proc_args_n;
     char proc_blacklisted[7];
     char **proc_args;
@@ -426,7 +453,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     char c;
     FILE *fp=NULL;
     chdir(basedir);
-    requireSession(basedir,config);
+    requireSession(basedir,config,0);
     
     fp=fopen(config,"r");
     
@@ -443,7 +470,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
         if(c=='\n') {
             nl_c++;
         }
-        else if (nl_c > (BASEDATA_LINES+(procs[0]*6)))
+        else if (nl_c > (BASEDATA_LINES+(procs[0]*PROCLINES)))
             break;
     }
     c=fgetc(fp);
@@ -457,7 +484,7 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     if(procs_n>1) {
         proc_args_n+=2;
     }
-    proc_args = malloc((proc_args_n+1)*sizeof(char*));
+    proc_args = malloc((proc_args_n+3)*sizeof(char*));
     
     long file_pos=ftell(fp);
     char *buf=NULL;
@@ -474,6 +501,8 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     }
 
     proc_args[proc_args_n]=NULL;
+    proc_args[proc_args_n+1]=NULL;
+    proc_args[proc_args_n+2]=NULL;
     int null_c=0;
     int word_c=0;
     while((c=fgetc(fp))!=EOF) {
@@ -501,7 +530,27 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
             break;
     }
     fscanf(fp,"%s\n",proc_blacklisted);
+    getline(&proc_vim,&proc_vim_s,fp);
+    proc_vim=strtrim_right(proc_vim,'\n');
     fclose(fp);
+    
+    if(strcmp(proc_vim,"None")!=0) {
+        proc_args[proc_args_n]=malloc((strlen("-S")+1)*sizeof(char));
+        char *session=get_session(config);
+        proc_args[proc_args_n+1]=malloc((strlen(basedir)+strlen(session)+strlen(proc_vim)+5)*sizeof(char));
+        strcpy(proc_args[proc_args_n],"-S");
+        strcpy(proc_args[proc_args_n+1],basedir);
+        strcat(proc_args[proc_args_n+1],"/");
+        strcat(proc_args[proc_args_n+1],session);
+        strcat(proc_args[proc_args_n+1],"/");
+        strcat(proc_args[proc_args_n+1],proc_vim);
+        char *buf=malloc((strlen(session)+strlen(proc_vim)+5)*sizeof(char));
+        strcpy(buf,session);
+        strcat(buf,"/");
+        strcat(buf,proc_vim);
+        requireSession(basedir,buf,1);
+        free(buf);
+    }
     
     if(strcmp(proc_blacklisted,"True")==0)
         return 0;
@@ -568,7 +617,12 @@ int main(int argc, char **argv) {
     }
     else if (strcmp(argv[1],"-r")==0) {
         //requireSession
-        requireSession(argv[2],argv[3]);
+        requireSession(argv[2],argv[3],0);
+        return 0;
+    }
+    else if (strcmp(argv[1],"-rf")==0) {
+        //requireSession
+        requireSession(argv[2],argv[3],1);
         return 0;
     }
     char *homedir=getenv("HOME");
@@ -581,7 +635,7 @@ int main(int argc, char **argv) {
     strcat(fullpath,"/");
     strcat(fullpath,workingdir);
     chdir(fullpath);
-    requireSession(fullpath,datafile);
+    requireSession(fullpath,datafile,0);
     fp=fopen(scrollbackfile,"r");
     if(fp) {
         while((c=fgetc(fp))!=EOF) {
@@ -595,7 +649,7 @@ int main(int argc, char **argv) {
     fp=NULL;
 
     printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-    requireSession(fullpath,datafile);
+    requireSession(fullpath,datafile,0);
     fp=fopen(datafile,"r");
     if(!fp) {
         printf("Cannot open data file. Aborting.\n");
@@ -633,13 +687,14 @@ int main(int argc, char **argv) {
 
     size_t proc_cwd_s=0;
     size_t proc_exe_s=0;
+    size_t proc_vim_s=0;
     char *proc_cwd=NULL;
     char *proc_exe=NULL;
+    char *proc_vim=NULL;
     int proc_args_n;
     char cmdline_begin[CMDLINE_BEGIN+1];
     int cmdline_begin_c=0;
     char proc_blacklisted[7];
-
     char buf[5];
     for(i=0;i<procs_c;i++) {
         fscanf(fp,"%s\n",buf); //read --
@@ -676,9 +731,13 @@ int main(int argc, char **argv) {
         }
         
         fscanf(fp,"%s\n",proc_blacklisted);
+        getline(&proc_vim,&proc_vim_s,fp);
+        proc_vim=strtrim_right(proc_vim,'\n');
         printf("\n");
         printf("\tCWD: %s\n",proc_cwd);
         printf("\tEXE: %s\n",proc_exe);
+        if (strcmp("None",proc_vim)!=0)
+            printf("\tVIMSESSION: %s\n",proc_vim);
         if (strncmp(proc_blacklisted,"True",4)==0 || is_blacklisted(fullpath,cmdline_begin,i))
             printf("\t%sBLACKLISTED - program and child processes\n\
                     \tcannot be started (use [O]nly)%s\n",magenta,none);

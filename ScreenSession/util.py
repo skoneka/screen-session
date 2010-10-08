@@ -28,7 +28,6 @@ def linkify(dir,dest,targ):
 def requireme(home,projectsdir,file_in_session,full=False):
     global archiveend
     global tmpdir
-    #os.system("%s -r %s %s"%(primer, os.path.join(home,projectsdir),file_in_session))
     fhead,ftail = os.path.split(file_in_session)
     if os.path.isdir(os.path.join(home,projectsdir,fhead)):
         return
@@ -36,7 +35,11 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
-    out('unpacking...')
+    if full:
+        fullstr=" full"
+    else:
+        fullstr=""
+    out('unpacking%s...'%fullstr)
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(tmpdir):
@@ -122,8 +125,6 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
         os.rename(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)
-    #os.rename(os.path.join(home,projectsdir,savedir+'__win'+archiveend),os.path.join(home,projectsdir,savedir_real+'__win'+archiveend))
-    #os.rename(os.path.join(home,projectsdir,savedir+'__data'+archiveend),os.path.join(home,projectsdir,savedir_real+'__data'+archiveend))
     linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
 def command_at(command,win=None,session=None):

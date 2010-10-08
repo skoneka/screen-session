@@ -56,12 +56,14 @@ save\n\
   \treturn to home window and home layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout saving/loading\n\
+-V --no-vim\n\
+  \tdisable vim session saving\n\
 --log       <file>\n\
   \toutput to file instead stdout\n\
 -d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
--w\n\
-  \twait for any key when finished\n\
+-W\n\
+  \twait for any key when finished. Has to be the first option after mode\n\
 -h --help\n\
   \tshow this message\n\
   \n\
@@ -77,14 +79,7 @@ def main():
 
     bad_arg=None
     logpipe=None
-    '''
-    if "-p" == sys.argv[1]:
-        logpipe=sys.argv[2]:
-    elif "-p" == sys.argv[2]:
-        logpipe=sys.argv[3]:
-    elif "-p" == sys.argv[3]:
-        logpipe=sys.argv[4]:
-    '''
+    
     logpipe=sys.argv[2].split('=')[1]
     global logpipeh
     if logpipe:
@@ -93,7 +88,7 @@ def main():
         sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -104,10 +99,12 @@ def main():
     unpack=None
     current_session=None
     bNest=True
+    bVim=True
     bExact=False
     bKill=False
     bHelp=False
     bList=False
+    bFull=False
     restore = False
     verbose = False
     log=None
@@ -137,6 +134,10 @@ def main():
             unpack = a
         elif o in ("-c","--current-session"):
             current_session = a
+        elif o == "--full":
+            bFull = True
+        elif o in ("-V","--no-vim"):
+            bVim = False
         elif o in ("-x","--exact"):
             bExact = True
         elif o in ("-X","--exact-kill-other"):
@@ -218,7 +219,7 @@ def main():
     
     if mode==0:
         if unpack:
-            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,False)
+            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,bFull)
         else:
             usage()
         doexit(0,waitfor)
@@ -280,6 +281,7 @@ def main():
     scs.restore_previous = restore
     scs.exact=bExact
     scs.bKill=bKill
+    scs.bVim=bVim
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)
