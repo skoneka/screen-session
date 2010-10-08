@@ -17,6 +17,7 @@ class ScreenSaver(object):
     restore_previous = False
     exact=False
     bKill=False
+    bVim=True
     group_other='OTHER_WINDOWS'
     homewindow=""
     
@@ -510,8 +511,8 @@ class ScreenSaver(object):
                 self.__scrollbacks.append(scrollback_filename)
                 
                 # display some output
-                out('window = '+cwin+\
-                        '\ntty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
+                out(cwin+\
+                        '; tty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
                 if cfilter!=-1:
                     out('filter: exec %s'%(cfilter))
                 else:
@@ -592,7 +593,7 @@ class ScreenSaver(object):
                         if self.primer==arg0:
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
-                        elif arg0 in self.vim_names:
+                        elif arg0 in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)

@@ -56,6 +56,8 @@ save\n\
   \treturn to home window and home layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout saving/loading\n\
+-V --no-vim\n\
+  \tdisable vim session saving\n\
 --log       <file>\n\
   \toutput to file instead stdout\n\
 -d --dir\n\
@@ -86,7 +88,7 @@ def main():
         sys.stderr=logpipeh
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -97,6 +99,7 @@ def main():
     unpack=None
     current_session=None
     bNest=True
+    bVim=True
     bExact=False
     bKill=False
     bHelp=False
@@ -133,6 +136,8 @@ def main():
             current_session = a
         elif o == "--full":
             bFull = True
+        elif o in ("-V","--no-vim"):
+            bVim = False
         elif o in ("-x","--exact"):
             bExact = True
         elif o in ("-X","--exact-kill-other"):
@@ -276,6 +281,7 @@ def main():
     scs.restore_previous = restore
     scs.exact=bExact
     scs.bKill=bKill
+    scs.bVim=bVim
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)
