@@ -22,7 +22,7 @@ class ScreenSaver(object):
     
     primer="screen-session-primer"
     
-    # blacklist and files in projects directory
+    # blacklist file in projects directory
     blacklistfile="BLACKLIST"
     
     # old static blacklist
@@ -41,7 +41,7 @@ class ScreenSaver(object):
 
     def save(self):
         os.system('screen -S %s -X msgminwait %s' % (self.pid,"0"))
-        self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+        self.homewindow,title=self.get_number_and_title()
         out("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
             return False
@@ -50,7 +50,7 @@ class ScreenSaver(object):
         
         if self.enable_layout:
             out("\n======SAVING___LAYOUTS======")
-            self.homewindow=subprocess.Popen('screen -S %s -Q @number' % self.pid, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0]
+            self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
         out("\n======CLEANUP======")
         self.__scrollback_clean()
@@ -432,8 +432,6 @@ class ScreenSaver(object):
 
     def focusminsize(self,args=''):
         msg=self.command_at('focusminsize %s'%args)
-        #msg.rsplit(' ',2)
-        #return msg
 
     def get_layout_number(self):
         msg=self.command_at('layout number')
@@ -891,13 +889,7 @@ class ScreenSaver(object):
         
         out("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
         
-        # select last selected window
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-            (lasthead,lasttail)=os.path.split(last)
-            lastid=lasttail.split("_",1)[1]
-            out("Selecting last window %s"%(lastid))
-            os.system('screen -S %s -X select %s' % (self.pid,lastid))
+        os.system('screen -S %s -X select %s' % (self.pid,self.homewindow_last))
 
         return True
 
@@ -950,9 +942,6 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
-
-
-
 
     def __get_pid_info(self,pid):
         piddir=os.path.join(self.procdir,pid)

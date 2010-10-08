@@ -1,0 +1,26 @@
+-----------------------------------------------------------------------
+Installation
+-----------------------------------------------------------------------
+Edit config.mk to match your local setup (screen-session is installed 
+into the /usr/local namespace by default), you can also disable colors 
+by removing "-DCOLOR".
+
+
+Afterwards enter the following command to build and install 
+screen-session (if necessary as root):
+
+    make clean install
+
+
+Make sure you have a recent version of Screen and apply necessary patch:
+
+    git clone git://git.sv.gnu.org/screen.git screen; cd screen
+    
+    git-apply ../screen-session-${VERSION}/screen-session.diff
+
+    cd src; autoreconf; autoheader; ./configure && make
+
+    sudo make install
+
+
+Make sure you have "lsof" installed.

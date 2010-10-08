@@ -36,6 +36,7 @@ dist: clean
 	@cp -R LICENSE Makefile README config.mk screen-session.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session.py
+	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}

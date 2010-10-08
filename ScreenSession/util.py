@@ -28,7 +28,6 @@ def linkify(dir,dest,targ):
 def requireme(home,projectsdir,file_in_session,full=False):
     global archiveend
     global tmpdir
-    #os.system("%s -r %s %s"%(primer, os.path.join(home,projectsdir),file_in_session))
     fhead,ftail = os.path.split(file_in_session)
     if os.path.isdir(os.path.join(home,projectsdir,fhead)):
         return
@@ -126,8 +125,6 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
         os.rename(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)
-    #os.rename(os.path.join(home,projectsdir,savedir+'__win'+archiveend),os.path.join(home,projectsdir,savedir_real+'__win'+archiveend))
-    #os.rename(os.path.join(home,projectsdir,savedir+'__data'+archiveend),os.path.join(home,projectsdir,savedir_real+'__data'+archiveend))
     linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
 def command_at(command,win=None,session=None):

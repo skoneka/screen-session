@@ -60,8 +60,8 @@ save\n\
   \toutput to file instead stdout\n\
 -d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
--w\n\
-  \twait for any key when finished\n\
+-W\n\
+  \twait for any key when finished. Has to be the first option after mode\n\
 -h --help\n\
   \tshow this message\n\
   \n\
