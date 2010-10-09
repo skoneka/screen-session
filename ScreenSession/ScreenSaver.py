@@ -897,7 +897,7 @@ class ScreenSaver(object):
     def __save_vim(self,winid):
         name="vim_%s"%(winid)
         fname=os.path.join(self.basedir,self.savedir,name)
-        self.stuff('^[^[:mksession %s^M'%fname,winid)
+        self.stuff('^[^[:mksession %s^M'%fname, winid)
         return name
            
     def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback,scrollback_filename):
