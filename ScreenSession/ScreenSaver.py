@@ -502,8 +502,8 @@ class ScreenSaver(object):
                     ctype="zombie"
                     continue;
 
-                cgroup = self.get_group(id)
                 cfilter = self.get_exec(id)
+                cgroup = self.get_group(id)
                 
                 # save scrollback
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
@@ -526,7 +526,7 @@ class ScreenSaver(object):
                     ctype="basic"
                     # get pids in window
                     cpids=subprocess.Popen('lsof -F p %s' % (ctty) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')
-                    print('pids = '+str(cpids))
+                    #out('pids = '+str(cpids))
                     cpids_data=[]
                     # get ppid
                     ncpids=[]
@@ -539,9 +539,9 @@ class ScreenSaver(object):
                             cpids_data.append(pidinfo)
                             ncpids.append(pid)
                         except:
-                            print('Unable to get parent pid for [%s]'%pid)
+                            out('Unable to get parent pid for [%s]'%pid)
                     cpids=ncpids
-                print('type = '+ctype)
+                out('type = '+ctype +'; pids = '+str(cpids))
                 
                 
                 # sort window processes by parent pid
@@ -587,7 +587,7 @@ class ScreenSaver(object):
                                 newdata=(cpids_data[i][0],cpids_data[i][1],s,cpids_data[i][3])
                                 cpids_data[i]=newdata
 
-                        out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
+                        #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                         vim_name=str(None)
                         arg0=cpids_data[i][2].split('\0')[0]
                         if self.primer==arg0:
@@ -671,7 +671,7 @@ class ScreenSaver(object):
                 
                 layout_trans[layoutnumber]=currentlayout
 
-                out("session %s sourcing %s"%(self.pid,filename))
+                out("sourcing %s"%(filename))
                 os.system('screen -S %s -X source \"%s\"' % (self.pid, filename) )
                 (head,tail)=os.path.split(filename)
                 
@@ -701,7 +701,7 @@ class ScreenSaver(object):
                 os.system('screen -S %s -X focus top' % (self.pid) )
                 for size in regions_size:
                     if size[0]>0:
-                        out('setting region size: %d %d'%(size[0],size[1]))
+                        out('region size: %d %d'%(size[0],size[1]))
                         self.resize('-h %d'%(size[0]))
                         self.resize('-v %d'%(size[1]))
                         self.fit()
@@ -782,7 +782,7 @@ class ScreenSaver(object):
         self.__get_focus_offset_c+=1
         markertty = self.get_tty()
         markernum,markertitle=self.get_number_and_title()
-        print('markernum=%s; title=%s;'%(markernum,markertitle))
+        #out('markernum=%s; title=%s;'%(markernum,markertitle))
         os.system('screen -S %s -X focus top' % (self.pid) )
 
 
@@ -844,7 +844,7 @@ class ScreenSaver(object):
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
-            out("layout = %s (%s)"% (currentlayout,layoutname))
+            out("%s (%s)"% (currentlayout,layoutname))
             os.system('screen -S %s -X layout dump \"%s\"' % (self.pid, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.__get_focus_offset()

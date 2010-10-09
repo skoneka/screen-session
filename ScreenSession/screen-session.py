@@ -328,7 +328,7 @@ def main():
             scs.savedir=savedir_real
             savedir=savedir_real
             out('session "%s"'%scs.pid) 
-            out('saved as "%s"'%(scs.pid))
+            out('saved as "%s"'%(scs.savedir))
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
