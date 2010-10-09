@@ -23,19 +23,39 @@ Available modes:\n\
     ls\t\t- list saved sessions\n\
     manage\t- sessions manager\n\
     dir\t\t- start Screen window in the same working directory\n\
-    regions\t- like tmux display-panes
+    regions\t- display number in each region (like tmux display-panes)
     kill\t- send signal to last process started in a window
+    grab\t- grab a process and attach it to current tty 
     "
 }
 
 showhelp_regions() {
-    echo "script reassembling the functionality of tmux display-panes\n\
-Usage: screen-session regions"
+    echo "Display number in each region\n\
+script reassembling the functionality of tmux display-panes\n\
+\nUsage: screen-session regions"
 }
 
 showhelp_kill() {
-    echo "kill last process started in a window\n\
-Usage: screen-session kill [signal=TERM] [window=current]"
+    echo "Kill last process started in a window\n\
+\nUsage: screen-session kill [signal=TERM] [window=current]"
+}
+
+showhelp_dir() {
+    echo "Start a new Screen window in the same working directory\n\ 
+on the position next to the current window\n\
+\nUsage: screen-session dir [program]"
+}
+
+showhelp_grab() {
+    echo "Grab a process and attach to the current tty.\n\
+Works with applications without complicated output scheme\n\
+\nUsage: screen-session grab [PID]\n\
+on the previous shell type: $ disown"
+}
+
+showhelp_manage() {
+    echo "Sessions manager for GNU Screen with preview in a split window\n\
+\nUsage: screen-session manage"
 }
 
 waitfor=0
@@ -65,6 +85,28 @@ while getopts ":WNP:": OPT; do
     esac
 done
 
+if [ $# -ge 1 ]; then
+    if [ $1 = "--help" ]; then
+        case "$mode" in
+            manage) showhelp_manage
+            ;;
+            grab) showhelp_grab
+            ;;
+            dir) showhelp_dir
+            ;;
+            regions) showhelp_regions
+            ;;
+            kill) showhelp_kill
+            ;;
+            save|load|ls) python ./screen-session.py  $mode $*
+            ;;
+            *) echo "No such mode \"$mode\""
+            ;;
+        esac
+        exit 0
+    fi
+fi
+
 session=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
 if [ $mode = "manage" ]; then
     python ./screen-session-manage p
@@ -73,10 +115,6 @@ elif [ $mode = "grab" ]; then
     sh ./screen-session-grab $*
 
 elif [ $mode = "regions" ]; then
-    if [ $1 = "--help" ]; then
-        showhelp_regions
-        exit 0
-    fi
     screen -m -d -c /dev/null python ./screen-display-regions.py $session $*
 
 elif [ $mode = "regions-helper" ]; then
@@ -86,10 +124,6 @@ elif [ $mode = "dir" ]; then
     python ./screen-in-dir.py $session $*
 
 elif [ $mode = "kill" ]; then
-    if [ $1 = "--help" ]; then
-        showhelp_kill
-        exit 0
-    fi
     # screen-session kill [signal=TERM] [win=current]
     python ./kill.py $session $*
 

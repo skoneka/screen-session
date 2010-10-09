@@ -80,15 +80,20 @@ def main():
     bad_arg=None
     logpipe=None
     
-    logpipe=sys.argv[2].split('=')[1]
-    global logpipeh
-    if logpipe:
-        logpipeh=open(logpipe,'w')
-        sys.stdout=logpipeh
-        sys.stderr=logpipeh
+    try:
+        logpipe=sys.argv[2].split('=')[1]
+        global logpipeh
+        if logpipe:
+            logpipeh=open(logpipe,'w')
+            sys.stdout=logpipeh
+            sys.stderr=logpipeh
+        argstart=3
+    except:
+        argstart=2
+        pass
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
