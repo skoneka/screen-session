@@ -50,6 +50,7 @@ install: all
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session-primer ${DESTDIR}${PREFIX}/bin
+	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
 uninstall:
 	@echo removing files from ${INSTFOLDER}
