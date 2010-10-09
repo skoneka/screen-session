@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 import os,subprocess,re
 
+def get_pid_info(pid,procdir="/proc"):
+    piddir=os.path.join(procdir,pid)
+    
+    cwd=os.readlink(os.path.join(piddir,"cwd"))
+    exe=os.readlink(os.path.join(piddir,"exe"))
+    f=open(os.path.join(piddir,"cmdline"),"r")
+    cmdline=f.read()
+    f.close()
+    
+    return (cwd,exe,cmdline)
+
 def sort_by_ppid(cpids):
     #print cpids
     cppids={}

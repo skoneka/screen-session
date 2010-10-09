@@ -2,6 +2,7 @@
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 
 from util import out,requireme,linkify
+import GNUScreen as sc
 
 class ScreenSaver(object):
     """class storing GNU screen sessions"""
@@ -524,51 +525,19 @@ class ScreenSaver(object):
                     cpids_data=None
                 elif len(ctty) > 0:
                     ctype="basic"
-                    # get pids in window
-                    cpids=subprocess.Popen('lsof -F p %s' % (ctty) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')
-                    #out('pids = '+str(cpids))
+                    # get sorted pids in window
+                    cpids=sc.get_tty_pids(ctty)
                     cpids_data=[]
-                    # get ppid
-                    ncpids=[]
                     for pid in cpids:
-                        try:
-                            pid=pid[1:]
-                            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
-                            cppids[pid]=ppid
-                            pidinfo=self.__get_pid_info(pid)
-                            cpids_data.append(pidinfo)
-                            ncpids.append(pid)
-                        except:
-                            out('Unable to get parent pid for [%s]'%pid)
-                    cpids=ncpids
+                        pidinfo=sc.get_pid_info(pid)
+                        (exehead,exetail)=os.path.split(pidinfo[1])
+                        if exetail in self.blacklist:
+                            blacklist=True
+                        else:
+                            blacklist=False
+                        cpids_data.append(pidinfo+tuple([blacklist]))
+                
                 out('type = '+ctype +'; pids = '+str(cpids))
-                
-                
-                # sort window processes by parent pid
-                # what if more than one process has no recognized ppid?
-                if cpids:
-                    pids_data_sort=[]
-                    pids_data_sort_index=0
-                    pid_tail=-1
-                    pid_tail_c=-1
-                    cpids_sort=[]
-                    for i,pid in enumerate(cpids):
-                        if cppids[pid] not in cppids.keys():
-                            pids_data_sort.append(cpids_data[i])
-                            cpids_sort.append(pid)
-                            pid_tail=pid
-                            break;
-                    
-                    for j in range(len(cpids)):
-                        for i,pid in enumerate(cpids):
-                            if pid_tail==cppids[pid]:
-                                pid_tail=pid
-                                pids_data_sort.append(cpids_data[i])
-                                cpids_sort.append(pid)
-                                break;
-                    cpids_data=pids_data_sort
-                    cpids=cpids_sort
-               
 
                 if(cpids):
                     for i,pid in enumerate(cpids):
@@ -946,22 +915,6 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
-
-    def __get_pid_info(self,pid):
-        piddir=os.path.join(self.procdir,pid)
-        
-        cwd=os.readlink(os.path.join(piddir,"cwd"))
-        exe=os.readlink(os.path.join(piddir,"exe"))
-        f=open(os.path.join(piddir,"cmdline"),"r")
-        cmdline=f.read()
-        f.close()
-        (exehead,exetail)=os.path.split(exe)
-        if exetail in self.blacklist:
-            blacklist=True
-        else:
-            blacklist=False
-        
-        return (cwd,exe,cmdline,blacklist)
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)
