@@ -73,7 +73,8 @@ elif [ $mode = "regions" ]; then
 elif [ $mode = "regions-helper" ]; then
     sh ./screen-display-regions-helper $*
 elif [ $mode = "dir" ]; then
-    ./screen-in-dir $*
+    argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
+    python ./screen-in-dir.py $argument $*
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`

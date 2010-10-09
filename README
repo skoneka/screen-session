@@ -29,7 +29,8 @@ regions:
     Needs toilet tool (figlet like printing).
 
 dir:
-    start new Screen window in the same working directory
+    starts a new Screen window in the same working directory 
+    on the position next to the current window
 
 grab:
     change tty of a process to this terminal

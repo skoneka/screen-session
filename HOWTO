@@ -14,6 +14,9 @@ grab:
 dir:
     # start new window running zsh with the same working directory
     screen-session dir zsh
+    
+    # example binding:
+    :bind c screen-session dir
 
 regions:
     screen-session regions

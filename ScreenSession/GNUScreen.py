@@ -2,13 +2,18 @@
 import os,subprocess,re
 
 def sort_by_ppid(cpids):
-    print cpids
+    #print cpids
     cppids={}
+    ncpids=[]
     for i,pid in enumerate(cpids):
-        print pid
-        ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1]
-        cppids[pid]=ppid
-        cpids[i]=pid
+        try:
+            #print pid
+            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1]
+            cppids[pid]=ppid
+            ncpids.append(pid)
+        except:
+            pass
+    cpids=ncpids
 
     pid_tail=-1
     pid_tail_c=-1
@@ -147,13 +152,13 @@ def get_current_window(session=None):
     return int(subprocess.Popen('%s -Q @number' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
 
 def order_windows(win_history):
-    #orfder windows in layout by win_history
+    #order windows in layout by win_history
     for w in win_history:
         try:
             int(w)
         except:
             break
-        print('window: %s'%w)
+        #print('window: %s'%w)
         os.system('screen -S %s -X select %s'%(session,w))
         os.system('screen -S %s -X focus' %(session))
 
