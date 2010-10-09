@@ -40,8 +40,8 @@ Saving:
 
 
 Automated saving:
-    # save session after 3 minutes of inactivity. Notice the "-W" switch.
-    :idle 180 exec sh -c "sleep 0.01; screen-session save -W --force > /dev/null"
+    # save session after 3 minutes of inactivity.
+    :idle 180 exec sh -c "sleep 0.01; screen screen-session --force > /dev/null"
 
 
 Loading:
@@ -64,5 +64,5 @@ Loading:
 Example bindings:
     # start screen-session in a new window logging output and quickly 
     # return to previous window before saving begins
-    bind S eval "screen sh -c 'sleep 1; screen-session save --force --log /tmp/screen-session-log'" "other"
+    bind S exec sh -c "sleep 0.01; screen screen-session save --force > /dev/null"
 

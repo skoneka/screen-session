@@ -7,8 +7,7 @@ def sort_by_ppid(cpids):
     ncpids=[]
     for i,pid in enumerate(cpids):
         try:
-            #print pid
-            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1]
+            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
             cppids[pid]=ppid
             ncpids.append(pid)
         except:
@@ -32,6 +31,15 @@ def sort_by_ppid(cpids):
                 break;
     cpids=cpids_sort
     return cpids
+
+def get_tty_pids(ctty):
+    f = os.popen('lsof -F p %s | cut -c2-' % ctty)
+    pids=f.read().strip()
+    f.close()
+    pids=pids.split('\n')
+    pids=sort_by_ppid(pids)
+    return pids
+
 
 def get_session_list():
     screen="screen"

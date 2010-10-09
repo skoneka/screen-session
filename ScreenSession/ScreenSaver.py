@@ -621,7 +621,7 @@ class ScreenSaver(object):
         try:
             shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
         except Exception,e:
-            out(e)
+            out(str(e))
             pass
         
         requireme(self.homedir,cmdline[1], cmdline[2],True)
@@ -631,7 +631,7 @@ class ScreenSaver(object):
         try:
             shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
         except Exception,e:
-            out(e)
+            out(str(e))
             pass
 
         source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
