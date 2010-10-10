@@ -12,8 +12,10 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 VERSION=git
+SCREEN_SESSION="SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\n"
+
 showhelp() {
-    echo "SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\n"
+    echo $SCREEN_SESSION
     echo "Usage: screen-session [mode] [options]\n\
 Help: screen-session [mode] --help\n\
     \n\
@@ -23,8 +25,9 @@ Available modes:\n\
     ls\t\t- list saved sessions\n\
     manage\t- sessions manager\n\
     dir\t\t- start Screen window in the same working directory\n\
-    regions\t- display number in each region (like tmux display-panes)
-    kill\t- send signal to last process started in a window
+    regions\t- display number in each region (like tmux display-panes)\n\
+    kill\t- send signal to last process started in a window\n\
+    kill-zombie\t- kill all zombie windows in session
     grab\t- grab a process and attach it to current tty 
     "
 }
@@ -38,6 +41,11 @@ script reassembling the functionality of tmux display-panes\n\
 showhelp_kill() {
     echo "Kill last process started in a window\n\
 \nUsage: screen-session kill [signal=TERM] [window=current]"
+}
+
+showhelp_kill_zombie() {
+    echo "Kill all zombie windows in session\n\
+\nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
 }
 
 showhelp_dir() {
@@ -87,6 +95,7 @@ done
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" ]; then
+    echo $SCREEN_SESSION
         case "$mode" in
             manage) showhelp_manage
             ;;
@@ -95,6 +104,8 @@ if [ $# -ge 1 ]; then
             dir) showhelp_dir
             ;;
             regions) showhelp_regions
+            ;;
+            kill-zombie) showhelp_kill_zombie
             ;;
             kill) showhelp_kill
             ;;
@@ -126,6 +137,11 @@ elif [ $mode = "dir" ]; then
 elif [ $mode = "kill" ]; then
     # screen-session kill [signal=TERM] [win=current]
     python ./kill.py $session $*
+
+elif [ $mode = "kill-zombie" ]; then
+    # screen-session kill-zombie
+    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    python ./kill-zombie.py $session $maxwin $*
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     screen -X sessionname

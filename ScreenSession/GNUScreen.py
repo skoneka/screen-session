@@ -1,5 +1,36 @@
 #!/usr/bin/env python
-import os,subprocess,re
+import os,subprocess,re,sys
+def gen_all_windows(minwin,maxwin,session):
+    from ScreenSaver import ScreenSaver
+    ss=ScreenSaver(session,'/dev/null','/dev/null')
+    cwin=-1
+    ctty=None
+    searching=False
+    for i in range(minwin,maxwin+1):
+        id=str(i)
+        if not searching:
+            pass
+        cwin,ctitle=ss.get_number_and_title(id)
+        if (cwin==-1):
+            #no such window
+            if searching:
+                pass
+            else: 
+                searching=True
+        else:
+            if(searching):
+                searching=False
+
+            # has to follow get_number_and_title() to recognize zombie windows
+            ctty = ss.get_tty(id)
+            if ctty.startswith('This'):
+                ctype=-1
+            elif ctty=='telnet':
+                ctype=1
+            else:
+                ctype=0
+
+            yield cwin,ctype
 
 def get_pid_info(pid,procdir="/proc"):
     piddir=os.path.join(procdir,pid)

@@ -523,7 +523,7 @@ class ScreenSaver(object):
                     ctype="group"
                     cpids = None
                     cpids_data=None
-                elif len(ctty) > 0:
+                else:
                     ctype="basic"
                     # get sorted pids in window
                     cpids=sc.get_tty_pids(ctty)
