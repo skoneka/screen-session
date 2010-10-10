@@ -41,7 +41,7 @@ Saving:
 
 Automated saving:
     # save session after 3 minutes of inactivity.
-    :idle 180 exec sh -c "sleep 0.01; screen screen-session --force > /dev/null"
+    screen-session save --force --idle 180
 
 
 Loading:

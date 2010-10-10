@@ -94,7 +94,7 @@ while getopts ":WNP:": OPT; do
 done
 
 if [ $# -ge 1 ]; then
-    if [ $1 = "--help" ]; then
+    if [ $1 = "--help" -o $1 = "-h" ]; then
     echo $SCREEN_SESSION
         case "$mode" in
             manage) showhelp_manage

@@ -412,6 +412,9 @@ class ScreenSaver(object):
         msg=self.command_at('kill %s'%args,win)
         return msg
 
+    def idle(self,timeout,args):
+        msg=self.command_at('idle %s %s'%(timeout,args))
+
     def quit(self):
         msg=self.command_at('quit')
 
