@@ -5,8 +5,7 @@
 # description: renumber all windows to fill the gaps
 
 import os,sys
-import GNUScreen as sc
-
+import tools
 session=sys.argv[1]
 
 try:
@@ -21,4 +20,4 @@ except:
     min=0
 min=int(min)
 
-sc.renumber(session,min,max)
+tools.renumber(session,min,max)

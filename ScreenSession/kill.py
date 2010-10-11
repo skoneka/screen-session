@@ -6,7 +6,7 @@
 
 import os,sys,signal
 import GNUScreen as sc
-from ScreenSaver import ScreenSaver
+import tools
 
 session=sys.argv[1]
 try:
@@ -20,6 +20,6 @@ except:
     win="-1"
 
 
-sc.kill_win_last_proc(session,win,mode)
+tools.kill_win_last_proc(session,win,mode)
 
 

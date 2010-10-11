@@ -23,6 +23,7 @@ Available modes:\n\
     save\t- save sessions to disk\n\
     load\t- load session from savefile\n\
     ls\t\t- list saved sessions\n\
+    \n\
     manage\t- sessions manager\n\
     dir\t\t- start Screen window in the same working directory\n\
     regions\t- display number in each region (like tmux display-panes)\n\
@@ -30,6 +31,7 @@ Available modes:\n\
     kill-zombie\t- kill all zombie windows in session
     grab\t- grab a process and attach it to current tty
     renumber\t- renumber windows to fill gaps 
+    sort\t- sort windows by title
     "
 }
 

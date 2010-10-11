@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os,subprocess,re,sys
-from ScreenSaver import ScreenSaver
 def gen_all_windows(minwin,maxwin,session):
+    from ScreenSaver import ScreenSaver
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     cwin=-1
     ctty=None
@@ -53,7 +53,7 @@ def get_pid_info_linux(pid,procdir="/proc"):
     return (cwd,exe,cmdline)
 
 def get_pid_info(pid,procdir="/proc"):
-    get_pid_info_linux(pid,procdir)
+    return get_pid_info_linux(pid,procdir)
 
 def sort_by_ppid(cpids):
     #print cpids
@@ -298,35 +298,4 @@ def kill_win_last_proc(session,win="-1",sig="TERM"):
 
     os.kill(int(pid),sig)
 
-def renumber(session,min,max):
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    wins=[]
-    wins_trans={}
-    for win,type,title in gen_all_windows(min,max,session):
-        iwin=int(win)
-        wins.append((ss.get_group(win),iwin,type))
-        #wins_trans[iwin]=iwin
-
-    win_biggest=wins[len(wins)-1][1]
-    for i in range(0,win_biggest+1):
-        wins_trans[i]=i
-
-    wins.sort(key=lambda wins:wins[0])
-
-    i=0
-    for group,win,type in wins:
-        if wins_trans[win]!=i:
-            #print("win %d(%d)(%s) as %d"%(wins_trans[win],win,group,i))
-            ss.number(str(i),str(wins_trans[win]))
-            tmp=wins_trans[win]
-            wins_trans[win]=wins_trans[i]
-            wins_trans[i]=tmp
-        i+=1
-
-def kill_zombie(session,min,max):
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-
-    for win,type,title in gen_all_windows(min,max,session):
-        if type==-1:
-            ss.kill('',win)
 
