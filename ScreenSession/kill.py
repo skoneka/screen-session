@@ -19,14 +19,7 @@ try:
 except:
     win="-1"
 
-session_arg="-S %s"%session
-ss=ScreenSaver(session,'/dev/null','/dev/null')
-ctty=ss.get_tty(win)
-pids=sc.get_tty_pids(ctty)
-pid = pids[len(pids)-1]
 
-sig=eval('signal.SIG'+mode)
-
-os.kill(int(pid),sig)
+sc.kill_win_last_proc(session,win,mode)
 
 

@@ -6,7 +6,6 @@
 
 import os,sys,signal
 import GNUScreen as sc
-from ScreenSaver import ScreenSaver
 
 session=sys.argv[1]
 
@@ -22,11 +21,5 @@ except:
     min=0
 min=int(min)
 
-session_arg="-S %s"%session
-ss=ScreenSaver(session,'/dev/null','/dev/null')
-
-for win,type,title in sc.gen_all_windows(min,max,session):
-    if type==-1:
-        ss.kill('',win)
-
+sc.kill_zombie(session,min,max)
 
