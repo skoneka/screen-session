@@ -69,6 +69,16 @@ showhelp_manage() {
 \nUsage: screen-session manage"
 }
 
+showhelp_renumber() {
+    echo "Renumber windows to fill the gaps\n\
+\nUsage: screen-session renumber [maxwin=MAXWIN] [minwin=0]"
+}
+
+showhelp_sort() {
+    echo "Sort windows by titles\n\
+\nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
+}
+
 waitfor=0
 nonest=0
 logpipe=1
@@ -111,6 +121,10 @@ if [ $# -ge 1 ]; then
             kill-zombie) showhelp_kill_zombie
             ;;
             kill) showhelp_kill
+            ;;
+            renumber) showhelp_renumber
+            ;;
+            sort) showhelp_sort
             ;;
             save|load|ls) python ./screen-session.py  $mode $*
             ;;
