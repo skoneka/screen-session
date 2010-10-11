@@ -25,7 +25,7 @@ min=int(min)
 session_arg="-S %s"%session
 ss=ScreenSaver(session,'/dev/null','/dev/null')
 
-for win,type in sc.gen_all_windows(min,max,session):
+for win,type,title in sc.gen_all_windows(min,max,session):
     if type==-1:
         ss.kill('',win)
 

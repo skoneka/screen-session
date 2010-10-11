@@ -395,6 +395,10 @@ class ScreenSaver(object):
         nmsg=msg.pop(0).strip('(').rstrip(')').split(',',1)
         nmsg=nmsg+msg
         return nmsg
+
+    def number(self,args='',win="-1"):
+        msg=self.command_at('number %s'%args,win)
+        return msg
     
     def stuff(self,args='',win="-1"):
         msg=self.command_at('stuff "%s"'%args,win)
@@ -453,8 +457,7 @@ class ScreenSaver(object):
             return False
         else:
             return True
-
-    def get_group(self,win):
+    def get_group(self,win="-1"):
         msg=self.command_at('group',win)
         if msg.endswith('no group'):
             group = 'none'

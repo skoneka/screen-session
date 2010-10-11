@@ -28,7 +28,8 @@ Available modes:\n\
     regions\t- display number in each region (like tmux display-panes)\n\
     kill\t- send signal to last process started in a window\n\
     kill-zombie\t- kill all zombie windows in session
-    grab\t- grab a process and attach it to current tty 
+    grab\t- grab a process and attach it to current tty
+    renumber\t- renumber windows to fill gaps 
     "
 }
 
@@ -139,9 +140,12 @@ elif [ $mode = "kill" ]; then
     python ./kill.py $session $*
 
 elif [ $mode = "kill-zombie" ]; then
-    # screen-session kill-zombie
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
     python ./kill-zombie.py $session $maxwin $*
+
+elif [ $mode = "renumber" ]; then
+    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    python ./renumber.py $session $maxwin $*
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     screen -X sessionname

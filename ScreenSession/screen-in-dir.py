@@ -34,7 +34,7 @@ pids=pids.split('\n')
 pids=sc.sort_by_ppid(pids)
 thepid = pids[len(pids)-1]
 
-thedir = '/proc/%s/cwd' % thepid
+thedir=os.popen('pwdx '+thepid).readline().split(':',1)[1].strip()
 
 out(thedir,bPrint)
 
@@ -45,7 +45,7 @@ command='screen'
 if len(sys.argv)>2:
     command+=' -t "%s"'%(" ".join(["%s"%v for v in sys.argv[2:]]))
 else:
-    command+=' -t "%s"'%(os.readlink(thedir))
+    command+=' -t "%s"'%(thedir)
 
 
 for arg in sys.argv[2:]:

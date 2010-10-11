@@ -30,11 +30,20 @@ def gen_all_windows(minwin,maxwin,session):
             else:
                 ctype=0
 
-            yield cwin,ctype
+            yield cwin,ctype,ctitle
 
-def get_pid_info(pid,procdir="/proc"):
+def get_pid_info_unix(pid,procdir="/proc"):
     piddir=os.path.join(procdir,pid)
     
+    cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
+    exe=os.readlink(os.path.join(piddir,"exe"))
+    f=open(os.path.join(piddir,"cmdline"),"r")
+    cmdline=f.read()
+    f.close()
+    
+    return (cwd,exe,cmdline)
+def get_pid_info_linux(pid,procdir="/proc"):
+    piddir=os.path.join(procdir,pid)
     cwd=os.readlink(os.path.join(piddir,"cwd"))
     exe=os.readlink(os.path.join(piddir,"exe"))
     f=open(os.path.join(piddir,"cmdline"),"r")
@@ -42,6 +51,9 @@ def get_pid_info(pid,procdir="/proc"):
     f.close()
     
     return (cwd,exe,cmdline)
+
+def get_pid_info(pid,procdir="/proc"):
+    get_pid_info_linux(pid,procdir)
 
 def sort_by_ppid(cpids):
     #print cpids
