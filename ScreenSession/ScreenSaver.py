@@ -583,44 +583,47 @@ class ScreenSaver(object):
         out('saved on '+ctime)
     
     def __rollback(self,cmdline):
-        cmdline=cmdline.split('\0')
-        path=os.path.join(self.homedir,cmdline[1],cmdline[3])
-        requireme(self.homedir,cmdline[1], cmdline[3],True)
-        fhead,ftail=os.path.split(cmdline[3])
-        fhhead,fhtail=os.path.split(fhead)
-        target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
-        
-        number=ftail.split('_')[1]
-        oldsavedir=fhead
-        
         try:
-            shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
-        except Exception,e:
-            out(str(e))
-            pass
-        
-        requireme(self.homedir,cmdline[1], cmdline[2],True)
-        fhead,ftail=os.path.split(cmdline[2])
-        fhhead,fhtail=os.path.split(fhead)
-        target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
-        try:
-            shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
-        except Exception,e:
-            out(str(e))
-            pass
-
-        source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
-        target3=None
-        if os.path.isfile(source3):
-            target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
+            cmdline=cmdline.split('\0')
+            path=os.path.join(self.homedir,cmdline[1],cmdline[3])
+            requireme(self.homedir,cmdline[1], cmdline[3],True)
+            fhead,ftail=os.path.split(cmdline[3])
+            fhhead,fhtail=os.path.split(fhead)
+            target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
+            
+            number=ftail.split('_')[1]
+            oldsavedir=fhead
+            
             try:
-                shutil.move(source3,target3)
-            except:
+                shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
+            except Exception,e:
+                out(str(e))
+                pass
+            
+            requireme(self.homedir,cmdline[1], cmdline[2],True)
+            fhead,ftail=os.path.split(cmdline[2])
+            fhhead,fhtail=os.path.split(fhead)
+            target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
+            try:
+                shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+            except Exception,e:
+                out(str(e))
                 pass
 
-        if os.path.isfile(target):
-            return target,target2,target3
-        else:
+            source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
+            target3=None
+            if os.path.isfile(source3):
+                target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
+                try:
+                    shutil.move(source3,target3)
+                except:
+                    pass
+
+            if os.path.isfile(target):
+                return target,target2,target3
+            else:
+                return None
+        except:
             return None
         
 
