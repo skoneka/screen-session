@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# file: screen-in-dir.py
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: start new window in the same working directory
 
 # screen-in-dir sessionname [program] [args..]
 import os,sys

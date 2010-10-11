@@ -1,4 +1,4 @@
-# screen-session - GNU Screen session saver
+# screen-session - collection of tools for GNU Screen
 
 include config.mk
 

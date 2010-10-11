@@ -1,4 +1,8 @@
 ﻿#!/usr/bin/env python
+# file: kill.py
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: kill the foremost process in a window
 
 import os,sys,signal
 import GNUScreen as sc

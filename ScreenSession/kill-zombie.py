@@ -1,4 +1,8 @@
 ﻿#!/usr/bin/env python
+# file: kill-zombie.py
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: kill all zombie window in a Screen session
 
 import os,sys,signal
 import GNUScreen as sc

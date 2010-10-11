@@ -16,10 +16,13 @@ dir:
     screen-session dir zsh
     
     # example binding:
-    :bind c screen-session dir
+    :bind c exec screen-session dir
 
 regions:
     screen-session regions
+    
+    # example binding:
+    :bind c exec screen-session regions
 
 
 -----------------------------------------------------------------------

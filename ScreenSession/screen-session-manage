@@ -1,6 +1,9 @@
 #!/usr/bin/env python
-# harvested from byobu
-# screen-select-session script
+# file: screen-session-manage
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: sessions manager with preview in split window
+
 import commands, os, re, sys,time
 import GNUScreen as sc
 import util

@@ -58,8 +58,8 @@ save\n\
   \tdisable layout saving/loading\n\
 -V --no-vim\n\
   \tdisable vim session saving\n\
---idle <seconds>\n\
-  \tstart command after <seconds> of inactivitya\n\
+-I --idle <seconds>\n\
+  \tstart command after <seconds> of inactivity\n\
 --log       <file>\n\
   \toutput to file instead stdout\n\
 -d --dir\n\
@@ -95,7 +95,7 @@ def main():
         pass
 
     try :
-        opts,args = getopt.getopt(sys.argv[argstart:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -144,7 +144,7 @@ def main():
             current_session = a
         elif o == "--full":
             bFull = True
-        elif o == "--idle":
+        elif o in ("-I","--idle"):
             idle = a
         elif o in ("-V","--no-vim"):
             bVim = False
@@ -265,7 +265,7 @@ def main():
     scs=ScreenSaver(pid,projectsdir,savedir)
 
     if idle:
-        d_args_d=('-i','--current-session','--idle','--in')
+        d_args_d=('-I','-i','--current-session','--idle','--in')
         nargv=[]
         bSkipNext=False
         for arg in sys.argv:
