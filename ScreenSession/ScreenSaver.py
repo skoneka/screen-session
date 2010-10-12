@@ -412,8 +412,8 @@ class ScreenSaver(object):
     def focus(self,args=''):
         msg=self.command_at('focus %s'%args)
 
-    def kill(self,args='',win="-1"):
-        msg=self.command_at('kill %s'%args,win)
+    def kill(self,win="-1"):
+        msg=self.command_at('kill',win)
         return msg
 
     def idle(self,timeout,args):
@@ -441,6 +441,8 @@ class ScreenSaver(object):
     def select(self,args='',win="-1"):
         msg=self.command_at('select %s'%args,win)
         return msg
+    def wipe(self,args=''):
+        os.popen('screen -wipe %s'%args)
 
     def backtick(self,id,lifespan='',autorefresh='',args=''):
         msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))

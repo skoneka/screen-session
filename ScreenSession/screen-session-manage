@@ -107,15 +107,16 @@ def print2ui(line):
     os.write(ui2pipe,'%s\n'%line)
     pass
 
-usagestr='Escape: \n\
-Commands:\n\
+usagestr='\n===HELP===\n\
 h[elp] - show this message\n\
 a[ttach] <sessionname> - attach to session\n\
 kill - kill selected session\n\
+w[ipe] - wipe dead sessions\n\
 q[uit[ - exit session manager\n\
 r[reset] - reset session manager\n\
 l[ayout] - toggle layout (vertical and horizontal)\n\
-e[nter] - enter into last selected session'
+e[nter] - enter into last selected session\n\
+==========\n'
 
 def usage():
     print2ui(usagestr)
@@ -213,12 +214,17 @@ def eval_command(scs,command,last_session):
     else:
         args=['']
     if mode.startswith('a'): # attach
+        print2ui('LOGIC: attaching \"%s\"'%args[0])
         scs.focus('bottom')
-        scs.screen('screen -x %s'%args[0])
         cnum=scs.get_number_and_title()[0]
+        scs.screen('screen -x %s'%args[0])
+        if int(cnum)>1:
+            print2ui('logic: killing window \"%s\"'%cnum)
+            scs.kill(cnum)
         scs.focus('top')
         return None,args[0]
     if mode.startswith('d'): # deselect
+        print2ui('LOGIC: deselecting' )
         scs.focus('bottom')
         scs.select('-')
         scs.focus('top')
@@ -229,19 +235,25 @@ def eval_command(scs,command,last_session):
             scs=ScreenSaver(last_session,'/dev/null','/dev/null')
             scs.quit()
     elif mode.startswith('q'): # quit
+        print2ui('LOGIC: quiting...' )
         return 'quit',None
     elif mode.startswith('h'): # help
         usage()
     elif mode.startswith('e'): # enter
         return 'enter',None
     elif mode.startswith('r'): # reset
+        print2ui('LOGIC: reseting')
         return 'reset',None
     elif mode.startswith('l'): # layout
+        print2ui('LOGIC: toggling layout')
         if reset_tui==reset_tui_1:
             reset_tui=reset_tui_2
         else:
             reset_tui=reset_tui_1
         reset_tui(scs)
+    elif mode.startswith('w'): # wipe
+        print2ui('LOGIC: wiping out dead sessions')
+        scs.wipe()
 
 
 def ui1(fifoname):
