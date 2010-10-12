@@ -512,10 +512,6 @@ class ScreenSaver(object):
                 cfilter = self.get_exec(id)
                 cgroup = self.get_group(id)
                 
-                # save scrollback
-                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
-                os.system('screen -S %s -X at %s hardcopy -h %s' % (self.pid, cwin, scrollback_filename) )
-                self.__scrollbacks.append(scrollback_filename)
                 
                 # display some output
                 out(cwin+\
@@ -572,6 +568,11 @@ class ScreenSaver(object):
                             vim_name=self.__save_vim(cwin)
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
+                if not rollback:
+                    # save scrollback
+                    scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
+                    os.system('screen -S %s -X at %s hardcopy -h %s' % (self.pid, cwin, scrollback_filename) )
+                    self.__scrollbacks.append(scrollback_filename)
 
                 if ctype!="zombie":
                     self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename)

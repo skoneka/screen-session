@@ -55,6 +55,7 @@ def get_pid_info_linux(pid,procdir="/proc"):
 def get_pid_info(pid,procdir="/proc"):
     return get_pid_info_linux(pid,procdir)
 
+
 def sort_by_ppid(cpids):
     #print cpids
     cppids={}
@@ -87,6 +88,18 @@ def sort_by_ppid(cpids):
     return cpids
 
 def get_tty_pids(ctty):
+    f = os.popen('ps --sort=ppid -o pid --tty %s' % ctty)
+    pids=f.read().strip()
+    f.close()
+    npids=[]
+    for pid in pids.split('\n')[1:]:
+        npids.append(pid.strip())
+    return npids
+
+
+
+
+def get_tty_pids_lsof(ctty):
     f = os.popen('lsof -F p %s | cut -c2-' % ctty)
     pids=f.read().strip()
     f.close()

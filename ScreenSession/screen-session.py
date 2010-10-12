@@ -116,7 +116,7 @@ def main():
     restore = False
     verbose = False
     log=None
-    force = True
+    force = False
     enable_layout = True
     projectsdir =None
     savedir = None
