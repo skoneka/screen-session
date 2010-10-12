@@ -126,6 +126,8 @@ There are no bugs, only features.
   layouts in screen-session because Screen will crash.
   Disable layouts saving/loading with --no-layout flag.
 
+- If screen-session locks your session try: $ pkill -f screen-session.py
+
 Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues
 

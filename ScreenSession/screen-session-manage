@@ -71,11 +71,11 @@ def menu_tmp():
             # Create a new session
             return "quit"
         elif choice == i-1:
+            return "new"
             os.execv(PREFIX+"/bin/screen", ["", SHELL])
         else:
             # Attach to the chosen session; must use the 'screen' binary
             return "attach "+sessions[choice-1]
-            os.execv(PREFIX+"/bin/screen", ["", "-AOxRR", sessions[choice-1]])
 
     # No valid selection, default to the youngest session, create if necessary
     #os.execv(PREFIX+"/bin/byobu", ["", "-AOxRR"])
@@ -90,6 +90,7 @@ def prime(fifoname):
     return session
 
 def ui2(fifoname):
+    sys.stderr=open('/tmp/scs_logicerr_ui2','w')
     print('ui2 [%s]'%fifoname)
     pipein = open(fifoname, 'r')                 # open fifo as stdio object
     while 1:
@@ -152,11 +153,13 @@ def logic(scs,fifoname,fifoname2,session):
     reset_tui=reset_tui_1
     global ui2pipe
     sys.stdout=open('/tmp/scs_logicout','w')
-    sys.stderr=open('/tmp/scs_logicerr','w')
+    sys.stderr=open('/tmp/scs_logicerr_logic','w')
     #os.system('screen -X split -v')
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
     print 'run printing'
+    sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
+    sys.stdout.flush()
     scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
@@ -254,9 +257,13 @@ def eval_command(scs,command,last_session):
     elif mode.startswith('w'): # wipe
         print2ui('LOGIC: wiping out dead sessions')
         scs.wipe()
+    elif mode.startswith('n'): # new
+        print2ui('LOGIC: creating new session \"%s\"'%args[0])
+        return 'new',args[0]
 
 
 def ui1(fifoname):
+    sys.stderr=open('/tmp/scs_logicerr_ui','w')
     print 'ui [%s]'%fifoname
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
@@ -272,10 +279,11 @@ def attach_session(session):
     
 if __name__=='__main__':
     if sys.argv[1]=='p':
+        sys.stderr=open('/tmp/scs_logicerr','w')
         tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
-        #this may get cleared by screen-session need to prevent
+        #files may get deleted by screen-session need to prevent
         fifoname=os.path.join(tmpdir,'__manager_%s_ui'%os.getpid())
         fifoname2=os.path.join(tmpdir,'__manager_%s_ui2'%os.getpid())
        
@@ -296,7 +304,6 @@ if __name__=='__main__':
                 break
             else:
                 attach_session(session)
-                import time
                 os.waitpid(pid,0)
                 command=data.readline().strip()
                 try:
@@ -309,10 +316,14 @@ if __name__=='__main__':
                     pass
 
                 if command[0]=='enter':
-                    print ("entering \"%s\" %d %s"%(command[1],len(command[1]),time.ctime()))
+                    print ("entering \"%s\""%(command[1]))
                     attach_session(command[1])
                 elif command[0]=='reset':
                     pass
+                elif command[0]=='new':
+                    print ("creating session \"%s\""%(command[1]))
+                    os.popen('screen -m')
+                    
                 else:
                     try:
                         os.remove(fifoname)
