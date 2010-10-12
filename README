@@ -48,10 +48,11 @@ ls:
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
-screen-session is tested on linux and requires a recent version of Screen 
-patched with screen-session.diff
-Session saver depends on "lsof", "tar", "grep" and reads /proc filesystem.
+screen-session  requires a recent version of Screen patched with screen-session.diff
+Session saver depends on "ps", "lsof", "tar", "grep" and reads /proc filesystem.
 
+tested on:
+linux python 2.5.2
 
 screen-session.diff changes:
 - add "tty" command

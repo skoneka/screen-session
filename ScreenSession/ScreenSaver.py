@@ -514,8 +514,7 @@ class ScreenSaver(object):
                 
                 
                 # display some output
-                out(cwin+\
-                        '; tty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
+                out(cwin+'; tty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
                 if cfilter!=-1:
                     out('filter: exec %s'%(cfilter))
                 else:
@@ -586,8 +585,8 @@ class ScreenSaver(object):
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')
+            requireme(self.homedir,cmdline[1], cmdline[2],True)
             path=os.path.join(self.homedir,cmdline[1],cmdline[3])
-            requireme(self.homedir,cmdline[1], cmdline[3],True)
             fhead,ftail=os.path.split(cmdline[3])
             fhhead,fhtail=os.path.split(fhead)
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
@@ -601,7 +600,6 @@ class ScreenSaver(object):
                 out(str(e))
                 pass
             
-            requireme(self.homedir,cmdline[1], cmdline[2],True)
             fhead,ftail=os.path.split(cmdline[2])
             fhhead,fhtail=os.path.split(fhead)
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')

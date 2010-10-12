@@ -9,6 +9,7 @@ import GNUScreen as sc
 import util
 
 def menu_tmp():
+    # taken from byobu
     PREFIX = "/usr"
     SHELL = os.getenv("SHELL", "/bin/zsh")
     choice = ""
@@ -40,19 +41,22 @@ def menu_tmp():
                 command=None
                 inputstring=None
                 inputstring = raw_input("\nChoose 1-%d [1]: " % (i-1))
-                try:
-                    choice=int(inputstring)
-                    print('shit %s'%choice)
-                    if choice >= 0 and choice < i:
+                if inputstring:
+                    try:
+                        choice=int(inputstring)
+                        print('shit %s'%choice)
+                        if choice >= 0 and choice < i:
+                            break
+                    except:
+                        command=inputstring
                         break
-                except:
-                    command=inputstring
-                    break
+                else:
+                    return "enter"
             except KeyboardInterrupt:
                 command='quit'
                 print ('panic!')
                 return command
-                break;
+                break
             except:
                 if choice == "":
                     choice = 1
@@ -107,19 +111,26 @@ def print2ui(line):
 
 usagestr='Escape: \n\
 Commands:\n\
-help - show this message\n\
-quit - exit session manager'
+h[elp] - show this message\n\
+a[ttach] <sessionname> - attach to session\n\
+q[uit[ - exit session manager\n\
+r[reset] - reset session manager\n\
+e[nter] - enter into last selected session'
 
 def usage_print():
     print(usagestr)
 def usage():
     print2ui(usagestr)
 
+def reset_tui(scs):
+    pass
+
+
 def logic(scs,fifoname,fifoname2,session):
     ret=None
     global ui2pipe
     sys.stdout=open('/tmp/scs_logicout','w')
-    sys.stderr=sys.stdout
+    sys.stderr=open('/tmp/scs_logicerr','w')
     #os.system('screen -X split -v')
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
@@ -136,6 +147,7 @@ def logic(scs,fifoname,fifoname2,session):
     #usage()
     scs.focus('top')
     last_session=None
+    mode=None
     try:
         while 1:
 
@@ -143,19 +155,30 @@ def logic(scs,fifoname,fifoname2,session):
             if not line:
                 break;
             else:
-                print2ui('UI: %s'%line)
+                if line:
+                    print2ui('UI: %s'%line)
                 ret=None                
                 e=eval_command(scs,line)
-                if e[1]:
-                    last_session=e[1]
-                if e[0]:
-                    ret=e[0],last_session
-                    raise SystemExit
+                if e:
+                    try:
+                        if e[1]:
+                            last_session=e[1]
+                            print2ui('UI: last_session = %s'%last_session)
+                    except:
+                        pass
+                    try:
+                        if e[0]:
+                            mode=e[0]
+                    except:
+                        pass
+                    if (mode and mode!="enter") or (mode=='enter' and last_session):
+                        print2ui('raise SystemExit')
+                        raise SystemExit
 
     except SystemExit:
         pipein.close()
         scs.quit()
-        return ret 
+        return mode+';'+str(last_session)+';'
 
 def eval_command(scs,command):
     command=command.split(' ',1)
@@ -166,20 +189,22 @@ def eval_command(scs,command):
             args.append(arg)
     else:
         args=None
-    if mode=='attach':
+    if mode.startswith('a'): # attach
         scs.focus('bottom')
         scs.screen('screen -x %s'%args[0])
         cnum=scs.get_number_and_title()[0]
         scs.focus('top')
-        return False,args[0]
+        return None,args[0]
     elif mode=='kill':
         scs.kill('',args[0])
-    elif mode=='quit':
-        raise SystemExit
-    elif mode=='help':
+    elif mode.startswith('q'): # quit
+        return 'quit',None
+    elif mode.startswith('h'): # help
         usage()
-    elif mode.startswith('e'):
-        return True,None
+    elif mode.startswith('e'): # enter
+        return 'enter',None
+    elif mode.startswith('r'): # reset
+        return 'reset',None
         
 
 
@@ -204,7 +229,7 @@ if __name__=='__main__':
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
         #this may get cleared by screen-session need to prevent
-        fifoname=os.path.join(tmpdir,'__manager_%s'%os.getpid())
+        fifoname=os.path.join(tmpdir,'__manager_%s_ui'%os.getpid())
         fifoname2=os.path.join(tmpdir,'__manager_%s_ui2'%os.getpid())
        
         if not os.path.exists(fifoname):
@@ -218,22 +243,39 @@ if __name__=='__main__':
             data=mmap.mmap(-1,100)
             pid=os.fork()
             if pid==0:
-                e=logic(scs,fifoname,fifoname2,session)
-                finalsession=e[1]
-                for i,c in enumerate(finalsession):
+                command=logic(scs,fifoname,fifoname2,session)
+                for i,c in enumerate(command):
                     data[i]=c
-
-                if finalsession:
-                    print ('DONE attaching %s'%final_session)
-                    #attach_session(final_session)
+                break
             else:
                 attach_session(session)
                 import time
                 os.waitpid(pid,0)
-                finalsession=data.readline().split('\0',1)[0]
-                if len(finalsession)>1:
-                    print "entering \"%s\" %d %s"%(finalsession,len(finalsession),time.ctime())
-                    attach_session(finalsession)
+                command=data.readline().strip()
+                try:
+                    command=command.split(';')
+                    '''
+                    for m in command:
+                        print('[]%d|mode=%s'%(len(m),m))
+                    '''
+                except:
+                    pass
+
+                if command[0]=='enter':
+                    print ("entering \"%s\" %d %s"%(command[1],len(command[1]),time.ctime()))
+                    attach_session(command[1])
+                elif command[0]=='reset':
+                    pass
+                else:
+                    break
+        try:
+            os.remove(fifoname)
+        except:
+            pass
+        try:
+            os.remove(fifoname2)
+        except:
+            pass
 
 
     elif sys.argv[1]=='ui':
