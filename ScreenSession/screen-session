@@ -24,7 +24,7 @@ Available modes:\n\
     load\t- load session from savefile\n\
     ls\t\t- list saved sessions\n\
     \n\
-    manage\t- sessions manager\n\
+    manage\t- sessions manager with split screen preview\n\
     dir\t\t- start Screen window in the same working directory\n\
     regions\t- display number in each region (like tmux display-panes)\n\
     kill\t- send signal to last process started in a window\n\
