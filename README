@@ -20,30 +20,33 @@ for serial and telnet window types.
 
 Available screen-session modes:
 
-manage:
-    sessions manager (screenie like) but featuring session preview in a
-    split window
+manager     - sessions manager (screenie like) but featuring session 
+preview in a split window
 
-regions:
-    script reassembling the functionality of tmux display-panes.
-    Needs toilet tool (figlet like printing).
+regions     - script reassembling the functionality of tmux display-panes.
+Needs toilet tool (figlet like printing).
 
-dir:
-    starts a new Screen window in the same working directory 
-    on the position next to the current window
+dir         - starts a new Screen window in the same working directory 
+on the position next to the current window
 
-grab:
-    change tty of a process to this terminal
+grab        - change tty of a process to this terminal
 
-save:
-    save Screen sessions to disk
+kill        - send signal to last process started in a window
 
-load:
-    load sessions from disk
+kill-zombie - kill all zombie windows in session
 
-ls:
-    list saved sessions
+renumber    - renumber windows to fill gaps
 
+sort        - sort windows by title
+
+
+----
+save        - save Screen sessions to disk
+
+load        - load sessions from disk
+
+ls          - list saved sessions
+----
 
 -----------------------------------------------------------------------
 Requirements

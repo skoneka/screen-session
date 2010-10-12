@@ -44,7 +44,6 @@ def menu_tmp():
                 if inputstring:
                     try:
                         choice=int(inputstring)
-                        print('shit %s'%choice)
                         if choice >= 0 and choice < i:
                             break
                     except:
@@ -91,8 +90,7 @@ def prime(fifoname):
     return session
 
 def ui2(fifoname):
-    print('ui2 transmitting through %s'%fifoname)
-    usage_print()
+    print('ui2 [%s]'%fifoname)
     pipein = open(fifoname, 'r')                 # open fifo as stdio object
     while 1:
         line = pipein.readline( )[:-1]            # blocks until data sent
@@ -113,21 +111,44 @@ usagestr='Escape: \n\
 Commands:\n\
 h[elp] - show this message\n\
 a[ttach] <sessionname> - attach to session\n\
+kill - kill selected session\n\
 q[uit[ - exit session manager\n\
 r[reset] - reset session manager\n\
+l[ayout] - toggle layout (vertical and horizontal)\n\
 e[nter] - enter into last selected session'
 
-def usage_print():
-    print(usagestr)
 def usage():
     print2ui(usagestr)
 
-def reset_tui(scs):
+def reset_tui():
     pass
+
+def reset_tui_1(scs):
+    scs.only()
+    scs.split('-v')
+    scs.split()
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+    scs.focus()
+    scs.select('1')
+    scs.focus('top')
+def reset_tui_2(scs):
+    scs.only()
+    scs.split()
+    scs.split('-v')
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+    scs.focus()
+    scs.select('1')
+    scs.focus('top')
 
 
 def logic(scs,fifoname,fifoname2,session):
+    global reset_tui
     ret=None
+    reset_tui=reset_tui_1
     global ui2pipe
     sys.stdout=open('/tmp/scs_logicout','w')
     sys.stderr=open('/tmp/scs_logicerr','w')
@@ -135,17 +156,13 @@ def logic(scs,fifoname,fifoname2,session):
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
     print 'run printing'
-    scs.split('-v')
-    scs.split()
-    time.sleep(0.1)
-    scs.focus()
     scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
-    print2ui('test test')
+    reset_tui(scs)
+    usage()
     #usage()
-    scs.focus('top')
     last_session=None
     mode=None
     try:
@@ -158,12 +175,15 @@ def logic(scs,fifoname,fifoname2,session):
                 if line:
                     print2ui('UI: %s'%line)
                 ret=None                
-                e=eval_command(scs,line)
+                e=eval_command(scs,line,last_session)
                 if e:
                     try:
                         if e[1]:
-                            last_session=e[1]
-                            print2ui('UI: last_session = %s'%last_session)
+                            if e[1]=='\0':
+                                last_session=None
+                            else:
+                                last_session=e[1]
+                            print2ui('LOGIC: select %s'%last_session)
                     except:
                         pass
                     try:
@@ -174,13 +194,16 @@ def logic(scs,fifoname,fifoname2,session):
                     if (mode and mode!="enter") or (mode=='enter' and last_session):
                         print2ui('raise SystemExit')
                         raise SystemExit
+                    else:
+                        mode=None
 
     except SystemExit:
         pipein.close()
         scs.quit()
         return mode+';'+str(last_session)+';'
 
-def eval_command(scs,command):
+def eval_command(scs,command,last_session):
+    global reset_tui
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
@@ -188,15 +211,23 @@ def eval_command(scs,command):
         for arg in command[1].split(' '):
             args.append(arg)
     else:
-        args=None
+        args=['']
     if mode.startswith('a'): # attach
         scs.focus('bottom')
         scs.screen('screen -x %s'%args[0])
         cnum=scs.get_number_and_title()[0]
         scs.focus('top')
         return None,args[0]
+    if mode.startswith('d'): # deselect
+        scs.focus('bottom')
+        scs.select('-')
+        scs.focus('top')
+        return None,'\0'
     elif mode=='kill':
-        scs.kill('',args[0])
+        if last_session:
+            print2ui('LOGIC: killing session \"%s\"'%last_session)
+            scs=ScreenSaver(last_session,'/dev/null','/dev/null')
+            scs.quit()
     elif mode.startswith('q'): # quit
         return 'quit',None
     elif mode.startswith('h'): # help
@@ -205,14 +236,18 @@ def eval_command(scs,command):
         return 'enter',None
     elif mode.startswith('r'): # reset
         return 'reset',None
-        
+    elif mode.startswith('l'): # layout
+        if reset_tui==reset_tui_1:
+            reset_tui=reset_tui_2
+        else:
+            reset_tui=reset_tui_1
+        reset_tui(scs)
 
 
 def ui1(fifoname):
-    print 'start opening [%s]'%fifoname
+    print 'ui [%s]'%fifoname
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
-    print 'start selecting'
     while selection!=None:
         selection=menu_tmp()
         if selection:
@@ -267,15 +302,15 @@ if __name__=='__main__':
                 elif command[0]=='reset':
                     pass
                 else:
+                    try:
+                        os.remove(fifoname)
+                    except:
+                        pass
+                    try:
+                        os.remove(fifoname2)
+                    except:
+                        pass
                     break
-        try:
-            os.remove(fifoname)
-        except:
-            pass
-        try:
-            os.remove(fifoname2)
-        except:
-            pass
 
 
     elif sys.argv[1]=='ui':

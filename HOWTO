@@ -1,9 +1,9 @@
 -----------------------------------------------------------------------
 other tools
 -----------------------------------------------------------------------
-manage
+manager
     # start sessions manager
-    screen-session manage
+    screen-session manager
 
 grab:
     # grabs pid into Screen session

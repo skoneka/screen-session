@@ -34,7 +34,7 @@ class ScreenSaver(object):
     __wins_trans = {}
     __scrollbacks=[]
 
-    def __init__(self,pid,projectsdir,savedir):
+    def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
         self.projectsdir=str(projectsdir)
         self.basedir=os.path.join(self.homedir,self.projectsdir)
@@ -419,6 +419,8 @@ class ScreenSaver(object):
     def idle(self,timeout,args):
         msg=self.command_at('idle %s %s'%(timeout,args))
 
+    def only(self):
+        self.command_at('only')
     def quit(self):
         msg=self.command_at('quit')
 
@@ -434,6 +436,10 @@ class ScreenSaver(object):
 
     def source(self,args=''):
         msg=self.command_at('source %s'%args)
+        return msg
+
+    def select(self,args='',win="-1"):
+        msg=self.command_at('select %s'%args,win)
         return msg
 
     def backtick(self,id,lifespan='',autorefresh='',args=''):

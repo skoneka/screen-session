@@ -24,7 +24,7 @@ Available modes:\n\
     load\t- load session from savefile\n\
     ls\t\t- list saved sessions\n\
     \n\
-    manage\t- sessions manager with split screen preview\n\
+    manager\t- sessions manager with split screen preview\n\
     dir\t\t- start Screen window in the same working directory\n\
     regions\t- display number in each region (like tmux display-panes)\n\
     kill\t- send signal to last process started in a window\n\
@@ -110,7 +110,7 @@ if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
     echo $SCREEN_SESSION
         case "$mode" in
-            manage) showhelp_manage
+            manager) showhelp_manage
             ;;
             grab) showhelp_grab
             ;;
@@ -136,7 +136,7 @@ if [ $# -ge 1 ]; then
 fi
 
 session=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
-if [ $mode = "manage" ]; then
+if [ $mode = "manager" ]; then
     python ./screen-session-manage p
 
 elif [ $mode = "grab" ]; then
