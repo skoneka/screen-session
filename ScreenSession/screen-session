@@ -2,7 +2,7 @@
 # file: screen-session
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: screen-session.py script starter
+# description: screen-session tools starter
 # it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
 
 # Absolute path to this script. /home/user/bin/foo.sh
@@ -12,8 +12,10 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 VERSION=git
+SCREEN_SESSION="SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\n"
+
 showhelp() {
-    echo "SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\n"
+    echo $SCREEN_SESSION
     echo "Usage: screen-session [mode] [options]\n\
 Help: screen-session [mode] --help\n\
     \n\
@@ -21,15 +23,60 @@ Available modes:\n\
     save\t- save sessions to disk\n\
     load\t- load session from savefile\n\
     ls\t\t- list saved sessions\n\
-    manage\t- sessions manager\n\
+    \n\
+    manager\t- sessions manager with split screen preview\n\
     dir\t\t- start Screen window in the same working directory\n\
-    regions\t- like tmux display-panes
+    regions\t- display number in each region (like tmux display-panes)\n\
+    kill\t- send signal to last process started in a window\n\
+    kill-zombie\t- kill all zombie windows in session
+    grab\t- grab a process and attach it to current tty
+    renumber\t- renumber windows to fill gaps 
+    sort\t- sort windows by title
     "
 }
 
 showhelp_regions() {
-    echo "script reassembling the functionality of tmux display-panes\n\
-Usage: screen-session regions"
+    echo "Display number in each region\n\
+script reassembling the functionality of tmux display-panes\n\
+\nUsage: screen-session regions"
+}
+
+showhelp_kill() {
+    echo "Kill last process started in a window\n\
+\nUsage: screen-session kill [signal=TERM] [window=current]"
+}
+
+showhelp_kill_zombie() {
+    echo "Kill all zombie windows in session\n\
+\nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
+}
+
+showhelp_dir() {
+    echo "Start a new Screen window in the same working directory\n\ 
+on the position next to the current window\n\
+\nUsage: screen-session dir [program]"
+}
+
+showhelp_grab() {
+    echo "Grab a process and attach to the current tty.\n\
+Works with applications without complicated output scheme\n\
+\nUsage: screen-session grab [PID]\n\
+on the previous shell type: $ disown"
+}
+
+showhelp_manage() {
+    echo "Sessions manager for GNU Screen with preview in a split window\n\
+\nUsage: screen-session manage"
+}
+
+showhelp_renumber() {
+    echo "Renumber windows to fill the gaps\n\
+\nUsage: screen-session renumber [maxwin=MAXWIN] [minwin=0]"
+}
+
+showhelp_sort() {
+    echo "Sort windows by titles\n\
+\nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
 }
 
 waitfor=0
@@ -47,33 +94,79 @@ shift 1 $*
 # parse command line arguments
 while getopts ":WNP:": OPT; do
     case "$OPT" in
-    W)  echo 'wait'
+    W)  
         waitfor=1
         ;;
-    N)  echo 'nonest'
+    N)  
         logpipe=0
         ;;
-    P)  echo 'pipe'
+    P)  
         logpipe=1
         ;;
     esac
 done
 
-if [ $mode = "manage" ]; then
-    python ./screen-session-manage p
-elif [ $mode = "grab" ]; then
-    sh ./screen-session-grab $*
-elif [ $mode = "regions" ]; then
-    if [ $1 = "--help" ]; then
-        showhelp_regions
+if [ $# -ge 1 ]; then
+    if [ $1 = "--help" -o $1 = "-h" ]; then
+    echo $SCREEN_SESSION
+        case "$mode" in
+            manager) showhelp_manage
+            ;;
+            grab) showhelp_grab
+            ;;
+            dir) showhelp_dir
+            ;;
+            regions) showhelp_regions
+            ;;
+            kill-zombie) showhelp_kill_zombie
+            ;;
+            kill) showhelp_kill
+            ;;
+            renumber) showhelp_renumber
+            ;;
+            sort) showhelp_sort
+            ;;
+            save|load|ls) python ./screen-session.py  $mode $*
+            ;;
+            *) echo "No such mode \"$mode\""
+            ;;
+        esac
         exit 0
     fi
-    argument=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0].split('.',1)[0])"`
-    screen -m -d -c /dev/null python ./screen-display-regions.py $argument $*
+fi
+
+session=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+if [ $mode = "manager" ]; then
+    python ./screen-session-manage p $session
+
+elif [ $mode = "grab" ]; then
+    sh ./screen-session-grab $*
+
+elif [ $mode = "regions" ]; then
+    screen -m -d -c /dev/null python ./screen-display-regions.py $session $*
+
 elif [ $mode = "regions-helper" ]; then
     sh ./screen-display-regions-helper $*
+
 elif [ $mode = "dir" ]; then
-    ./screen-in-dir $*
+    python ./screen-in-dir.py $session $*
+
+elif [ $mode = "kill" ]; then
+    # screen-session kill [signal=TERM] [win=current]
+    python ./kill.py $session $*
+
+elif [ $mode = "kill-zombie" ]; then
+    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    python ./kill-zombie.py $session $maxwin $*
+
+elif [ $mode = "renumber" ]; then
+    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    python ./renumber.py $session $maxwin $*
+
+elif [ $mode = "sort" ]; then
+    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    python ./sort.py $session $maxwin $*
+
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`
@@ -87,7 +180,7 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     argument1=""
 
     if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
-        argument1="--current-session "`echo $rawargument | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+        argument1="--current-session $session"
     else
         echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi

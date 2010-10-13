@@ -612,7 +612,8 @@ int main(int argc, char **argv) {
     }
     else if (strcmp(argv[1],"-m")==0) {
         //marker mode for ScreenSession.__get_focus_offset()
-        sleep(10);
+        //sleep(4);
+        mygetch();
         return 0;
     }
     else if (strcmp(argv[1],"-r")==0) {

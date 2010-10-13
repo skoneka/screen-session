@@ -1,12 +1,19 @@
 #!/usr/bin/env python
-# harvested from byobu
-# screen-select-session script
-import commands, os, re, sys,time
+# file: screen-session-manage
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: sessions manager with preview in split window
+
+import commands, os, re, sys,time,tempfile,pwd,mmap
 import GNUScreen as sc
 import util
+from ScreenSaver import ScreenSaver
 
+tui=1
+maxtui=3
 
-def menu_tmp():
+def menu_tmp(preselect=None):
+    # taken from byobu
     PREFIX = "/usr"
     SHELL = os.getenv("SHELL", "/bin/zsh")
     choice = ""
@@ -37,20 +44,25 @@ def menu_tmp():
             try:
                 command=None
                 inputstring=None
-                inputstring = raw_input("\nChoose 1-%d [1]: " % (i-1))
-                if inputstring.startswith(':'):
-                    command=inputstring[1:]
-                    break
-                choice=eval(inputstring)
-                if choice >= 0 and choice < i:
-                    break
+                if preselect:
+                    inputstring = preselect
                 else:
-                    tries += 1
-                    choice = ""
-                    sys.stderr.write("\nERROR: Invalid input\n");
+                    inputstring = raw_input("\nChoose 1-%d or command: " % (i-1))
+                if inputstring:
+                    try:
+                        choice=int(inputstring)
+                        if choice >= 0 and choice < i:
+                            break
+                    except:
+                        command=inputstring
+                        break
+                else:
+                    return "enter"
             except KeyboardInterrupt:
-                print
-                sys.exit(0)
+                command='quit'
+                print ('panic!')
+                return command
+                break
             except:
                 if choice == "":
                     choice = 1
@@ -62,14 +74,14 @@ def menu_tmp():
     if inputstring:
         if command:
             return command
-        if choice == i-1 or choice==0:
+        if choice==0:
             # Create a new session
             return "quit"
-            os.execv(PREFIX+"/bin/screen", ["", SHELL])
+        elif choice == i-1:
+            return "screen"
         else:
             # Attach to the chosen session; must use the 'screen' binary
             return "attach "+sessions[choice-1]
-            os.execv(PREFIX+"/bin/screen", ["", "-AOxRR", sessions[choice-1]])
 
     # No valid selection, default to the youngest session, create if necessary
     #os.execv(PREFIX+"/bin/byobu", ["", "-AOxRR"])
@@ -77,14 +89,15 @@ def menu_tmp():
 
 def prime(fifoname):
     l1=sc.get_session_list()
-    os.popen('screen -m -d -c /a/.screenrc_screensession %s %s %s'%(sys.argv[0],'ui',fifoname))
+    os.popen('screen -S "MANAGER_NOATTACH" -m -d -c /dev/null %s %s %s'%(sys.argv[0],'ui',fifoname))
     l2=sc.get_session_list()
     session=sc.find_new_session(l1,l2)
     print ('session: %s'%session)
     return session
 
 def ui2(fifoname):
-    print('ui2 transmitting through %s'%fifoname)
+    sys.stderr=open('/tmp/scs_err_ui2','w')
+    print('ui2 [%s]'%fifoname)
     pipein = open(fifoname, 'r')                 # open fifo as stdio object
     while 1:
         line = pipein.readline( )[:-1]            # blocks until data sent
@@ -100,37 +113,146 @@ def print2ui(line):
     global ui2pipe
     os.write(ui2pipe,'%s\n'%line)
     pass
-def logic(scs,fifoname,fifoname2,session):
+
+usagestr='\n===HELP===\n\
+ALT + T - toggle between regions\n\
+h[elp] - show this message\n\
+q[uit[ - exit session manager\n\
+e[nter] - enter into selected session\n\
+a[ttach] <sessionname> - attach to session\n\
+n[ame] <sessionname> - rename a session\n\
+s[creen] <args> - create new session\n\
+kill - kill selected session\n\
+w[ipe] - wipe dead sessions\n\
+r[reset] - reset session manager\n\
+l[ayout] - toggle layout\n\
+'
+
+def usage():
+    print2ui(usagestr)
+
+def reset_tui(scs):
+    global tui
+    print2ui('TUI = %d'%tui)
+
+    if tui==0 or tui==1:
+        reset_tui_1(scs)
+    elif tui==2:
+        reset_tui_2(scs)
+    elif tui==3:
+        reset_tui_3(scs)
+    
+
+def reset_tui_1(scs):
+    scs.only()
+    scs.split('-v')
+    scs.split()
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+    scs.focus()
+    scs.select('1')
+    scs.focus('top')
+
+    dinfo=scs.dinfo()
+    term_x,term_y=int(dinfo[0]),int(dinfo[1])
+    reg_x=None
+    reg_y=None
+    if(term_x>100):
+        reg_x=49
+    if(term_y>30):
+        reg_y=term_y-15
+    if reg_x:
+        scs.resize('-h %d'%reg_x)
+    if reg_y:
+        scs.resize('-v %d'%reg_y)
+def reset_tui_3(scs):
+    scs.only()
+    scs.split()
+    scs.split('-v')
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+    scs.focus()
+    scs.select('1')
+    scs.focus('top')
+def reset_tui_2(scs):
+    scs.only()
+    scs.split('-v')
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+    
+    dinfo=scs.dinfo()
+    term_x,term_y=int(dinfo[0]),int(dinfo[1])
+    reg_x=None
+    if(term_x>100):
+        reg_x=49
+    if reg_x:
+        scs.resize('-h %d'%reg_x)
+def reset_tui_4(scs):
+    scs.only()
+    scs.split()
+    time.sleep(0.1)
+    scs.focus('top')
+    scs.select('0')
+
+def logic(scs,fifoname,fifoname2,session,psession):
+    ret=None
     global ui2pipe
-    sys.stdout=open('/tmp/scs_logicout','w')
-    sys.stderr=sys.stdout
+    sys.stdout=open('/tmp/scs_out','w')
+    sys.stderr=open('/tmp/scs_err_logic','w')
     #os.system('screen -X split -v')
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
     print 'run printing'
-    scs.split('-v')
-    scs.split()
-    time.sleep(0.1)
-    scs.focus()
+    sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
+    sys.stdout.flush()
     scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
-    print2ui('test test')
-    scs.focus('top')
+    reset_tui(scs)
+    usage()
+    #usage()
+    last_session=None
+    mode=None
     try:
         while 1:
+
             line = pipein.readline()[:-1]            # blocks until data sent
             if not line:
                 break;
             else:
-                print2ui('UI: %s'%line)
-                eval_command(scs,line)
+                if line:
+                    print2ui('UI: %s'%line)
+                ret=None                
+                e=eval_command(scs,line,last_session,psession)
+                if e:
+                    try:
+                        if e[1]:
+                            if e[1]=='\0':
+                                last_session=None
+                            else:
+                                last_session=e[1]
+                            print2ui('LOGIC: select %s'%last_session)
+                    except:
+                        pass
+                    try:
+                        if e[0]:
+                            mode=e[0]
+                    except:
+                        pass
+                    if (mode and mode!="enter") or (mode=='enter' and last_session):
+                        raise SystemExit
+                    else:
+                        mode=None
     except SystemExit:
         pipein.close()
         scs.quit()
+        return str(tui)+';;;'+mode+';'+str(last_session)+';'
 
-def eval_command(scs,command):
+def eval_command(scs,command,last_session,psession):
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
@@ -138,49 +260,179 @@ def eval_command(scs,command):
         for arg in command[1].split(' '):
             args.append(arg)
     else:
-        args=None
-    if mode=='attach':
+        args=['']
+
+
+    if mode.startswith('a'): # attach
+        #print2ui('LOGIC: attaching \"%s\"'%args[0])
+
         scs.focus('bottom')
-        scs.screen('screen -x %s'%args[0])
         cnum=scs.get_number_and_title()[0]
+        if (psession and psession==args[0]) or scs.sessionname() == args[0]:
+            print2ui('LOGIC: parent session is [%s]'%psession)
+            print2ui('LOGIC: Unable to attach loop detected')
+        else:
+            scs.screen('screen -x \"%s\"'%args[0])
+            scs.title(args[0])
+        if int(cnum)>1:
+            #print2ui('LOGIC: killing window \"%s\"'%cnum)
+            scs.kill(cnum)
         scs.focus('top')
+        return None,args[0]
+    if mode.startswith('d'): # deselect
+        print2ui('LOGIC: deselecting' )
+        scs.focus('bottom')
+        scs.select('-')
+        scs.focus('top')
+        return None,'\0'
     elif mode=='kill':
-        scs.kill('',args[0])
-    elif mode=='quit':
-        raise SystemExit
-        
+        if last_session:
+            print2ui('LOGIC: killing session \"%s\"'%last_session)
+            scs=ScreenSaver(last_session,'/dev/null','/dev/null')
+            scs.quit()
+    elif mode.startswith('q'): # quit
+        print2ui('LOGIC: quiting...' )
+        return 'quit',None
+    elif mode.startswith('h'): # help
+        usage()
+    elif mode.startswith('e'): # enter
+        return 'enter',None
+    elif mode.startswith('r'): # reset
+        print2ui('LOGIC: reseting')
+        return 'reset',None
+    elif mode.startswith('l'): # layout
+        global tui
+        print2ui('LOGIC: toggling layout')
+        scs.focus('bottom')
+        cnum=scs.get_number_and_title()[0]
+        if int(cnum)>1:
+            print2ui('logic: killing window \"%s\"'%cnum)
+            scs.kill(cnum)
+        scs.focus('top')
+        cnum=scs.get_number_and_title()[0]
+        if tui!=maxtui:
+            tui+=1
+        else:
+            tui=1
+        reset_tui(scs)
+    elif mode.startswith('w'): # wipe
+        print2ui('LOGIC: wiping out dead sessions')
+        scs.wipe()
+    elif mode.startswith('s'): # screen
+        arg=" ".join(["%s"%v for v in args])
+        print2ui('LOGIC: creating new session: screen -m %s'%arg)
+        return 'new',arg
+    elif mode.startswith('n'): # name
+        if last_session:
+            print2ui('LOGIC: renaming session to \"%s\"'%args[0])
+            scs_target=ScreenSaver(last_session,'/dev/null','/dev/null')
+            nsessionname=scs_target.sessionname(args[0])
+            scs.focus('bottom')
+            cnum=scs.get_number_and_title()[0]
+            if (psession and psession==args[0]) or scs.sessionname() == args[0]:
+                print2ui('LOGIC: parent session is [%s]'%psession)
+                print2ui('LOGIC: Unable to attach loop detected')
+            else:
+                scs.screen('screen -x \"%s\"'%nsessionname)
+                scs.title(nsessionname)
+            if int(cnum)>1:
+                #print2ui('LOGIC: killing window \"%s\"'%cnum)
+                scs.kill(cnum)
+            scs.focus('top')
+            return None,nsessionname
 
 
 def ui1(fifoname):
-    print 'start opening [%s]'%fifoname
+    sys.stderr=open('/tmp/scs_err_ui','w')
+    print 'ui [%s]'%fifoname
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
-    print 'start selecting'
     while selection!=None:
+        os.system('clear')
         selection=menu_tmp()
         if selection:
             os.write(pipeout,'%s\n'%selection)
     #os.close(pipeout)
 
        
-def attach_ui(scs,session):
-    os.popen('screen -r %s'%(session))
+def attach_session(session):
+    os.popen('screen -x \"%s\"'%(session))
     
-if __name__=='__main__':
+def main():
+    global tui
     if sys.argv[1]=='p':
-        fifoname='/tmp/scstmpfifo'
-        fifoname2='/tmp/scstmpfifo2'
+        sys.stderr=open('/tmp/scs_err','w')
+        try:
+            psession=sys.argv[2]
+        except:
+            psession=None
+
+        tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
+        if not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
+        #files may get deleted by screen-session need to prevent
+        fifoname=os.path.join(tmpdir,'__manager_%s_ui'%os.getpid())
+        fifoname2=os.path.join(tmpdir,'__manager_%s_ui2'%os.getpid())
+       
         if not os.path.exists(fifoname):
             os.mkfifo(fifoname)
         if not os.path.exists(fifoname2):
             os.mkfifo(fifoname2)
-        session=prime(fifoname)
-        from ScreenSaver import ScreenSaver
-        scs=ScreenSaver(session,'/dev/null','/dev/null')
-        if os.fork()==0:
-            logic(scs,fifoname,fifoname2,session)
-        else:
-            attach_ui(scs,session)
+        while True:
+            session=prime(fifoname)
+            scs=ScreenSaver(session,'/dev/null','/dev/null')
+            scs.command_at('rendition so kw')
+            scs.command_at('bindkey ^[t focus prev')
+            scs.command_at('bindkey ^[T focus prev')
+            scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
+            data=mmap.mmap(-1,100)
+            #pipeout = os.open(fifoname, os.O_WRONLY)
+            #os.write(pipeout,'%s\n'%'help')
+            
+            pid=os.fork()
+            if pid==0:
+                command=logic(scs,fifoname,fifoname2,session,psession)
+                for i,c in enumerate(command):
+                    data[i]=c
+                break
+            else:
+                attach_session(session)
+                os.waitpid(pid,0)
+                command=data.readline().strip()
+                try:
+                    options,command=command.split(';;;',1)
+                    options=options.split(';')
+                    command=command.split(';')
+                    '''
+                    for m in command:
+                        print('[]%d|mode=%s'%(len(m),m))
+                    '''
+                except:
+                    pass
+
+                tui=int(options[0])
+
+                if command[0]=='enter':
+                    print ("entering \"%s\""%(command[1]))
+                    attach_session(command[1])
+                elif command[0]=='reset':
+                    pass
+                elif command[0]=='new':
+                    cmd='screen -m %s'%command[1]
+                    print ("creating session: %s"%(cmd))
+                    os.popen('screen -m %s'%command[1])
+                    
+                else:
+                    try:
+                        os.remove(fifoname)
+                    except:
+                        pass
+                    try:
+                        os.remove(fifoname2)
+                    except:
+                        pass
+                    break
+
 
     elif sys.argv[1]=='ui':
         fifoname=sys.argv[2]
@@ -188,3 +440,6 @@ if __name__=='__main__':
     elif sys.argv[1]=='ui2':
         fifoname=sys.argv[2]
         ui2(fifoname)
+
+if __name__=='__main__':
+    main()

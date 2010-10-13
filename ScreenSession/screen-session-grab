@@ -1,9 +1,12 @@
 #!/bin/sh
+# file: screen-session-grab
+# author: Artur Skonecki
+# website: http://adb.cba.pl
+# description: attaches a process to current tty
 
 # Usage: screen-move-process PID
-# moves a process into screen session
+# on the previous shell: disown
 
-#screen -X screen injcode -m retty $1
 injcode -m retty $1
 sleep 1
 kill -s STOP "$1"

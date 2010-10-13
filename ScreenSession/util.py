@@ -28,10 +28,10 @@ def linkify(dir,dest,targ):
 def requireme(home,projectsdir,file_in_session,full=False):
     global archiveend
     global tmpdir
-    fhead,ftail = os.path.split(file_in_session)
-    if os.path.isdir(os.path.join(home,projectsdir,fhead)):
+    if os.path.isfile(os.path.join(home,projectsdir,file_in_session)):
         return
     else:
+        fhead,ftail = os.path.split(file_in_session)
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):

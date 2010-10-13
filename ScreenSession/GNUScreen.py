@@ -1,14 +1,73 @@
 #!/usr/bin/env python
-import os,subprocess,re
+import os,subprocess,re,sys
+def gen_all_windows(minwin,maxwin,session):
+    from ScreenSaver import ScreenSaver
+    ss=ScreenSaver(session,'/dev/null','/dev/null')
+    cwin=-1
+    ctty=None
+    searching=False
+    for i in range(minwin,maxwin+1):
+        id=str(i)
+        if not searching:
+            pass
+        cwin,ctitle=ss.get_number_and_title(id)
+        if (cwin==-1):
+            #no such window
+            if searching:
+                pass
+            else: 
+                searching=True
+        else:
+            if(searching):
+                searching=False
+
+            # has to follow get_number_and_title() to recognize zombie windows
+            ctty = ss.get_tty(id)
+            if ctty.startswith('This'):
+                ctype=-1
+            elif ctty=='telnet':
+                ctype=1
+            else:
+                ctype=0
+
+            yield cwin,ctype,ctitle
+
+def get_pid_info_unix(pid,procdir="/proc"):
+    piddir=os.path.join(procdir,pid)
+    
+    cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
+    exe=os.readlink(os.path.join(piddir,"exe"))
+    f=open(os.path.join(piddir,"cmdline"),"r")
+    cmdline=f.read()
+    f.close()
+    
+    return (cwd,exe,cmdline)
+def get_pid_info_linux(pid,procdir="/proc"):
+    piddir=os.path.join(procdir,pid)
+    cwd=os.readlink(os.path.join(piddir,"cwd"))
+    exe=os.readlink(os.path.join(piddir,"exe"))
+    f=open(os.path.join(piddir,"cmdline"),"r")
+    cmdline=f.read()
+    f.close()
+    
+    return (cwd,exe,cmdline)
+
+def get_pid_info(pid,procdir="/proc"):
+    return get_pid_info_linux(pid,procdir)
+
 
 def sort_by_ppid(cpids):
-    print cpids
+    #print cpids
     cppids={}
+    ncpids=[]
     for i,pid in enumerate(cpids):
-        print pid
-        ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1]
-        cppids[pid]=ppid
-        cpids[i]=pid
+        try:
+            ppid=subprocess.Popen('ps -p %s -o ppid' % (pid) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split('\n')[1].strip()
+            cppids[pid]=ppid
+            ncpids.append(pid)
+        except:
+            pass
+    cpids=ncpids
 
     pid_tail=-1
     pid_tail_c=-1
@@ -27,6 +86,27 @@ def sort_by_ppid(cpids):
                 break;
     cpids=cpids_sort
     return cpids
+
+def get_tty_pids(ctty):
+    f = os.popen('ps --sort=ppid -o pid --tty %s' % ctty)
+    pids=f.read().strip()
+    f.close()
+    npids=[]
+    for pid in pids.split('\n')[1:]:
+        npids.append(pid.strip())
+    return npids
+
+
+
+
+def get_tty_pids_lsof(ctty):
+    f = os.popen('lsof -F p %s | cut -c2-' % ctty)
+    pids=f.read().strip()
+    f.close()
+    pids=pids.split('\n')
+    pids=sort_by_ppid(pids)
+    return pids
+
 
 def get_session_list():
     screen="screen"
@@ -147,13 +227,13 @@ def get_current_window(session=None):
     return int(subprocess.Popen('%s -Q @number' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
 
 def order_windows(win_history):
-    #orfder windows in layout by win_history
+    #order windows in layout by win_history
     for w in win_history:
         try:
             int(w)
         except:
             break
-        print('window: %s'%w)
+        #print('window: %s'%w)
         os.system('screen -S %s -X select %s'%(session,w))
         os.system('screen -S %s -X focus' %(session))
 
@@ -218,3 +298,17 @@ def get_regions_count_no_layout(session=None):
             region_count+=1
     finish_them_all(ident)
     return region_count
+
+
+def kill_win_last_proc(session,win="-1",sig="TERM"):
+    import signal
+    ss=ScreenSaver(session,'/dev/null','/dev/null')
+    ctty=ss.get_tty(win)
+    pids=get_tty_pids(ctty)
+    pid = pids[len(pids)-1]
+
+    sig=eval('signal.SIG'+sig)
+
+    os.kill(int(pid),sig)
+
+

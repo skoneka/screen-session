@@ -58,6 +58,8 @@ save\n\
   \tdisable layout saving/loading\n\
 -V --no-vim\n\
   \tdisable vim session saving\n\
+-I --idle <seconds>\n\
+  \tstart command after <seconds> of inactivity\n\
 --log       <file>\n\
   \toutput to file instead stdout\n\
 -d --dir\n\
@@ -80,15 +82,20 @@ def main():
     bad_arg=None
     logpipe=None
     
-    logpipe=sys.argv[2].split('=')[1]
-    global logpipeh
-    if logpipe:
-        logpipeh=open(logpipe,'w')
-        sys.stdout=logpipeh
-        sys.stderr=logpipeh
+    try:
+        logpipe=sys.argv[2].split('=')[1]
+        global logpipeh
+        if logpipe:
+            logpipeh=open(logpipe,'w')
+            sys.stdout=logpipeh
+            sys.stderr=logpipeh
+        argstart=3
+    except:
+        argstart=2
+        pass
 
     try :
-        opts,args = getopt.getopt(sys.argv[3:], "M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -105,6 +112,7 @@ def main():
     bHelp=False
     bList=False
     bFull=False
+    idle=None
     restore = False
     verbose = False
     log=None
@@ -136,6 +144,8 @@ def main():
             current_session = a
         elif o == "--full":
             bFull = True
+        elif o in ("-I","--idle"):
+            idle = a
         elif o in ("-V","--no-vim"):
             bVim = False
         elif o in ("-x","--exact"):
@@ -179,10 +189,8 @@ def main():
         sys.stdout=open(log,'w')
         sys.stderr=sys.stdout
 
-        
 
-    out('SCREEN-SESSION ('+VERSION+') - GNU Screen session saver')
-    out('written by Artur Skonecki admin<[at]>adb.cba.pl\n')
+    out('GNU Screen session saver (%s)'%VERSION)
 
     if bad_arg:
         out('Unhandled option: %s'%bad_arg)
@@ -256,6 +264,30 @@ def main():
     
     scs=ScreenSaver(pid,projectsdir,savedir)
 
+    if idle:
+        d_args_d=('-I','-i','--current-session','--idle','--in')
+        nargv=[]
+        bSkipNext=False
+        for arg in sys.argv:
+            if arg in d_args_d:
+                bSkipNext=True
+            elif bSkipNext:
+                bSkipNext=False
+            else:
+                if not arg.startswith('logpipe'):
+                    nargv.append(arg)
+        nargv[0]=util.which('screen-session')[0]
+        scscall=nargv.pop(0)
+        scscall+=' '+nargv.pop(0)
+        for arg in nargv:
+            scscall+=" "+arg
+        scscall+=" --in "+input
+        command='exec sh -c \"screen '+scscall+' > /dev/null\"' 
+        scs.idle(idle,command)
+        out(':idle %s %s'%(idle,command))
+        return 0
+
+
     if not scs.exists():
         out('No such session: %s'%pid)
         doexit(1,waitfor)
@@ -323,7 +355,7 @@ def main():
             scs.savedir=savedir_real
             savedir=savedir_real
             out('session "%s"'%scs.pid) 
-            out('saved as "%s"'%(scs.pid))
+            out('saved as "%s"'%(scs.savedir))
             os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
     elif mode==2: #mode load
         #cleanup old temporary files and directories
