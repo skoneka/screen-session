@@ -7,6 +7,7 @@
 import commands, os, re, sys,time,tempfile,pwd,mmap
 import GNUScreen as sc
 import util
+from ScreenSaver import ScreenSaver
 
 tui=1
 maxtui=3
@@ -116,15 +117,15 @@ def print2ui(line):
 usagestr='\n===HELP===\n\
 ALT + T - toggle between regions\n\
 h[elp] - show this message\n\
+q[uit[ - exit session manager\n\
+e[nter] - enter into selected session\n\
 a[ttach] <sessionname> - attach to session\n\
-name <sessionname> - rename a session\n\
+n[ame] <sessionname> - rename a session\n\
 s[creen] <args> - create new session\n\
 kill - kill selected session\n\
 w[ipe] - wipe dead sessions\n\
-q[uit[ - exit session manager\n\
 r[reset] - reset session manager\n\
 l[ayout] - toggle layout\n\
-e[nter] - enter into last selected session\n\
 '
 
 def usage():
@@ -267,7 +268,7 @@ def eval_command(scs,command,last_session,psession):
 
         scs.focus('bottom')
         cnum=scs.get_number_and_title()[0]
-        if psession and psession==args[0]:
+        if (psession and psession==args[0]) or scs.sessionname() == args[0]:
             print2ui('LOGIC: parent session is [%s]'%psession)
             print2ui('LOGIC: Unable to attach loop detected')
         else:
@@ -321,10 +322,24 @@ def eval_command(scs,command,last_session,psession):
         arg=" ".join(["%s"%v for v in args])
         print2ui('LOGIC: creating new session: screen -m %s'%arg)
         return 'new',arg
-    elif mode.startswith('name'): # new
-        print2ui('LOGIC: renaming session to \"%s\"'%args[0])
-        scs=ScreenSaver(last_session,'/dev/null','/dev/null')
-        scs.sessionname(args[0])
+    elif mode.startswith('n'): # name
+        if last_session:
+            print2ui('LOGIC: renaming session to \"%s\"'%args[0])
+            scs_target=ScreenSaver(last_session,'/dev/null','/dev/null')
+            nsessionname=scs_target.sessionname(args[0])
+            scs.focus('bottom')
+            cnum=scs.get_number_and_title()[0]
+            if (psession and psession==args[0]) or scs.sessionname() == args[0]:
+                print2ui('LOGIC: parent session is [%s]'%psession)
+                print2ui('LOGIC: Unable to attach loop detected')
+            else:
+                scs.screen('screen -x \"%s\"'%nsessionname)
+                scs.title(nsessionname)
+            if int(cnum)>1:
+                #print2ui('LOGIC: killing window \"%s\"'%cnum)
+                scs.kill(cnum)
+            scs.focus('top')
+            return None,nsessionname
 
 
 def ui1(fifoname):
@@ -363,7 +378,6 @@ def main():
             os.mkfifo(fifoname)
         if not os.path.exists(fifoname2):
             os.mkfifo(fifoname2)
-        from ScreenSaver import ScreenSaver
         while True:
             session=prime(fifoname)
             scs=ScreenSaver(session,'/dev/null','/dev/null')
@@ -372,6 +386,9 @@ def main():
             scs.command_at('bindkey ^[T focus prev')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
             data=mmap.mmap(-1,100)
+            #pipeout = os.open(fifoname, os.O_WRONLY)
+            #os.write(pipeout,'%s\n'%'help')
+            
             pid=os.fork()
             if pid==0:
                 command=logic(scs,fifoname,fifoname2,session,psession)

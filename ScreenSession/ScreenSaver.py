@@ -41,7 +41,10 @@ class ScreenSaver(object):
         self.basedir=os.path.join(self.homedir,self.projectsdir)
         self.savedir=str(savedir)
         self.pid=str(pid)
-        self.sc='%s -S %s'%(which('screen')[0],self.pid)
+        self.__set_sc(self.pid)
+
+    def __set_sc(self,sessionname):
+        self.sc='%s -S %s'%(which('screen')[0],sessionname)
 
     def save(self):
         os.system('%s -X msgminwait %s' % (self.sc,"0"))
@@ -443,12 +446,22 @@ class ScreenSaver(object):
     def select(self,args='',win="-1"):
         msg=self.command_at('select %s'%args,win)
         return msg
-    def sessionname(self,args='',win="-1"):
-        msg=self.command_at('sessionname %s'%args,win)
-        try:
-            return msg.rsplit('\'',1)[0].split('\'',1)[1]
-        except:
-            return None
+    def sessionname(self,args=''):
+        if len(args)>0:
+            name=self.command_at('sessionname').rsplit('\'',1)[0].split('\'',1)[1]
+            nsessionname="%s.%s"%(name.split('.',1)[0],args)
+        else:
+            nsessionname=None
+        msg=self.command_at('sessionname %s'%args)
+        if nsessionname:
+            self.pid=nsessionname
+            self.__set_sc(self.pid)
+            return nsessionname
+        else:
+            try:
+                return msg.rsplit('\'',1)[0].split('\'',1)[1]
+            except:
+                return None
     def title(self,args,win="-1"):
         msg=self.command_at('title \"%s\"'%args,win)
 
