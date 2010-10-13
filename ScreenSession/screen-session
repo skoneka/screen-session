@@ -137,7 +137,7 @@ fi
 
 session=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
 if [ $mode = "manager" ]; then
-    python ./screen-session-manage p
+    python ./screen-session-manage p $session
 
 elif [ $mode = "grab" ]; then
     sh ./screen-session-grab $*

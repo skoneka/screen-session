@@ -391,7 +391,7 @@ class ScreenSaver(object):
         msg=self.command_at('regionsize',win)
         return msg.split(' ')
     
-    def get_dinfo(self):
+    def dinfo(self):
         msg=self.command_at('dinfo')
         msg = msg.split(' ')
         nmsg=msg.pop(0).strip('(').rstrip(')').split(',',1)
@@ -443,6 +443,15 @@ class ScreenSaver(object):
     def select(self,args='',win="-1"):
         msg=self.command_at('select %s'%args,win)
         return msg
+    def sessionname(self,args='',win="-1"):
+        msg=self.command_at('sessionname %s'%args,win)
+        try:
+            return msg.rsplit('\'',1)[0].split('\'',1)[1]
+        except:
+            return None
+    def title(self,args,win="-1"):
+        msg=self.command_at('title \"%s\"'%args,win)
+
     def wipe(self,args=''):
         os.popen('screen -wipe %s'%args)
 
@@ -551,7 +560,7 @@ class ScreenSaver(object):
                             cpids_data.append(pidinfo+tuple([blacklist]))
                             ncpids.append(pid)
                         except OSError:
-                            out('%s: Unable to access. SUID?'%pid)
+                            out('%s: Unable to access. No permission - other user.'%pid)
                     cpids=ncpids
                 
                 out('type = '+ctype +'; pids = '+str(cpids))
@@ -643,7 +652,7 @@ class ScreenSaver(object):
         
 
     def __load_layouts(self):
-        cdinfo=map(int,self.get_dinfo()[0:2])
+        cdinfo=map(int,self.dinfo()[0:2])
         out('Terminal size: %s %s'%(cdinfo[0],cdinfo[1]))
         homewindow=self.homewindow
         homelayout,homelayoutname=self.get_layout_number()
@@ -827,7 +836,7 @@ class ScreenSaver(object):
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
             return False
-        dinfo=self.get_dinfo()
+        dinfo=self.dinfo()
         out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
