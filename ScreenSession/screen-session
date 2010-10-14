@@ -135,7 +135,7 @@ if [ $# -ge 1 ]; then
     fi
 fi
 
-session=`screen -X sessionname; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split('\'',1)[1].rsplit('\'',1)[0])"`
+session=`python ./get_current_session.py`
 if [ $mode = "manager" ]; then
     python ./screen-session-manage p $session
 

@@ -125,7 +125,7 @@ w[ipe] - wipe dead sessions\n\
 r[eset] - reset session manager\n\
 l[ayout] - toggle layout\n\
 kill - kill selected session\n\
-save - save session\n\
+save <output> - save session\n\
 ALT + T - toggle between regions\n\
 '
 
@@ -340,11 +340,11 @@ def eval_command(scs,command,last_session,psession):
         scs.wipe()
     elif mode.startswith('save'): # save 
         if args[0]:
-            arg_out='--out %s'%args[0]
+            arg_out='%s'%args[0]
         else:
-            arg_out='--out %s'%last_session
-        print2ui('LOGIC: saving session as %s'%args[0])
-        os.popen('screen-session save --force --log /dev/null --in \"%s\"'%last_session)
+            arg_out='%s'%last_session
+        print2ui('LOGIC: saving session as %s'%arg_out)
+        os.popen('screen-session save --force --log /dev/null --in \"%s\" --out \"%s\"'%(last_session,arg_out))
     elif mode.startswith('s'): # screen
         if args and len(args[0])>0:
             arg=" ".join(["%s"%v for v in args])
@@ -428,7 +428,7 @@ def main():
         while True:
             session=prime(fifoname)
             scs=ScreenSaver(session,'/dev/null','/dev/null')
-            scs.command_at('rendition so kw')
+            scs.command_at('rendition so ky')
             scs.command_at('bindkey ^[t focus prev')
             scs.command_at('bindkey ^[T focus prev')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
