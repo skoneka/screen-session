@@ -6,6 +6,7 @@ SRCDIR = ScreenSession
 SRC = ${SRCDIR}/screen-session-primer.c
 OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen-session.py ${SRCDIR}/screen-in-dir ${SRCDIR}/screen-display-regions.py ${SRCDIR}/screen-display-regions-helper ${SRCDIR}/screen-session-grab ${SRCDIR}/screen-session-manage  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py
 OBJ = ${SRC:.c=.o}
+pwd=$(shell pwd)
 
 all: options screen-session-primer
 
@@ -33,7 +34,7 @@ dist: clean
 	@echo creating dist tarball
 	@mkdir -p screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
-	@cp -R LICENSE Makefile README config.mk screen-session.diff  screen-session-${VERSION}
+	@cp -R LICENSE Makefile README INSTALL HOWTO config.mk screen-session.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session.py
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session
@@ -52,6 +53,13 @@ install: all
 	@ln -sf ${INSTFOLDER}/screen-session-primer ${DESTDIR}${PREFIX}/bin
 	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
+installtest: all
+	@echo linking executables to ${DESTDIR}${PREFIX}/bin
+	@mkdir -p ${DESTDIR}${PREFIX}/bin
+	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
+	@ln -sf ${pwd}/${SRCDIR}/screen-session-primer ${DESTDIR}${PREFIX}/bin
+	@python -c "import compileall; compileall.compile_dir('${SRCDIR}',force=1)"
+	
 uninstall:
 	@echo removing files from ${INSTFOLDER}
 	@rm -f ${INSTFOLDER}/screen-session
