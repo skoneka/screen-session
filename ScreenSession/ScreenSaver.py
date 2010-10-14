@@ -41,9 +41,9 @@ class ScreenSaver(object):
         self.basedir=os.path.join(self.homedir,self.projectsdir)
         self.savedir=str(savedir)
         self.pid=str(pid)
-        self.__set_sc(self.pid)
+        self.set_session(self.pid)
 
-    def __set_sc(self,sessionname):
+    def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
 
     def save(self):
@@ -455,7 +455,7 @@ class ScreenSaver(object):
         msg=self.command_at('sessionname %s'%args)
         if nsessionname:
             self.pid=nsessionname
-            self.__set_sc(self.pid)
+            self.set_session(self.pid)
             return nsessionname
         else:
             try:

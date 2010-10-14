@@ -117,14 +117,14 @@ def print2ui(line):
 usagestr='\n===HELP===\n\
 ALT + T - toggle between regions\n\
 h[elp] - show this message\n\
-q[uit[ - exit session manager\n\
+q[uit] - exit session manager\n\
 e[nter] - enter into selected session\n\
 a[ttach] <sessionname> - attach to session\n\
 n[ame] <sessionname> - rename a session\n\
 s[creen] <args> - create new session\n\
 kill - kill selected session\n\
 w[ipe] - wipe dead sessions\n\
-r[reset] - reset session manager\n\
+r[eset] - reset session manager\n\
 l[ayout] - toggle layout\n\
 '
 
@@ -243,6 +243,12 @@ def logic(scs,fifoname,fifoname2,session,psession):
                             mode=e[0]
                     except:
                         pass
+                    try:
+                        if e[2]:
+                            psession=e[2]
+                    except:
+                        pass
+
                     if (mode and mode!="enter") or (mode=='enter' and last_session):
                         raise SystemExit
                     else:
@@ -250,7 +256,7 @@ def logic(scs,fifoname,fifoname2,session,psession):
     except SystemExit:
         pipein.close()
         scs.quit()
-        return str(tui)+';;;'+mode+';'+str(last_session)+';'
+        return str(tui)+';'+psession+';;;'+mode+';'+str(last_session)+';'
 
 def eval_command(scs,command,last_session,psession):
     command=command.split(' ',1)
@@ -268,7 +274,10 @@ def eval_command(scs,command,last_session,psession):
 
         scs.focus('bottom')
         cnum=scs.get_number_and_title()[0]
-        if (psession and psession==args[0]) or scs.sessionname() == args[0]:
+        if scs.sessionname()==args[0]:
+            print2ui('LOGIC: THIS is session [%s]'%args[0])
+
+        elif (psession and psession==args[0]):
             print2ui('LOGIC: parent session is [%s]'%psession)
             print2ui('LOGIC: Unable to attach loop detected')
         else:
@@ -325,13 +334,20 @@ def eval_command(scs,command,last_session,psession):
     elif mode.startswith('n'): # name
         if last_session:
             print2ui('LOGIC: renaming session to \"%s\"'%args[0])
-            scs_target=ScreenSaver(last_session,'/dev/null','/dev/null')
+            if scs.sessionname() == last_session:
+                scs_target=scs
+            else:
+                scs_target=ScreenSaver(last_session,'/dev/null','/dev/null')
+
             nsessionname=scs_target.sessionname(args[0])
+            print2ui('LOGIC: new sessionname is now [%s]'%nsessionname)
             scs.focus('bottom')
             cnum=scs.get_number_and_title()[0]
-            if (psession and psession==args[0]) or scs.sessionname() == args[0]:
-                print2ui('LOGIC: parent session is [%s]'%psession)
-                print2ui('LOGIC: Unable to attach loop detected')
+            if (psession and psession==last_session):
+                psession=nsessionname
+                print2ui('LOGIC: parent session is now [%s]'%nsessionname)
+            elif nsessionname==scs.sessionname():
+                print2ui('LOGIC: THIS is session [%s]'%nsessionname)
             else:
                 scs.screen('screen -x \"%s\"'%nsessionname)
                 scs.title(nsessionname)
@@ -339,7 +355,9 @@ def eval_command(scs,command,last_session,psession):
                 #print2ui('LOGIC: killing window \"%s\"'%cnum)
                 scs.kill(cnum)
             scs.focus('top')
-            return None,nsessionname
+            return None,nsessionname,psession
+    else:
+        print2ui('LOGIC: no such command')
 
 
 def ui1(fifoname):
@@ -399,19 +417,16 @@ def main():
                 attach_session(session)
                 os.waitpid(pid,0)
                 command=data.readline().strip()
-                try:
-                    options,command=command.split(';;;',1)
-                    options=options.split(';')
-                    command=command.split(';')
-                    '''
-                    for m in command:
-                        print('[]%d|mode=%s'%(len(m),m))
-                    '''
-                except:
-                    pass
+                options,command=command.split(';;;',1)
+                options=options.split(';')
+                command=command.split(';')
+                '''
+                for m in command:
+                    print('[]%d|mode=%s'%(len(m),m
+                '''
 
                 tui=int(options[0])
-
+                psession=options[1]
                 if command[0]=='enter':
                     print ("entering \"%s\""%(command[1]))
                     attach_session(command[1])
@@ -420,7 +435,7 @@ def main():
                 elif command[0]=='new':
                     cmd='screen -m %s'%command[1]
                     print ("creating session: %s"%(cmd))
-                    os.popen('screen -m %s'%command[1])
+                    os.popen(cmd)
                     
                 else:
                     try:
