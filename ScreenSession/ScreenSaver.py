@@ -591,7 +591,6 @@ class ScreenSaver(object):
                                 s=str(l[0])+'\0'
                                 for j in range(3,len(l)):
                                     s+=str(l[j])+'\0'
-                                    out('appending: %s'%str(l[j]))
                                 newdata=(cpids_data[i][0],cpids_data[i][1],s,cpids_data[i][3])
                                 cpids_data[i]=newdata
 
