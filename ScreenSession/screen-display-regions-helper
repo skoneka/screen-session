@@ -20,13 +20,14 @@ echo ""
 if [ "$2" = "0" ]
 then
     toilet --gay -W "> $2 <"
-    echo "timeout: 4 s"
-    echo ""
-    echo "goto:\t   [number]"
-    echo "goto:\t ' [number]<ENTER>"
-    echo "swap:\t s [number]"
-    echo "rotate left:\t  l"
-    echo "rotate right:\t  r"
+    /bin/echo -e "timeout: 4 s\n\
+\n\
+goto:\t   [number]\n\
+goto:\t ' [number]<ENTER>\n\
+swap:\t s [number]\n\
+rotate left:\t  l\n\
+rotate right:\t  r\n\
+"
     
 else
     toilet --metal -W "  $2"

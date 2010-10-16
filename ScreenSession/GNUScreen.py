@@ -32,6 +32,8 @@ def gen_all_windows(minwin,maxwin,session):
 
             yield cwin,ctype,ctitle
 
+
+
 def get_pid_info_sun(pid):
     pass
 def get_pid_info_bsd(pid):
@@ -39,7 +41,7 @@ def get_pid_info_bsd(pid):
     piddir=os.path.join(procdir,pid)
     p=os.popen('procstat -f %s'%pid)
     p.readline()
-    cwd=p.readline().rsplit('   ',1)[1]
+    cwd='/'+p.readline().strip().split('/',1)[1]
     #cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
     exe=os.readlink(os.path.join(piddir,"file"))
     f=open(os.path.join(piddir,"cmdline"),"r")
@@ -60,10 +62,13 @@ def get_pid_info_linux(pid):
 
 def get_pid_info(pid):
     global get_pid_info
-    if platform.system()=='Linux':
+    p=platform.system()
+    if p =='Linux':
         get_pid_info=get_pid_info_linux
-    else:
+    elif p == 'FreeBSD' :
         get_pid_info=get_pid_info_bsd
+    else:
+        get_pid_info=get_pid_info_sun
     return get_pid_info(pid)
 
 

@@ -573,7 +573,7 @@ class ScreenSaver(object):
                             cpids_data.append(pidinfo+tuple([blacklist]))
                             ncpids.append(pid)
                         except OSError:
-                            out('%s: Unable to access. No permission - other user.'%pid)
+                            out('%s: Unable to access. No permission or no procfs.'%pid)
                     cpids=ncpids
                 
                 out('type = '+ctype +'; pids = '+str(cpids))

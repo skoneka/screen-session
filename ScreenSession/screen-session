@@ -6,7 +6,7 @@
 # it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen session
 
 # Absolute path to this script. /home/user/bin/foo.sh
-SCRIPT=$(echo $0|python -c 'import os,sys;i=sys.stdin.read();print os.path.realpath(i.strip())')
+SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print os.path.realpath(i.strip())')
 # Absolute path this script is in. /home/user/bin
 SCRIPTPATH=`dirname $SCRIPT`
 
@@ -15,8 +15,8 @@ VERSION=git
 SCREEN_SESSION="SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\n"
 
 showhelp() {
-    echo $SCREEN_SESSION
-    echo -e "Usage: screen-session [mode] [options]\n\
+    /bin/echo $SCREEN_SESSION
+    /bin/echo -e "Usage: screen-session [mode] [options]\n\
 Help: screen-session [mode] --help\n\
     \n\
 Available modes:\n\
@@ -36,46 +36,46 @@ Available modes:\n\
 }
 
 showhelp_regions() {
-    echo -e "Display number in each region\n\
+    /bin/echo -e "Display number in each region\n\
 script reassembling the functionality of tmux display-panes\n\
 \nUsage: screen-session regions"
 }
 
 showhelp_kill() {
-    echo -e "Kill last process started in a window\n\
+    /bin/echo -e "Kill last process started in a window\n\
 \nUsage: screen-session kill [signal=TERM] [window=current]"
 }
 
 showhelp_kill_zombie() {
-    echo -e "Kill all zombie windows in session\n\
+    /bin/echo -e "Kill all zombie windows in session\n\
 \nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
 }
 
 showhelp_dir() {
-    echo -e "Start a new Screen window in the same working directory\n\ 
+    /bin/echo -e "Start a new Screen window in the same working directory\n\ 
 on the position next to the current window\n\
 \nUsage: screen-session dir [program]"
 }
 
 showhelp_grab() {
-    echo -e "Grab a process and attach to the current tty.\n\
+    /bin/echo -e "Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 }
 
 showhelp_manage() {
-    echo -e "Sessions manager for GNU Screen with preview in a split window\n\
+    /bin/echo -e "Sessions manager for GNU Screen with preview in a split window\n\
 \nUsage: screen-session manage"
 }
 
 showhelp_renumber() {
-    echo -e "Renumber windows to fill the gaps\n\
+    /bin/echo -e "Renumber windows to fill the gaps\n\
 \nUsage: screen-session renumber [maxwin=MAXWIN] [minwin=0]"
 }
 
 showhelp_sort() {
-    echo -e "Sort windows by titles\n\
+    /bin/echo -e "Sort windows by titles\n\
 \nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
 }
 
@@ -108,7 +108,7 @@ done
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
-    echo $SCREEN_SESSION
+    /bin/echo $SCREEN_SESSION
         case "$mode" in
             manager) showhelp_manage
             ;;
@@ -128,7 +128,7 @@ if [ $# -ge 1 ]; then
             ;;
             save|load|ls) python ./screen_saver.py  $mode $*
             ;;
-            *) echo "No such mode \"$mode\""
+            *) /bin/echo "No such mode \"$mode\""
             ;;
         esac
         exit 0
@@ -182,10 +182,10 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     argument0=""
     argument1=""
 
-    if [ `echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
+    if [ `/bin/echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
         argument1="--current-session $session"
     else
-        echo "--- not running inside patched Screen, this session cannot be saved properly"
+        /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
 
     argument0="logpipe=$scsfile"
@@ -209,6 +209,6 @@ else
 fi
 
 if [ $waitfor -eq 1 ]; then
-    echo 'Press any key...'
-    stty cbreak -echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
+    /bin/echo 'Press any key...'
+    stty cbreak -/bin/echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
 fi
