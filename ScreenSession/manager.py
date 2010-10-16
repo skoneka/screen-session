@@ -9,6 +9,20 @@ import GNUScreen as sc
 import util
 from ScreenSaver import ScreenSaver
 
+usagestr='\n===HELP===\n\
+h[elp]  - show this message\n\
+q[uit]  - exit session manager\n\
+e[nter] - enter into session\n\
+a[ttach] <name> - attach\n\
+n[ame] <name>   - rename\n\
+s[creen] <args> - create session\n\
+w[ipe] - wipe dead sessions\n\
+r[eset] - reset session manager\n\
+l[ayout] - toggle layout\n\
+kill - kill selected session\n\
+save <output> - save session\n\
+ALT + T - toggle between regions\n\
+'
 tui=1
 maxtui=3
 
@@ -31,7 +45,7 @@ def menu_tmp(preselect=None):
                 i += 1
     command=None
     inputstring=None
-    if i > 1:
+    if True:
         sys.stdout.write("\nGNU Screen sessions...\n\n")
         tries = 0
         while tries < 3:
@@ -55,6 +69,9 @@ def menu_tmp(preselect=None):
                             break
                     except:
                         command=inputstring
+                        if command.startswith('h'):
+                            print(usagestr)
+                            raw_input("Press Return to continue" )
                         break
                 else:
                     return "enter"
@@ -120,20 +137,6 @@ def print2ui(line):
     os.write(ui2pipe,'%s\n'%line)
     pass
 
-usagestr='\n===HELP===\n\
-h[elp]  - show this message\n\
-q[uit]  - exit session manager\n\
-e[nter] - enter into session\n\
-a[ttach] <name> - attach\n\
-n[ame] <name>   - rename\n\
-s[creen] <args> - create session\n\
-w[ipe] - wipe dead sessions\n\
-r[eset] - reset session manager\n\
-l[ayout] - toggle layout\n\
-kill - kill selected session\n\
-save <output> - save session\n\
-ALT + T - toggle between regions\n\
-'
 
 def usage():
     print2ui(usagestr)
