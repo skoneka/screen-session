@@ -4,7 +4,7 @@ include config.mk
 
 SRCDIR = ScreenSession
 SRC = ${SRCDIR}/screen-session-primer.c
-OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen-session.py ${SRCDIR}/screen-in-dir ${SRCDIR}/screen-display-regions.py ${SRCDIR}/screen-display-regions-helper ${SRCDIR}/screen-session-grab ${SRCDIR}/screen-session-manage  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py
+OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/screen-in-dir.py ${SRCDIR}/screen-display-regions.py ${SRCDIR}/screen-display-regions-helper ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/get_current_session.py
 OBJ = ${SRC:.c=.o}
 pwd=$(shell pwd)
 
@@ -50,24 +50,23 @@ install: all
 	@echo linking executables to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
+	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
 	@ln -sf ${INSTFOLDER}/screen-session-primer ${DESTDIR}${PREFIX}/bin
 	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
 installtest: all
-	@echo linking executables to ${DESTDIR}${PREFIX}/bin
+	@echo linking executables in \"${pwd}/${SRCDIR}\" to \"${DESTDIR}${PREFIX}/bin\"
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
+	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
 	@ln -sf ${pwd}/${SRCDIR}/screen-session-primer ${DESTDIR}${PREFIX}/bin
-	@python -c "import compileall; compileall.compile_dir('${SRCDIR}',force=1)"
 	
 uninstall:
-	@echo removing files from ${INSTFOLDER}
-	@rm -f ${INSTFOLDER}/screen-session
-	@rm -f ${INSTFOLDER}/screen-session-primer
-	@echo removing directory  ${INSTFOLDER}
-	@rm -r ${INSTFOLDER}
 	@echo removing files from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session-primer
+	@rm -f ${DESTDIR}${PREFIX}/bin/scs
+	@echo removing directory  ${INSTFOLDER}
+	@rm -r ${INSTFOLDER}
 
 .PHONY: all options clean dist install uninstall

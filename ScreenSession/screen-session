@@ -3,10 +3,10 @@
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: screen-session tools starter
-# it is necessary to run screen-session.py embedded in other screen session to be able to run it from saved/loaded screen session
+# it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen session
 
 # Absolute path to this script. /home/user/bin/foo.sh
-SCRIPT=$(readlink -f $0)
+SCRIPT=$(echo $0|python -c 'import os,sys;i=sys.stdin.read();print os.path.realpath(i.strip())')
 # Absolute path this script is in. /home/user/bin
 SCRIPTPATH=`dirname $SCRIPT`
 
@@ -16,7 +16,7 @@ SCREEN_SESSION="SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen.\
 
 showhelp() {
     echo $SCREEN_SESSION
-    echo "Usage: screen-session [mode] [options]\n\
+    echo -e "Usage: screen-session [mode] [options]\n\
 Help: screen-session [mode] --help\n\
     \n\
 Available modes:\n\
@@ -36,46 +36,46 @@ Available modes:\n\
 }
 
 showhelp_regions() {
-    echo "Display number in each region\n\
+    echo -e "Display number in each region\n\
 script reassembling the functionality of tmux display-panes\n\
 \nUsage: screen-session regions"
 }
 
 showhelp_kill() {
-    echo "Kill last process started in a window\n\
+    echo -e "Kill last process started in a window\n\
 \nUsage: screen-session kill [signal=TERM] [window=current]"
 }
 
 showhelp_kill_zombie() {
-    echo "Kill all zombie windows in session\n\
+    echo -e "Kill all zombie windows in session\n\
 \nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
 }
 
 showhelp_dir() {
-    echo "Start a new Screen window in the same working directory\n\ 
+    echo -e "Start a new Screen window in the same working directory\n\ 
 on the position next to the current window\n\
 \nUsage: screen-session dir [program]"
 }
 
 showhelp_grab() {
-    echo "Grab a process and attach to the current tty.\n\
+    echo -e "Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 }
 
 showhelp_manage() {
-    echo "Sessions manager for GNU Screen with preview in a split window\n\
+    echo -e "Sessions manager for GNU Screen with preview in a split window\n\
 \nUsage: screen-session manage"
 }
 
 showhelp_renumber() {
-    echo "Renumber windows to fill the gaps\n\
+    echo -e "Renumber windows to fill the gaps\n\
 \nUsage: screen-session renumber [maxwin=MAXWIN] [minwin=0]"
 }
 
 showhelp_sort() {
-    echo "Sort windows by titles\n\
+    echo -e "Sort windows by titles\n\
 \nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
 }
 
@@ -126,7 +126,7 @@ if [ $# -ge 1 ]; then
             ;;
             sort) showhelp_sort
             ;;
-            save|load|ls) python ./screen-session.py  $mode $*
+            save|load|ls) python ./screen_saver.py  $mode $*
             ;;
             *) echo "No such mode \"$mode\""
             ;;
@@ -137,7 +137,7 @@ fi
 
 session=`python ./get_current_session.py`
 if [ $mode = "manager" ]; then
-    python ./screen-session-manage p $session
+    python ./manager.py p $session
 
 elif [ $mode = "grab" ]; then
     sh ./screen-session-grab $*
@@ -158,6 +158,9 @@ elif [ $mode = "kill" ]; then
 elif [ $mode = "kill-zombie" ]; then
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
     python ./kill-zombie.py $session $maxwin $*
+
+elif [ $mode = "kill-group" ]; then
+    python ./kill-group.py $session $*
 
 elif [ $mode = "renumber" ]; then
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
@@ -194,12 +197,12 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
             rm $scsfile
         fi
         mkfifo $scsfile
-        screen -m -d -c /dev/null python ./screen-session.py $mode $argument0 $argument1 $* 
+        screen -m -d -c /dev/null python ./screen_saver.py $mode $argument0 $argument1 $* 
         
         cat $scsfile
         rm $scsfile
     else
-        python ./screen-session.py $mode $argument0 $argument1 $*
+        python ./screen_saver.py $mode $argument0 $argument1 $*
     fi
 else
     showhelp

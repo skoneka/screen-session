@@ -66,3 +66,23 @@ def kill_zombie(session,min,max):
     for win,type,title in sc.gen_all_windows(min,max,session):
         if type==-1:
             ss.kill('',win)
+
+def kill_group(session,win):
+    print ('killing group %s'%win)
+    ss=ScreenSaver(session,'/dev/null','/dev/null')
+    tty=ss.tty(win)
+    if tty!="telnet":
+        print('This window is not a group. Aborting.')
+        return
+    sc.get_windows()
+    
+def kill_win_last_proc(session,win="-1",sig="TERM"):
+    import signal,os
+    ss=ScreenSaver(session,'/dev/null','/dev/null')
+    ctty=ss.tty(win)
+    pids=sc.get_tty_pids(ctty)
+    pid = pids[len(pids)-1]
+
+    sig=eval('signal.SIG'+sig)
+
+    os.kill(int(pid),sig)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file: screen-session.py
+# file: screen_saver.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: GNU Screen session saving program

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file: screen-session-manage
+# file: manager.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: sessions manager with preview in split window
@@ -70,10 +70,6 @@ def menu_tmp(preselect=None):
                 tries += 1
                 choice = ""
                 sys.stderr.write("\nERROR: Invalid input\n");
-    else:
-        sys.stdout.write("\No Screen sessions...\n\n")
-        inputstring = raw_input("\ncommand: ")
-        command=inputstring
 
     if inputstring:
         if command:
@@ -93,15 +89,20 @@ def menu_tmp(preselect=None):
 
 def prime(fifoname):
     l1=sc.get_session_list()
-    print sys.argv[0]
-    os.popen('screen -S "MANAGER_NOATTACH" -m -d -c /dev/null %s %s %s'%("python" +" "+sys.argv[0],'ui',fifoname))
+    cmd='screen -S "MANAGER_NOATTACH" -m -d -c /dev/null python %s %s %s'%(sys.argv[0],'ui',fifoname)
+    sys.stderr.write(cmd+'\n')
+    os.popen(cmd)
     l2=sc.get_session_list()
+    sys.stderr.write('searching for target session..\n')
     session=sc.find_new_session(l1,l2)
+    sys.stderr.write('target session = %s\n'%session)
+
     print ('session: %s'%session)
     return session
 
 def ui2(fifoname):
-    sys.stderr=open('/tmp/scs_err_ui2','w')
+    sys.stderr.write('starting ui2\n')
+    sys.stderr.flush()
     print('ui2 [%s]'%fifoname)
     pipein = open(fifoname, 'r')                 # open fifo as stdio object
     while 1:
@@ -204,17 +205,17 @@ def reset_tui_4(scs):
     scs.select('0')
 
 def logic(scs,fifoname,fifoname2,session,psession,last_session):
+    sys.stderr.write('starting logic\n')
+    sys.stderr.flush()
     ret=None
     global ui2pipe
-    sys.stdout=open('/tmp/scs_out','w')
-    sys.stderr=open('/tmp/scs_err_logic','w')
     #os.system('screen -X split -v')
     print 'run opening [%s]'%fifoname
     pipein = open(fifoname, 'r')
     print 'run printing'
     sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
     sys.stdout.flush()
-    scs.screen("%s %s %s"%(sys.argv[0],'ui2',fifoname2))
+    scs.screen("python %s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
@@ -268,6 +269,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
 
 def tui_attach_session(scs,arg,psession):
     #print2ui('LOGIC: attaching \"%s\"'%args[0])
+    sys.stderr.write('tui trying to attach %s'%psession)
     scs_target=ScreenSaver(arg)
     if not scs_target.exists():
         print2ui('LOGIC: session does not exists')
@@ -394,7 +396,8 @@ def eval_command(scs,command,last_session,psession):
 
 
 def ui1(fifoname):
-    sys.stderr=open('/tmp/scs_err_ui','w')
+    sys.stderr.write('starting ui1\n')
+    sys.stderr.flush()
     print 'ui [%s]'%fifoname
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
@@ -407,12 +410,15 @@ def ui1(fifoname):
 
        
 def attach_session(session):
+    sys.stderr.write('attaching %s'%session)
     os.popen('screen -x \"%s\"'%(session))
     
 def main():
     global tui
+    sys.stderr.write('starting..\n')
+    if(sys.argv)==0:
+        print('Usage: program [p|ui|ui2] [session or named pipe]')
     if sys.argv[1]=='p':
-        sys.stderr=open('/tmp/scs_err','w')
         try:
             psession=sys.argv[2]
         except:
@@ -431,6 +437,7 @@ def main():
         if not os.path.exists(fifoname2):
             os.mkfifo(fifoname2)
         while True:
+            sys.stderr.write('priming..\n')
             session=prime(fifoname)
             scs=ScreenSaver(session,'/dev/null','/dev/null')
             scs.command_at('rendition so ky')
@@ -492,4 +499,8 @@ def main():
         ui2(fifoname)
 
 if __name__=='__main__':
+    if not os.path.exists('/tmp/scs_err'):
+        sys.stderr=open('/tmp/scs_err','w')
+    else:
+        sys.stderr=open('/tmp/scs_err','a')
     main()
