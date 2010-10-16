@@ -360,7 +360,7 @@ class ScreenSaver(object):
     def get_sessionname(self):
         return self.command_at('number',win).strip("'").split("'",1)[1]
 
-    def get_tty(self,win="-1"):
+    def tty(self,win="-1"):
         msg=self.command_at('tty',win)
         tty = msg.strip()
         return tty
@@ -535,7 +535,7 @@ class ScreenSaver(object):
                     out('\n--')
 
                 # has to follow get_number_and_title() to recognize zombie windows
-                ctty = self.get_tty(id) 
+                ctty = self.tty(id) 
                 if ctty.startswith('This'):
                     out('%s is a zombie window. Ignoring.'%(cwin))
                     ctype="zombie"
@@ -795,7 +795,7 @@ class ScreenSaver(object):
         os.system('%s -X screen %s -m %d-%d'%(self.sc,self.primer,os.getpid(),self.__get_focus_offset_c))
         #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
-        markertty = self.get_tty()
+        markertty = self.tty()
         markernum,markertitle=self.get_number_and_title()
         #out('markernum=%s; title=%s;'%(markernum,markertitle))
         os.system('%s -X focus top' % (self.sc) )

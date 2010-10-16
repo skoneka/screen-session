@@ -56,6 +56,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     touch(os.path.join(tmpdir,savedir))
     os.chdir(cwd)
     removeit(os.path.join(home,projectsdir,savedir))
+    print("%s"%str([home,projectsdir,savedir,archiveend,tmpdir,full]))
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
 
 

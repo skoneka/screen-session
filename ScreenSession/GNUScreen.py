@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os,subprocess,re,sys
+import os,subprocess,re,sys,platform
 def gen_all_windows(minwin,maxwin,session):
     from ScreenSaver import ScreenSaver
     ss=ScreenSaver(session,'/dev/null','/dev/null')
@@ -22,7 +22,7 @@ def gen_all_windows(minwin,maxwin,session):
                 searching=False
 
             # has to follow get_number_and_title() to recognize zombie windows
-            ctty = ss.get_tty(id)
+            ctty = ss.tty(id)
             if ctty.startswith('This'):
                 ctype=-1
             elif ctty=='telnet':
@@ -32,17 +32,23 @@ def gen_all_windows(minwin,maxwin,session):
 
             yield cwin,ctype,ctitle
 
-def get_pid_info_unix(pid,procdir="/proc"):
+def get_pid_info_sun(pid):
+    pass
+def get_pid_info_bsd(pid):
+    procdir="/proc"
     piddir=os.path.join(procdir,pid)
-    
-    cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
-    exe=os.readlink(os.path.join(piddir,"exe"))
+    p=os.popen('procstat -f %s'%pid)
+    p.readline()
+    cwd=p.readline().rsplit('   ',1)[1]
+    #cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
+    exe=os.readlink(os.path.join(piddir,"file"))
     f=open(os.path.join(piddir,"cmdline"),"r")
     cmdline=f.read()
     f.close()
     
     return (cwd,exe,cmdline)
-def get_pid_info_linux(pid,procdir="/proc"):
+def get_pid_info_linux(pid):
+    procdir="/proc"
     piddir=os.path.join(procdir,pid)
     cwd=os.readlink(os.path.join(piddir,"cwd"))
     exe=os.readlink(os.path.join(piddir,"exe"))
@@ -52,8 +58,13 @@ def get_pid_info_linux(pid,procdir="/proc"):
     
     return (cwd,exe,cmdline)
 
-def get_pid_info(pid,procdir="/proc"):
-    return get_pid_info_linux(pid,procdir)
+def get_pid_info(pid):
+    global get_pid_info
+    if platform.system()=='Linux':
+        get_pid_info=get_pid_info_linux
+    else:
+        get_pid_info=get_pid_info_bsd
+    return get_pid_info(pid)
 
 
 def sort_by_ppid(cpids):
@@ -88,7 +99,18 @@ def sort_by_ppid(cpids):
     return cpids
 
 def get_tty_pids(ctty):
-    f = os.popen('ps --sort=ppid -o pid --tty %s' % ctty)
+    global get_tty_pids
+    if platform.system()=='Linux':
+        get_tty_pids=get_tty_pids_ps
+    else:
+        get_tty_pids=get_tty_pids_lsof
+
+    return get_tty_pids(ctty)
+
+
+
+def get_tty_pids_ps(ctty):
+    f = os.popen('ps --sort=start_time -o pid -t %s' % ctty)
     pids=f.read().strip()
     f.close()
     npids=[]
@@ -300,15 +322,5 @@ def get_regions_count_no_layout(session=None):
     return region_count
 
 
-def kill_win_last_proc(session,win="-1",sig="TERM"):
-    import signal
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    ctty=ss.get_tty(win)
-    pids=get_tty_pids(ctty)
-    pid = pids[len(pids)-1]
-
-    sig=eval('signal.SIG'+sig)
-
-    os.kill(int(pid),sig)
 
 
