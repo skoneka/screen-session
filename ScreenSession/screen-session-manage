@@ -70,6 +70,10 @@ def menu_tmp(preselect=None):
                 tries += 1
                 choice = ""
                 sys.stderr.write("\nERROR: Invalid input\n");
+    else:
+        sys.stdout.write("\No Screen sessions...\n\n")
+        inputstring = raw_input("\ncommand: ")
+        command=inputstring
 
     if inputstring:
         if command:
@@ -89,7 +93,8 @@ def menu_tmp(preselect=None):
 
 def prime(fifoname):
     l1=sc.get_session_list()
-    os.popen('screen -S "MANAGER_NOATTACH" -m -d -c /dev/null %s %s %s'%(sys.argv[0],'ui',fifoname))
+    print sys.argv[0]
+    os.popen('screen -S "MANAGER_NOATTACH" -m -d -c /dev/null %s %s %s'%("python" +" "+sys.argv[0],'ui',fifoname))
     l2=sc.get_session_list()
     session=sc.find_new_session(l1,l2)
     print ('session: %s'%session)
