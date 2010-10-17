@@ -81,6 +81,162 @@
 int blacklist[BLACKLISTMAX];
 int blacklist_c=0;
 
+#define FONTHEIGHT 9
+#define FONTWIDTH 6
+char *fonts[]={
+            /*  */
+"  $$  ",
+" $  $ ",
+"$    $",
+"$    $",
+"$    $",
+"$    $",
+"$    $",
+" $  $ ",
+"  $$  ",
+            /*  */
+" $$$  ",
+"$$$$  ",
+"  $$  ",
+"  $$  ",
+"  $$  ",
+"  $$  ",
+"  $$  ",
+"  $$  ",
+"  $$  ",
+            /*  */
+" $$$$ ",
+"$    $",
+"    $$",
+"   $$ ",
+"  $$  ",
+" $$   ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+            /*  */
+" $$$$ ",
+"    $$",
+"   $$ ",
+"  $$  ",
+"   $$ ",
+"    $$",
+"    $$",
+"$  $$ ",
+" $$$  ",
+            /*  */
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+            /*  */
+"$$$$$$",
+"$$    ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"$$    ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+"   $$ ",
+"  $$  ",
+" $$   ",
+"$$    ",
+            /*  */
+"$$$$$$",
+"$    $",
+"$    $",
+"$    $",
+"$$$$$$",
+"$    $",
+"$    $",
+"$    $",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"$$$$$$",
+            /*  */
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+            /*  */
+"      ",
+"$    $",
+"$$  $$",
+" $$$$ ",
+"  $$  ",
+"  $$  ",
+" $$$$ ",
+"$$  $$",
+"$    $",
+};
+
+char *font_0[]={ 
+" $$   ",
+" $$   ",
+" $$   ",
+" $$   ",
+" $$   ",
+" $$   ",
+" $$   ",
+" $$   ",
+"$  $  "
+};
+char *font_1[]={
+"  $   ",
+" $$   ",
+"$ $   ",
+"  $   ",
+"  $   ",
+"  $   ",
+"  $   "
+"  $   "
+"  $   "
+};
+char font_2[]={"$"};
+char font_3[]={"$"};
+char font_4[]={"$"};
+char font_5[]={"$"};
+char font_6[]={"$"};
+char font_7[]={"$"};
+char font_8[]={"$"};
+char font_9[]={"$"};
+
 enum menu
 {
     NONE=0,
@@ -90,6 +246,7 @@ enum menu
     ONLY,
     NUMBER
 };
+
 
 int line_to_string(FILE *fp, char **line, size_t *size)
 {
@@ -638,7 +795,65 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     return 1;
 
 }
+char ** get_font(char c) {
+    char **font=NULL;
+    switch(c) {
+        case '0':
+            font=&fonts[0*FONTHEIGHT];
+            break;
+        case '1':
+            font=&fonts[1*FONTHEIGHT];
+            break;
+        case '2':
+            font=&fonts[2*FONTHEIGHT];
+            break;
+        case '3':
+            font=&fonts[3*FONTHEIGHT];
+            break;
+        case '4':
+            font=&fonts[4*FONTHEIGHT];
+            break;
+        case '5':
+            font=&fonts[5*FONTHEIGHT];
+            break;
+        case '6':
+            font=&fonts[6*FONTHEIGHT];
+            break;
+        case '7':
+            font=&fonts[7*FONTHEIGHT];
+            break;
+        case '8':
+            font=&fonts[8*FONTHEIGHT];
+            break;
+        case '9':
+            font=&fonts[9*FONTHEIGHT];
+            break;
+        case ' ':
+            font=&fonts[10*FONTHEIGHT];
+            break;
+        default:
+            font=&fonts[11*FONTHEIGHT];
+            break;
+    }
+    return font;
+}
 
+void print_number(char *n) {
+    char ***font=malloc((strlen(n)+1)*sizeof(char***));
+    int letter_c=0;
+    while(n[letter_c]!='\0') {
+        font[letter_c]=get_font(n[letter_c]);
+        letter_c++;
+    }
+    int k;
+    int j;
+    for(k=0;k<FONTHEIGHT;k++) {
+        for(j=0;j<letter_c;j++) {
+            printf("%s ",font[j][k]);
+        }
+        printf("\n");
+    }
+}
 #ifndef TEST
 int main(int argc, char **argv) {
 //./program workingdir scrollbackfile datafile
@@ -672,6 +887,11 @@ int main(int argc, char **argv) {
     else if (strcmp(argv[1],"-rf")==0) {
         //requireSession
         requireSession(argv[2],argv[3],1);
+        return 0;
+    }
+    else if (strcmp(argv[1],"-n")==0) {
+        //print number
+        print_number(argv[2]);
         return 0;
     }
     char *homedir=getenv("HOME");

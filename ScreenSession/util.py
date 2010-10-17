@@ -123,7 +123,6 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     
     for file in glob.glob('*'+archiveend):
         removeit(os.path.join(home,projectsdir,file))
-        print('move [%s] to [%s]'%(file,os.path.join(home,projectsdir,file)))
         shutil.move(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)

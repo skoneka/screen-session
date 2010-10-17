@@ -19,7 +19,8 @@ cleanup()
 echo ""
 if [ "$2" = "0" ]
 then
-    toilet --gay -W "> $2 <"
+    #toilet --gay -W "> $2 <"
+    screen-session-primer -n "x  $2  x"
     /bin/echo -e "timeout: 4 s\n\
 \n\
 goto:\t   [number]\n\
@@ -30,13 +31,15 @@ rotate right:\t  r\n\
 "
     
 else
-    toilet --metal -W "  $2"
+    #toilet --metal -W "  $2"
+    screen-session-primer -n "  $2"
 fi
 stty cbreak -echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
 
 if [ "$KEY" = "s" ]         # swap
 then
-    toilet -W "swap"
+    #toilet -W "swap"
+    echo "SWAP"
     stty cbreak -echo; value=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
     if [ "$value" = "'" ]       # and goto
     then
@@ -49,7 +52,8 @@ then
 
 elif [ "$KEY" = "'" ]       # goto
 then
-    toilet -W "goto"
+    #toilet -W "goto"
+    echo "GOTO"
     read value
     echo $KEY$value > $1
 elif [ "$KEY" = "r" ]       # rotate right
