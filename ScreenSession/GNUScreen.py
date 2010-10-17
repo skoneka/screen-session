@@ -34,11 +34,23 @@ def gen_all_windows(minwin,maxwin,session):
 
 
 
-def get_pid_info_sun(pid):
-    pass
-def get_pid_info_bsd(pid):
+def _get_pid_info_sun(pid):
     procdir="/proc"
-    piddir=os.path.join(procdir,pid)
+    piddir=os.path.join(procdir,str(pid))
+    cwd=os.readlink(os.path.join(piddir,"path","cwd"))
+    exe=os.readlink(os.path.join(piddir,"path","a.out"))
+    p=os.popen('pargs %s'%pid)
+    p.readline()
+    args=[]
+    for line in p:
+        args.append(line.split(': ')[1].rstrip('\n'))
+    cmdline="\0".join(["%s"%v for v in args])
+    cmdline+="\0"
+    return (cwd,exe,cmdline)
+
+def _get_pid_info_bsd(pid):
+    procdir="/proc"
+    piddir=os.path.join(procdir,str(pid))
     p=os.popen('procstat -f %s'%pid)
     p.readline()
     cwd='/'+p.readline().strip().split('/',1)[1]
@@ -47,11 +59,11 @@ def get_pid_info_bsd(pid):
     f=open(os.path.join(piddir,"cmdline"),"r")
     cmdline=f.read()
     f.close()
-    
     return (cwd,exe,cmdline)
-def get_pid_info_linux(pid):
+
+def _get_pid_info_linux(pid):
     procdir="/proc"
-    piddir=os.path.join(procdir,pid)
+    piddir=os.path.join(procdir,str(pid))
     cwd=os.readlink(os.path.join(piddir,"cwd"))
     exe=os.readlink(os.path.join(piddir,"exe"))
     f=open(os.path.join(piddir,"cmdline"),"r")
@@ -64,11 +76,11 @@ def get_pid_info(pid):
     global get_pid_info
     p=platform.system()
     if p =='Linux':
-        get_pid_info=get_pid_info_linux
+        get_pid_info=_get_pid_info_linux
     elif p == 'FreeBSD' :
-        get_pid_info=get_pid_info_bsd
+        get_pid_info=_get_pid_info_bsd
     else:
-        get_pid_info=get_pid_info_sun
+        get_pid_info=_get_pid_info_sun
     return get_pid_info(pid)
 
 
@@ -105,16 +117,15 @@ def sort_by_ppid(cpids):
 
 def get_tty_pids(ctty):
     global get_tty_pids
-    if platform.system()=='Linux':
-        get_tty_pids=get_tty_pids_ps
-    else:
-        get_tty_pids=get_tty_pids_lsof
+    p=platform.system()
+    get_tty_pids=_get_tty_pids_ps_with_cache
 
     return get_tty_pids(ctty)
 
 
 
-def get_tty_pids_ps(ctty):
+
+def _get_tty_pids_ps_fast(ctty):
     f = os.popen('ps --sort=start_time -o pid -t %s' % ctty)
     pids=f.read().strip()
     f.close()
@@ -123,10 +134,56 @@ def get_tty_pids_ps(ctty):
         npids.append(pid.strip())
     return npids
 
+def _get_tty_pids_ps(ctty):
+    pass
 
+def _get_tty_pids_ps_with_cache(ctty):
+    global _get_tty_pids_ps_with_cache
+    global get_tty_pids
+    global tty_and_pids
+    import getpass
+    tty_and_pids=_get_tty_pids_ps_with_cache_gen(getpass.getuser())
+    get_tty_pids=_get_tty_pids_ps_with_cache_find
+    return get_tty_pids(ctty)
+def _get_tty_pids_ps_with_cache_gen(user):
+    import shlex
+    p=os.popen('ps -U %s -o tty,pid,ppid'%user)
+    p.readline()
+    data={}
+    lines=p.readlines()
+    for line in lines:
+        line=shlex.split(line)
+        try:
+            line=(int(line[0].strip().split('/')[1]),int(line[1].strip()),int(line[2].strip()))
+            try:
+                data[line[0]]+=[(line[1],line[2])]
+            except:
+                data[line[0]]=[(line[1],line[2])]
+        except:
+            pass
+    ndata={}
+    for key,val in data.items():
+        nval=[]
+        parents=[]
+        pids=[]
+        for pid,parent in val:
+            pids.append(pid)
+        lastpid=-1
+        for pid,parent in val:
+            if parent not in pids:
+                nval.append(pid)
+                lastpid=pid
+        for pid,parent in val:
+            if parent == lastpid:
+                nval.append(pid)
+                lastval=pid
+        ndata[key]=nval
+    return ndata
+def _get_tty_pids_ps_with_cache_find(ctty):
+    global tty_and_pids
+    return tty_and_pids[int(ctty.rsplit('/',1)[1])]
 
-
-def get_tty_pids_lsof(ctty):
+def _get_tty_pids_lsof(ctty):
     f = os.popen('lsof -F p %s | cut -c2-' % ctty)
     pids=f.read().strip()
     f.close()

@@ -27,11 +27,8 @@ f = os.popen('screen %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
 out(ctty,bPrint)
-f = os.popen('lsof -F p %s | cut -c2-' % ctty)
-pids=f.read().strip()
-f.close()
-pids=pids.split('\n')
-pids=sc.sort_by_ppid(pids)
+pids=sc.get_tty_pids(ctty)
+#pids=sc.sort_by_ppid(pids)
 thepid = pids[len(pids)-1]
 thedir=sc.get_pid_info(thepid)[0]
 

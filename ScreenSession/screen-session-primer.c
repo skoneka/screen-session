@@ -15,7 +15,6 @@
  *
  * =====================================================================================
  */
-#define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +24,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <dirent.h>
+#include <limits.h>
 
 #ifdef COLOR /* if you dont want color remove '-DCOLOR' from config.mk */
     #define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
@@ -90,6 +90,54 @@ enum menu
     ONLY,
     NUMBER
 };
+
+int line_to_string(FILE *fp, char **line, size_t *size)
+{
+    int rc;
+    void *p;
+    size_t count;
+
+    count = 0;
+    while ((rc = getc(fp)) != EOF) {
+        ++count;
+        if (count + 2 > *size) {
+            p = realloc(*line, count + 2);
+            if (p == NULL) {
+                if (*size > count) {
+                    (*line)[count] = '\0';
+                    (*line)[count - 1] = (char)rc;
+                } else {
+                    ungetc(rc, fp);
+                }
+                count = 0;
+                break;
+            }
+            *line = p;
+            *size = count + 2;
+        }
+        if (rc == '\n') {
+            (*line)[count - 1] = '\0';
+            break;
+        }
+        (*line)[count - 1] = (char)rc;
+    }
+    if (rc != EOF) {
+        rc = count > INT_MAX ? INT_MAX : count;
+    } else {
+        if (*size > count) {
+            (*line)[count] = '\0';
+        }
+    }
+    return rc;
+
+}
+
+int
+getline (char **lineptr, size_t *n, FILE *stream)
+{   
+      return line_to_string(stream,lineptr,n);
+}
+
 
 /*----------trim (char) c from right-side of string *p------------------*/
 char *strtrim_right( register char *p, register char c)
