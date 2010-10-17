@@ -111,8 +111,8 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     os.chdir(workingpath2)
     os.mkdir(savedir_real+'__tmp')
     for win in glob.glob(os.path.join(savedir_real,'win_*')):
-        os.rename(win,os.path.join(savedir_real+'__tmp',os.path.split(win)[1]))
-    os.rename(os.path.join(savedir_real,'last_win'),os.path.join(savedir_real+'__tmp','last_win'))
+        shutil.move(win,os.path.join(savedir_real+'__tmp',os.path.split(win)[1]))
+    shutil.move(os.path.join(savedir_real,'last_win'),os.path.join(savedir_real+'__tmp','last_win'))
     
     os.system('tar cjf %s__data%s %s'%(savedir_real,archiveend,savedir_real))
     removeit(os.path.join(workingpath2,savedir_real))
@@ -123,7 +123,8 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     
     for file in glob.glob('*'+archiveend):
         removeit(os.path.join(home,projectsdir,file))
-        os.rename(file,os.path.join(home,projectsdir,file))
+        print('move [%s] to [%s]'%(file,os.path.join(home,projectsdir,file)))
+        shutil.move(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)
     linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
