@@ -76,6 +76,10 @@
 #define BLACKLISTMAX 100
 #define BASEDATA_LINES 6
 #define PROCLINES 7
+#define QUOTEME(x) #x
+#define Q(x) QUOTEME(x)
+#define X $
+#define O \20
 
 /* defining _POSIX_SOURCE causes compilation errors on solaris  */
 int kill(int pid, int sig);

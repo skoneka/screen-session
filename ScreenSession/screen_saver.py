@@ -323,8 +323,6 @@ def main():
         unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
         try:
             ret = scs.load()
-            if scs.bKill:
-                scs.kill_old_windows()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)
@@ -336,7 +334,17 @@ def main():
             out('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
+            if scs.bKill:
+                pass
+                '''
+                import tools
+                print 'homewindow:'+scs.homewindow
+                scs.select(scs.homewindow)
+                print 'group:'+scs.get_group()
+                tools.kill_current_group(scs.pid,False,homewindow,[])
+                '''
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
+
     else:
         out('No mode specified --load or --save')
     doexit(ret,waitfor)

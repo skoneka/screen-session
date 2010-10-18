@@ -69,10 +69,10 @@ elif [ $mode = "kill" ]; then
 elif [ $mode = "kill-zombie" ]; then
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
     python ./kill-zombie.py $session $maxwin $*
-
 elif [ $mode = "kill-group" ]; then
     python ./kill-group.py $session $*
-
+elif [ $mode = "kill-current-group" ]; then
+    python ./kill-current-group.py $session $*
 elif [ $mode = "renumber" ]; then
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
     python ./renumber.py $session $maxwin $*

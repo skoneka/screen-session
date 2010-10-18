@@ -265,6 +265,7 @@ class ScreenSaver(object):
         out ('killing: '+str(self.__kill_list))
         self.__kill_windows(self.__kill_list)
 
+
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
         cwin=-1
@@ -282,7 +283,7 @@ class ScreenSaver(object):
                 
             
             # create wrap group for existing windows
-            if not self.bKill:
+            if not self.bKill or True:
                 os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
                 os.system('%s -X group %s' % (self.sc, 'none') )
                 cwin=int(subprocess.Popen('%s -Q @number' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
