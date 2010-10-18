@@ -162,10 +162,10 @@ char *fonts[]={
 "    $$",
 "    $$",
 "    $$",
-"   $$ ",
-"  $$  ",
-" $$   ",
-"$$    ",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
             /*  */
 "$$$$$$",
 "$$  $$",
@@ -1039,7 +1039,7 @@ main(int argc, char **argv) {
         while((c=fgetc(fp))!=EOF) {
             if(cmdline_begin_c<CMDLINE_BEGIN) {
                 cmdline_begin[cmdline_begin_c]=c;
-                cmdline_begin[cmdline_begin_c+1]=0;
+                cmdline_begin[cmdline_begin_c+1]='\0';
                 cmdline_begin_c++;
             }
             if(c=='\0') {
@@ -1146,7 +1146,7 @@ main(int argc, char **argv) {
 
     }
 
-    return 15;
+    return 44;
 }
 
 #endif

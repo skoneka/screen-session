@@ -46,7 +46,7 @@ if [ $# -ge 1 ]; then
     fi
 fi
 
-session=`python ./get_current_session.py`
+session=`python ./sessionname.py`
 if [ $mode = "manager" ]; then
     python ./manager.py p $session
 
@@ -80,7 +80,8 @@ elif [ $mode = "renumber" ]; then
 elif [ $mode = "sort" ]; then
     maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
     python ./sort.py $session $maxwin $*
-
+elif [ $mode = "name" ]; then
+    python ./sessionname.py $*
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     screen -X sessionname
     rawargument=`screen -Q @lastmsg`
