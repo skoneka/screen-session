@@ -11,14 +11,11 @@ SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print os.path.
 SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
-VERSION=git
-SCREEN_SESSION="SCREEN-SESSION ($VERSION) - collection of tools for GNU Screen."
 
 waitfor=0
 nonest=0
 logpipe=1
 
-/bin/echo $SCREEN_SESSION
 if [ $# -eq 0 ]; then
     python ./help.py
     exit 1

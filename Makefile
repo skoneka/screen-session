@@ -37,8 +37,7 @@ dist: clean
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
 	@cp -R LICENSE Makefile README INSTALL HOWTO config.mk screen-session.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
-	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session.py
-	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/screen-session
+	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}

@@ -1,5 +1,8 @@
 ﻿#!/usr/bin/env python
 
+VERSION='git'
+version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
+
 help="Usage: screen-session [mode] [options]\n\
 Help: screen-session [mode] --help\n\
     \n\
@@ -46,8 +49,54 @@ help_renumber="Renumber windows to fill the gaps\n\
 help_sort="Sort windows by titles\n\
 \nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
 
+help_saver_modes='Usage: screen-session [save|load|ls] [options]'
+
+help_saver='Options:\n\
+ls\n\
+  \tlist saved sessions\n\
+load\n\
+  \tloading mode\n\
+save\n\
+  \tsaving mode\n\
+-i --in     <session or directory>\n\
+  \tsessionname(saving) or savefile(loading)\n\
+-o --out    <session or directory>\n\
+  \tsessionname(loading) or savefile(saving)\n\
+-m --maxwin <number>\n\
+  \tsupply biggest window number in your session\n\
+-f --force  <number>\n\
+  \tforce saving even if savefile with the same\n\
+  \talready exists name exists\n\
+-x --exact\n\
+  \tload session with the same window numbers, move existing windows\n\
+  \tto OTHER_WINDOWS group and delete existing layouts\n\
+-X --exact-kill-other\n\
+  \tsame as exact, but kills all existing windows\n\
+-r --restore\n\
+  \treturn to home window and home layout after session loading\n\
+-y --no-layout\n\
+  \tdisable layout saving/loading\n\
+-V --no-vim\n\
+  \tdisable vim session saving\n\
+-I --idle <seconds>\n\
+  \tstart command after <seconds> of inactivity\n\
+--log       <file>\n\
+  \toutput to file instead stdout\n\
+-d --dir\n\
+  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
+-W\n\
+  \twait for any key when finished. Has to be the first option after mode\n\
+-h --help\n\
+  \tshow this message\n\
+  \n\
+Examples:\n\
+$ screen-session --save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
+$ screen-session --load --in mysavedsession --out SESSIONNAME\n\
+\n'
+
 if __name__=='__main__':
     import sys
+    print(version_str)
     try:
         mode=sys.argv[1]
     except:
@@ -70,4 +119,10 @@ if __name__=='__main__':
         print(help_renumber)
     elif mode=='sort':
         print(help_sort)
+    elif mode=='save' or mode=='load' or mode=='ls':
+        print(help_saver_modes)
+        print(help_saver)
+
+    else:
+        print('No help for mode: %s'%mode)
 
