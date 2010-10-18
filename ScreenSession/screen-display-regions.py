@@ -8,8 +8,9 @@ import sys,os,subprocess,time,signal
 import GNUScreen as sc
 
 user=os.getenv("USER")
-dumpfile="/tmp/%s-screenlayout"%(user)
-inputfile="/tmp/%s-screenlayout-input-%d"%(user,os.getpid())
+logfile="/tmp/%s-scs-regions-log"%(user)
+dumpfile="/tmp/%s-scs-regions"%(user)
+inputfile="/tmp/%s-scs-regions-input-%d"%(user,os.getpid())
 subprogram='screen-session-primer -nh'
 import copy
 
@@ -83,15 +84,25 @@ def handler(signum,frame):
     elif mode==2:
         win_history=rotate_list(win_history,number)
 
-    order_windows()
-
-    #finish_them_all(subprograms)
-    finish_quick(ident)
+    cleanup()
 
     if number!=-1 and bSelect:
         select_window(number) 
 
     sys.exit(0)
+
+def cleanup():
+    order_windows()
+    kill_screen_windows(session,wins)
+    try:
+        os.remove(dumpfile)
+    except:
+        pass
+    try:
+        os.remove(inputfile)
+    except:
+        pass
+
 def find_subprograms(ident):
     procs=subprocess.Popen('ps x |grep "%s"' % (ident), shell=True, stdout=subprocess.PIPE).communicate()[0]
     procs=procs.split('\n')
@@ -105,17 +116,6 @@ def find_subprograms(ident):
 def kill_screen_windows(session,wins):
     for w in wins:
         os.system('screen -S %s -p %s -X kill'%(session,w))
-
-def finish_them_all(procs):
-    #get list of subprograms and finish them all
-    for p in procs:
-        try:
-            os.kill(p,signal.SIGTERM)
-        except:
-            pass
-
-def finish_quick(ident):
-    os.system('pkill -TERM -f "%s"'%ident)
 
 def order_windows():
     #return to previous windows
@@ -135,11 +135,6 @@ def select_window(number):
         for i in range(0,number):
             command+=' "focus"'
         os.system(command)
-
-def swap_frames(n1,n2):
-    pass
-
-
 
 
 def get_regions_count(session,dumpfile):
@@ -181,11 +176,11 @@ def get_regions_count_no_layout(session):
     return region_count
 '''
 def start_subprograms(session,subprogram,inputfile,regions_c,max_commands):
-    command1_p='screen -S %s -X screen %s %s '%(session,subprogram,inputfile)
+    command1_p='screen -S %s -X screen -t scs-helper %s %s '%(session,subprogram,inputfile)
     command2_p='screen -S %s -X focus'%(session)
     
     command0='screen -S %s -X eval'%(session)
-    command1=' "screen %s %s '%(subprogram,inputfile)
+    command1=' "screen -t scs-helper %s %s '%(subprogram,inputfile)
     command2=' "focus"'
 
     #max_commands=5 # limited length command with screen -X 
@@ -208,7 +203,7 @@ def get_win_history(session,regions_c):
 
 
 if __name__=='__main__':
-    sys.stdout=open('/tmp/scs-regions-log','w')
+    sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
     session=sys.argv[1]
     win=subprocess.Popen('screen -S %s -Q @number'%(session), shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split(' ',1)[0]
@@ -219,21 +214,18 @@ if __name__=='__main__':
     ident=subprogram+" "+inputfile
     global win_history
     win_history=get_win_history(session,regions_c)
-    #w1=sc.get_windows(session)
+    w1=sc.parse_windows(sc.get_windows(session))[0]
     start_subprograms(session,subprogram,inputfile,regions_c,5)
-    #w2=sc.get_windows(session)
-    #global wins
-    #wins=sc.find_new_windows(w1,w2)
-    #print(wins)
+    w2=sc.parse_windows(sc.get_windows(session))[0]
+    print(w1)
+    print(w2)
+    wins=sc.find_new_windows(w1,w2)
+    print(wins)
 
-    #subprograms=find_subprograms(ident)
     signal.signal(signal.SIGUSR1,handler)
-    #print subprograms
     time.sleep(4)
 
-    order_windows()
-    finish_quick(ident)
-
+    cleanup()
 
 
  
