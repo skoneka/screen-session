@@ -17,7 +17,8 @@ a[ttach] <name> - attach\n\
 n[ame] <name>   - rename\n\
 s[creen] <args> - create session\n\
 w[ipe] - wipe dead sessions\n\
-r[eset] - reset session manager\n\
+restart - restart session manager\n\
+r[efresh] - refresh session list\n\
 l[ayout] - toggle layout\n\
 kill - kill selected session\n\
 save <output> - save session\n\
@@ -268,7 +269,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     except SystemExit:
         pipein.close()
         scs.quit()
-        return str(tui)+';'+psession+';'+last_session+';;;'+mode+';'+str(last_session)+';'
+        return str(tui)+';'+str(psession)+';'+str(last_session)+';;;'+str(mode)+';'+str(last_session)+';'
 
 def tui_attach_session(scs,arg,psession):
     #print2ui('LOGIC: attaching \"%s\"'%args[0])
@@ -303,8 +304,7 @@ def eval_command(scs,command,last_session,psession):
             args.append(arg)
     else:
         args=['']
-    print2ui('command: %s'%command)
-    print2ui('args: %s'%str(args))
+    #print2ui('command: %s args: %s'%(command,str(args)))
 
 
     if mode.startswith('a'): # attach
@@ -327,9 +327,11 @@ def eval_command(scs,command,last_session,psession):
         usage()
     elif mode.startswith('e'): # enter
         return 'enter',None
-    elif mode.startswith('r'): # reset
-        print2ui('LOGIC: reseting')
-        return 'reset',None
+    elif mode=='restart': # restart
+        print2ui('LOGIC: restarting')
+        return 'restart',None
+    elif mode.startswith('r'): # refresh 
+        print2ui('LOGIC: refreshing')
     elif mode.startswith('l'): # layout
         global tui
         print2ui('LOGIC: toggling layout')
@@ -475,7 +477,8 @@ def main():
                 if command[0]=='enter':
                     print ("entering \"%s\""%(command[1]))
                     attach_session(command[1])
-                elif command[0]=='reset':
+                elif command[0]=='restart':
+                    print('restarting...')
                     pass
                 elif command[0]=='new':
                     cmd='screen -m %s'%command[1]

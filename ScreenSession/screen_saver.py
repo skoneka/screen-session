@@ -335,14 +335,14 @@ def main():
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
             if scs.bKill:
+                #scs.kill_old_windows()
                 pass
-                '''
                 import tools
                 print 'homewindow:'+scs.homewindow
-                scs.select(scs.homewindow)
+                print 'select:'+str(scs.win_none_g)
+                scs.select(scs.win_none_g)
                 print 'group:'+scs.get_group()
-                tools.kill_current_group(scs.pid,False,homewindow,[])
-                '''
+                tools.kill_current_group(scs,False,[scs.wrap_group_id],scs.homewindow)
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
 
     else:

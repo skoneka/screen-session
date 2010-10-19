@@ -83,10 +83,7 @@ elif [ $mode = "sort" ]; then
 elif [ $mode = "name" ]; then
     python ./sessionname.py $*
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
-    screen -X sessionname
-    rawargument=`screen -Q @lastmsg`
-
-    testargument=`screen -Q @tty`
+    testargument=`screen -S $session -Q @tty`
 
     scsfiledir="/tmp/screen-sessions-$USER"
     scsfile="$scsfiledir/___scspipe-$$"

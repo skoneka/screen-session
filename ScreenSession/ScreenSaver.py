@@ -34,6 +34,7 @@ class ScreenSaver(object):
     vim_names = ('vi','vim')
     __wins_trans = {}
     __scrollbacks=[]
+    win_none_g=None
 
     def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
@@ -42,6 +43,7 @@ class ScreenSaver(object):
         self.savedir=str(savedir)
         self.pid=str(pid)
         self.set_session(self.pid)
+        self.primer=os.path.join(os.getcwd(),self.primer)
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
@@ -287,6 +289,7 @@ class ScreenSaver(object):
                 os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
                 os.system('%s -X group %s' % (self.sc, 'none') )
                 cwin=int(subprocess.Popen('%s -Q @number' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+                self.wrap_group_id=cwin+shift
                 group=group+'_'+str(int(time.time()))
                 os.system('%s -X title %s' % (self.sc, group) )
                 if cwin not in r:
@@ -322,6 +325,8 @@ class ScreenSaver(object):
                     cgroup = self.get_group(cwin)
                     if cgroup=="none":
                         os.system('%s -X group %s' % (self.sc, group) )
+                        if not self.win_none_g:
+                            self.win_none_g=cwin+shift
                     command='%s -X number +%d' % (self.sc, shift) 
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
@@ -484,12 +489,13 @@ class ScreenSaver(object):
         currentlayoutname = currentlayoutname.rsplit(')')[0]
         return currentlayout,currentlayoutname
     
-    def get_layout_new(self):
-        msg=self.command_at('layout new')
+    def get_layout_new(self,name=''):
+        msg=self.command_at('layout new %s'%name)
         if msg.startswith('No more'):
             return False
         else:
             return True
+
     def get_group(self,win="-1"):
         msg=self.command_at('group',win)
         if msg.endswith('no group'):
@@ -679,7 +685,7 @@ class ScreenSaver(object):
             filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
-            stat=self.get_layout_new()
+            stat=self.get_layout_new(layoutname)
             if not stat:
                 out('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:

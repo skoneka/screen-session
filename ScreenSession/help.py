@@ -19,7 +19,7 @@ Available modes:\n\
     grab\t- grab a process and attach it to current tty\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
-    name\t- get current sessionname\
+    name\t- get or set sessionname\
     "
 
 help_regions="Display number in each region\n\

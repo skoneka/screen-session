@@ -92,6 +92,7 @@ def kill_current_group(ss,bKillHomeWindow=False,other_wins=[],homewindow=-1):
     print ('removing windows from group %s'%cgroup)
     while True:
         wins=sc.parse_windows(sc.get_windows(ss.pid))[0]
+        print( wins)
         if len(wins)<=len(protected):
             break
         for w in wins:

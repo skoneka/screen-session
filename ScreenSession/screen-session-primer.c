@@ -915,7 +915,7 @@ rotate right:\t [number]r\n\
 #ifndef TEST
 int
 main(int argc, char **argv) {
-//./program workingdir scrollbackfile datafile
+// /full/path/to/program workingdir scrollbackfile datafile
 //./program -s basedir thisprogramname datafile [processes..]
     int i;
     FILE *fp=NULL;
@@ -1113,14 +1113,14 @@ main(int argc, char **argv) {
             strcpy(arglist[0],shell);
             printf("Starting default shell(%s) in last cwd(%s)...\n",shell,proc_cwd);
             chdir(proc_cwd);
-            execvp(shell,arglist);
+            execv(shell,arglist);
             break;
 
         case ONLY:
             printf("Starting program %d...\n",number);
             args[0]=number;
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,1,args);
-            execvp(argv[0],arglist);
+            execv(argv[0],arglist);
             break;
 
         case ALL:
@@ -1129,7 +1129,16 @@ main(int argc, char **argv) {
                 args[i]=i;
             }
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,procs_c,args);
-            execvp(argv[0],arglist);
+            
+            i=0;
+            while(arglist[i]!=NULL) {
+                printf("\"%s\" ",arglist[i]);
+                i++;
+            }
+            printf("]\nargv[0]=%s]\n",argv[0]);
+            
+
+            execv(argv[0],arglist);
 
             break;
 
@@ -1145,11 +1154,12 @@ main(int argc, char **argv) {
                 args[i]=i;
             }
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,number,args);
-            execvp(argv[0],arglist);
+            execv(argv[0],arglist);
             break;
 
     }
-
+    printf("fatal error\n");
+    mygetch();
     return 44;
 }
 

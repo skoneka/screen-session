@@ -14,11 +14,14 @@ try:
     s=get_sessionname()
 except:
     s=None
+    s2=None
     sclist=sc.get_session_list()
     badname=os.getenv('STY').split('.',1)[0]
     for sc,active in sclist:
         if sc.startswith(badname):
             s=sc
+            if not sc.endswith('-queryA'):
+                break;
 if s:
     try:
         newname=sys.argv[1]
