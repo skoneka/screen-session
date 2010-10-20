@@ -5,11 +5,13 @@
 # description: script for GNU Screen reassembling functionality of tmux display-panes + swap regions + rotate regions
 
 import sys,os,subprocess,time,signal
+import GNUScreen as sc
 
 user=os.getenv("USER")
-dumpfile="/tmp/%s-screenlayout"%(user)
-inputfile="/tmp/%s-screenlayout-input-%d"%(user,os.getpid())
-subprogram='screen-session regions-helper'
+logfile="/tmp/%s-scs-regions-log"%(user)
+dumpfile="/tmp/%s-scs-regions"%(user)
+inputfile="/tmp/%s-scs-regions-input-%d"%(user,os.getpid())
+subprogram='screen-session-primer -nh'
 import copy
 
 global win_history
@@ -47,6 +49,7 @@ def rotate_list(l, offset):
         rv = (l[real_offset:] + l[:real_offset])
     return rv
 
+
 def handler(signum,frame):
     global win_history
     bSelect=False
@@ -54,68 +57,65 @@ def handler(signum,frame):
     f=open(inputfile,'r')
     ch=f.readline().strip()
     f.close()
+    try:
+        number=int(ch[1:])
+    except:
+        number=0
+
     os.remove(inputfile)
-    
     if ch[0]=='s':
         mode=1
-        ch=ch[1:]
-        if ch[0]=="'":
-            ch=ch[1:]
-            bSelect=True
-        else:
-            bSelect=False
-    elif ch[0]=="'":
-        ch=ch[1:]
+    elif ch[0]=="'" or ch[0]=='g':
         mode=0
+        bSelect=True
     elif ch[0]=="l":
         mode=2
+        number=-1*number
     elif ch[0]=="r":
-        mode=3
+        mode=2
     else:
-        bSelect=True
         mode=0
 
-    try:
-        number=int(ch)
-    except:
-        number=-1
     
     if number!=-1 and mode==1:
         tmp=win_history[0]
         win_history[0]=win_history[number]
         win_history[number]=tmp
     elif mode==2:
-        win_history=rotate_list(win_history,-1)
-    elif mode==3:
-        win_history=rotate_list(win_history,1)
+        win_history=rotate_list(win_history,number)
 
-    order_windows()
-
-    finish_them_all(ident)
+    cleanup()
 
     if number!=-1 and bSelect:
         select_window(number) 
 
     sys.exit(0)
 
-def finish_them_all(ident):
-    
-    #get list of subprograms and finish them all
+def cleanup():
+    order_windows()
+    kill_screen_windows(session,wins)
+    try:
+        os.remove(dumpfile)
+    except:
+        pass
+    try:
+        os.remove(inputfile)
+    except:
+        pass
+
+def find_subprograms(ident):
     procs=subprocess.Popen('ps x |grep "%s"' % (ident), shell=True, stdout=subprocess.PIPE).communicate()[0]
     procs=procs.split('\n')
     nprocs=[]
     for p in procs:
-        nprocs.append(p.strip().split(' ')[0])
-    procs=nprocs
-    
-    for p in procs:
         try:
-            os.kill(int(p),signal.SIGTERM)
+            nprocs.append(int(p.strip().split(' ')[0]))
         except:
             pass
-
-def finish_quick(ident):
-    os.system('pkill -TERM %s'%ident)
+    return nprocs
+def kill_screen_windows(session,wins):
+    for w in wins:
+        os.system('screen -S %s -p %s -X kill'%(session,w))
 
 def order_windows():
     #return to previous windows
@@ -135,11 +135,6 @@ def select_window(number):
         for i in range(0,number):
             command+=' "focus"'
         os.system(command)
-
-def swap_frames(n1,n2):
-    pass
-
-
 
 
 def get_regions_count(session,dumpfile):
@@ -181,11 +176,11 @@ def get_regions_count_no_layout(session):
     return region_count
 '''
 def start_subprograms(session,subprogram,inputfile,regions_c,max_commands):
-    command1_p='screen -S %s -X screen %s %s '%(session,subprogram,inputfile)
+    command1_p='screen -S %s -X screen -t scs-helper %s %s '%(session,subprogram,inputfile)
     command2_p='screen -S %s -X focus'%(session)
     
     command0='screen -S %s -X eval'%(session)
-    command1=' "screen %s %s '%(subprogram,inputfile)
+    command1=' "screen -t scs-helper %s %s '%(subprogram,inputfile)
     command2=' "focus"'
 
     #max_commands=5 # limited length command with screen -X 
@@ -202,32 +197,35 @@ def get_win_history(session,regions_c):
     for i in range(0,regions_c):
         win=subprocess.Popen('screen -S %s -Q @number'%(session), shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split(' ',1)[0]
         this_win_history.append(win)
-        print 'frame %d win %s'%(i,win)
+        print ('frame %d win %s'%(i,win))
         os.system('screen -S %s -X focus' %(session))
     return this_win_history
 
 
 if __name__=='__main__':
+    sys.stdout=open(logfile,'w')
+    sys.stderr=sys.stdout
     session=sys.argv[1]
     win=subprocess.Popen('screen -S %s -Q @number'%(session), shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split(' ',1)[0]
-    print 'win before get_regions_count: '+win
+    print ('win before get_regions_count: '+win)
     #regions_c=get_regions_count_no_layout(session,)
     regions_c=get_regions_count(session,dumpfile)
 
     ident=subprogram+" "+inputfile
     global win_history
     win_history=get_win_history(session,regions_c)
-    
+    w1=sc.parse_windows(sc.get_windows(session))[0]
     start_subprograms(session,subprogram,inputfile,regions_c,5)
-
+    w2=sc.parse_windows(sc.get_windows(session))[0]
+    print(w1)
+    print(w2)
+    wins=sc.find_new_windows(w1,w2)
+    print(wins)
 
     signal.signal(signal.SIGUSR1,handler)
-
     time.sleep(4)
 
-    order_windows()
-    finish_them_all(ident)
-
+    cleanup()
 
 
  

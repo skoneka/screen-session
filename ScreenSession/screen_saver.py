@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file: screen-session.py
+# file: screen_saver.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: GNU Screen session saving program
@@ -28,54 +28,13 @@ def doexit(var=0,waitfor=True):
     sys.exit(var)
 
 def usageMode():
-    out('Usage: screen-session [save|load|ls] [options]')
+    import help
+    out(help.help_saver_modes)
+    
 
 def usage():
-    out('Options:\n\
-ls\n\
-  \tlist saved sessions\n\
-load\n\
-  \tloading mode\n\
-save\n\
-  \tsaving mode\n\
--i --in     <session or directory>\n\
-  \tsessionname(saving) or savefile(loading)\n\
--o --out    <session or directory>\n\
-  \tsessionname(loading) or savefile(saving)\n\
--m --maxwin <number>\n\
-  \tsupply biggest window number in your session\n\
--f --force  <number>\n\
-  \tforce saving even if savefile with the same\n\
-  \talready exists name exists\n\
--x --exact\n\
-  \tload session with the same window numbers, move existing windows\n\
-  \tto OTHER_WINDOWS group and delete existing layouts\n\
--X --exact-kill-other\n\
-  \tsame as exact, but kills all existing windows\n\
--r --restore\n\
-  \treturn to home window and home layout after session loading\n\
--y --no-layout\n\
-  \tdisable layout saving/loading\n\
--V --no-vim\n\
-  \tdisable vim session saving\n\
--I --idle <seconds>\n\
-  \tstart command after <seconds> of inactivity\n\
---log       <file>\n\
-  \toutput to file instead stdout\n\
--d --dir\n\
-  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
--W\n\
-  \twait for any key when finished. Has to be the first option after mode\n\
--h --help\n\
-  \tshow this message\n\
-  \n\
-Examples:\n\
-$ screen-session --save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
-$ screen-session --load --in mysavedsession --out SESSIONNAME\n\
-\n')
-
-
-VERSION='git'
+    import help
+    out(help.help_saver)
 
 def main():    
 
@@ -190,7 +149,7 @@ def main():
         sys.stderr=sys.stdout
 
 
-    out('GNU Screen session saver (%s)'%VERSION)
+    out('GNU Screen session saver')
 
     if bad_arg:
         out('Unhandled option: %s'%bad_arg)
@@ -356,7 +315,7 @@ def main():
             savedir=savedir_real
             out('session "%s"'%scs.pid) 
             out('saved as "%s"'%(scs.savedir))
-            os.system('screen -S %s -X echo "screen-session finished saving"'%scs.pid)
+            os.system('screen -S %s -X echo "screen-session finished saving as \"%s\""'%(scs.pid,savedir))
     elif mode==2: #mode load
         #cleanup old temporary files and directories
         cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,scs.lastlink,200)
@@ -364,8 +323,6 @@ def main():
         unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
         try:
             ret = scs.load()
-            if scs.bKill:
-                scs.kill_old_windows()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)
@@ -377,7 +334,17 @@ def main():
             out('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
+            if scs.bKill:
+                #scs.kill_old_windows()
+                pass
+                import tools
+                print 'homewindow:'+scs.homewindow
+                print 'select:'+str(scs.win_none_g)
+                scs.select(scs.win_none_g)
+                print 'group:'+scs.get_group()
+                tools.kill_current_group(scs,False,[scs.wrap_group_id],scs.homewindow)
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
+
     else:
         out('No mode specified --load or --save')
     doexit(ret,waitfor)

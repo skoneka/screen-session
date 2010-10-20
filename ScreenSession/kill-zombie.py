@@ -4,7 +4,7 @@
 # website: http://adb.cba.pl
 # description: kill all zombie window in a Screen session
 
-import os,sys,signal
+import sys
 import tools
 
 session=sys.argv[1]

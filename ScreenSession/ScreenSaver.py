@@ -34,6 +34,7 @@ class ScreenSaver(object):
     vim_names = ('vi','vim')
     __wins_trans = {}
     __scrollbacks=[]
+    win_none_g=None
 
     def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
@@ -41,9 +42,10 @@ class ScreenSaver(object):
         self.basedir=os.path.join(self.homedir,self.projectsdir)
         self.savedir=str(savedir)
         self.pid=str(pid)
-        self.__set_sc(self.pid)
+        self.set_session(self.pid)
+        self.primer=os.path.join(os.getcwd(),self.primer)
 
-    def __set_sc(self,sessionname):
+    def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
 
     def save(self):
@@ -265,6 +267,7 @@ class ScreenSaver(object):
         out ('killing: '+str(self.__kill_list))
         self.__kill_windows(self.__kill_list)
 
+
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
         cwin=-1
@@ -282,10 +285,11 @@ class ScreenSaver(object):
                 
             
             # create wrap group for existing windows
-            if not self.bKill:
+            if not self.bKill or True:
                 os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
                 os.system('%s -X group %s' % (self.sc, 'none') )
                 cwin=int(subprocess.Popen('%s -Q @number' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
+                self.wrap_group_id=cwin+shift
                 group=group+'_'+str(int(time.time()))
                 os.system('%s -X title %s' % (self.sc, group) )
                 if cwin not in r:
@@ -321,6 +325,8 @@ class ScreenSaver(object):
                     cgroup = self.get_group(cwin)
                     if cgroup=="none":
                         os.system('%s -X group %s' % (self.sc, group) )
+                        if not self.win_none_g:
+                            self.win_none_g=cwin+shift
                     command='%s -X number +%d' % (self.sc, shift) 
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
@@ -360,7 +366,7 @@ class ScreenSaver(object):
     def get_sessionname(self):
         return self.command_at('number',win).strip("'").split("'",1)[1]
 
-    def get_tty(self,win="-1"):
+    def tty(self,win="-1"):
         msg=self.command_at('tty',win)
         tty = msg.strip()
         return tty
@@ -455,7 +461,7 @@ class ScreenSaver(object):
         msg=self.command_at('sessionname %s'%args)
         if nsessionname:
             self.pid=nsessionname
-            self.__set_sc(self.pid)
+            self.set_session(self.pid)
             return nsessionname
         else:
             try:
@@ -483,12 +489,13 @@ class ScreenSaver(object):
         currentlayoutname = currentlayoutname.rsplit(')')[0]
         return currentlayout,currentlayoutname
     
-    def get_layout_new(self):
-        msg=self.command_at('layout new')
+    def get_layout_new(self,name=''):
+        msg=self.command_at('layout new %s'%name)
         if msg.startswith('No more'):
             return False
         else:
             return True
+
     def get_group(self,win="-1"):
         msg=self.command_at('group',win)
         if msg.endswith('no group'):
@@ -514,7 +521,7 @@ class ScreenSaver(object):
         ctty=None
         cppids={}
         searching=False
-        rollback=None
+        rollback=None,None,None
         ctime=subprocess.Popen('%s -Q @time' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0]
         for i in range(0,self.maxwin+1):
             id=str(i)
@@ -535,7 +542,7 @@ class ScreenSaver(object):
                     out('\n--')
 
                 # has to follow get_number_and_title() to recognize zombie windows
-                ctty = self.get_tty(id) 
+                ctty = self.tty(id) 
                 if ctty.startswith('This'):
                     out('%s is a zombie window. Ignoring.'%(cwin))
                     ctype="zombie"
@@ -573,7 +580,7 @@ class ScreenSaver(object):
                             cpids_data.append(pidinfo+tuple([blacklist]))
                             ncpids.append(pid)
                         except OSError:
-                            out('%s: Unable to access. No permission - other user.'%pid)
+                            out('%s: Unable to access. No permission or no procfs.'%pid)
                     cpids=ncpids
                 
                 out('type = '+ctype +'; pids = '+str(cpids))
@@ -600,19 +607,20 @@ class ScreenSaver(object):
                         if self.primer==arg0:
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
+                            print(rollback)
                         elif arg0 in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
-                if not rollback:
+                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
+                if not rollback[1]:
                     # save scrollback
-                    scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
                     os.system('%s -X at %s hardcopy -h %s' % (self.sc, cwin, scrollback_filename) )
                     self.__scrollbacks.append(scrollback_filename)
 
                 if ctype!="zombie":
                     self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename)
-                rollback=None
+                rollback=None,None,None
 
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
@@ -635,6 +643,7 @@ class ScreenSaver(object):
                 shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
             except Exception,e:
                 out(str(e))
+                target=None
                 pass
             
             fhead,ftail=os.path.split(cmdline[2])
@@ -644,6 +653,7 @@ class ScreenSaver(object):
                 shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
             except Exception,e:
                 out(str(e))
+                target2=None
                 pass
 
             source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
@@ -653,14 +663,15 @@ class ScreenSaver(object):
                 try:
                     shutil.move(source3,target3)
                 except:
+                    target3=None
                     pass
 
             if os.path.isfile(target):
-                return target,target2,target3
+                return (target,target2,target3)
             else:
-                return None
+                return (None,None,None)
         except:
-            return None
+            return (None,None,None)
         
 
     def __load_layouts(self):
@@ -677,7 +688,7 @@ class ScreenSaver(object):
             filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
-            stat=self.get_layout_new()
+            stat=self.get_layout_new(layoutname)
             if not stat:
                 out('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:
@@ -794,7 +805,7 @@ class ScreenSaver(object):
         os.system('%s -X screen %s -m %d-%d'%(self.sc,self.primer,os.getpid(),self.__get_focus_offset_c))
         #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
-        markertty = self.get_tty()
+        markertty = self.tty()
         markernum,markertitle=self.get_number_and_title()
         #out('markernum=%s; title=%s;'%(markernum,markertitle))
         os.system('%s -X focus top' % (self.sc) )
@@ -922,7 +933,7 @@ class ScreenSaver(object):
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
-        if rollback:
+        if rollback[1]:
             time=linecache.getline(rollback[0],2).strip()
             #copy scrollback
             shutil.move(rollback[1],scrollback_filename)
@@ -937,7 +948,7 @@ class ScreenSaver(object):
         for data in basedata:
             f.write(data+'\n')
         
-        if rollback:
+        if rollback[0]:
             target=rollback[0]
             fr=open(target,'r')
             for line in fr.readlines()[6:]:

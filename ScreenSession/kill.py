@@ -4,8 +4,7 @@
 # website: http://adb.cba.pl
 # description: kill the foremost process in a window
 
-import os,sys,signal
-import GNUScreen as sc
+import sys
 import tools
 
 session=sys.argv[1]

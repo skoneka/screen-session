@@ -15,8 +15,6 @@
  *
  * =====================================================================================
  */
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -25,6 +23,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <dirent.h>
+#include <limits.h>
+#include <signal.h>
 
 #ifdef COLOR /* if you dont want color remove '-DCOLOR' from config.mk */
     #define cyan_b  "\033[1;36m"        /* 1 -> bold ;  36 -> cyan */
@@ -76,10 +76,141 @@
 #define BLACKLISTMAX 100
 #define BASEDATA_LINES 6
 #define PROCLINES 7
+#define QUOTEME(x) #x
+#define Q(x) QUOTEME(x)
+#define X $
+#define O \20
 
+/* defining _POSIX_SOURCE causes compilation errors on solaris  */
+int kill(int pid, int sig);
 
 int blacklist[BLACKLISTMAX];
 int blacklist_c=0;
+
+#define FONTHEIGHT 9
+#define FONTWIDTH 6
+char *fonts[]={
+            /*  */
+" $$$$ ",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+" $$$$ ",
+            /*  */
+"  $$$$",
+" $$$$$",
+"$$$$$$",
+"   $$$",
+"   $$$",
+"   $$$",
+"   $$$",
+"   $$$",
+"   $$$",
+            /*  */
+" $$$$ ",
+"$$  $$",
+"    $$",
+"   $$ ",
+"  $$  ",
+" $$   ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+            /*  */
+"$$$$$ ",
+"    $$",
+"   $$ ",
+"  $$  ",
+"   $$ ",
+"    $$",
+"    $$",
+"$$ $$ ",
+" $$$  ",
+            /*  */
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+            /*  */
+"$$$$$$",
+"$$    ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"$$    ",
+"$$    ",
+"$$    ",
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+"    $$",
+            /*  */
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+            /*  */
+"$$$$$$",
+"$$  $$",
+"$$  $$",
+"$$  $$",
+"$$$$$$",
+"    $$",
+"    $$",
+"    $$",
+"$$$$$$",
+            /*  */
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+"      ",
+            /*  */
+"      ",
+"$    $",
+"$$  $$",
+" $$$$ ",
+"  $$  ",
+"  $$  ",
+" $$$$ ",
+"$$  $$",
+"$    $",
+};
 
 enum menu
 {
@@ -91,8 +222,59 @@ enum menu
     NUMBER
 };
 
+
+int 
+line_to_string(FILE *fp, char **line, size_t *size)
+{
+    int rc;
+    void *p;
+    size_t count;
+
+    count = 0;
+    while ((rc = getc(fp)) != EOF) {
+        ++count;
+        if (count + 2 > *size) {
+            p = realloc(*line, count + 2);
+            if (p == NULL) {
+                if (*size > count) {
+                    (*line)[count] = '\0';
+                    (*line)[count - 1] = (char)rc;
+                } else {
+                    ungetc(rc, fp);
+                }
+                count = 0;
+                break;
+            }
+            *line = p;
+            *size = count + 2;
+        }
+        if (rc == '\n') {
+            (*line)[count - 1] = '\0';
+            break;
+        }
+        (*line)[count - 1] = (char)rc;
+    }
+    if (rc != EOF) {
+        rc = count > INT_MAX ? INT_MAX : count;
+    } else {
+        if (*size > count) {
+            (*line)[count] = '\0';
+        }
+    }
+    return rc;
+
+}
+
+int
+getline (char **lineptr, size_t *n, FILE *stream)
+{   
+      return line_to_string(stream,lineptr,n);
+}
+
+
 /*----------trim (char) c from right-side of string *p------------------*/
-char *strtrim_right( register char *p, register char c)
+char *
+strtrim_right( register char *p, register char c)
 {
     register char *end;
     register int len;
@@ -110,7 +292,8 @@ char *strtrim_right( register char *p, register char c)
     return( p);
 }
 
-int DirectoryExists( const char* pzPath )
+int 
+DirectoryExists( const char* pzPath )
 {
     if ( pzPath == NULL) return 0;
  
@@ -128,7 +311,8 @@ int DirectoryExists( const char* pzPath )
     return bExists;
 }
 
-int file_exists(const char * filename)
+int 
+file_exists(const char * filename)
 {
     FILE *file=NULL;
     if ((file = fopen(filename, "r"))) 
@@ -213,14 +397,16 @@ requireSession(const char *basepath,const char *file_in_session,int full)
 }
 
 
-void cleartoendofline( void )
+void 
+cleartoendofline( void )
 {
     char ch;
     ch = getchar();
     while( ch != '\n' )
         ch = getchar();
 }
-int parseNumber(char *buffer) {
+int 
+parseNumber(char *buffer) {
         int number;
         char *p;
         number = strtol(buffer,&p,0);
@@ -244,7 +430,8 @@ int parseNumber(char *buffer) {
 
 
 
-int mygetch ( void ) 
+int
+mygetch ( void ) 
 {
   int ch;
   struct termios oldt, newt;
@@ -261,8 +448,34 @@ int mygetch ( void )
   return ch;
 }
 
+int
+getinput(int *prefix,char *mode) {
+    char prefix_str[10];
+    int prefix_str_c=0;
+    char ch;
+    prefix_str[0]='\0';
+    while(1) {
+        ch=mygetch();
+        if(ch >='0' && ch <='9' && prefix_str_c < 10) {
+            prefix_str[prefix_str_c]=ch;
+            prefix_str_c++;
+            prefix_str[ prefix_str_c]='\0';
+        }
+        else {
+            *mode=ch;
+            break;
+        }
 
-void userInput(int *menu_num, int *num,int max) {
+    }
+    if (prefix_str_c>0)
+        *prefix=atoi(prefix_str);
+    else
+        *prefix=1;
+    return 0;
+}
+
+void
+userInput(int *menu_num, int *num,int max) {
     char    ch;                     /* handles user input */
     char    buffer[USERINPUTMAXBUFFERSIZE];  /* sufficient to handle one line */
     int     char_count;             /* number of characters read for this line */
@@ -342,7 +555,8 @@ void userInput(int *menu_num, int *num,int max) {
     *menu_num=menu_choice;
 }
 
-char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n,int *procs) {
+char **
+make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n,int *procs) {
     int i;
     char **args=NULL;
     char buf[10];
@@ -379,7 +593,8 @@ char **make_arglist(char *program,char *arg1, char *arg2,char *arg3, int procs_n
 }
 
 
-int filesearch_line(FILE *fp,char *s)
+int
+filesearch_line(FILE *fp,char *s)
 {
     fseek(fp,0,SEEK_SET);
     char line[CMDLINE_BEGIN];
@@ -409,7 +624,8 @@ int filesearch_line(FILE *fp,char *s)
     return 0;
 }
 
-int is_blacklisted(char *basedir,char *program,int programid) {
+int
+is_blacklisted(char *basedir,char *program,int programid) {
     char *blackfile="BLACKLIST";
     char *filepath=malloc((strlen(basedir)+strlen(blackfile)+2)*sizeof(char));
     strcpy(filepath,basedir);
@@ -437,7 +653,8 @@ int is_blacklisted(char *basedir,char *program,int programid) {
 
 }
 
-int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
+int
+start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     if(procs_n==0)
         return 0;
     size_t proc_cwd_s=0;
@@ -590,10 +807,115 @@ int start(char *basedir,char *thisprogram,char *config,int procs_n,int *procs) {
     return 1;
 
 }
+char **
+get_font(char c) {
+    char **font=NULL;
+    switch(c) {
+        case '0':
+            font=&fonts[0*FONTHEIGHT];
+            break;
+        case '1':
+            font=&fonts[1*FONTHEIGHT];
+            break;
+        case '2':
+            font=&fonts[2*FONTHEIGHT];
+            break;
+        case '3':
+            font=&fonts[3*FONTHEIGHT];
+            break;
+        case '4':
+            font=&fonts[4*FONTHEIGHT];
+            break;
+        case '5':
+            font=&fonts[5*FONTHEIGHT];
+            break;
+        case '6':
+            font=&fonts[6*FONTHEIGHT];
+            break;
+        case '7':
+            font=&fonts[7*FONTHEIGHT];
+            break;
+        case '8':
+            font=&fonts[8*FONTHEIGHT];
+            break;
+        case '9':
+            font=&fonts[9*FONTHEIGHT];
+            break;
+        case ' ':
+            font=&fonts[10*FONTHEIGHT];
+            break;
+        default:
+            font=&fonts[11*FONTHEIGHT];
+            break;
+    }
+    return font;
+}
+
+void
+print_number(char *n,char *color) {
+    char ***font=malloc((strlen(n)+1)*sizeof(char***));
+    int letter_c=0;
+    while(n[letter_c]!='\0') {
+        font[letter_c]=get_font(n[letter_c]);
+        letter_c++;
+    }
+    int k;
+    int j;
+    printf("%s",color);
+    for(k=0;k<FONTHEIGHT;k++) {
+        for(j=0;j<letter_c;j++) {
+            printf("%s ",font[j][k]);
+        }
+        printf("\n");
+    }
+    printf("%s",none);
+}
+void
+regions_helper(char *fname, char *n) {
+    int pid=-1;
+    char *pch=NULL;
+    pch=strrchr(fname,'-');
+    if (pch) {
+        pid=atoi(pch+1);
+//        printf("signal %d",pid);
+//        kill(pid,SIGUSR2);
+    }
+    else {
+        printf("BAD ARGUMENTS");
+        return;
+    }
+    if (n[0]=='0') {
+        print_number("x 0 x",red);
+        printf("timeout: 4 sec ; number = 1\n\
+\n\
+goto:\t [number]'\n\
+goto:\t [number]g\n\
+swap:\t [number]s \n\
+rotate left:\t [number]l\n\
+rotate right:\t [number]r\n\
+");
+    }
+    else {
+        print_number(n,green);
+    }
+    int prefix;
+    char mode;
+    getinput(&prefix,&mode);
+    if (mode=='\n')
+        mode='e';
+    printf("prefix: %d ; ",prefix);
+    printf("mode: %c\n",mode);
+    FILE *f=fopen(fname,"w");
+    fprintf(f,"%c%d",mode,prefix);
+    fclose(f);
+    kill(pid,SIGUSR1);
+
+}
 
 #ifndef TEST
-int main(int argc, char **argv) {
-//./program workingdir scrollbackfile datafile
+int
+main(int argc, char **argv) {
+// /full/path/to/program workingdir scrollbackfile datafile
 //./program -s basedir thisprogramname datafile [processes..]
     int i;
     FILE *fp=NULL;
@@ -624,6 +946,16 @@ int main(int argc, char **argv) {
     else if (strcmp(argv[1],"-rf")==0) {
         //requireSession
         requireSession(argv[2],argv[3],1);
+        return 0;
+    }
+    else if (strcmp(argv[1],"-n")==0) {
+        //print number
+        print_number(argv[2],none);
+        return 0;
+    }
+    else if (strcmp(argv[1],"-nh")==0) {
+        //regions helper
+        regions_helper(argv[2],argv[3]);
         return 0;
     }
     char *homedir=getenv("HOME");
@@ -711,7 +1043,7 @@ int main(int argc, char **argv) {
         while((c=fgetc(fp))!=EOF) {
             if(cmdline_begin_c<CMDLINE_BEGIN) {
                 cmdline_begin[cmdline_begin_c]=c;
-                cmdline_begin[cmdline_begin_c+1]=0;
+                cmdline_begin[cmdline_begin_c+1]='\0';
                 cmdline_begin_c++;
             }
             if(c=='\0') {
@@ -781,14 +1113,14 @@ int main(int argc, char **argv) {
             strcpy(arglist[0],shell);
             printf("Starting default shell(%s) in last cwd(%s)...\n",shell,proc_cwd);
             chdir(proc_cwd);
-            execvp(shell,arglist);
+            execv(shell,arglist);
             break;
 
         case ONLY:
             printf("Starting program %d...\n",number);
             args[0]=number;
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,1,args);
-            execvp(argv[0],arglist);
+            execv(argv[0],arglist);
             break;
 
         case ALL:
@@ -797,7 +1129,7 @@ int main(int argc, char **argv) {
                 args[i]=i;
             }
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,procs_c,args);
-            execvp(argv[0],arglist);
+            execv(argv[0],arglist);
 
             break;
 
@@ -813,12 +1145,13 @@ int main(int argc, char **argv) {
                 args[i]=i;
             }
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,number,args);
-            execvp(argv[0],arglist);
+            execv(argv[0],arglist);
             break;
 
     }
-
-    return 15;
+    printf("fatal error\n");
+    mygetch();
+    return 44;
 }
 
 #endif

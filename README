@@ -20,14 +20,22 @@ for serial and telnet window types.
 
 Available screen-session modes:
 
-manager     - sessions manager (screenie like) but featuring session 
-preview in a split window
+----
+save        - save Screen sessions to disk
 
-regions     - script reassembling the functionality of tmux display-panes.
-Needs toilet tool (figlet like printing).
+load        - load sessions from disk
+
+ls          - list saved sessions
+----
+
+manager     - sessions manager (screenie like) but featuring session 
+            preview in a split window
+
+regions     - display number in ever region
+            (script reassembling the functionality of tmux display-panes.
 
 dir         - starts a new Screen window in the same working directory 
-on the position next to the current window
+            on the position next to the current window
 
 grab        - change tty of a process to this terminal
 
@@ -39,15 +47,6 @@ renumber    - renumber windows to fill gaps
 
 sort        - sort windows by title
 
-
-----
-save        - save Screen sessions to disk
-
-load        - load sessions from disk
-
-ls          - list saved sessions
-----
-
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
@@ -55,7 +54,9 @@ screen-session  requires a recent version of Screen patched with screen-session.
 Session saver depends on "ps", "lsof", "tar", "grep" and reads /proc filesystem.
 
 tested on:
-linux python 2.5.2
+linux, python 2.5.2
+freebsd 8.1, python 2.6.5
+opensolaris, python 2.4.4
 
 screen-session.diff changes:
 - add "tty" command
