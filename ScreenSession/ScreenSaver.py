@@ -161,18 +161,18 @@ class ScreenSaver(object):
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
-            lastid=lasttail.split("_",1)[1]
-            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
-            self.select(self.__wins_trans[lastid])
+            self.lastid=lasttail.split("_",1)[1]
+            self.select_last_window()
         
         out ("Returning homewindow " +homewindow)
         self.select(homewindow)
        
-        if not self.restore_previous: 
-            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
-            self.select(self.__wins_trans[lastid])
+        if not self.restore_previous:
+            self.select_last_window()
 
-
+    def select_last_window(self):
+        out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
+        self.select(self.__wins_trans[self.lastid])
 
     # Take a list of string objects and return the same list
     # stripped of extra whitespace.
@@ -772,16 +772,14 @@ class ScreenSaver(object):
         if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             (lasthead,lasttail)=os.path.split(last)
-            lastid=lasttail.split("_",1)[1]
-            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
-            os.system('%s -X select %s' % (self.sc,self.__wins_trans[lastid]))
+            self.lastid=lasttail.split("_",1)[1]
+            self.select_last_window()
         
         out ("Returning homewindow " +homewindow)
         os.system('%s -X select %s' % (self.sc,homewindow))
        
-        if not self.restore_previous: 
-            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[lastid],lastid))
-            os.system('%s -X select %s' % (self.sc,self.__wins_trans[lastid]))
+        if not self.restore_previous:
+            self.select_last_window()
 
     def __terminate_processes(self,ident):
         #get list of subprograms and finish them all

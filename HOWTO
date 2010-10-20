@@ -1,28 +1,30 @@
+scs is a symbolic link to screen-session
+
 -----------------------------------------------------------------------
 other tools
 -----------------------------------------------------------------------
 manager
     # start sessions manager
-    screen-session manager
+    scs manager
 
 grab:
     # grabs pid into Screen session
-    screen-session grab PID
+    scs grab PID
     # then on the previous shell type
     disown
 
 dir:
     # start new window running zsh with the same working directory
-    :exec screen-session dir zsh
+    :exec scs dir zsh
     
     # example binding:
-    :bind c exec screen-session dir
+    :bind c exec scs dir
 
 regions:
-    screen-session regions
+    scs regions
     
     # example binding:
-    :bind c exec screen-session regions
+    :bind c exec scs regions
 
 
 -----------------------------------------------------------------------
@@ -30,42 +32,42 @@ session saver
 -----------------------------------------------------------------------
 Saving:
     # save current session 
-    screen-session save --force
+    scs save --force
     
     # save current session specifing --maxwin
-    screen-session save --maxwin {biggest window number}
+    scs save --maxwin {biggest window number}
     
     # save current session without layouts
-    screen-session save --layout 
+    scs save --layout 
 
     # save saving session with PID in mysavedsession folder
-    screen-session save --in PID --out mysavedsession
+    scs save --in PID --out mysavedsession
 
 
 Automated saving:
     # save session after 3 minutes of inactivity.
-    screen-session save --force --idle 180
+    scs save --force --idle 180
 
 
 Loading:
     # load last saved session inside current session
-    screen-session load
+    scs load
     
     # load last saved session with exactly the same window numbers 
-    screen-session load --exact --maxwin {biggest window number}
+    scs load --exact --maxwin {biggest window number}
     
     # load last saved session inside current session without layouts
-    screen-session load --layout
+    scs load --layout
 
     # load session from savefile loaded to Screen with PID
-    screen-session load --in mysavedsession --out PID
+    scs load --in mysavedsession --out PID
 
     # load saved session into a new Screen session
-    screen -m screen-session load --exact-kill-other
+    screen -m scs load --exact-kill-other
 
 
 Example bindings:
-    # start screen-session in a new window logging output and quickly 
+    # start scs in a new window logging output and quickly 
     # return to previous window before saving begins
-    bind S exec sh -c "sleep 0.01; screen screen-session save --force > /dev/null"
+    bind S exec sh -c "sleep 0.01; screen scs save --force > /dev/null"
 

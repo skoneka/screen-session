@@ -56,7 +56,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     touch(os.path.join(tmpdir,savedir))
     os.chdir(cwd)
     removeit(os.path.join(home,projectsdir,savedir))
-    print("%s"%str([home,projectsdir,savedir,archiveend,tmpdir,full]))
+    #print("%s"%str([home,projectsdir,savedir,archiveend,tmpdir,full]))
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
 
 
@@ -84,6 +84,8 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
         if delta > timeout: # if seconds passed since last modification
             removeit(file)
     files_remove=glob.glob(os.path.join(tmpdir,'*'))
+    files_noremove=glob.glob(os.path.join(tmpdir,'__*'))
+    files_remove=list(set(files_remove)-set(files_noremove))
     for file in files_remove:
         try:
             delta=ctime-os.path.getmtime(file)

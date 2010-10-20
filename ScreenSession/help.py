@@ -17,7 +17,7 @@ Available modes:\n\
     kill\t- send signal to last process started in a window\n\
     kill-zombie\t- kill all zombie windows in session\n\
     kill-current-group\t- recursively kill all windows in the current group.\n\
-    grab\t- grab a process and attach it to current tty\n\
+    grab\t- grab a process and attach it to current tty (requires injcode)\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
     name\t- get or set sessionname\
@@ -34,6 +34,7 @@ help_kill_zombie="Kill all zombie windows in session\n\
 \nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
 
 help_kill_current_group="Recursively kill all windows in the current group.\n\
+It does not kill the group itself and the window from which it was started\n\
 Take care with this command.\n\
 \nUsage: screen-session kill-current-group [more windows to kill]"
 
@@ -42,7 +43,8 @@ on the position next to the current window\n\
 \nUsage: screen-session dir [program]"
 
 help_grab="Grab a process and attach to the current tty.\n\
-Works with applications without complicated output scheme\n\
+Works with applications without complicated output scheme.\n\
+Require. injcode by Thomas Habets.\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 
@@ -79,8 +81,6 @@ save\n\
 -x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
--X --exact-kill-other\n\
-  \tsame as exact, but kills all existing windows\n\
 -r --restore\n\
   \treturn to home window and home layout after session loading\n\
 -y --no-layout\n\
@@ -102,6 +102,12 @@ Examples:\n\
 $ screen-session --save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
 $ screen-session --load --in mysavedsession --out SESSIONNAME\n\
 \n'
+
+'''
+broken:
+-X --exact-kill-other\n\
+  \tsame as exact, but kills all existing windows\n\
+'''
 
 if __name__=='__main__':
     import sys

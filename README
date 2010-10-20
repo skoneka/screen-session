@@ -1,4 +1,4 @@
-screen-session - GNU Screen session saver
+screen-session - collection of tools for GNU Screen
 =========================================
 
 Website: http://adb.cba.pl
@@ -43,29 +43,14 @@ kill        - send signal to last process started in a window
 
 kill-zombie - kill all zombie windows in session
 
+kill-current-group  - recursively kill all windows in the current group.
+
 renumber    - renumber windows to fill gaps
 
 sort        - sort windows by title
 
 -----------------------------------------------------------------------
-Requirements
------------------------------------------------------------------------
-screen-session  requires a recent version of Screen patched with screen-session.diff
-Session saver depends on "ps", "lsof", "tar", "grep" and reads /proc filesystem.
-
-tested on:
-linux, python 2.5.2
-freebsd 8.1, python 2.6.5
-opensolaris, python 2.4.4
-
-screen-session.diff changes:
-- add "tty" command
-- add "regionsize" command
-- make "group" queryable
-
-
------------------------------------------------------------------------
-Installation
+Installation and Requirements
 -----------------------------------------------------------------------
 see INSTALL
 
@@ -80,9 +65,8 @@ see HOWTO
 Detailed Description
 -----------------------------------------------------------------------
 session saver saves directories and programs by directly reading /proc 
-filesystem  ( it reads cwd, exe and cmdline ) and sorts them by parent
-pid. There is almost no "stuffing" so there is no interaction with 
-programs in windows.
+filesystem and sorts them by parent pid.  There is almost no "stuffing" 
+so there is no interaction with programs in windows.
 
 After session loading, in every new window starts screen-session-primer 
 (small C program) which displays a list of processes and asks user what 
@@ -93,7 +77,7 @@ $ shell -c "program args; shell"
 and for leafs:
 $ program args 
 
-Entire string of processes can only be only properly restored if every 
+Entire string of processes can only be properly restored if every 
 non-leaf is a shell which accepts '-c command' switch.
 
 Can be restored completly:
@@ -127,7 +111,8 @@ There are no bugs, only features.
   layouts in screen-session because Screen will crash.
   Disable layouts saving/loading with --no-layout flag.
 
-- If screen-session locks your session try: $ pkill -f screen-session.py
+- If screen-session locks your session try to find and kill all processes
+  started by it.
 
 Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues

@@ -1,8 +1,25 @@
 -----------------------------------------------------------------------
+Requirements
+-----------------------------------------------------------------------
+screen-session  requires a recent version of Screen patched with screen-session.diff
+Session saver depends on "ps", "tar", "grep" and reads /proc filesystem.
+
+tested on:
+linux, python 2.5.2
+freebsd 8.1, python 2.6.5 (with mounted procfs)
+opensolaris, python 2.4.4
+
+screen-session.diff changes:
+- add "tty" command
+- add "regionsize" command
+- make "group" queryable
+
+
+-----------------------------------------------------------------------
 Installation
 -----------------------------------------------------------------------
 Edit config.mk to match your local setup (screen-session is installed 
-into the /usr/local namespace by default), you can also disable colors 
+into the /usr/ namespace by default), you can also disable colors 
 by removing "-DCOLOR".
 
 
