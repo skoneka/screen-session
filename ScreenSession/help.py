@@ -16,6 +16,7 @@ Available modes:\n\
     regions\t- display number in each region (like tmux display-panes)\n\
     kill\t- send signal to last process started in a window\n\
     kill-zombie\t- kill all zombie windows in session\n\
+    kill-current-group\t- recursively kill all windows in the current group.\n\
     grab\t- grab a process and attach it to current tty\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
@@ -31,6 +32,10 @@ help_kill="Kill last process started in a window\n\
 
 help_kill_zombie="Kill all zombie windows in session\n\
 \nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
+
+help_kill_current_group="Recursively kill all windows in the current group.\n\
+Take care with this command.\n\
+\nUsage: screen-session kill-current-group [more windows to kill]"
 
 help_dir="Start a new Screen window in the same working directory\n\
 on the position next to the current window\n\
@@ -113,6 +118,8 @@ if __name__=='__main__':
         print(help_kill)
     elif mode=='kill-zombie':
         print(help_kill_zombie)
+    elif mode=='kill-current-group':
+        print(help_kill_current_group)
     elif mode=='dir':
         print(help_dir)
     elif mode=='grab':

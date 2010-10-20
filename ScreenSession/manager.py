@@ -2,7 +2,7 @@
 # file: manager.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: sessions manager with preview in split window
+# description: sessions manager with preview in a split window
 
 import commands, os, re, sys,time,tempfile,pwd,mmap
 import GNUScreen as sc

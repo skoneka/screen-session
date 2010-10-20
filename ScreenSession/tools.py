@@ -65,7 +65,7 @@ def kill_zombie(session,min,max):
 
     for win,type,title in sc.gen_all_windows(min,max,session):
         if type==-1:
-            ss.kill('',win)
+            ss.kill(win)
 
 def kill_group(session,win):
     print ('killing group %s'%win)

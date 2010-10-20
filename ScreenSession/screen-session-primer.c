@@ -1129,15 +1129,6 @@ main(int argc, char **argv) {
                 args[i]=i;
             }
             arglist=make_arglist(argv[0],"-s",fullpath,datafile,procs_c,args);
-            
-            i=0;
-            while(arglist[i]!=NULL) {
-                printf("\"%s\" ",arglist[i]);
-                i++;
-            }
-            printf("]\nargv[0]=%s]\n",argv[0]);
-            
-
             execv(argv[0],arglist);
 
             break;

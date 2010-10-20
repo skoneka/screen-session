@@ -521,7 +521,7 @@ class ScreenSaver(object):
         ctty=None
         cppids={}
         searching=False
-        rollback=None
+        rollback=None,None,None
         ctime=subprocess.Popen('%s -Q @time' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0]
         for i in range(0,self.maxwin+1):
             id=str(i)
@@ -608,19 +608,20 @@ class ScreenSaver(object):
                         if self.primer==arg0:
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
+                            print(rollback)
                         elif arg0 in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
-                if not rollback:
+                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
+                if not rollback[1]:
                     # save scrollback
-                    scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
                     os.system('%s -X at %s hardcopy -h %s' % (self.sc, cwin, scrollback_filename) )
                     self.__scrollbacks.append(scrollback_filename)
 
                 if ctype!="zombie":
                     self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename)
-                rollback=None
+                rollback=None,None,None
 
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
@@ -643,6 +644,7 @@ class ScreenSaver(object):
                 shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
             except Exception,e:
                 out(str(e))
+                target=None
                 pass
             
             fhead,ftail=os.path.split(cmdline[2])
@@ -652,6 +654,7 @@ class ScreenSaver(object):
                 shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
             except Exception,e:
                 out(str(e))
+                target2=None
                 pass
 
             source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
@@ -661,14 +664,15 @@ class ScreenSaver(object):
                 try:
                     shutil.move(source3,target3)
                 except:
+                    target3=None
                     pass
 
             if os.path.isfile(target):
-                return target,target2,target3
+                return (target,target2,target3)
             else:
-                return None
+                return (None,None,None)
         except:
-            return None
+            return (None,None,None)
         
 
     def __load_layouts(self):
@@ -930,7 +934,7 @@ class ScreenSaver(object):
         fh.write(str(winid)+'\n')
         fh.close()
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
-        if rollback:
+        if rollback[1]:
             time=linecache.getline(rollback[0],2).strip()
             #copy scrollback
             shutil.move(rollback[1],scrollback_filename)
@@ -945,7 +949,7 @@ class ScreenSaver(object):
         for data in basedata:
             f.write(data+'\n')
         
-        if rollback:
+        if rollback[0]:
             target=rollback[0]
             fr=open(target,'r')
             for line in fr.readlines()[6:]:
