@@ -61,6 +61,8 @@ elif [ $mode = "regions-helper" ]; then
 
 elif [ $mode = "dir" ]; then
     python ./screen-in-dir.py $session $*
+elif [ $mode = "dump" ]; then
+    python ./dump.py $session $*
 
 elif [ $mode = "kill" ]; then
     # screen-session kill [signal=TERM] [win=current]

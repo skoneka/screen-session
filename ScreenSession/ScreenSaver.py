@@ -275,8 +275,8 @@ class ScreenSaver(object):
         cppids={}
         searching=False
 
-        if self.maxwin>0:
-            r=range(0,self.maxwin+1)
+        if self.MAXWIN>0:
+            r=range(0,self.MAXWIN+1)
             
             if self.bKill:
                 self.__kill_list=[]
@@ -370,11 +370,12 @@ class ScreenSaver(object):
         msg=self.command_at('tty',win)
         tty = msg.strip()
         return tty
-
     def get_maxwin(self):
         msg=self.command_at('maxwin')
         maxwin=int(msg.split(':')[1].strip())
         return maxwin
+    def maxwin(self):
+        return self.get_maxwin()
     '''
     def get_info(self,win):
        
@@ -523,7 +524,7 @@ class ScreenSaver(object):
         searching=False
         rollback=None,None,None
         ctime=subprocess.Popen('%s -Q @time' % (self.sc) , shell=True, stdout=subprocess.PIPE).communicate()[0]
-        for i in range(0,self.maxwin+1):
+        for i in range(0,self.MAXWIN+1):
             id=str(i)
             if not searching:
                 out('--')

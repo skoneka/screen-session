@@ -1,6 +1,35 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 
+def dump(ss,minwin,maxwin):
+    for win,type,title in sc.gen_all_windows(minwin,maxwin,session):
+        if type==0:
+            type_string="basic"
+        elif type==1:
+            type_string="group"
+        elif type==-1:
+            type_string="zombie"
+        else:
+            type_string="unknown"
+
+        print("%s %s"%(win,type_string))
+        print("%s %s"%(win,title))
+        print("%s %s"%(win,ss.get_exec(win)))
+        tty=ss.tty(win)
+        print("%s %s"%(win,tty))
+        if type==0:
+            try:
+                pids=sc.get_tty_pids(tty)
+            except:
+                print ("%s No access"%win)
+                pass
+            for pid in pids:
+                try:
+                    print ("%s %s %s"%(win,pid,sc.get_pid_info(pid)))
+                except:
+                    print ("%s No permission"%(win))
+        print("\n")
+
 def renumber(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
