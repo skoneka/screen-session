@@ -37,6 +37,8 @@ regions     - display number in ever region
 dir         - starts a new Screen window in the same working directory 
             on the position next to the current window
 
+dump        - dump informations about windows in session
+
 grab        - change tty of a process to this terminal
 
 kill        - send signal to last process started in a window
