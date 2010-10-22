@@ -2,7 +2,7 @@
 import GNUScreen as sc
 
 def dump(ss,minwin,maxwin):
-    for win,type,title in sc.gen_all_windows(minwin,maxwin,session):
+    for win,type,title in sc.gen_all_windows(minwin,maxwin,ss.pid):
         if type==0:
             type_string="basic"
         elif type==1:
@@ -14,7 +14,9 @@ def dump(ss,minwin,maxwin):
 
         print("%s %s"%(win,type_string))
         print("%s %s"%(win,title))
-        print("%s %s"%(win,ss.get_exec(win)))
+        filter=ss.get_exec(win)
+        if filter!=-1:
+            print("%s %s"%(win,filter))
         tty=ss.tty(win)
         print("%s %s"%(win,tty))
         if type==0:
