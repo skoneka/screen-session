@@ -13,6 +13,7 @@ Available modes:\n\
     \n\
     manager\t- sessions manager with split screen preview\n\
     dir\t\t- start Screen window in the same working directory\n\
+    dump\t- Dump informations about windows in session.\n\
     regions\t- display number in each region (like tmux display-panes)\n\
     kill\t- send signal to last process started in a window\n\
     kill-zombie\t- kill all zombie windows in session\n\
@@ -41,6 +42,9 @@ Take care with this command.\n\
 help_dir="Start a new Screen window in the same working directory\n\
 on the position next to the current window\n\
 \nUsage: screen-session dir [program]"
+
+help_dump="Dump informations about windows in session.\n\
+\nUsage: screen-session dump [maxwin] [minwin]"
 
 help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
@@ -128,6 +132,8 @@ if __name__=='__main__':
         print(help_kill_current_group)
     elif mode=='dir':
         print(help_dir)
+    elif mode=='dump':
+        print(help_dump)
     elif mode=='grab':
         print(help_grab)
     elif mode=='manage':
