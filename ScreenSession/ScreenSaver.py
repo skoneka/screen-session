@@ -11,7 +11,7 @@ class ScreenSaver(object):
     projectsdir=".screen-sessions"
     savedir=""
     procdir="/proc"
-    maxwin=-1
+    MAXWIN=-1
     force=False
     lastlink="last"
     enable_layout = False

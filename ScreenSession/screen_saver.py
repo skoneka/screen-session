@@ -260,13 +260,13 @@ def main():
     
     if (maxwin==-1) and (mode==1):
         out("for saving specify --maxwin (biggest window number in session)")
-        maxwin=scs.get_maxwin()
+        maxwin=scs.maxwin()
     elif (maxwin==-1) and (mode==2) and bExact==True:
         out("--exact mode requires --maxwin (biggest window number in current session)")
-        maxwin=scs.get_maxwin()
+        maxwin=scs.maxwin()
 
 
-    scs.maxwin = maxwin
+    scs.MAXWIN = maxwin
     scs.force = force
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
