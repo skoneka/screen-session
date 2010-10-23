@@ -14,8 +14,12 @@ def out(str,active=False):
 
 bPrint=False
 
+try:
+    ppid=int(sys.argv[1])
+except:
+    ppid=-1
 
-session="%s"%sys.argv[1]
+session=sys.argv[2]
 out('session = '+session,bPrint)
 session_arg="-S %s"%session
 
@@ -28,9 +32,11 @@ ctty=f.readline()
 f.close()
 out(ctty,bPrint)
 pids=sc.get_tty_pids(ctty)
-#pids=sc.sort_by_ppid(pids)
 thepid = pids[len(pids)-1]
-thedir=sc.get_pid_info(thepid)[0]
+if thepid==ppid:
+    thepid = pids[len(pids)-2]
+info=sc.get_pid_info(thepid)
+thedir=info[0]
 
 out(thedir,bPrint)
 
@@ -38,13 +44,13 @@ os.chdir(thedir)
 
 #command='screen %s -X screen' % (session_arg)
 command='screen'
-if len(sys.argv)>2:
-    command+=' -t "%s"'%(" ".join(["%s"%v for v in sys.argv[2:]]))
+if len(sys.argv)>3:
+    command+=' -t "%s"'%(" ".join(["%s"%v for v in sys.argv[3:]]))
 else:
     command+=' -t "%s"'%(thedir)
 
 
-for arg in sys.argv[2:]:
+for arg in sys.argv[3:]:
     command+=' '+arg
 out(command,bPrint)
 os.system(command)
