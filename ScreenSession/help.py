@@ -6,7 +6,7 @@ version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
 help="\
 Help:\t screen-session [mode] --help\n\
 Usage:\t screen-session [mode] [options]\n\
-\t screen-session -S session [mode] [options]\n\
+\t screen-session [mode] -S session [options]\n\
     \n\
 Available modes:\n\
     save\t- save a session to disk\n\
