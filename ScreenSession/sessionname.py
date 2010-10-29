@@ -38,15 +38,19 @@ except:
         pass
 if s:
     try:
-        if session and s.find(session)-1:
+        if session and s.find(session)>-1:
             newname=sys.argv[2]
             os.system('screen -S %s -X sessionname %s'%(s,newname))
         else:
             raise Exception
     except:
-        print(s)
-        sys.exit(0)
+        if not session or s.find(session)>-1:
+            print(s)
+            sys.exit(0)
+        else:
+            print ('__no__session__')
+            sys.exit(1)
 else:
-    print '__no__session__'
+    print ('__no__session__')
     sys.exit(1)
 
