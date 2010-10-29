@@ -14,7 +14,7 @@ try:
     ppid=int(sys.argv[1])
 except:
     ppid=-1
-
+print sys.argv
 session=sys.argv[2]
 session_arg="-S %s"%session
 
@@ -45,7 +45,9 @@ else:
 
 
 for arg in sys.argv[3:]:
-    command+=' '+arg
+    print arg
+    command+=' "'+arg+'"'
+print (command)
 os.system(command)
 
 

@@ -27,26 +27,26 @@ if [ $# -eq 0 ]; then
 fi
 
 mode=$1
-shift 1 $*
+shift 1 "$@"
 
 # parse command line arguments
 while getopts ":WNP:S:": OPT; do
     case "$OPT" in
     W)  
         waitfor=1
-        shift 1 $*
+        shift 1 "$@"
         ;;
     N)  
         logpipe=0
-        shift 1 $*
+        shift 1 "$@"
         ;;
     P)  
         logpipe=1
-        shift 1 $*
+        shift 1 "$@"
         ;;
     S)  
         session="$OPTARG"
-        shift 2 $*
+        shift 2 "$@"
         ;;
     esac
 done
@@ -62,44 +62,44 @@ if [ "$session" = '' ]; then
 fi
 
 if [ $mode = "name" ]; then
-    python ./sessionname.py $session $*
+    python ./sessionname.py $session "$@"
 
 elif [ $mode = "manager" ]; then
     python ./manager.py p $session
 
 elif [ $mode = "grab" ]; then
-    sh ./screen-session-grab $*
+    sh ./screen-session-grab "$@"
 
 elif [ $mode = "regions" ]; then
-    screen -m -d -c /dev/null python ./screen-display-regions.py $session $*
+    screen -m -d -c /dev/null python ./screen-display-regions.py $session "$@"
 
 elif [ $mode = "dir" ]; then
-    python ./screen-in-dir.py $$ $session $*
+    python ./screen-in-dir.py $$ $session "$@"
 
 elif [ $mode = "dump" ]; then
-    python ./dump.py $session $*
+    python ./dump.py $session "$@"
 
 elif [ $mode = "kill" ]; then
     # screen-session kill [signal=TERM] [win=current]
-    python ./kill.py $session $*
+    python ./kill.py $session "$@"
 
 elif [ $mode = "kill-zombie" ]; then
     maxwin=`get_maxwin $session`
-    python ./kill-zombie.py $session $maxwin $*
+    python ./kill-zombie.py $session $maxwin "$@"
 
 elif [ $mode = "kill-group" ]; then
-    python ./kill-group.py $session $*
+    python ./kill-group.py $session "$@"
 
 elif [ $mode = "kill-current-group" ]; then
-    python ./kill-current-group.py $session $*
+    python ./kill-current-group.py $session "$@"
 
 elif [ $mode = "renumber" ]; then
     maxwin=`get_maxwin $session`
-    python ./renumber.py $session $maxwin $*
+    python ./renumber.py $session $maxwin "$@"
 
 elif [ $mode = "sort" ]; then
     maxwin=`get_maxwin $session`
-    python ./sort.py $session $maxwin $*
+    python ./sort.py $session $maxwin "$@"
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     testargument=`screen -S $session -Q @tty`
@@ -125,12 +125,12 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
             rm $scsfile
         fi
         mkfifo $scsfile
-        screen -m -d -c /dev/null python ./screen_saver.py $mode $argument0 $argument1 $* 
+        screen -m -d -c /dev/null python ./screen_saver.py $mode $argument0 $argument1 "$@"
         
         cat $scsfile
         rm $scsfile
     else
-        python ./screen_saver.py $mode $argument0 $argument1 $*
+        python ./screen_saver.py $mode $argument0 $argument1 "$@"
     fi
 
 elif [ $mode != "name" ]; then
