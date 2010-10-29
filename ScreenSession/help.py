@@ -3,8 +3,10 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
 
-help="Usage: screen-session [mode] [options]\n\
-Help: screen-session [mode] --help\n\
+help="\
+Help:\t screen-session [mode] --help\n\
+Usage:\t screen-session [mode] [options]\n\
+\t screen-session -S session [mode] [options]\n\
     \n\
 Available modes:\n\
     save\t- save a session to disk\n\
@@ -26,25 +28,25 @@ Available modes:\n\
 
 help_regions="Display number in each region\n\
 script reassembling the functionality of tmux display-panes\n\
-\nUsage: screen-session regions"
+\nUsage: screen-session regions [options]"
 
 help_kill="Kill last process started in a window\n\
-\nUsage: screen-session kill [signal=TERM] [window=current]"
+\nUsage: screen-session kill [options] [signal=TERM] [window=current]"
 
 help_kill_zombie="Kill all zombie windows in session\n\
-\nUsage: screen-session kill-zombie [maxwin=MAXWIN] [minwin=0]"
+\nUsage: screen-session kill-zombie [options] [maxwin=MAXWIN] [minwin=0]"
 
 help_kill_current_group="Recursively kill all windows in the current group.\n\
 It does not kill the group itself and the window from which it was started\n\
 Take care with this command.\n\
-\nUsage: screen-session kill-current-group [more windows to kill]"
+\nUsage: screen-session kill-current-group [options] [more windows to kill]"
 
 help_dir="Start a new Screen window in the same working directory\n\
 on the position next to the current window\n\
-\nUsage: screen-session dir [program]"
+\nUsage: screen-session dir [options] [program]"
 
 help_dump="Dump informations about windows in session.\n\
-\nUsage: screen-session dump [maxwin] [minwin]"
+\nUsage: screen-session dump [options] [maxwin] [minwin]"
 
 help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
@@ -56,10 +58,10 @@ help_manage="Sessions manager for GNU Screen with preview in a split window\n\
 \nUsage: screen-session manage"
 
 help_renumber="Renumber windows to fill the gaps\n\
-\nUsage: screen-session renumber [maxwin=MAXWIN] [minwin=0]"
+\nUsage: screen-session renumber [options] [maxwin=MAXWIN] [minwin=0]"
 
 help_sort="Sort windows by titles\n\
-\nUsage: screen-session sort [maxwin=MAXWIN] [minwin=0]"
+\nUsage: screen-session sort [options] [maxwin=MAXWIN] [minwin=0]"
 
 help_name="Try to get the current sessionname \n\
 \nUsage: screen-session name [new_sessionname]"

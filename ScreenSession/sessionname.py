@@ -3,15 +3,26 @@
 import os,sys
 import GNUScreen as sc
 
-def get_sessionname():
-    p=os.popen('screen -X sessionname')
+def get_sessionname(session=None):
+    if session:
+        session_arg='-S '+session
+    else:
+        session_arg=''
+    p=os.popen('screen %s -X sessionname'%session_arg)
     p.close()
-    p=os.popen('screen -Q @lastmsg')
+    p=os.popen('screen %s -Q @lastmsg'%session_arg)
     s=p.read()
     return s.split('\'',1)[1].rsplit('\'',1)[0]
 
 try:
-    s=get_sessionname()
+    if sys.argv[1]!="__no__session__":
+        session=sys.argv[1]
+    else:
+        raise Exception
+except:
+    session=None
+try:
+    s=get_sessionname(session)
 except:
     s=None
     s2=None
@@ -27,8 +38,11 @@ except:
         pass
 if s:
     try:
-        newname=sys.argv[1]
-        os.system('screen -S %s -X sessionname %s'%(s,newname))
+        if session and s.find(session)-1:
+            newname=sys.argv[2]
+            os.system('screen -S %s -X sessionname %s'%(s,newname))
+        else:
+            raise Exception
     except:
         print(s)
         sys.exit(0)

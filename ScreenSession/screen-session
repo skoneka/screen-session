@@ -12,6 +12,11 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 cd $SCRIPTPATH
 
+get_maxwin() {
+    maxwin=`screen -S $1 -X maxwin; screen -S $1 -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    echo $maxwin
+}
+
 waitfor=0
 nonest=0
 logpipe=1
@@ -25,16 +30,23 @@ mode=$1
 shift 1 $*
 
 # parse command line arguments
-while getopts ":WNP:": OPT; do
+while getopts ":WNP:S:": OPT; do
     case "$OPT" in
     W)  
         waitfor=1
+        shift 1 $*
         ;;
     N)  
         logpipe=0
+        shift 1 $*
         ;;
     P)  
         logpipe=1
+        shift 1 $*
+        ;;
+    S)  
+        session="$OPTARG"
+        shift 2 $*
         ;;
     esac
 done
@@ -45,9 +57,14 @@ if [ $# -ge 1 ]; then
         exit 0
     fi
 fi
+if [ "$session" = '' ]; then
+    session=`python ./sessionname.py`
+fi
 
-session=`python ./sessionname.py`
-if [ $mode = "manager" ]; then
+if [ $mode = "name" ]; then
+    python ./sessionname.py $session $*
+
+elif [ $mode = "manager" ]; then
     python ./manager.py p $session
 
 elif [ $mode = "grab" ]; then
@@ -56,11 +73,9 @@ elif [ $mode = "grab" ]; then
 elif [ $mode = "regions" ]; then
     screen -m -d -c /dev/null python ./screen-display-regions.py $session $*
 
-elif [ $mode = "regions-helper" ]; then
-    sh ./screen-display-regions-helper $*
-
 elif [ $mode = "dir" ]; then
     python ./screen-in-dir.py $$ $session $*
+
 elif [ $mode = "dump" ]; then
     python ./dump.py $session $*
 
@@ -69,21 +84,23 @@ elif [ $mode = "kill" ]; then
     python ./kill.py $session $*
 
 elif [ $mode = "kill-zombie" ]; then
-    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    maxwin=`get_maxwin $session`
     python ./kill-zombie.py $session $maxwin $*
+
 elif [ $mode = "kill-group" ]; then
     python ./kill-group.py $session $*
+
 elif [ $mode = "kill-current-group" ]; then
     python ./kill-current-group.py $session $*
+
 elif [ $mode = "renumber" ]; then
-    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    maxwin=`get_maxwin $session`
     python ./renumber.py $session $maxwin $*
 
 elif [ $mode = "sort" ]; then
-    maxwin=`screen -X maxwin; screen -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    maxwin=`get_maxwin $session`
     python ./sort.py $session $maxwin $*
-elif [ $mode = "name" ]; then
-    python ./sessionname.py $*
+
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     testargument=`screen -S $session -Q @tty`
 
@@ -115,11 +132,12 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     else
         python ./screen_saver.py $mode $argument0 $argument1 $*
     fi
-else
+
+elif [ $mode != "name" ]; then
     python ./help.py
 fi
 
 if [ $waitfor -eq 1 ]; then
     /bin/echo 'Press any key...'
-    stty cbreak -/bin/echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
+    stty cbreak echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
 fi

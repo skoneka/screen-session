@@ -54,7 +54,7 @@ def main():
         pass
 
     try :
-        opts,args = getopt.getopt(sys.argv[argstart:], "I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -99,7 +99,7 @@ def main():
             logpipe = a
         elif o == "--unpack":
             unpack = a
-        elif o in ("-c","--current-session"):
+        elif o in ("-S","--current-session"):
             current_session = a
         elif o == "--full":
             bFull = True
@@ -287,7 +287,7 @@ def main():
         if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+util.archiveend)):
             if force==False:
                 os.system('screen -S %s -X echo "screen-session saving FAILED. Savefile exists."'%scs.pid)
-                out('Savefile exists. Use --force to overwrite')
+                out('Savefile exists. Use --force to overwrite.')
                 doexit(1,waitfor)
             else:
                 out('Savefile exists. Forcing...')

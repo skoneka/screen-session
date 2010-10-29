@@ -7,7 +7,6 @@
 import os,sys
 import tools
 session=sys.argv[1]
-
 try:
     max=sys.argv[3]
 except:
