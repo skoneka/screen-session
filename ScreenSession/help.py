@@ -54,8 +54,8 @@ Require. injcode by Thomas Habets.\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 
-help_manage="Sessions manager for GNU Screen with preview in a split window\n\
-\nUsage: screen-session manage"
+help_manager="Sessions manager for GNU Screen with preview in a split window\n\
+\nUsage: screen-session manager"
 
 help_renumber="Renumber windows to fill the gaps\n\
 \nUsage: screen-session renumber [options] [maxwin=MAXWIN] [minwin=0]"
@@ -138,8 +138,8 @@ if __name__=='__main__':
         print(help_dump)
     elif mode=='grab':
         print(help_grab)
-    elif mode=='manage':
-        print(help_manage)
+    elif mode=='manager':
+        print(help_manager)
     elif mode=='renumber':
         print(help_renumber)
     elif mode=='sort':
