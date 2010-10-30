@@ -485,7 +485,7 @@ userInput(int *menu_num, int *num,int max) {
     while( exit_flag  == 0 && menu_choice==NONE) {
         valid_choice = 0;
         while( valid_choice == 0 ) {
-            printf("[%sA%s]ll / [%sE%s]xit / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",red_b,none,red_b,none,red_b,none,blue,none,red_b,none,blue,none);
+            printf("%sRESTORE:%s [%sA%s]ll / [%sE%s]xit / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",green,none,red_b,none,red_b,none,red_b,none,blue,none,red_b,none,blue,none);
             printf("> ");
             ch = getchar();
             char_count = 0;
@@ -981,7 +981,8 @@ main(int argc, char **argv) {
     }
     fp=NULL;
 
-    printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
+    //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
+    printf("%s%s'%s'%s ",none,green_r,datafile,none);
     requireSession(fullpath,datafile,0);
     fp=fopen(datafile,"r");
     if(!fp) {
@@ -995,28 +996,27 @@ main(int argc, char **argv) {
     int procs_c=0;
     size_t filter_s=20;
     char *filter=malloc(filter_s*sizeof(char));
-    printf("%sSaved: ",green_r);
-    while((c=fgetc(fp))!=EOF) {
-        if(c=='\n') {
-            nl_c++;
-            if(nl_c==2)
-            printf("%s\nTitle: ",red_r);
-        }
-        else if (nl_c==1) // print date
-           fputc(c,stdout);
-        else if (nl_c==4)//print title
-            fputc(c,stdout);
-        if (nl_c > BASEDATA_LINES-2)
-            break;
-     //   fputc(c,stdout);
-    }
-    getline(&filter,&filter_s,fp);
+    printf("%sSAVED: ",none);
+    size_t buftext_s;
+    char *buftext=NULL;
+    size_t title_s;
+    char *title=NULL;
+    getline(&buftext,&buftext_s,fp);//win number
+    getline(&buftext,&buftext_s,fp);//save time
+    printf("%s%s\n", green_r,buftext);
+    getline(&buftext,&buftext_s,fp);//group
+    getline(&buftext,&buftext_s,fp);//win type
+    getline(&title,&title_s,fp);//title
+
+    getline(&filter,&filter_s,fp);//filter
+
     filter=strtrim_right(filter,'\n');
-    printf("\nFilter: %s\n", filter);
+    if (strcmp(filter,"-1")!=0)
+        printf("\nFilter: %s\n", filter);
     printf("%s",none);
     
     fscanf(fp,"%d\n",&procs_c);
-    printf("%s %d %sprograms running:%s\n",green_r,procs_c,blue_r,none);
+    printf("%s%d%s in %s%s%s\n",red_r,procs_c,blue_r,red_r,title,none);
 
     size_t proc_cwd_s=0;
     size_t proc_exe_s=0;
@@ -1076,7 +1076,6 @@ main(int argc, char **argv) {
                     \tcannot be started (use [O]nly)%s\n",magenta,none);
     }
     fclose(fp);
-    printf("%s--RESTORE MENU--%s\n",green_b,none);
     int menu;
     int number;
     userInput(&menu,&number,procs_c);
