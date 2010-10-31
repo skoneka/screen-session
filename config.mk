@@ -1,5 +1,5 @@
 # screen-session version
-VERSION = 0.60
+VERSION = 0.61
 
 # Customize below to fit your system
 
