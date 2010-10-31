@@ -13,7 +13,8 @@ usagestr='\n===HELP===\n\
 h[elp]  - show this message\n\
 q[uit]  - exit session manager\n\
 e[nter] - enter into session\n\
-a[ttach] <name> - attach\n\
+a[ttach] <name> - attach and select\n\
+d[etach] <name> - detach and deselect\n\
 n[ame] <name>   - rename\n\
 s[creen] <args> - create session\n\
 w[ipe] - wipe dead sessions\n\
@@ -62,7 +63,7 @@ def menu_tmp(preselect=None):
                 if preselect:
                     inputstring = preselect
                 else:
-                    inputstring = raw_input("\nChoose 1-%d or command: " % (i-1))
+                    inputstring = raw_input("\nChoose 1-%d or help: " % (i-1))
                 if inputstring:
                     try:
                         choice=int(inputstring)
@@ -121,7 +122,7 @@ def prime(fifoname):
 def ui2(fifoname):
     sys.stderr.write('starting ui2\n')
     sys.stderr.flush()
-    print('ui2 [%s]'%fifoname)
+    print('ui2 reading [%s]'%fifoname)
     pipein = open(fifoname, 'r')                 # open fifo as stdio object
     while 1:
         line = pipein.readline( )[:-1]            # blocks until data sent
@@ -214,17 +215,16 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     ret=None
     global ui2pipe
     #os.system('screen -X split -v')
-    print 'run opening [%s]'%fifoname
+    print ('run opening [%s]'%fifoname)
     pipein = open(fifoname, 'r')
-    print 'run printing'
+    print ('run printing')
     sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
     sys.stdout.flush()
-    scs.screen("python %s %s %s"%(sys.argv[0],'ui2',fifoname2))
+    scs.screen("-t \"diagnostic window\" python %s %s %s"%(sys.argv[0],'ui2',fifoname2))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
     reset_tui(scs)
-    usage()
     if last_session:
         mode,last_session=tui_attach_session(scs,last_session,psession)
         
@@ -322,7 +322,7 @@ def eval_command(scs,command,last_session,psession):
             scs.quit()
     elif mode.startswith('q'): # quit
         print2ui('LOGIC: quiting...' )
-        return 'quit',None
+        return 'quit','\0'
     elif mode.startswith('h'): # help
         usage()
     elif mode.startswith('e'): # enter
@@ -403,12 +403,12 @@ def eval_command(scs,command,last_session,psession):
 def ui1(fifoname):
     sys.stderr.write('starting ui1\n')
     sys.stderr.flush()
-    print 'ui [%s]'%fifoname
+    print ('ui1 writing [%s]'%fifoname)
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
     while selection!=None:
-        os.system('clear')
         selection=menu_tmp()
+        os.system('clear')
         if selection:
             os.write(pipeout,'%s\n'%selection)
     #os.close(pipeout)
@@ -433,7 +433,7 @@ def main():
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
         #files may get deleted by screen-session need to prevent
-        fifoname=os.path.join(tmpdir,'__manager_%s_ui'%os.getpid())
+        fifoname=os.path.join(tmpdir,'__manager_%s_logic'%os.getpid())
         fifoname2=os.path.join(tmpdir,'__manager_%s_ui2'%os.getpid())
         last_session=None
        
@@ -445,7 +445,9 @@ def main():
             sys.stderr.write('priming..\n')
             session=prime(fifoname)
             scs=ScreenSaver(session,'/dev/null','/dev/null')
+            scs.title('command window',"0")
             scs.command_at('rendition so ky')
+            scs.command_at('caption string "%?%F%{kr}%?%t"')
             scs.command_at('bindkey ^[t focus prev')
             scs.command_at('bindkey ^[T focus prev')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
@@ -470,10 +472,11 @@ def main():
                 for m in command:
                     print('[]%d|mode=%s'%(len(m),m
                 '''
-
-                tui=int(options[0])
-                psession=options[1]
-                last_session=options[2]
+                print len(options)
+                if len(options)>0:
+                    tui=int(options[0])
+                    psession=options[1]
+                    last_session=options[2]
                 if command[0]=='enter':
                     print ("entering \"%s\""%(command[1]))
                     attach_session(command[1])
