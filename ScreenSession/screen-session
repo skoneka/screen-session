@@ -133,7 +133,9 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
         python ./screen_saver.py $mode $argument0 $argument1 "$@"
     fi
 
-elif [ $mode != "name" ]; then
+elif [ $mode = "--version" -o $mode = "-v" ]; then
+    python ./help.py --version
+else
     python ./help.py
 fi
 

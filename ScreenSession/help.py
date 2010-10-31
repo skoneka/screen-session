@@ -23,7 +23,9 @@ Available modes:\n\
     grab\t- grab a process and attach it to current tty (requires injcode)\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
-    name\t- get or set sessionname\
+    name\t- get or set sessionname\n\
+    \n\
+Report bugs to http://github.com/skoneka/screen-session/issues\
     "
 
 help_regions="Display number in each region\n\
@@ -124,6 +126,8 @@ if __name__=='__main__':
         mode='help'
     if mode=='help':
         print(help)
+    elif mode=='--version':
+        pass
     elif mode=='regions':
         print(help_regions)
     elif mode=='kill':

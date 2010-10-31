@@ -21,9 +21,9 @@ is no support for serial and telnet window types.
 Available screen-session modes:
 
 ----
-save        - save Screen sessions to disk
+save        - save Screen sessions to file
 
-load        - load sessions from disk
+load        - load sessions from file
 
 ls          - list saved sessions
 ----

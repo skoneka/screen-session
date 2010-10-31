@@ -4,6 +4,37 @@ import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,r
 archiveend=''
 tmpdir=''
 
+def timeout_command(command, timeout):
+    """call shell-command and either return its output or kill it
+    if it doesn't normally exit within timeout seconds and return None"""
+    import subprocess, datetime, os, time, signal
+    start = datetime.datetime.now()
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    while process.poll() is None:
+        time.sleep(0.1)
+        now = datetime.datetime.now()
+        if (now - start).seconds> timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+    return process.stdout.read()
+
+def TIMEOUT_COMMAND(command, timeout):
+    """call shell-command and either return its output or kill it
+    if it doesn't normally exit within timeout seconds and return None"""
+    import subprocess, datetime, os, time, signal
+    cmd = command.split(" ")
+    start = datetime.datetime.now()
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    while process.poll() is None:
+        time.sleep(0.2)
+        now = datetime.datetime.now()
+        if (now - start).seconds> timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+    return process.stdout.readlines()
+
 def out(str,verbosity=0):
     sys.stdout.write(str+'\n')
     sys.stdout.flush()
