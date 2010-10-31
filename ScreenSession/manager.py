@@ -24,9 +24,11 @@ l[ayout] - toggle layout\n\
 kill - kill selected session\n\
 save <output> - save session\n\
 ALT + T - toggle between regions\n\
+CTRL + G - default escape key\n\
 '
-tui=1
-maxtui=3
+tui = 1
+tui_focus = 0
+maxtui = 3
 
 def menu_tmp(preselect=None):
     # taken from byobu
@@ -320,6 +322,9 @@ def eval_command(scs,command,last_session,psession):
             print2ui('LOGIC: killing session \"%s\"'%last_session)
             scs=ScreenSaver(last_session,'/dev/null','/dev/null')
             scs.quit()
+            scs.focus('top')
+    elif mode.startswith('p'): # print
+         print2ui(" ".join(["%s"%v for v in args]))
     elif mode.startswith('q'): # quit
         print2ui('LOGIC: quiting...' )
         return 'quit','\0'
@@ -330,6 +335,17 @@ def eval_command(scs,command,last_session,psession):
     elif mode=='restart': # restart
         print2ui('LOGIC: restarting')
         return 'restart',None
+    elif mode.startswith('f'): # focus top|bottom
+        global tui_focus
+        if tui_focus==0:
+            scs.focus('bottom')
+            tui_focus=1
+            print2ui('LOGIC: focus bottom')
+        else:
+            scs.focus('top')
+            tui_focus=0
+            print2ui('LOGIC: focus top')
+
     elif mode.startswith('r'): # refresh 
         print2ui('LOGIC: refreshing')
     elif mode.startswith('l'): # layout
@@ -433,8 +449,8 @@ def main():
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
         #files may get deleted by screen-session need to prevent
-        fifoname=os.path.join(tmpdir,'__manager_%s_logic'%os.getpid())
-        fifoname2=os.path.join(tmpdir,'__manager_%s_ui2'%os.getpid())
+        fifoname=os.path.join(tmpdir,'__internal_manager_logic_%s'%os.getpid())
+        fifoname2=os.path.join(tmpdir,'__internal_manager_ui2_%s'%os.getpid())
         last_session=None
        
         if not os.path.exists(fifoname):
@@ -444,12 +460,17 @@ def main():
         while True:
             sys.stderr.write('priming..\n')
             session=prime(fifoname)
+            session_pid=session.split('.',1)[0]
+            fifoname_access=os.path.join(tmpdir,'__manager_'+session_pid)
+            os.symlink(fifoname,fifoname_access)
             scs=ScreenSaver(session,'/dev/null','/dev/null')
             scs.title('command window',"0")
             scs.command_at('rendition so ky')
             scs.command_at('caption string "%?%F%{kr}%?%t"')
-            scs.command_at('bindkey ^[t focus prev')
+            scs.command_at('bindkey ^[t exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
             scs.command_at('bindkey ^[T focus prev')
+            scs.command_at('escape ^Gg')
+            scs.command_at('defmousetrack on')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
             data=mmap.mmap(-1,100)
             #pipeout = os.open(fifoname, os.O_WRONLY)
@@ -464,6 +485,10 @@ def main():
             else:
                 attach_session(session)
                 os.waitpid(pid,0)
+                try:
+                    os.remove(fifoname_access)
+                except:
+                    pass
                 command=data.readline().strip()
                 options,command=command.split(';;;',1)
                 options=options.split(';')
@@ -472,7 +497,6 @@ def main():
                 for m in command:
                     print('[]%d|mode=%s'%(len(m),m
                 '''
-                print len(options)
                 if len(options)>0:
                     tui=int(options[0])
                     psession=options[1]
