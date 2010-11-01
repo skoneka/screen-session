@@ -57,6 +57,9 @@ if [ $# -ge 1 ]; then
         exit 0
     fi
 fi
+
+umask 0077
+
 if [ "$session" = '' ]; then
     session=`python ./sessionname.py`
 fi
