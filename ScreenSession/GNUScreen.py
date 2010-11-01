@@ -85,7 +85,7 @@ def get_pid_info(pid):
 
 
 def sort_by_ppid(cpids):
-    #print cpids
+    #print (cpids)
     cppids={}
     ncpids=[]
     for i,pid in enumerate(cpids):

@@ -129,7 +129,7 @@ def ui2(fifoname):
     while 1:
         line = pipein.readline( )[:-1]            # blocks until data sent
         print(line)
-        #print 'Parent %d got "%s" at %s' % (os.getpid(), line, time.time( ))
+        #print ('Parent %d got "%s" at %s' % (os.getpid(), line, time.time( )))
 
 ui2pipe=None
 def print2pipe(pipeout,line):

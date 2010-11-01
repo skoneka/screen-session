@@ -107,7 +107,7 @@ def kill_group(session,win):
         return
     ss.select(win)
     wins=sc.parse_windows(sc.get_windows(session))[0]
-    print wins
+    print (wins)
     for w in wins:
        print('killing %s'%w)
 

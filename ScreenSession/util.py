@@ -70,7 +70,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         fullstr=" full"
     else:
         fullstr=""
-    out('unpacking%s...'%fullstr)
+    #out('unpacking%s...'%fullstr)
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(tmpdir):

@@ -6,7 +6,7 @@
 # it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen session
 
 # Absolute path to this script. /home/user/bin/foo.sh
-SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print os.path.realpath(i.strip())')
+SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print (os.path.realpath(i.strip()))')
 # Absolute path this script is in. /home/user/bin
 SCRIPTPATH=`dirname $SCRIPT`
 
