@@ -31,7 +31,7 @@ class ScreenSaver(object):
     # old static blacklist
     blacklist = ("rm","shutdown")
    
-    vim_names = ('vi','vim')
+    vim_names = ('vi','vim','viless','vimdiff')
     __wins_trans = {}
     __scrollbacks=[]
     win_none_g=None
