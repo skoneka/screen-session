@@ -9,7 +9,7 @@ issues:
     - program won't recognize telnet and serial window types
 '''
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
 from ScreenSaver import ScreenSaver
 from util import *
 import util
@@ -262,7 +262,7 @@ def main():
         out("for saving specify --maxwin (biggest window number in session)")
         maxwin=scs.maxwin()
     elif (maxwin==-1) and (mode==2) and bExact==True:
-        out("--exact mode requires --maxwin (biggest window number in current session)")
+        out("--exact option requires --maxwin (biggest window number in current session)")
         maxwin=scs.maxwin()
 
 
@@ -320,7 +320,24 @@ def main():
         #cleanup old temporary files and directories
         cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,scs.lastlink,200)
         # unpack and load
-        unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
+        try:
+            unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
+        except IOError:
+            g = glob.glob(os.path.join(home, projectsdir, '*%s*__win.tar.bz2'%savedir))
+            matching = list(g)
+            matching_len=len(matching)
+            if matching_len>1:
+                print ('%d savefiles match:'%matching_len)
+                for f in matching:
+                    print('\t'+os.path.basename(f).split('__win.tar.bz2')[0])
+                raise IOError
+            elif matching_len==1:
+                scs.savedir=savedir=os.path.basename(matching[0]).split('__win.tar.bz2')[0]
+                unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
+            else:
+                print ('No savefiles match.')
+                raise IOError
+
         try:
             ret = scs.load()
         except:
@@ -352,4 +369,7 @@ def main():
 
 
 if __name__=='__main__':
-    main()
+    try:
+        main()
+    except IOError:
+        print('File access error')

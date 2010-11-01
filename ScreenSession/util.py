@@ -78,7 +78,8 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if os.path.exists(os.path.join(tmpdir,savedir)):
         shutil.rmtree(os.path.join(tmpdir,savedir))
         os.makedirs(os.path.join(tmpdir,savedir))
-    
+    if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
+        raise IOError
     cwd=os.getcwd()
     os.chdir(os.path.join(tmpdir))
     if full:
