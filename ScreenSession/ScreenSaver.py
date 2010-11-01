@@ -608,13 +608,26 @@ class ScreenSaver(object):
 
                         #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                         vim_name=str(None)
-                        arg0=cpids_data[i][2].split('\0')[0]
-                        if self.primer==arg0:
+                        args=cpids_data[i][2].split('\0')
+                        if self.primer==args[0]:
                             out('Instance of primer detected. Importing files.')
                             rollback=self.__rollback(cpids_data[i][2])
                             print(rollback)
-                        elif arg0 in self.vim_names and self.bVim:
+                        elif args[0] in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
+                            nargs=[]
+                            rmarg=False
+                            for arg in args:
+                                if arg=='-S':
+                                    rmarg=True
+                                elif rmarg:
+                                    rmarg=False
+                                    pass
+                                else:
+                                    nargs.append(arg)
+                            args=nargs
+                            newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in args]),cpids_data[i][3])
+                            cpids_data[i]=newdata
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
