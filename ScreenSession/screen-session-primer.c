@@ -74,7 +74,7 @@
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
-#define BASEDATA_LINES 6
+#define BASEDATA_LINES 7
 #define PROCLINES 7
 #define QUOTEME(x) #x
 #define Q(x) QUOTEME(x)
@@ -1106,9 +1106,10 @@ main (int argc, char **argv)
   printf ("%s%s\n", green_r, buftext);
   getline (&buftext, &buftext_s, fp);	//group
   getline (&buftext, &buftext_s, fp);	//win type
-  getline (&title, &title_s, fp);	//title
+  getline (&title, &title_s, fp);	    //title
 
-  getline (&filter, &filter_s, fp);	//filter
+  getline (&filter, &filter_s, fp);	    //filter
+  getline (&buftext, &buftext_s, fp);	//scrollback len
 
   filter = strtrim_right (filter, '\n');
   if (strcmp (filter, "-1") != 0)

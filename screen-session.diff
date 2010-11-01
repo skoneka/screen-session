@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..2fbaada 100644
+index 5f4af8a..2aded62 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
@@ -20,6 +20,15 @@ index 5f4af8a..2fbaada 100644
    { "hardcopy",		NEED_FORE|ARGS_012 },
    { "hardcopy_append",	ARGS_1 },
    { "hardcopydir",	ARGS_01 },
+@@ -284,7 +284,7 @@ struct comm comms[RC_LAST + 1] =
+   { "resize",		NEED_DISPLAY|ARGS_0|ARGS_ORMORE },
+   { "screen",		ARGS_0|ARGS_ORMORE },
+ #ifdef COPY_PASTE
+-  { "scrollback",	NEED_FORE|ARGS_1 },
++  { "scrollback",	NEED_FORE|ARGS_01 },
+ #endif
+   { "select",		CAN_QUERY|ARGS_01 },
+   { "sessionname",	ARGS_01 },
 @@ -313,6 +313,7 @@ struct comm comms[RC_LAST + 1] =
    { "terminfo",		ARGS_23 },
    { "time",		CAN_QUERY|ARGS_01 },
@@ -63,7 +72,7 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..dc44af6 100644
+index da9188d..37f67e9 100644
 --- a/src/process.c
 +++ b/src/process.c
 @@ -2661,6 +2661,15 @@ int key;
@@ -82,7 +91,32 @@ index da9188d..dc44af6 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -4209,19 +4218,21 @@ int key;
+@@ -3066,14 +3075,16 @@ int key;
+       (void)ParseNum(act, &nwin_default.histheight);
+       break;
+     case RC_SCROLLBACK:
+-      if (flayer->l_layfn == &MarkLf)
+-	{
+-	  OutputMsg(0, "Cannot resize scrollback buffer in copy/scrollback mode.");
+-	  break;
+-	}
+-      (void)ParseNum(act, &n);
+-      ChangeWindowSize(fore, fore->w_width, fore->w_height, n);
+-      if (msgok)
++    if (*args != 0)
++	    {
++	  if (flayer->l_layfn == &MarkLf)
++	    {
++	      OutputMsg(0, "Cannot resize scrollback buffer in copy/scrollback mode.");
++	      break;
++	    }
++	  (void)ParseNum(act, &n);
++	  ChangeWindowSize(fore, fore->w_width, fore->w_height, n);
++      }
+ 	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
+       break;
+ #endif
+@@ -4209,19 +4220,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -117,7 +151,7 @@ index da9188d..dc44af6 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4237,13 +4248,10 @@ int key;
+@@ -4237,13 +4250,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}
