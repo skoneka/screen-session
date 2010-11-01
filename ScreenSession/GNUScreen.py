@@ -231,7 +231,7 @@ def __convert_to_list(s):
     return ln
 
 def parse_windows(windows):
-    winendings=re.escape('$*-&@ ')
+    winendings=re.escape('$*-&@! ')
     winendingsactive=re.escape('*')
 
     winregex='\s\s\d+[%s]'%(winendings)

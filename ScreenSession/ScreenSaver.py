@@ -822,35 +822,6 @@ class ScreenSaver(object):
         os.system('%s -X select %s' % (self.sc,cnum))
         return focus_offset
 
-    def parse_windows(self,windows):
-        winendings=re.escape('$*-&@ ')
-        winendingsactive=re.escape('*')
-
-        winregex='\s\s\d+[%s]'%(winendings)
-        firstwinregex='^\d+[%s]'%(winendings)
-        firstwinactiveregex='^\d+[%s][%s]'%(winendingsactive,winendings)
-        winactiveregex='\s\s\d+[%s][%s]'%(winendingsactive,winendings)
-        
-        winids=re.compile(winregex).findall(windows)
-        winfirst=re.compile(firstwinregex).findall(windows)
-        winactive=re.compile(winactiveregex).findall(windows)
-        winactivefirst=re.compile(firstwinactiveregex).findall(windows)
-        
-        if len(winfirst)>0:
-            winnumbers=[int(re.compile('\d+').findall(winfirst[0])[0])]
-        else:
-            winnumbers=[]
-        for id in winids:
-            winnumbers.append(int(re.compile('\d+').findall(id)[0]))
-        
-        winactivenumbers=-1
-        if len(winactivefirst)>0:
-            winactivenumbers=int(re.compile('\d+').findall(winactivefirst[0])[0])
-        elif len(winactive)>0:
-            winactivenumbers=int(re.compile('\d+').findall(winactive[0])[0])
-
-        return winnumbers,winactivenumbers
-
     def __save_layouts(self):
         homelayout,homelayoutname=self.get_layout_number()
         layoutname=homelayoutname
@@ -881,9 +852,9 @@ class ScreenSaver(object):
                 csize=self.get_regionsize(currentnumber)
                 offset=0
                 findactive=False
-                wnums,wactive=self.parse_windows(windows)
-                #out 'cnum='+currentnumber.strip()+'; wactive='+str(wactive)
-                #out windows
+                wnums,wactive=sc.parse_windows(windows)
+                #out('cnum='+currentnumber.strip()+'; wactive='+str(wactive))
+                #out (windows)
                 if wactive==-1:
                     findactive=False
                 else:
