@@ -411,6 +411,13 @@ class ScreenSaver(object):
     def number(self,args='',win="-1"):
         msg=self.command_at('number %s'%args,win)
         return msg
+
+    def focusminsize(self,args=''):
+        msg=self.command_at('focusminsize %s'%args)
+        try:
+            return msg.split('is ',1)[1].strip()
+        except:
+            return '0 0'
     
     def stuff(self,args='',win="-1"):
         msg=self.command_at('stuff "%s"'%args,win)
@@ -477,9 +484,6 @@ class ScreenSaver(object):
 
     def backtick(self,id,lifespan='',autorefresh='',args=''):
         msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
-
-    def focusminsize(self,args=''):
-        msg=self.command_at('focusminsize %s'%args)
 
     def get_layout_number(self):
         msg=self.command_at('layout number')
@@ -705,6 +709,7 @@ class ScreenSaver(object):
                 f=open(filename2,'r')
                 focus_offset=int(f.readline().split(" ")[1])
                 dinfo=map(int,f.readline().split(" ")[1:])
+                focusminsize=f.readline().split(" ",1)[1].strip()
                 regions_size=[]
                 winlist=[]
                 for line in f:
@@ -738,6 +743,8 @@ class ScreenSaver(object):
                 os.system('%s -X focus top' % (self.sc) )
                 for i in range(0,focus_offset):
                     os.system('%s -X focus' % (self.sc) )
+
+                self.focusminsize(focusminsize)
 
                 out('--')
 
@@ -840,10 +847,12 @@ class ScreenSaver(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             out("%s (%s)"% (currentlayout,layoutname))
+            cfocusminsize=self.focusminsize()
+            self.focusminsize('0 0')
             os.system('%s -X layout dump \"%s\"' % (self.sc, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.__get_focus_offset()
-            out("regions (%d); focus offset (%s)" % (region_c,focus_offset))
+            out("regions (%d); focus offset (%s); focusminsize (%s)" % (region_c,focus_offset,cfocusminsize))
             os.system('%s -X focus top' % (self.sc) )
             win=[]
             for i in range(0,region_c):
@@ -871,6 +880,7 @@ class ScreenSaver(object):
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
             f.writelines("offset %d\n"%focus_offset)
             f.writelines("dinfo %s %s\n"%(dinfo[0],dinfo[1]))
+            f.writelines("focusminsize %s\n"%cfocusminsize)
             f.writelines(win)
             f.close()
             
@@ -878,7 +888,7 @@ class ScreenSaver(object):
             for i in range(0,focus_offset):
                 os.system('%s -X focus' % (self.sc) )
 
-
+            self.focusminsize(cfocusminsize)
             os.system('%s -X layout next' % (self.sc) )
             
             currentlayout,layoutname=self.get_layout_number()
