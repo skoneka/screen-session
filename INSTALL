@@ -9,7 +9,7 @@ linux, python 2.5.2
 freebsd 8.1, python 2.6.5 (with mounted procfs)
 opensolaris, python 2.4.4
 
-screen-session.diff changes:
+gnu_screen.diff changes:
 - add "tty" command
 - add "regionsize" command
 - make "group" queryable
@@ -33,7 +33,7 @@ Make sure you have a recent version of Screen and apply necessary patch:
 
     git clone git://git.sv.gnu.org/screen.git screen; cd screen
     
-    git-apply ../screen-session-${VERSION}/screen-session.diff
+    git-apply ../screen-session-${VERSION}/gnu_screen.diff
 
     cd src; autoreconf; autoheader; ./configure && make
 

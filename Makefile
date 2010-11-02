@@ -35,7 +35,7 @@ dist: clean
 	@echo creating dist tarball
 	@mkdir -p screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
-	@cp -R LICENSE Makefile README INSTALL HOWTO config.mk screen-session.diff  screen-session-${VERSION}
+	@cp -R LICENSE Makefile README INSTALL HOWTO config.mk gnu_screen.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
