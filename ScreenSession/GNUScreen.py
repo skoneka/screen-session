@@ -150,8 +150,7 @@ def _get_tty_pids_ps_with_cache_gen(user):
     p=os.popen('ps -U %s -o tty,pid,ppid'%user)
     p.readline()
     data={}
-    lines=p.readlines()
-    for line in lines:
+    for line in p:
         line=shlex.split(line)
         try:
             line=(int(line[0].strip().split('/')[1]),int(line[1].strip()),int(line[2].strip()))

@@ -1006,7 +1006,7 @@ main (int argc, char **argv)
   int c;
   if (argc == 1)
     {
-      printf ("screen-session helper program\n");
+      printf ("screen-session %s helper program\n",VERSION);
       return 0;
     }
   if (strcmp (argv[1], "-s") == 0)
@@ -1018,10 +1018,14 @@ main (int argc, char **argv)
       start (argv[2], argv[3], argv[4], i - 5, procs);
       return 0;
     }
-  else if (strcmp (argv[1], "-S") == 0)
+  else if (strcmp (argv[1], "-D") == 0)
     {
+        printf("boom\n");
       //start a program in a directory
-      //-S directory program args
+      //primer -D directory program args
+      chdir(argv[2]);
+      execvp(argv[3],&argv[3]);
+      return 0;
     }
   else if (strcmp (argv[1], "-m") == 0)
     {

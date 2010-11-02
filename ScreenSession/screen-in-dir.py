@@ -8,14 +8,13 @@
 import os,sys
 import GNUScreen as sc
 
-
+primer='screen-session-primer -D'
 try:
     ppid=int(sys.argv[1])
 except:
     ppid=-1
 session=sys.argv[2]
 session_arg="-S %s"%session
-
 cwin = sc.get_current_window(session)
 windows_old = sc.parse_windows(sc.get_windows(session))[0]
 
@@ -23,17 +22,14 @@ f = os.popen('screen %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
 pids=sc.get_tty_pids(ctty)
-thepid = pids[len(pids)-1]
-if thepid==ppid:
-    thepid = pids[len(pids)-2]
+try:
+    t_i=[i for i,x in enumerate(pids) if x==ppid][0]-1
+    thepid = pids[t_i]
+except:
+    thepid = pids[len(pids)-1]
 info=sc.get_pid_info(thepid)
 thedir=info[0]
 
-#os.chdir(thedir)
-#command='screen'
-
-command_dir='screen %s -X chdir %s'%(session_arg,thedir)
-os.system(command_dir)
 command='screen %s -X screen' % (session_arg)
 
 if len(sys.argv)>3:
@@ -41,9 +37,13 @@ if len(sys.argv)>3:
 else:
     command+=' -t "%s"'%(thedir)
 
-
-for arg in sys.argv[3:]:
-    command+=' "'+arg+'"'
+command+=' '+primer+' '+'"%s"'%thedir
+try:
+    program=sys.argv[3]
+    for arg in sys.argv[3:]:
+        command+=' "'+arg+'"'
+except:
+    command+=' "'+os.getenv('SHELL')+'"'
 #print (command)
 os.system(command)
 
@@ -53,5 +53,4 @@ windows_diff=sc.find_new_windows(windows_old, windows_new)
 target=windows_diff[0]
 moveto=int(cwin)+1
 sc.move(int(target),moveto,True,session)
-#os.system('screen %s -p %s -X title blah'%(session,endpos))
 
