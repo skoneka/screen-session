@@ -171,8 +171,12 @@ class ScreenSaver(object):
             self.select_last_window()
 
     def select_last_window(self):
-        out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
-        self.select(self.__wins_trans[self.lastid])
+        try:
+            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
+            self.select(self.__wins_trans[self.lastid])
+        except:
+            self.select('-')
+            
 
     # Take a list of string objects and return the same list
     # stripped of extra whitespace.
