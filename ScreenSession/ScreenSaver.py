@@ -560,11 +560,9 @@ class ScreenSaver(object):
                 cfilter = self.get_exec(id)
                 cscrollback_len = self.scrollback('',id)
                 cgroup = self.get_group(id)
-                print (cscrollback_len)
-                
                 
                 # display some output
-                out(cwin+'; tty = '+ctty  +';  group = '+cgroup+';  title = '+ctitle)
+                out(cwin+'; tty = '+ctty  +'; scroll = '+cscrollback_len+'; group = '+cgroup+';  title = '+ctitle)
                 if cfilter!=-1:
                     out('filter: exec %s'%(cfilter))
                 else:
