@@ -169,14 +169,26 @@ def _get_tty_pids_ps_with_cache_gen(user):
         for pid,parent in val:
             pids.append(pid)
         lastpid=-1
+        val_not_set=[]
         for pid,parent in val:
             if parent not in pids:
                 nval.append(pid)
                 lastpid=pid
-        for pid,parent in val:
-            if parent == lastpid:
-                nval.append(pid)
-                lastval=pid
+            else:
+                val_not_set.append((pid,parent))
+        lastpid=lastpid
+        val_not_set_prev_len=0
+        val_not_set_swap=[]
+        while len(val_not_set)!=val_not_set_prev_len:
+            for pid,parent in val_not_set:
+                if parent == lastpid:
+                    nval.append(pid)
+                    lastpid=pid
+                else:
+                    val_not_set_swap.append((pid,parent))
+            val_not_set_prev_len=len(val_not_set)
+            val_not_set = val_not_set_swap
+            val_not_set_swap=[]
         ndata[key]=nval
     return ndata
 def _get_tty_pids_ps_with_cache_find(ctty):
