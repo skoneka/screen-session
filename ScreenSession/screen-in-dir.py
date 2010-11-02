@@ -23,11 +23,19 @@ ctty=f.readline()
 f.close()
 pids=sc.get_tty_pids(ctty)
 try:
-    t_i=[i for i,x in enumerate(pids) if x==ppid][0]-1
-    thepid = pids[t_i]
+    p_i=[i for i,x in enumerate(pids) if x==ppid][0]-1
+    thepid = pids[p_i]
 except:
-    thepid = pids[len(pids)-1]
-info=sc.get_pid_info(thepid)
+    p_i=len(pids)-1
+    thepid = pids[p_i]
+
+info=None
+while not info and p_i>=0:
+    try:
+        info=sc.get_pid_info(thepid)
+    except:
+        p_i-=1
+        thepid = pids[p_i]
 thedir=info[0]
 
 command='screen %s -X screen' % (session_arg)

@@ -1020,7 +1020,6 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[1], "-D") == 0)
     {
-        printf("boom\n");
       //start a program in a directory
       //primer -D directory program args
       chdir(argv[2]);
