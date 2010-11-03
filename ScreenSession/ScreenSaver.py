@@ -26,6 +26,7 @@ class ScreenSaver(object):
     sc=None
     
     primer="screen-session-primer"
+    primer_arg="-p"
     
     # blacklist file in projects directory
     blacklistfile="BLACKLIST"
@@ -193,7 +194,7 @@ class ScreenSaver(object):
             winarg=""
         
         if type=='basic':
-            os.system('screen -S %s -X screen -h %s -t \"%s\" %s %s %s %s %s' % (pid,scrollback_len,title,winarg,self.primer,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
+            os.system('screen -S %s -X screen -h %s -t \"%s\" %s %s %s %s %s %s' % (pid,scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
         elif type=='group':
             os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,winarg ) )
         else:
@@ -646,7 +647,7 @@ class ScreenSaver(object):
                         if self.primer in cpids_data[i][2]:
                             # clean zsh -c 'primer..' by removing '-c' 'primer..'
                             l=cpids_data[i][2].split('\0')
-                            if l[1]=='-c' and l[2].startswith(self.primer):
+                            if l[1]=='-c' and l[2].startswith(self.primer) and l[3]==self.primer_arg:
                                 s=str(l[0])+'\0'
                                 for j in range(3,len(l)):
                                     s+=str(l[j])+'\0'
@@ -695,9 +696,9 @@ class ScreenSaver(object):
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')
-            requireme(self.homedir,cmdline[1], cmdline[2],True)
-            path=os.path.join(self.homedir,cmdline[1],cmdline[3])
-            fhead,ftail=os.path.split(cmdline[3])
+            requireme(self.homedir,cmdline[2], cmdline[3],True)
+            path=os.path.join(self.homedir,cmdline[2],cmdline[4])
+            fhead,ftail=os.path.split(cmdline[4])
             fhhead,fhtail=os.path.split(fhead)
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             
@@ -705,23 +706,23 @@ class ScreenSaver(object):
             oldsavedir=fhead
             
             try:
-                shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[3]),target)
+                shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
             except Exception,e:
                 out(str(e))
                 target=None
                 pass
             
-            fhead,ftail=os.path.split(cmdline[2])
+            fhead,ftail=os.path.split(cmdline[3])
             fhhead,fhtail=os.path.split(fhead)
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             try:
-                shutil.move(os.path.join(self.homedir,cmdline[1],cmdline[2]),target2)
+                shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[3]),target2)
             except Exception,e:
                 out(str(e))
                 target2=None
                 pass
 
-            source3=os.path.join(self.homedir,cmdline[1],oldsavedir,"vim_"+number)
+            source3=os.path.join(self.homedir,cmdline[2],oldsavedir,"vim_"+number)
             target3=None
             if os.path.isfile(source3):
                 target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
@@ -983,6 +984,7 @@ class ScreenSaver(object):
             except:
                 pass
         basedata=(winid,time,group,type,title,filter,scrollback_len)
+        basedata_len=len(basedata)
 
         f=open(fname,"w")
         for data in basedata:
@@ -991,7 +993,7 @@ class ScreenSaver(object):
         if rollback[0]:
             target=rollback[0]
             fr=open(target,'r')
-            for line in fr.readlines()[6:]:
+            for line in fr.readlines()[basedata_len:]:
                 f.write(line)
             os.remove(target)
         else:

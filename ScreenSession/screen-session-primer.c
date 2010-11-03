@@ -1057,221 +1057,227 @@ main (int argc, char **argv)
       regions_helper (argv[2], argv[3]);
       return 0;
     }
-  char *homedir = getenv ("HOME");
-  char *workingdir = argv[1];
-  char *scrollbackfile = argv[2];
-  char *datafile = argv[3];
+  else if (strcmp (argv[1], "-p") == 0) {
+    //session saver primer
+    char *homedir = getenv ("HOME");
+    char *workingdir = argv[2];
+    char *scrollbackfile = argv[3];
+    char *datafile = argv[4];
 
-  char *fullpath =
-    malloc ((strlen (homedir) + strlen (workingdir) + 2) * sizeof (char));
-  strcpy (fullpath, homedir);
-  strcat (fullpath, "/");
-  strcat (fullpath, workingdir);
-  chdir (fullpath);
-  requireSession (fullpath, datafile, 0);
-  fp = fopen (scrollbackfile, "r");
-  if (fp)
-    {
-      while ((c = fgetc (fp)) != EOF)
-	{
-	  fputc (c, stdout);
-	}
-      fclose (fp);
-    }
-  else
-    {
-      printf ("Cannot open scrollback file.\n");
-    }
-  fp = NULL;
+    char *fullpath =
+      malloc ((strlen (homedir) + strlen (workingdir) + 2) * sizeof (char));
+    strcpy (fullpath, homedir);
+    strcat (fullpath, "/");
+    strcat (fullpath, workingdir);
+    chdir (fullpath);
+    requireSession (fullpath, datafile, 0);
+    fp = fopen (scrollbackfile, "r");
+    if (fp)
+      {
+        while ((c = fgetc (fp)) != EOF)
+          {
+            fputc (c, stdout);
+          }
+        fclose (fp);
+      }
+    else
+      {
+        printf ("Cannot open scrollback file.\n");
+      }
+    fp = NULL;
 
-  //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-  printf ("%s%s'%s'%s ", none, green_r, datafile, none);
-  requireSession (fullpath, datafile, 0);
-  fp = fopen (datafile, "r");
-  if (!fp)
-    {
-      printf ("Cannot open data file. Aborting.\n");
-      printf ("Press any key to continue...\n");
-      mygetch ();
-      return 1;
-    }
+    //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
+    printf ("%s%s'%s'%s ", none, green_r, datafile, none);
+    requireSession (fullpath, datafile, 0);
+    fp = fopen (datafile, "r");
+    if (!fp)
+      {
+        printf ("Cannot open data file. Aborting.\n");
+        printf ("Press any key to continue...\n");
+        mygetch ();
+        return 1;
+      }
 
-  int procs_c = 0;
-  size_t filter_s = 20;
-  char *filter = malloc (filter_s * sizeof (char));
-  printf ("%sSAVED: ", none);
-  size_t buftext_s;
-  char *buftext = NULL;
-  size_t title_s;
-  char *title = NULL;
-  getline (&buftext, &buftext_s, fp);	//win number
-  getline (&buftext, &buftext_s, fp);	//save time
-  printf ("%s%s\n", green_r, buftext);
-  getline (&buftext, &buftext_s, fp);	//group
-  getline (&buftext, &buftext_s, fp);	//win type
-  getline (&title, &title_s, fp);	    //title
+    int procs_c = 0;
+    size_t filter_s = 20;
+    char *filter = malloc (filter_s * sizeof (char));
+    printf ("%sSAVED: ", none);
+    size_t buftext_s;
+    char *buftext = NULL;
+    size_t title_s;
+    char *title = NULL;
+    getline (&buftext, &buftext_s, fp);	//win number
+    getline (&buftext, &buftext_s, fp);	//save time
+    printf ("%s%s\n", green_r, buftext);
+    getline (&buftext, &buftext_s, fp);	//group
+    getline (&buftext, &buftext_s, fp);	//win type
+    getline (&title, &title_s, fp);	    //title
 
-  getline (&filter, &filter_s, fp);	    //filter
-  getline (&buftext, &buftext_s, fp);	//scrollback len
+    getline (&filter, &filter_s, fp);	    //filter
+    getline (&buftext, &buftext_s, fp);	//scrollback len
 
-  filter = strtrim_right (filter, '\n');
-  if (strcmp (filter, "-1") != 0)
-    printf ("\nFilter: %s\n", filter);
-  printf ("%s", none);
+    filter = strtrim_right (filter, '\n');
+    if (strcmp (filter, "-1") != 0)
+      printf ("\nFilter: %s\n", filter);
+    printf ("%s", none);
 
-  fscanf (fp, "%d\n", &procs_c);
-  printf ("%s%d%s in %s%s%s\n", red_r, procs_c, blue_r, red_r, title, none);
+    fscanf (fp, "%d\n", &procs_c);
+    printf ("%s%d%s in %s%s%s\n", red_r, procs_c, blue_r, red_r, title, none);
 
-  size_t proc_cwd_s = 0;
-  size_t proc_exe_s = 0;
-  size_t proc_vim_s = 0;
-  char *proc_cwd = NULL;
-  char *proc_exe = NULL;
-  char *proc_vim = NULL;
-  int proc_args_n;
-  char cmdline_begin[CMDLINE_BEGIN + 1];
-  int cmdline_begin_c = 0;
-  char proc_blacklisted[7];
-  char buf[5];
-  for (i = 0; i < procs_c; i++)
-    {
-      fscanf (fp, "%s\n", buf);	//read --
-      printf ("%s%s %d%s: ", blue_b, buf, i, none);
-      //cwd exe args
-      getline (&proc_cwd, &proc_cwd_s, fp);
-      proc_cwd = strtrim_right (proc_cwd, '\n');
-      getline (&proc_exe, &proc_exe_s, fp);
-      proc_exe = strtrim_right (proc_exe, '\n');
-      fscanf (fp, "%d\n", &proc_args_n);
-      int null_c = 0;
-      cmdline_begin_c = 0;
-      while ((c = fgetc (fp)) != EOF)
-	{
-	  if (cmdline_begin_c < CMDLINE_BEGIN)
-	    {
-	      cmdline_begin[cmdline_begin_c] = c;
-	      cmdline_begin[cmdline_begin_c + 1] = '\0';
-	      cmdline_begin_c++;
-	    }
-	  if (c == '\0')
-	    {
-	      null_c++;
-	      if (null_c == 1)
-		fputs (" \"", stdout);
-	      else
-		fputs ("\" \"", stdout);
-	    }
-	  else if (c == '\n')
-	    {
-	      fputs ("\" ", stdout);
-	      break;
-	    }
-	  else
-	    fputc (c, stdout);
-	  if (null_c > proc_args_n)
-	    break;
-	}
+    size_t proc_cwd_s = 0;
+    size_t proc_exe_s = 0;
+    size_t proc_vim_s = 0;
+    char *proc_cwd = NULL;
+    char *proc_exe = NULL;
+    char *proc_vim = NULL;
+    int proc_args_n;
+    char cmdline_begin[CMDLINE_BEGIN + 1];
+    int cmdline_begin_c = 0;
+    char proc_blacklisted[7];
+    char buf[5];
+    for (i = 0; i < procs_c; i++)
+      {
+        fscanf (fp, "%s\n", buf);	//read --
+        printf ("%s%s %d%s: ", blue_b, buf, i, none);
+        //cwd exe args
+        getline (&proc_cwd, &proc_cwd_s, fp);
+        proc_cwd = strtrim_right (proc_cwd, '\n');
+        getline (&proc_exe, &proc_exe_s, fp);
+        proc_exe = strtrim_right (proc_exe, '\n');
+        fscanf (fp, "%d\n", &proc_args_n);
+        int null_c = 0;
+        cmdline_begin_c = 0;
+        while ((c = fgetc (fp)) != EOF)
+          {
+            if (cmdline_begin_c < CMDLINE_BEGIN)
+              {
+                cmdline_begin[cmdline_begin_c] = c;
+                cmdline_begin[cmdline_begin_c + 1] = '\0';
+                cmdline_begin_c++;
+              }
+            if (c == '\0')
+              {
+                null_c++;
+                if (null_c == 1)
+                  fputs (" \"", stdout);
+                else
+                  fputs ("\" \"", stdout);
+              }
+            else if (c == '\n')
+              {
+                fputs ("\" ", stdout);
+                break;
+              }
+            else
+              fputc (c, stdout);
+            if (null_c > proc_args_n)
+              break;
+          }
 
-      fscanf (fp, "%s\n", proc_blacklisted);
-      getline (&proc_vim, &proc_vim_s, fp);
-      proc_vim = strtrim_right (proc_vim, '\n');
-      printf ("\n");
-      printf ("\tCWD: %s\n", proc_cwd);
-      printf ("\tEXE: %s\n", proc_exe);
-      if (strcmp ("None", proc_vim) != 0)
-	printf ("\tVIMSESSION: %s\n", proc_vim);
-      if (strncmp (proc_blacklisted, "True", 4) == 0
-	  || is_blacklisted (fullpath, cmdline_begin, i))
-	printf ("\t%sBLACKLISTED - program and child processes\n\
-                    \tcannot be started (use [O]nly)%s\n", magenta, none);
-    }
-  fclose (fp);
-  int menu;
-  int number;
-  userInput (&menu, &number, procs_c);
-  char *shell = NULL;
-  char **arglist = NULL;
-  int *args;
+        fscanf (fp, "%s\n", proc_blacklisted);
+        getline (&proc_vim, &proc_vim_s, fp);
+        proc_vim = strtrim_right (proc_vim, '\n');
+        printf ("\n");
+        printf ("\tCWD: %s\n", proc_cwd);
+        printf ("\tEXE: %s\n", proc_exe);
+        if (strcmp ("None", proc_vim) != 0)
+          printf ("\tVIMSESSION: %s\n", proc_vim);
+        if (strncmp (proc_blacklisted, "True", 4) == 0
+            || is_blacklisted (fullpath, cmdline_begin, i))
+          printf ("\t%sBLACKLISTED - program and child processes\n\
+                      \tcannot be started (use [O]nly)%s\n", magenta, none);
+      }
+    fclose (fp);
+    int menu;
+    int number;
+    userInput (&menu, &number, procs_c);
+    char *shell = NULL;
+    char **arglist = NULL;
+    int *args;
 
-  // execute filter
-  if (strncmp (filter, "-1", 2) != 0)
-    {
-      printf ("Setting up filter...\n");
-      char command0[] = "screen -X stuff \"exec ";
-      char command1[] = "\"^M";
-      char *command =
-	malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
-		 1) * sizeof (char));
-      strcpy (command, command0);
-      strcat (command, filter);
-      strcat (command, command1);
-      system ("screen -X colon");
-      system (command);
-    }
+    // execute filter
+    if (strncmp (filter, "-1", 2) != 0)
+      {
+        printf ("Setting up filter...\n");
+        char command0[] = "screen -X stuff \"exec ";
+        char command1[] = "\"^M";
+        char *command =
+          malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
+                   1) * sizeof (char));
+        strcpy (command, command0);
+        strcat (command, filter);
+        strcat (command, command1);
+        system ("screen -X colon");
+        system (command);
+      }
 
-  args = malloc (procs_c * sizeof (int));
-  switch (menu)
-    {
+    args = malloc (procs_c * sizeof (int));
+    switch (menu)
+      {
 
-    case EXIT:
-      printf ("Exiting...\n");
-      return 0;
-      break;
+      case EXIT:
+        printf ("Exiting...\n");
+        return 0;
+        break;
 
-    case RESET:
-      shell = getenv ("SHELL");
-      arglist = malloc (2 * sizeof (char *));
-      arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
-      arglist[1] = NULL;
-      strcpy (arglist[0], shell);
-      printf ("Starting default shell(%s) in last cwd(%s)...\n", shell,
-	      proc_cwd);
-      chdir (proc_cwd);
-      execv (shell, arglist);
-      break;
+      case RESET:
+        shell = getenv ("SHELL");
+        arglist = malloc (2 * sizeof (char *));
+        arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
+        arglist[1] = NULL;
+        strcpy (arglist[0], shell);
+        printf ("Starting default shell(%s) in last cwd(%s)...\n", shell,
+                proc_cwd);
+        chdir (proc_cwd);
+        execv (shell, arglist);
+        break;
 
-    case ONLY:
-      printf ("Starting program %d...\n", number);
-      args[0] = number;
-      arglist = make_arglist (argv[0], "-s", fullpath, datafile, 1, args);
-      execv (argv[0], arglist);
-      break;
+      case ONLY:
+        printf ("Starting program %d...\n", number);
+        args[0] = number;
+        arglist = make_arglist (argv[0], "-s", fullpath, datafile, 1, args);
+        execv (argv[0], arglist);
+        break;
 
-    case ALL:
-      printf ("Starting all programs...\n");
-      for (i = 0; i < procs_c; i++)
-	{
-	  args[i] = i;
-	}
-      arglist =
-	make_arglist (argv[0], "-s", fullpath, datafile, procs_c, args);
-      execv (argv[0], arglist);
+      case ALL:
+        printf ("Starting all programs...\n");
+        for (i = 0; i < procs_c; i++)
+          {
+            args[i] = i;
+          }
+        arglist =
+          make_arglist (argv[0], "-s", fullpath, datafile, procs_c, args);
+        execv (argv[0], arglist);
 
-      break;
+        break;
 
-    case NUMBER:
-      printf ("Starting programs up to %d...\n", number);
-      if (number > procs_c)
-	{
-	  number = procs_c;
-	  printf ("No such window. Starting programs up to %d...\n",
-		  number - 1);
-	}
-      else
-	number++;
-      for (i = 0; i < number; i++)
-	{
-	  args[i] = i;
-	}
-      arglist =
-	make_arglist (argv[0], "-s", fullpath, datafile, number, args);
-      execv (argv[0], arglist);
-      break;
+      case NUMBER:
+        printf ("Starting programs up to %d...\n", number);
+        if (number > procs_c)
+          {
+            number = procs_c;
+            printf ("No such window. Starting programs up to %d...\n",
+                    number - 1);
+          }
+        else
+          number++;
+        for (i = 0; i < number; i++)
+          {
+            args[i] = i;
+          }
+        arglist =
+          make_arglist (argv[0], "-s", fullpath, datafile, number, args);
+        execv (argv[0], arglist);
+        break;
 
-    }
-  printf ("fatal error\n");
-  mygetch ();
-  return 44;
+      }
+    printf ("fatal error\n");
+    mygetch ();
+    return 44;
+  }
+  else {
+      printf ("screen-session %s helper program\n",VERSION);
+  }
 }
 
 #endif
