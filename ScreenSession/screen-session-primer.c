@@ -222,7 +222,6 @@ enum menu
   NUMBER
 };
 
-
 int
 line_to_string (FILE * fp, char **line, size_t * size)
 {
@@ -683,7 +682,8 @@ is_blacklisted (char *basedir, char *program, int programid)
 
   if (!fp)
     {
-      printf ("Cannot open blacklist '%s'.\n", filepath);
+      fprintf (stderr,"%s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
+      perror("Error :");
       free (filepath);
       return 0;
     }
@@ -728,7 +728,8 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   if (!fp)
     {
 
-      printf ("Cannot open data file. Aborting.\n");
+      fprintf (stderr,"%s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
+      perror("Error :");
       printf ("Press any key to continue...\n");
       mygetch ();
       return 1;
@@ -1082,7 +1083,8 @@ main (int argc, char **argv)
       }
     else
       {
-        printf ("Cannot open scrollback file.\n");
+        fprintf (stderr,"%s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
+        perror("Error :");
       }
     fp = NULL;
 
@@ -1092,7 +1094,8 @@ main (int argc, char **argv)
     fp = fopen (datafile, "r");
     if (!fp)
       {
-        printf ("Cannot open data file. Aborting.\n");
+        fprintf (stderr,"%s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
+        perror("Error :");
         printf ("Press any key to continue...\n");
         mygetch ();
         return 1;
@@ -1271,7 +1274,8 @@ main (int argc, char **argv)
         break;
 
       }
-    printf ("fatal error\n");
+    fprintf (stderr,"%s:%d fatal error - unsupported action\n",__FILE__,__LINE__);
+    perror("Error :");
     mygetch ();
     return 44;
   }
