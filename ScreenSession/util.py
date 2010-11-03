@@ -1,39 +1,44 @@
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,string
+import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,string,shlex
 
 archiveend=''
 tmpdir=''
 
-def timeout_command(command, timeout):
+def _timeout_command_split(command, timeout):
     """call shell-command and either return its output or kill it
     if it doesn't normally exit within timeout seconds and return None"""
     import subprocess, datetime, os, time, signal
-    start = datetime.datetime.now()
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    while process.poll() is None:
-        time.sleep(0.1)
-        now = datetime.datetime.now()
-        if (now - start).seconds> timeout:
-            os.kill(process.pid, signal.SIGKILL)
-            os.waitpid(-1, os.WNOHANG)
-            return None
-    return process.stdout.read()
-
-def TIMEOUT_COMMAND(command, timeout):
-    """call shell-command and either return its output or kill it
-    if it doesn't normally exit within timeout seconds and return None"""
-    import subprocess, datetime, os, time, signal
-    cmd = command.split(" ")
+    cmd = shlex.split(command)
     start = datetime.datetime.now()
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while process.poll() is None:
-        time.sleep(0.2)
+        time.sleep(0.0001)
         now = datetime.datetime.now()
         if (now - start).seconds> timeout:
             os.kill(process.pid, signal.SIGKILL)
             os.waitpid(-1, os.WNOHANG)
             return None
     return process.stdout.readlines()
+
+def timeout_command_list(command, timeout):
+    """call shell-command and either return its output or kill it
+    if it doesn't normally exit within timeout seconds and return None"""
+    import subprocess, datetime, os, time, signal
+    start = datetime.datetime.now()
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    while process.poll() is None:
+        time.sleep(0.00001)
+        now = datetime.datetime.now()
+        if (now - start).seconds> timeout:
+            os.kill(process.pid, signal.SIGKILL)
+            os.waitpid(-1, os.WNOHANG)
+            return None
+    return process.stdout.readlines()
+
+def timeout_command(command, timeout):
+    global timeout_command
+    timeout_command=_timeout_command_split
+    return timeout_command(command,timeout)
 
 def out(str,verbosity=0):
     sys.stdout.write(str+'\n')
