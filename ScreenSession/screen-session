@@ -13,7 +13,7 @@ SCRIPTPATH=`dirname $SCRIPT`
 cd $SCRIPTPATH
 
 get_maxwin() {
-    maxwin=`screen -S $1 -X maxwin; screen -S $1 -Q @lastmsg | python -c "import sys; print(sys.stdin.read().split(':',1)[1].strip())"`
+    maxwin=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$1\").maxwin())"`
     echo $maxwin
 }
 
@@ -105,7 +105,8 @@ elif [ $mode = "sort" ]; then
     python ./sort.py $session $maxwin "$@"
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
-    testargument=`screen -S $session -Q @tty`
+    testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`
+
 
     scsfiledir="/tmp/screen-sessions-$USER"
     scsfile="$scsfiledir/___scspipe-$$"
@@ -113,7 +114,7 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     argument0=""
     argument1=""
 
-    if [ `/bin/echo ${testargument} | grep -c "^/dev"` -eq 1 ]; then
+    if [ "${testargument}" = "True" ]; then
         argument1="--current-session $session"
     else
         /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"

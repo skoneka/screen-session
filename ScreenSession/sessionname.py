@@ -11,7 +11,7 @@ def get_sessionname(session=None):
     p=os.popen('screen %s -X sessionname'%session_arg)
     p.close()
     p=os.popen('screen %s -Q @lastmsg'%session_arg)
-    s=p.read()
+    s=p.readlines()
     return s.split('\'',1)[1].rsplit('\'',1)[0]
 
 try:
@@ -28,6 +28,9 @@ except:
     s2=None
     try:
         badname=os.getenv('STY').split('.',1)[0]
+        if not badname:
+            session=None
+            raise Exception
         sclist=sc.get_session_list()
         for sc,active in sclist:
             if sc.startswith(badname):
@@ -51,6 +54,7 @@ if s:
             print ('__no__session__')
             sys.exit(1)
 else:
+   
     print ('__no__session__')
     sys.exit(1)
 
