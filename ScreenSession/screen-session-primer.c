@@ -222,6 +222,14 @@ enum menu
   NUMBER
 };
 
+void print_ints(int *numbers,int n) 
+{
+  int i;
+  for(i=0;i<n;i++)
+    {
+      printf("%d ",numbers[i]);
+    }
+}
 int
 line_to_string (FILE * fp, char **line, size_t * size)
 {
@@ -501,15 +509,17 @@ getinput (int *prefix, char *mode)
   return 0;
 }
 
-void
-userInput (int *menu_num, int *num, int max)
+int
+userInput (int *menu_num, int **num, int max)
 {
   char ch;			/* handles user input */
   char buffer[USERINPUTMAXBUFFERSIZE];	/* sufficient to handle one line */
   int char_count;		/* number of characters read for this line */
   int exit_flag = 0, valid_choice, number = 0;
   enum menu menu_choice = NONE;
-
+  int *args=malloc(USERINPUTMAXBUFFERSIZE*sizeof(int));
+  int args_index=0;
+  
   while (exit_flag == 0 && menu_choice == NONE)
     {
       valid_choice = 0;
@@ -522,14 +532,36 @@ userInput (int *menu_num, int *num, int max)
 	  printf ("> ");
 	  ch = getchar ();
 	  char_count = 0;
-	  while ((ch != '\n') && (char_count < USERINPUTMAXBUFFERSIZE))
+          char menu=ch;
+          if(menu >= '0' && menu <= '9')
+            {
+              ungetc(menu,stdin);
+              menu='N';
+            }
+          args_index=0;
+          args[args_index]=-1;
+          int got_number=0;
+	  while ((char_count < USERINPUTMAXBUFFERSIZE))
 	    {
-	      if (ch != ' ')
-		buffer[char_count++] = ch;
 	      ch = getchar ();
+              //printf("menu='%c' index='%d'  ch='%c'\n",menu, args_index,ch);
+	      if (ch != ' ' && ch !='\n' ) {
+		buffer[char_count++] = ch;
+		buffer[char_count] = '\0';
+                got_number=1;
+              }
+              else if (got_number){
+                  args[args_index]=parseNumber(buffer);
+                  args_index = (args[args_index]>(-1))?(args_index+1):(args_index);
+                  char_count=0;
+                  got_number=0;
+              }
+              if (ch == '\n')
+                break;
 	    }
+          args_index--;
 	  buffer[char_count] = 0x00;	/* null terminate buffer */
-	  switch (buffer[0])
+	  switch (menu)
 	    {
 	    case 'r':
 	    case 'R':
@@ -546,7 +578,7 @@ userInput (int *menu_num, int *num, int max)
 	    case 'o':
 	    case 'O':
 	      menu_choice = ONLY;
-	      number = parseNumber (buffer + 1);
+	      number = args[0];
 	      if (number == -1)
 		valid_choice = 0;
 	      else if (number > max)
@@ -559,18 +591,10 @@ userInput (int *menu_num, int *num, int max)
 	      menu_choice = EXIT;
 	      valid_choice = 1;
 	      break;
-	    case '1':
-	    case '2':
-	    case '3':
-	    case '4':
-	    case '5':
-	    case '6':
-	    case '7':
-	    case '8':
-	    case '9':
-	    case '0':
+	    case 'n':
+	    case 'N':
 	      menu_choice = NUMBER;
-	      number = parseNumber (buffer);
+	      number = args[0];
 	      if (number == -1)
 		valid_choice = 0;
 	      else if (number > max)
@@ -586,8 +610,9 @@ userInput (int *menu_num, int *num, int max)
 
 	}
     }
-  *num = number;
+  *num = args;
   *menu_num = menu_choice;
+   return args_index+1;
 }
 
 char **
@@ -924,7 +949,6 @@ get_font (char c)
     }
   return font;
 }
-
 void
 print_number (char *n, char *color)
 {
@@ -1193,7 +1217,8 @@ main (int argc, char **argv)
     fclose (fp);
     int menu;
     int number;
-    userInput (&menu, &number, procs_c);
+    int *numbers;
+    int numbers_c=userInput (&menu, &numbers, procs_c);
     char *shell = NULL;
     char **arglist = NULL;
     int *args;
@@ -1236,9 +1261,17 @@ main (int argc, char **argv)
         break;
 
       case ONLY:
-        printf ("Starting program %d...\n", number);
-        args[0] = number;
-        arglist = make_arglist (argv[0], "-s", fullpath, datafile, 1, args);
+        printf ("Starting processes ");
+        print_ints(numbers,numbers_c);
+        printf("...\n");
+        args[0] = numbers[0];
+        //sort ints?
+        arglist = make_arglist (argv[0], "-s", fullpath, datafile,numbers_c, numbers);
+        //arglist = make_arglist (argv[0], "-s", fullpath, datafile,1, args);
+
+        /* i=0;
+        while(arglist[i]!=NULL)
+          printf("%s\n",arglist[i++]); */
         execv (argv[0], arglist);
         break;
 
@@ -1255,6 +1288,7 @@ main (int argc, char **argv)
         break;
 
       case NUMBER:
+        number=numbers[0];
         printf ("Starting programs up to %d...\n", number);
         if (number > procs_c)
           {
