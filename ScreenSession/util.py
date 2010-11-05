@@ -27,7 +27,7 @@ def timeout_command_list(command, timeout):
     start = datetime.datetime.now()
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     while process.poll() is None:
-        time.sleep(0.00001)
+        time.sleep(0.0001)
         now = datetime.datetime.now()
         if (now - start).seconds> timeout:
             os.kill(process.pid, signal.SIGKILL)
@@ -36,6 +36,7 @@ def timeout_command_list(command, timeout):
     return process.stdout.readlines()
 
 def timeout_command(command, timeout):
+    #return os.popen(command).readlines()
     global timeout_command
     timeout_command=_timeout_command_split
     return timeout_command(command,timeout)

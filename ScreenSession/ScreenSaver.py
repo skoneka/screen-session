@@ -691,7 +691,7 @@ class ScreenSaver(object):
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         out('\n--')
-        out('saved on '+ctime)
+        out('saved on '+str(ctime))
     
     def __rollback(self,cmdline):
         try:
@@ -988,7 +988,10 @@ class ScreenSaver(object):
 
         f=open(fname,"w")
         for data in basedata:
-            f.write(data+'\n')
+            if data:
+                f.write(data+'\n')
+            else:
+                f.write('\n')
         
         if rollback[0]:
             target=rollback[0]
