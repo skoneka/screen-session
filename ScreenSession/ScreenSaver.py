@@ -468,11 +468,16 @@ class ScreenSaver(object):
 
     def only(self):
         self.command_at('only')
+
     def quit(self):
         msg=self.command_at('quit')
 
     def fit(self):
         msg=self.command_at('fit')
+
+    def layout(self,args=''):
+        msg=self.command_at('layout %s'%args)
+        return msg
 
     def split(self,args=''):
         msg=self.command_at('split %s'%args)

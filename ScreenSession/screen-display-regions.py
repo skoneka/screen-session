@@ -6,6 +6,7 @@
 
 import sys,os,subprocess,time,signal
 import GNUScreen as sc
+from ScreenSaver import ScreenSaver
 
 user=os.getenv("USER")
 logfile="/tmp/%s-scs-regions-log"%(user)
@@ -93,7 +94,8 @@ def handler(signum,frame):
 
 def cleanup():
     order_windows()
-    kill_screen_windows(session,wins)
+    kill_screen_windows(scs,wins)
+    scs.focusminsize(focusminsize)
     try:
         os.remove(dumpfile)
     except:
@@ -113,9 +115,9 @@ def find_subprograms(ident):
         except:
             pass
     return nprocs
-def kill_screen_windows(session,wins):
+def kill_screen_windows(scs,wins):
     for w in wins:
-        os.system('screen -S %s -p %s -X kill'%(session,w))
+        scs.kill(w)
 
 def order_windows():
     #return to previous windows
@@ -125,8 +127,8 @@ def order_windows():
         except:
             break
         print('window: %s'%w)
-        os.system('screen -S %s -X select %s'%(session,w))
-        os.system('screen -S %s -X focus' %(session))
+        scs.select(w)
+        scs.focus()
 
 def select_window(number):
     #select region
@@ -137,13 +139,12 @@ def select_window(number):
         os.system(command)
 
 
-def get_regions_count(session,dumpfile):
+def get_regions_count(scs,dumpfile):
     try:
         os.remove(dumpfile)
     except:
         pass
-
-    os.system('screen -S %s -X layout dump %s' % (session,dumpfile))
+    scs.layout('dump %s'%dumpfile)
     while not os.path.exists(dumpfile):
         time.sleep(0.01)
 
@@ -192,13 +193,13 @@ def start_subprograms(session,subprogram,inputfile,regions_c,max_commands):
             del command
             command=command0
 
-def get_win_history(session,regions_c):
+def get_win_history(scs,regions_c):
     this_win_history=[]
     for i in range(0,regions_c):
-        win=subprocess.Popen('screen -S %s -Q @number'%(session), shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split(' ',1)[0]
+        win=scs.number()
         this_win_history.append(win)
         print ('frame %d win %s'%(i,win))
-        os.system('screen -S %s -X focus' %(session))
+        scs.focus()
     return this_win_history
 
 
@@ -206,14 +207,17 @@ if __name__=='__main__':
     sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
     session=sys.argv[1]
-    win=subprocess.Popen('screen -S %s -Q @number'%(session), shell=True, stdout=subprocess.PIPE).communicate()[0].strip().split(' ',1)[0]
+    scs=ScreenSaver(session)
+    focusminsize=scs.focusminsize()
+    scs.focusminsize('0 0')
+    win=scs.number()
     print ('win before get_regions_count: '+win)
     #regions_c=get_regions_count_no_layout(session,)
-    regions_c=get_regions_count(session,dumpfile)
+    regions_c=get_regions_count(scs,dumpfile)
 
     ident=subprogram+" "+inputfile
     global win_history
-    win_history=get_win_history(session,regions_c)
+    win_history=get_win_history(scs,regions_c)
     w1=sc.parse_windows(sc.get_windows(session))[0]
     start_subprograms(session,subprogram,inputfile,regions_c,5)
     w2=sc.parse_windows(sc.get_windows(session))[0]
