@@ -23,7 +23,7 @@ def gen_all_windows(minwin,maxwin,session):
 
             # has to follow get_number_and_title() to recognize zombie windows
             ctty = ss.tty(id)
-            if ctty.startswith('This'):
+            if not ctty:
                 ctype=-1
             elif ctty=='telnet':
                 ctype=1

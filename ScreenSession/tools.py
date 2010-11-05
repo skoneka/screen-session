@@ -12,13 +12,13 @@ def dump(ss,minwin,maxwin):
         else:
             type_string="unknown"
 
-        print("%s %s"%(win,type_string))
-        print("%s %s"%(win,title))
+        print("%s TYPE\t %s"%(win,type_string))
+        print("%s TITL\t %s"%(win,title))
         filter=ss.get_exec(win)
         if filter!=-1:
-            print("%s %s"%(win,filter))
+            print("%s EXEC\t %s"%(win,filter))
         tty=ss.tty(win)
-        print("%s %s"%(win,tty))
+        print("%s TTY \t %s"%(win,tty))
         if type==0:
             try:
                 pids=sc.get_tty_pids(tty)
@@ -27,10 +27,14 @@ def dump(ss,minwin,maxwin):
                 pass
             for pid in pids:
                 try:
-                    print ("%s %s %s"%(win,pid,sc.get_pid_info(pid)))
+                    cwd,exe,cmd=sc.get_pid_info(pid)
+                    print ("%s PID \t %s"%(win,pid))
+                    print ("%s P %s CWD \t %s"%(win,pid,cwd))
+                    print ("%s P %s EXE \t %s"%(win,pid,exe))
+                    print ("%s P %s CMD \t %s"%(win,pid,cmd.split('\0')))
                 except:
-                    print ("%s No permission"%(win))
-        print("\n")
+                    print ("%s PID \t %s No permission"%(win,pid))
+        print("")
 
 def renumber(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
