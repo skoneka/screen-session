@@ -978,11 +978,13 @@ class ScreenSaver(object):
             time=linecache.getline(rollback[0],2).strip()
             #copy scrollback
             shutil.move(rollback[1],scrollback_filename)
-            try:
-                vim_fname=os.path.join(self.basedir,self.savedir,"vim_"+winid)
-                shutil.move(rollback[2],vim_fname)
-            except:
-                pass
+            if rollback[2]:
+                #copy vim
+                try:
+                    vim_fname=os.path.join(self.basedir,self.savedir,"vim_"+winid)
+                    shutil.move(rollback[2],vim_fname)
+                except:
+                    pass
         basedata=(winid,time,group,type,title,filter,scrollback_len)
         basedata_len=len(basedata)
 
@@ -1013,6 +1015,8 @@ class ScreenSaver(object):
                                 data=data[:len(data)-1]
                             f.write(str(len(data.split('\0'))-1)+'\n')
                             f.write(str(data)+'\n')
+                        elif i==5 and rollback[2]:
+                            f.write(os.path.basename(rollback[2]))
                         else:
                             f.write(str(data)+'\n')
         f.close()
