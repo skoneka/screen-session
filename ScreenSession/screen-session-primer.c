@@ -777,7 +777,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	break;
     }
   c = fgetc (fp);
-  printf ("starting: ");
+  printf ("PRIMER: starting: ");
   getline (&proc_cwd, &proc_cwd_s, fp);
   proc_cwd = strtrim_right (proc_cwd, '\n');
   //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
@@ -1025,7 +1025,30 @@ rotate right:\t [number]r\n\
   kill (pid, SIGUSR1);
 
 }
+FILE *
+read_scrollback(char *fullpath, char *scrollbackfile)
+{
+  FILE *fp=NULL;
+  char c;
+  requireSession (fullpath, scrollbackfile, 1);
+  fp = fopen (scrollbackfile, "r");
+  if (fp)
+    {
+      while ((c = fgetc (fp)) != EOF)
+        {
+          fputc (c, stdout);
+        }
+      fclose (fp);
+    }
+  else
+    {
+      fprintf (stderr,"%s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
+      perror("Error :");
+    }
+  fp = NULL;
+  return fp;
 
+}
 #ifndef TEST
 int
 main (int argc, char **argv)
@@ -1101,22 +1124,7 @@ main (int argc, char **argv)
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
     chdir (fullpath);
-    requireSession (fullpath, datafile, 0);
-    fp = fopen (scrollbackfile, "r");
-    if (fp)
-      {
-        while ((c = fgetc (fp)) != EOF)
-          {
-            fputc (c, stdout);
-          }
-        fclose (fp);
-      }
-    else
-      {
-        fprintf (stderr,"%s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
-        perror("Error :");
-      }
-    fp = NULL;
+    fp=read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
     printf ("%s%s'%s'%s ", none, green_r, datafile, none);
@@ -1250,28 +1258,30 @@ main (int argc, char **argv)
       {
 
       case EXIT:
-        printf ("Exiting...\n");
+        printf ("PRIMER: Exiting...\n");
         return 0;
         break;
       case RESET:
-        printf("Reseting...\n");
+        printf("PRIMER: Reseting...\n");
         requireSession (fullpath, scrollbackfile, 1);
         execv (argv[0],argv);
         break;
       case DEFAULT:
+        read_scrollback(fullpath,scrollbackfile);
         shell = getenv ("SHELL");
         arglist = malloc (2 * sizeof (char *));
         arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
         arglist[1] = NULL;
         strcpy (arglist[0], shell);
-        printf ("Starting default shell(%s) in last cwd(%s)...\n", shell,
+        printf ("PRIMER: Starting default shell(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
         execv (shell, arglist);
         break;
 
       case ONLY:
-        printf ("Starting processes ");
+        read_scrollback(fullpath,scrollbackfile);
+        printf ("PRIMER: Starting processes ");
         print_ints(numbers,numbers_c);
         printf("...\n");
         args[0] = numbers[0];
@@ -1286,7 +1296,8 @@ main (int argc, char **argv)
         break;
 
       case ALL:
-        printf ("Starting all programs...\n");
+        read_scrollback(fullpath,scrollbackfile);
+        printf ("PRIMER: Starting all programs...\n");
         for (i = 0; i < procs_c; i++)
           {
             args[i] = i;
@@ -1298,12 +1309,13 @@ main (int argc, char **argv)
         break;
 
       case NUMBER:
+        read_scrollback(fullpath,scrollbackfile);
         number=numbers[0];
-        printf ("Starting programs up to %d...\n", number);
+        printf ("PRIMER: Starting programs up to %d...\n", number);
         if (number > procs_c)
           {
             number = procs_c;
-            printf ("No such window. Starting programs up to %d...\n",
+            printf ("PRIMER: No such window. Starting programs up to %d...\n",
                     number - 1);
           }
         else
