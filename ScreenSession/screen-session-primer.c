@@ -219,7 +219,8 @@ enum menu
   EXIT,
   ALL,
   ONLY,
-  NUMBER
+  NUMBER,
+  DEFAULT
 };
 
 void print_ints(int *numbers,int n) 
@@ -526,9 +527,8 @@ userInput (int *menu_num, int **num, int max)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll / [%sE%s]xit / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",
-	     green, none, red_b, none, red_b, none, red_b, none, blue, none,
-	     red_b, none, blue, none);
+	    ("%sRESTORE:%s [%sA%s]ll / [%sE%s]xit / [%sD%s]efault / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",
+	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none);
 	  printf ("> ");
 	  ch = getchar ();
 	  char_count = 0;
@@ -568,6 +568,12 @@ userInput (int *menu_num, int **num, int max)
 	      number = -1;
 	      valid_choice = 1;
 	      menu_choice = RESET;
+	      break;
+	    case 'd':
+	    case 'D':
+	      number = -1;
+	      valid_choice = 1;
+	      menu_choice = DEFAULT;
 	      break;
 	    case 'a':
 	    case 'A':
@@ -1247,8 +1253,12 @@ main (int argc, char **argv)
         printf ("Exiting...\n");
         return 0;
         break;
-
       case RESET:
+        printf("Reseting...\n");
+        requireSession (fullpath, scrollbackfile, 1);
+        execv (argv[0],argv);
+        break;
+      case DEFAULT:
         shell = getenv ("SHELL");
         arglist = malloc (2 * sizeof (char *));
         arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
@@ -1309,7 +1319,6 @@ main (int argc, char **argv)
 
       }
     fprintf (stderr,"%s:%d fatal error - unsupported action\n",__FILE__,__LINE__);
-    perror("Error :");
     mygetch ();
     return 44;
   }
