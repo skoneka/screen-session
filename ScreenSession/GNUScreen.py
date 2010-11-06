@@ -25,8 +25,10 @@ def gen_all_windows(minwin,maxwin,session):
             ctty = ss.tty(id)
             if not ctty:
                 ctype=-1
-            elif ctty=='telnet':
+            elif ctty=='group':
                 ctype=1
+            elif ctty=='telnet':
+                ctype=2
             else:
                 ctype=0
 

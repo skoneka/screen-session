@@ -9,6 +9,8 @@ def dump(ss,minwin,maxwin):
             type_string="group"
         elif type==-1:
             type_string="zombie"
+        elif type==2:
+            type_string="telnet"
         else:
             type_string="unknown"
 
@@ -106,7 +108,7 @@ def kill_group(session,win):
     print ('killing group %s'%win)
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     tty=ss.tty(win)
-    if tty!="telnet":
+    if tty!="group":
         print('This window is not a group. Aborting.')
         return
     ss.select(win)

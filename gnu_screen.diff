@@ -72,26 +72,30 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..37f67e9 100644
+index da9188d..631f28d 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -2661,6 +2661,15 @@ int key;
+@@ -2661,6 +2661,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
 +    case RC_TTY:
-+      if(fore) {
-+          char buf[256];
-+          OutputMsg(0, "%s", fore->w_tty);
-+      }
++      if(fore) 
++        { 
++          if (fore->w_type == W_TYPE_TELNET)
++            OutputMsg(0, "telnet");
++          else if (fore->w_type == W_TYPE_GROUP)
++            OutputMsg(0, "group");
++          else
++            OutputMsg(0, "%s", fore->w_tty);
++        }
 +      else
-+          OutputMsg(0, "none");
-+
++        OutputMsg(0, "none");
 +      break;
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3066,14 +3075,16 @@ int key;
+@@ -3066,14 +3079,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -116,7 +120,7 @@ index da9188d..37f67e9 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4209,19 +4220,21 @@ int key;
+@@ -4209,19 +4224,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -151,7 +155,7 @@ index da9188d..37f67e9 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4237,13 +4250,10 @@ int key;
+@@ -4237,13 +4254,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}

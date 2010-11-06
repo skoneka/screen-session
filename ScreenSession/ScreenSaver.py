@@ -201,7 +201,7 @@ class ScreenSaver(object):
         elif type=='group':
             os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,winarg ) )
         else:
-            out ('Unkown window type. Ignoring.')
+            out ('%s Unknown window type "%s". Ignoring.'%(win,type))
             return -1
        
         newwin = self.number()
@@ -625,8 +625,12 @@ class ScreenSaver(object):
                 else:
                     cfilter='-1'
 
-                if(ctty=="telnet"):
+                if(ctty=="group"):
                     ctype="group"
+                    cpids = None
+                    cpids_data=None
+                elif(ctty=="telnet"):
+                    ctype="telnet"
                     cpids = None
                     cpids_data=None
                 else:
