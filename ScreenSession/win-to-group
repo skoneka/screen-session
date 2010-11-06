@@ -1,0 +1,13 @@
+#!/bin/sh
+SESSIONNAME=$1
+GROUPNAME=$2
+shift 2
+
+if [ $# -eq 0 ]; then
+    screen -S $SESSIONNAME -X group $GROUPNAME
+else
+    for window in "$@"
+    do
+        screen -S $SESSIONNAME -X at $window group $GROUPNAME
+    done
+fi

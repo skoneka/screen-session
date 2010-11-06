@@ -73,6 +73,9 @@ elif [ $mode = "manager" ]; then
 elif [ $mode = "grab" ]; then
     sh ./screen-session-grab "$@"
 
+elif [ $mode = "group" ]; then
+    sh ./win-to-group $session "$@"
+
 elif [ $mode = "regions" ]; then
     screen -m -d -c /dev/null python ./screen-display-regions.py $session "$@"
 

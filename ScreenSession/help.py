@@ -21,6 +21,7 @@ Available modes:\n\
     kill-zombie\t- kill all zombie windows in session\n\
     kill-current-group\t- recursively kill all windows in the current group.\n\
     grab\t- grab a process and attach it to current tty (requires injcode)\n\
+    group\t- move windows to a group\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
     name\t- get or set sessionname\n\
@@ -55,6 +56,10 @@ Works with applications without complicated output scheme.\n\
 Require. injcode by Thomas Habets.\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
+
+help_group="Move windows to a group.\n\
+If no windows given, moves current window.\n\
+\nUsage: screen-session group [options] [GROUP] [windows]"
 
 help_manager="Sessions manager for GNU Screen with preview in a split window\n\
 \nUsage: screen-session manager"
@@ -142,6 +147,8 @@ if __name__=='__main__':
         print(help_dump)
     elif mode=='grab':
         print(help_grab)
+    elif mode=='group':
+        print(help_group)
     elif mode=='manager':
         print(help_manager)
     elif mode=='renumber':

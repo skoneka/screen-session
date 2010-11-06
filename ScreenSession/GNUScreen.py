@@ -227,8 +227,11 @@ def get_session_list():
     return wr
 
 def find_new_session(sessionsp,sessionsn,key=''):
-    session=list(set(sessionsn)-set(sessionsp))[0][0]
-    return session
+    try:
+        session=list(set(sessionsn)-set(sessionsp))[0][0]
+        return session
+    except:
+        return ''
 
 
 

@@ -105,10 +105,13 @@ class ScreenSaver(object):
 
     def exists(self):
         msg=self.echo('test')
-        if msg.startswith('No'): # 'No screen session found'
+        try:
+            if msg.startswith('No'): # 'No screen session found'
+                return False
+            else:
+                return True
+        except:
             return False
-        else:
-            return True
 
     def __remove_and_escape_bad_chars(self,str):
         # some characters are causing problems when setting window titles
@@ -345,7 +348,10 @@ class ScreenSaver(object):
         os.system('%s -X select %d' % (self.sc,homewindow))
 
     def lastmsg(self):
-        return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
+        try:
+            return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
+        except:
+            return ''
 
 
     def command_at(self,command,win="-1"):
@@ -355,6 +361,8 @@ class ScreenSaver(object):
             win="-p %s"%win
         os.system('%s %s -X %s'% (self.sc,win,command)) 
         l=self.lastmsg()
+        if not l:
+            return ''
         if l.startswith('C'):
             #no such window
             return -1
