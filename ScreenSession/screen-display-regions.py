@@ -8,7 +8,7 @@ import sys,os,subprocess,time,signal,tempfile,pwd,copy
 import GNUScreen as sc
 from ScreenSaver import ScreenSaver
 
-logfile="__scs-regions-log"
+logfile="__log-regions"
 inputfile="__scs-regions-input-%d"%(os.getpid())
 subprogram='screen-session-primer -nh'
 
@@ -84,20 +84,6 @@ def handler(signum,frame):
     sys.exit(0)
 
 def cleanup():
-    order_windows()
-    kill_screen_windows(scs,wins)
-    scs.focusminsize(focusminsize)
-    try:
-        os.remove(inputfile)
-    except:
-        pass
-
-def kill_screen_windows(scs,wins):
-    for w in wins:
-        scs.kill(w)
-
-def order_windows():
-    #select previous windows
     print('restoring windows '+str(win_history))
     for w in win_history:
         try:
@@ -106,9 +92,15 @@ def order_windows():
             break
         scs.select(w)
         scs.focus()
+    scs.focusminsize(focusminsize)
+    for w in wins:
+        scs.kill(w)
+    try:
+        os.remove(inputfile)
+    except:
+        pass
 
 def select_region(number):
-    #select region
     if(number!=0 and number<regions_c):
         command='screen -S %s -X eval'%session
         for i in range(0,number):
@@ -139,16 +131,13 @@ if __name__=='__main__':
         os.makedirs(tmpdir)
     logfile=os.path.join(tmpdir,logfile)
     inputfile=os.path.join(tmpdir,inputfile)
-    file=os.path.join(tmpdir,logfile)
     sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
     session=sys.argv[1]
     scs=ScreenSaver(session)
-    scs.command_at('msgminwait 0')
     focusminsize=scs.focusminsize()
     scs.focusminsize('0 0')
 
-    ident=subprogram+" "+inputfile
     win_history,wins,regions_c=prepare_windows(scs)
     print('helper windows '+str(wins))
 

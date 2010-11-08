@@ -64,6 +64,8 @@ if [ "$session" = '' ]; then
     session=`python ./sessionname.py`
 fi
 
+screen -S $session -X msgminwait 0
+
 if [ $mode = "name" ]; then
     python ./sessionname.py $session "$@"
 
@@ -78,6 +80,9 @@ elif [ $mode = "group" ]; then
 
 elif [ $mode = "regions" ]; then
     screen -m -d -c /dev/null python ./screen-display-regions.py $session "$@"
+
+elif [ $mode = "nest" ]; then
+    screen -m -d -c /dev/null python ./nest_layout.py $session "$@"
 
 elif [ $mode = "dir" ]; then
     python ./screen-in-dir.py $$ $session "$@"
@@ -96,7 +101,7 @@ elif [ $mode = "kill-zombie" ]; then
 elif [ $mode = "kill-group" ]; then
     python ./kill-group.py $session "$@"
 
-elif [ $mode = "kill-current-group" ]; then
+elif [ $mode = "kill-cgroup" ]; then
     python ./kill-current-group.py $session "$@"
 
 elif [ $mode = "renumber" ]; then

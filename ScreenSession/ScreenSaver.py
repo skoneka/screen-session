@@ -52,7 +52,6 @@ class ScreenSaver(object):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
 
     def save(self):
-        os.system('%s -X msgminwait %s' % (self.sc,"0"))
         self.homewindow,title=self.get_number_and_title()
         out("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
@@ -69,7 +68,6 @@ class ScreenSaver(object):
         return True
 
     def load(self):
-        os.system('%s -X msgminwait %s' % (self.sc,"0"))
         out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
@@ -883,7 +881,7 @@ class ScreenSaver(object):
                 pass
 
     __get_focus_offset_c=0
-    def __get_focus_offset(self):
+    def get_focus_offset(self):
         focus_offset=0
         cnum=self.number()
         os.system('%s -X screen %s -m %d-%d'%(self.sc,self.primer,os.getpid(),self.__get_focus_offset_c))
@@ -929,7 +927,7 @@ class ScreenSaver(object):
             self.focusminsize('0 0')
             os.system('%s -X layout dump \"%s\"' % (self.sc, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
-            focus_offset=self.__get_focus_offset()
+            focus_offset=self.get_focus_offset()
             out("regions (%d); focus offset (%s); focusminsize (%s)" % (region_c,focus_offset,cfocusminsize))
             os.system('%s -X focus top' % (self.sc) )
             win=[]

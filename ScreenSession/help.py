@@ -4,48 +4,53 @@ VERSION='git'
 version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
 
 help="\
-Help:\t screen-session [mode] --help\n\
-Usage:\t screen-session [mode] [options]\n\
-\t screen-session [mode] -S session [options]\n\
+Usage:\t scs [mode] [options]\n\
+\t scs [mode] -S session [options]\n\
+\n\
+Help:\t scs [mode] --help\n\
     \n\
 Available modes:\n\
     save\t- save a session to disk\n\
     load\t- load a session from file\n\
     ls\t\t- list saved sessions\n\
     \n\
-    manager\t- sessions manager with split screen preview\n\
     dir\t\t- start Screen window in the same working directory\n\
     dump\t- Dump informations about windows in session.\n\
-    regions\t- display number in each region (like tmux display-panes)\n\
-    kill\t- send signal to last process started in a window\n\
-    kill-zombie\t- kill all zombie windows in session\n\
-    kill-current-group\t- recursively kill all windows in the current group.\n\
-    grab\t- grab a process and attach it to current tty (requires injcode)\n\
+    grab\t- grab a process and attach it to current tty\n\
+    \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
+    kill\t- send signal to last process started in a window\n\
+    kill-cgroup\t- kill all windows in the current group.\n\
+    kill-zombie\t- kill all zombie windows in session\n\
+    manager\t- sessions manager with split screen preview\n\
+    name\t- get or set sessionname\n\
+    nest\t- nest layout in the current region.\n\
+    regions\t- display number in each region\n\
+    \t\t  (like tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
     sort\t- sort windows by title\n\
-    name\t- get or set sessionname\n\
     \n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
     "
 
-help_regions="Display number in each region\n\
-script reassembling the functionality of tmux display-panes\n\
+help_regions="Display number in each region.\n\
+Reassembles the functionality of tmux display-panes.\n\
 \nUsage: screen-session regions [options]"
 
-help_kill="Kill last process started in a window\n\
+help_kill="Kill last process started in a window.\n\
+Useful for closing random emacs/vim instances.\n\
 \nUsage: screen-session kill [options] [signal=TERM] [window=current]"
 
-help_kill_zombie="Kill all zombie windows in session\n\
+help_kill_zombie="Kill all zombie windows in session.\n\
 \nUsage: screen-session kill-zombie [options] [maxwin=MAXWIN] [minwin=0]"
 
-help_kill_current_group="Recursively kill all windows in the current group.\n\
-It does not kill the group itself and the window from which it was started\n\
+help_kill_cgroup="Recursively kill all windows in the current group.\n\
+It does not kill the group itself and the window from which it was started.\n\
 Take care with this command.\n\
-\nUsage: screen-session kill-current-group [options] [more windows to kill]"
+\nUsage: screen-session kill-cgroup [options] [more windows to kill]"
 
 help_dir="Start a new Screen window in the same working directory\n\
-on the position next to the current window\n\
+on the position next to the current window.\n\
 \nUsage: screen-session dir [options] [program]"
 
 help_dump="Dump informations about windows in session.\n\
@@ -61,19 +66,23 @@ help_group="Move windows to a group.\n\
 If no windows given, moves current window.\n\
 \nUsage: screen-session group [options] [GROUP] [windows]"
 
-help_manager="Sessions manager for GNU Screen with preview in a split window\n\
+help_manager="Sessions manager for GNU Screen with preview in a split window.\n\
 \nUsage: screen-session manager"
 
-help_renumber="Renumber windows to fill the gaps\n\
+help_nest="Nest layout in the current region.\n\
+\nUsage: screen-session nest [options] [TARGET_LAYOUT]"
+
+help_renumber="Renumber windows to fill the gaps.\n\
 \nUsage: screen-session renumber [options] [maxwin=MAXWIN] [minwin=0]"
 
-help_sort="Sort windows by titles\n\
+help_sort="Sort windows by titles.\n\
 \nUsage: screen-session sort [options] [maxwin=MAXWIN] [minwin=0]"
 
-help_name="Try to get the current sessionname \n\
-\nUsage: screen-session name [new_sessionname]"
+help_name="Try to get the current sessionname.\n\
+\nUsage: screen-session name [options] [new_sessionname]"
 
-help_saver_modes='Usage: screen-session [save|load|ls] [options]'
+help_saver_modes='GNU Screen session saver.\n\
+Usage: screen-session [save|load|ls] [options]'
 
 help_saver='Options:\n\
 ls\n\
@@ -112,8 +121,8 @@ save\n\
   \tshow this message\n\
   \n\
 Examples:\n\
-$ screen-session --save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
-$ screen-session --load --in mysavedsession --out SESSIONNAME\n\
+$ screen-session save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
+$ screen-session load --in mysavedsession --out SESSIONNAME\n\
 \n'
 
 '''
@@ -124,7 +133,7 @@ broken:
 
 if __name__=='__main__':
     import sys
-    print(version_str)
+    print(version_str+'\n')
     try:
         mode=sys.argv[1]
     except:
@@ -139,8 +148,8 @@ if __name__=='__main__':
         print(help_kill)
     elif mode=='kill-zombie':
         print(help_kill_zombie)
-    elif mode=='kill-current-group':
-        print(help_kill_current_group)
+    elif mode=='kill-cgroup':
+        print(help_kill_cgroup)
     elif mode=='dir':
         print(help_dir)
     elif mode=='dump':
@@ -151,6 +160,8 @@ if __name__=='__main__':
         print(help_group)
     elif mode=='manager':
         print(help_manager)
+    elif mode=='nest':
+        print(help_nest)
     elif mode=='renumber':
         print(help_renumber)
     elif mode=='sort':
