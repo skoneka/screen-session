@@ -816,9 +816,7 @@ class ScreenSaver(object):
 
                 
                 # restore focus on the right region
-                os.system('%s -X focus top' % (self.sc) )
-                for i in range(0,focus_offset):
-                    os.system('%s -X focus' % (self.sc) )
+                self.select_region(focus_offset)
 
                 self.focusminsize(focusminsize)
 
@@ -864,6 +862,11 @@ class ScreenSaver(object):
        
         if not self.restore_previous:
             self.select_last_window()
+            
+    def select_region(self,region):
+        self.focus('top')
+        for i in range(0,region):
+            self.focus()
 
     def __terminate_processes(self,ident):
         #get list of subprograms and finish them all
@@ -926,7 +929,7 @@ class ScreenSaver(object):
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
             os.system('%s -X layout dump \"%s\"' % (self.sc, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
-            region_c = int(subprocess.Popen('grep "split" %s | wc -l' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+            region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.get_focus_offset()
             out("regions (%d); focus offset (%s); focusminsize (%s)" % (region_c,focus_offset,cfocusminsize))
             os.system('%s -X focus top' % (self.sc) )
@@ -961,8 +964,7 @@ class ScreenSaver(object):
             f.close()
             
             #get back to originally focused window
-            for i in range(0,focus_offset):
-                os.system('%s -X focus' % (self.sc) )
+            self.select_region(focus_offset)
 
             self.focusminsize(cfocusminsize)
             os.system('%s -X layout next' % (self.sc) )

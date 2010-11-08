@@ -196,11 +196,11 @@ def _get_tty_pids_ps_with_cache_find(ctty):
     global tty_and_pids
     return tty_and_pids[int(ctty.rsplit('/',1)[1])]
 
-def _get_tty_pids_lsof(ctty):
-    f = os.popen('lsof -F p %s | cut -c2-' % ctty)
-    pids=f.read().strip()
+def _get_tty_pids_pgrep(ctty):
+    ctty=ctty.split('/dev/')[1]
+    f = os.popen('pgrep -t %s' % ctty)
+    pids=f.read().strip().split('\n')
     f.close()
-    pids=pids.split('\n')
     pids=sort_by_ppid(pids)
     return pids
 

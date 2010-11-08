@@ -103,7 +103,7 @@ Normally screen-session does not restore exact window numbers. If you
 want to force verbatim restoring use --exact flag.
 
 Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space). 
-Temporary files are stored in  /tmp/screen-session/$USER.
+Temporary files are stored in  /tmp/screen-session-$USER.
 
 By default session saver also tries to save vim sessions using ":mksession"
 

@@ -21,7 +21,7 @@ windows_old = sc.parse_windows(sc.get_windows(session))[0]
 f = os.popen('screen %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
-pids=sc.get_tty_pids(ctty)
+pids=sc._get_tty_pids_pgrep(ctty)
 try:
     p_i=[i for i,x in enumerate(pids) if x==ppid][0]-1
     thepid = pids[p_i]

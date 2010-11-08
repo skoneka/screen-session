@@ -60,6 +60,11 @@ fi
 
 umask 0077
 
+scsfiledir="/tmp/screen-session-$USER"
+if [ ! -d "$scsfiledir" ]; then
+    mkdirhier $scsfiledir
+fi
+
 if [ "$session" = '' ]; then
     session=`python ./sessionname.py`
 fi
@@ -82,6 +87,7 @@ elif [ $mode = "regions" ]; then
     screen -m -d -c /dev/null python ./screen-display-regions.py $session "$@"
 
 elif [ $mode = "nest" ]; then
+    echo "nest"
     screen -m -d -c /dev/null python ./nest_layout.py $session "$@"
 
 elif [ $mode = "dir" ]; then
@@ -116,7 +122,6 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`
 
 
-    scsfiledir="/tmp/screen-sessions-$USER"
     scsfile="$scsfiledir/___scspipe-$$"
 
     argument0=""
@@ -130,9 +135,6 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
 
     argument0="logpipe=$scsfile"
     if [ $logpipe -eq 1 ]; then
-        if [ ! -d "$scsfiledir" ]; then
-            mkdir $scsfiledir
-        fi
         if [ -d "$scsfile" ]; then
             rm $scsfile
         fi

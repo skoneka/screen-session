@@ -54,6 +54,7 @@ def handler(signum,frame):
         number=int(ch[1:])
     except:
         number=0
+        
 
     os.remove(inputfile)
     if ch[0]=='s':
@@ -80,8 +81,11 @@ def handler(signum,frame):
     cleanup()
 
     if number!=-1 and bSelect:
-        select_region(number) 
-
+        if(number!=0 and number<regions_c):
+            command='screen -S %s -X eval'%session
+            for i in range(0,number):
+                command+=' "focus"'
+            os.system(command)
     sys.exit(0)
 
 def cleanup():
@@ -96,12 +100,6 @@ def cleanup():
     except:
         pass
 
-def select_region(number):
-    if(number!=0 and number<regions_c):
-        command='screen -S %s -X eval'%session
-        for i in range(0,number):
-            command+=' "focus"'
-        os.system(command)
 
 def prepare_windows(scs):
     this_win_history=[]
@@ -122,7 +120,6 @@ def prepare_windows(scs):
 
 
 if __name__=='__main__':
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions',pwd.getpwuid(os.geteuid())[0] )
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     logfile=os.path.join(tmpdir,logfile)
@@ -139,7 +136,7 @@ if __name__=='__main__':
     print('helper windows '+str(wins))
 
     signal.signal(signal.SIGUSR1,handler)
-    time.sleep(4)
+    time.sleep(10)
 
     cleanup()
 

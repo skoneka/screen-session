@@ -999,7 +999,7 @@ regions_helper (char *fname, char *n)
   if (n[0] == '0')
     {
       print_number ("x 0 x", red);
-      printf ("timeout: 4 sec ; number = 1\n\
+      printf ("timeout: 10 sec ; number = 1\n\
 \n\
 goto:\t [number]'\n\
 goto:\t [number]g\n\
@@ -1276,7 +1276,7 @@ main (int argc, char **argv)
         printf ("PRIMER: Starting default shell(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
-        execv (shell, arglist);
+        execvp (shell, arglist);
         break;
 
       case ONLY:
