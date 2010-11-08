@@ -13,6 +13,7 @@ gnu_screen.diff changes:
 - add "tty" command
 - add "regionsize" command
 - make "group" queryable
+- associate focuminsize with the layout
 
 
 -----------------------------------------------------------------------

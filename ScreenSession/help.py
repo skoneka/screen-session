@@ -3,28 +3,28 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
 
-help="\
+help_help="\
 Usage:\t scs [mode] [options]\n\
 \t scs [mode] -S session [options]\n\
 \n\
 Help:\t scs [mode] --help\n\
     \n\
 Available modes:\n\
-    save\t- save a session to disk\n\
-    load\t- load a session from file\n\
+    save\t- save session to disk\n\
+    load\t- load session from file\n\
     ls\t\t- list saved sessions\n\
     \n\
     dir\t\t- start Screen window in the same working directory\n\
-    dump\t- Dump informations about windows in session.\n\
+    dump\t- dump informations about windows in session\n\
     grab\t- grab a process and attach it to current tty\n\
     \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
     kill\t- send signal to last process started in a window\n\
-    kill-cgroup\t- kill all windows in the current group.\n\
+    kill-cgroup\t- kill all windows in the current group\n\
     kill-zombie\t- kill all zombie windows in session\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
-    nest\t- nest layout in the current region.\n\
+    nest\t- nest layout in the current region\n\
     regions\t- display number in each region\n\
     \t\t  (like tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
@@ -134,12 +134,27 @@ broken:
 if __name__=='__main__':
     import sys
     print(version_str+'\n')
+    if False:
+        print(help_regions)
+        print(help_kill_zombie)
+        print(help_kill_cgroup)
+        print(help_dir)
+        print(help_dump)
+        print(help_grab)
+        print(help_group)
+        print(help_manager)
+        print(help_nest)
+        print(help_renumber)
+        print(help_sort)
+        print(help_name)
+        print(help_saver_modes)
+
     try:
         mode=sys.argv[1]
     except:
         mode='help'
     if mode=='help':
-        print(help)
+        print(help_help)
     elif mode=='--version':
         pass
     elif mode=='regions':

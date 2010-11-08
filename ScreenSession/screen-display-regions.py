@@ -5,6 +5,7 @@
 # description: script for GNU Screen reassembling functionality of tmux display-panes + swap regions + rotate regions
 
 import sys,os,subprocess,time,signal,tempfile,pwd,copy
+from util import tmpdir
 import GNUScreen as sc
 from ScreenSaver import ScreenSaver
 
@@ -85,16 +86,11 @@ def handler(signum,frame):
 
 def cleanup():
     print('restoring windows '+str(win_history))
-    for w in win_history:
-        try:
-            int(w)
-        except:
-            break
+    for i,w in enumerate(win_history):
         scs.select(w)
+        scs.kill(wins[i])
         scs.focus()
     scs.focusminsize(focusminsize)
-    for w in wins:
-        scs.kill(w)
     try:
         os.remove(inputfile)
     except:
@@ -126,11 +122,12 @@ def prepare_windows(scs):
 
 
 if __name__=='__main__':
-    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
+    tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions',pwd.getpwuid(os.geteuid())[0] )
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     logfile=os.path.join(tmpdir,logfile)
     inputfile=os.path.join(tmpdir,inputfile)
+    file=os.path.join(tmpdir,logfile)
     sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
     session=sys.argv[1]

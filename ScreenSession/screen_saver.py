@@ -12,6 +12,7 @@ issues:
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
 from ScreenSaver import ScreenSaver
 from util import *
+from util import tmpdir
 import util
 
 
@@ -181,8 +182,6 @@ def main():
     if bList:
         list_sessions(home,projectsdir,util.archiveend)
         doexit(0,waitfor)
-    
-    util.tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
     
     if mode==0:
         if unpack:

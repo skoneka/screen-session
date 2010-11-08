@@ -7,6 +7,7 @@
 import commands, os, re, sys,time,tempfile,pwd,mmap
 import GNUScreen as sc
 import util
+from util import tmpdir
 from ScreenSaver import ScreenSaver
 
 usagestr='\n===HELP===\n\
@@ -445,7 +446,6 @@ def main():
         except:
             psession=None
 
-        tmpdir=os.path.join(tempfile.gettempdir(),'screen-sessions-'+pwd.getpwuid(os.geteuid())[0] )
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
         #files may get deleted by screen-session need to prevent

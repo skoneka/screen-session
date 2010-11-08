@@ -2,7 +2,8 @@
 import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,string,shlex
 
 archiveend=''
-tmpdir=''
+import tempfile,pwd
+tmpdir=os.path.join(tempfile.gettempdir(),'screen-session',pwd.getpwuid(os.geteuid())[0] )
 
 def _timeout_command_split(command, timeout):
     """call shell-command and either return its output or kill it

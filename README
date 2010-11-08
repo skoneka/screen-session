@@ -21,31 +21,35 @@ is no support for serial and telnet window types.
 Available screen-session modes:
 
 ----
-save        - save Screen sessions to file
+save        - save Screen session to file
 
-load        - load sessions from file
+load        - load session from file
 
 ls          - list saved sessions
 ----
 
 manager     - sessions manager (screenie like) but featuring session 
-            preview in a split window
+              preview in a split window
 
-regions     - display number in ever region
-            (script reassembling the functionality of tmux display-panes.
+nest        - nest layout in the current region
+
+regions     - display number in every region
+              (like tmux display-panes)
 
 dir         - starts a new Screen window in the same working directory 
-            on the position next to the current window
+              on the position next to the current window
 
 dump        - dump informations about windows in session
 
 grab        - change tty of a process to this terminal
 
+group       - move windows to a group
+
 kill        - send signal to last process started in a window
 
 kill-zombie - kill all zombie windows in session
 
-kill-current-group  - recursively kill all windows in the current group.
+kill-cgroup - recursively kill all windows in the current group
 
 renumber    - renumber windows to fill gaps
 
@@ -99,7 +103,7 @@ Normally screen-session does not restore exact window numbers. If you
 want to force verbatim restoring use --exact flag.
 
 Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space). 
-During reading temporary files are stored in  /tmp/screen-session-$USER.
+Temporary files are stored in  /tmp/screen-session/$USER.
 
 By default session saver also tries to save vim sessions using ":mksession"
 
@@ -115,7 +119,7 @@ There are no bugs, only features.
 
 - If screen-session locks your session try to find and kill all processes
   started by it. If session saver caused the lock it is usually enough to
-  run: $ pkill -f "lastmsg"
+  run: $ pkill -f "@lastmsg"
 
 Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues
