@@ -532,8 +532,9 @@ def main():
         ui2(fifoname)
 
 if __name__=='__main__':
-    if not os.path.exists('/tmp/scs_err'):
-        sys.stderr=open('/tmp/scs_err','w')
+    log=os.path.join(tmpdir,'__log-manager')
+    if not os.path.exists(log):
+        sys.stderr=open(log,'w')
     else:
-        sys.stderr=open('/tmp/scs_err','a')
+        sys.stderr=open(log,'a')
     main()

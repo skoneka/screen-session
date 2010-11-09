@@ -119,13 +119,9 @@ def sort_by_ppid(cpids):
 
 def get_tty_pids(ctty):
     global get_tty_pids
-    p=platform.system()
     get_tty_pids=_get_tty_pids_ps_with_cache
 
     return get_tty_pids(ctty)
-
-
-
 
 def _get_tty_pids_ps_fast(ctty):
     f = os.popen('ps --sort=start_time -o pid -t %s' % ctty)
@@ -135,9 +131,6 @@ def _get_tty_pids_ps_fast(ctty):
     for pid in pids.split('\n')[1:]:
         npids.append(pid.strip())
     return npids
-
-def _get_tty_pids_ps(ctty):
-    pass
 
 def _get_tty_pids_ps_with_cache(ctty):
     global _get_tty_pids_ps_with_cache

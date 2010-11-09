@@ -11,7 +11,8 @@ from ScreenSaver import ScreenSaver
 
 logfile="__log-regions"
 inputfile="__scs-regions-input-%d"%(os.getpid())
-subprogram='screen-session-primer -nh'
+subprogram='screen-session-primer'
+subprogram_args='-nh'
 
 def local_copysign(x, y):
     "Return x with the sign of y. Backported from Python 2.6."
@@ -108,7 +109,7 @@ def prepare_windows(scs):
     win=scs.number()
     while True:
         this_win_history.append(win)
-        scs.screen('-t scs-regions-helper %s %s %d'%(subprogram,inputfile,i))
+        scs.screen('-t scs-regions-helper %s %s %s %d'%(subprogram,subprogram_args,inputfile,i))
         i+=1
         new_windows.append(scs.number())
         scs.focus()
@@ -127,6 +128,8 @@ if __name__=='__main__':
     file=os.path.join(tmpdir,logfile)
     sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
+    subprogram=os.path.join(os.path.dirname(sys.argv[0]),subprogram)
+
     session=sys.argv[1]
     scs=ScreenSaver(session)
     focusminsize=scs.focusminsize()

@@ -46,7 +46,7 @@ class ScreenSaver(object):
         self.savedir=str(savedir)
         self.pid=str(pid)
         self.set_session(self.pid)
-        self.primer=os.path.join(os.getcwd(),self.primer)
+        self.primer=os.path.join(os.path.dirname(sys.argv[0]),self.primer)
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
