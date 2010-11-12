@@ -23,12 +23,17 @@ def main():
     focusminsize=scs.focusminsize()
     scs.focusminsize('0 0')
     foff = scs.get_focus_offset()
+    hsize=scs.dinfo();
+    hsize=int(hsize[0]),int(hsize[1])
     rsize=tuple(map(int,scs.command_at('regionsize').split(' ')))
+    rsize=rsize[0],rsize[1]+2 # +1 for caption +1 for hardstatus
+    if rsize[0]==hsize[0] and rsize[1]+2==hsize[1]:
+        rsize=hsize
+    else:
+        rsize=rsize[0],rsize[1]+1 # +1 for caption +1 for hardstatus
 
     scs.layout('select %s'%tlayout)
     print ("tlayout : %s"%scs.get_layout_number()[0])
-    tsize=scs.dinfo();
-    tsize=int(tsize[0]),int(tsize[1])
     tfocusminsize=scs.focusminsize()
     scs.focusminsize('0 0')
     scs.layout('dump %s'%dumpfile)
@@ -48,15 +53,15 @@ def main():
     scs.focusminsize(tfocusminsize)
     
     print('rsize %s'%str(rsize))
-    print('dinfo: %s'%str(tsize))
+    print('dinfo: %s'%str(hsize))
 
     scs.layout('select %s'%homelayout)
     scs.source(dumpfile)
     scs.select_region(foff)
     for w in winlist:
         scs.select(w[0])
-        x=w[1][0]*rsize[0]/tsize[0]
-        y=w[1][1]*rsize[1]/tsize[1]
+        x=(w[1][0]*rsize[0])/hsize[0]
+        y=(w[1][1]*rsize[1])/hsize[1]
         scs.resize('-h %d'%(x))
         scs.resize('-v %d'%(y))
         print('%s size %d %d'%(w[0], x,y))

@@ -32,7 +32,7 @@ def gen_all_windows(minwin,maxwin,session):
             else:
                 ctype=0
 
-            yield cwin,ctype,ctitle
+            yield cwin,ctype,ctitle,ctty
 
 
 

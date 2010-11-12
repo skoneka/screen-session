@@ -1,13 +1,17 @@
 ﻿#!/usr/bin/env python
 
 VERSION='git'
-version_str="SCREEN-SESSION (%s) - collection of tools for GNU Screen."%VERSION
+version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
 help_help="\
 Usage:\t scs [mode] [options]\n\
 \t scs [mode] -S session [options]\n\
 \n\
 Help:\t scs [mode] --help\n\
+\n\
+Global Options:\n\
+    -S [target]\t- target Screen session\n\
+    -W\t\t- wait for keypress\n\
     \n\
 Available modes:\n\
     save\t- save session to disk\n\

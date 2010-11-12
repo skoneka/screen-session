@@ -88,7 +88,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
         raise IOError
     cwd=os.getcwd()
-    oschdir(os.path.join(tmpdir))
+    os.chdir(tmpdir)
     if full:
         os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__data'),archiveend))
     os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))

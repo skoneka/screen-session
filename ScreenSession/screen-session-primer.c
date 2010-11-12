@@ -594,6 +594,8 @@ userInput (int *menu_num, int **num, int max)
 	      break;
 	    case 'e':
 	    case 'E':
+            case 'q':
+            case 'Q':
 	      menu_choice = EXIT;
 	      valid_choice = 1;
 	      break;
@@ -1229,6 +1231,11 @@ main (int argc, char **argv)
                       \tcannot be started (use [O]nly)%s\n", magenta, none);
       }
     fclose (fp);
+    free(proc_vim);
+    free(proc_cwd);
+    free(proc_exe);
+    free(title);
+    free(buftext);
     int menu;
     int number;
     int *numbers;
@@ -1251,7 +1258,9 @@ main (int argc, char **argv)
         strcat (command, command1);
         system ("screen -X colon");
         system (command);
+        free(command);
       }
+    free(filter);
 
     args = malloc (procs_c * sizeof (int));
     switch (menu)

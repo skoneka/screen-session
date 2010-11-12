@@ -1,8 +1,24 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 
+def find_pids_in_windows(scs,pids,minwin,maxwin):
+    import getpass
+    tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
+    ttys=[]
+    print("hello")
+    tty_and_pids={"a":1,"b":2}
+    for tty,tpids in tty_and_pids:
+        if pids in tpids:
+            ttys.append(tty)
+    wins=[]
+    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,ss.pid):
+        if tty in ttys:
+            wins.append(win)
+
+    return wins
+
 def dump(ss,minwin,maxwin):
-    for win,type,title in sc.gen_all_windows(minwin,maxwin,ss.pid):
+    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,ss.pid):
         if type==0:
             type_string="basic"
         elif type==1:
@@ -19,7 +35,6 @@ def dump(ss,minwin,maxwin):
         filter=ss.get_exec(win)
         if filter!=-1:
             print("%s EXEC\t %s"%(win,filter))
-        tty=ss.tty(win)
         print("%s TTY \t %s"%(win,tty))
         if type==0:
             try:
@@ -42,7 +57,7 @@ def renumber(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
-    for win,type,title in sc.gen_all_windows(min,max,session):
+    for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
         wins.append((ss.get_group(win),iwin,type))
 
@@ -68,7 +83,7 @@ def sort(session,min,max,key=None):
     wins_trans={}
     groups={}
     cgroup=None
-    for win,type,title in sc.gen_all_windows(min,max,session):
+    for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
         group=ss.get_group(win)
 
@@ -100,7 +115,7 @@ def sort(session,min,max,key=None):
 def kill_zombie(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
 
-    for win,type,title in sc.gen_all_windows(min,max,session):
+    for win,type,title,tty in sc.gen_all_windows(min,max,session):
         if type==-1:
             ss.kill(win)
 

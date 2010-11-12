@@ -797,10 +797,10 @@ class ScreenSaver(object):
                     if not window=="-1":
                         try:
                             # __wins_trans may be incomplete
-                            os.system('%s -X select %s' % (self.sc,self.__wins_trans[window]))
+                            self.select("%s"%self.__wins_trans[window])
                         except:
                             out('Unable to set focus for: %s'%window)
-                    os.system('%s -X focus' % (self.sc) )
+                    self.focus()
                 f.close()
                 
 
