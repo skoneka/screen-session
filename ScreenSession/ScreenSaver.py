@@ -134,7 +134,7 @@ class ScreenSaver(object):
         rootwindow=self.number()
         out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
-        out('number; time; group; type; title; filter; processes;')
+        out('number; time; group; type; title; filter; scrollback; processes;')
         wins=[]
         f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
         for id in f:
@@ -307,8 +307,6 @@ class ScreenSaver(object):
             # move windows by shift and put them in a wrap group
             for i in r:
                 cselect = self.select(i)
-                if not searching:
-                    out('--')
                 if cselect:
                     #no such window
                     if searching:
@@ -322,7 +320,6 @@ class ScreenSaver(object):
                 else:
                     if(searching):
                         searching=False
-                        out('\n--')
                     cwin=int(self.number())
                     out('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
@@ -589,8 +586,6 @@ class ScreenSaver(object):
         ctime=self.time()
         for i in range(0,self.MAXWIN+1):
             id=str(i)
-            if not searching:
-                out('--')
             cwin,ctitle=self.get_number_and_title(id)
             if (cwin==-1):
                 #no such window
@@ -603,7 +598,6 @@ class ScreenSaver(object):
             else:
                 if(searching):
                     searching=False
-                    out('\n--')
 
                 # has to follow get_number_and_title() to recognize zombie windows
                 ctty = self.tty(id) 
@@ -617,7 +611,6 @@ class ScreenSaver(object):
                 cgroup = self.get_group(id)
                 
                 # display some output
-                out(cwin+'; tty = '+ctty  +'; scroll = '+cscrollback_len+'; group = '+cgroup+';  title = '+ctitle)
                 if cfilter!=-1:
                     out('filter: exec %s'%(cfilter))
                 else:
@@ -651,8 +644,6 @@ class ScreenSaver(object):
                             out('%s: Unable to access. No permission or no procfs.'%pid)
                     cpids=ncpids
                 
-                out('type = '+ctype +'; pids = '+str(cpids))
-
                 if(cpids):
                     for i,pid in enumerate(cpids):
                         if(cpids_data[i][3]):
@@ -705,8 +696,7 @@ class ScreenSaver(object):
 
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
-        out('\n--')
-        out('saved on '+str(ctime))
+        out('\nsaved on '+str(ctime))
     
     def __rollback(self,cmdline):
         try:
@@ -763,7 +753,6 @@ class ScreenSaver(object):
         if homelayout==-1:
             out("No homelayout")
         layout_trans={}
-        out('--')
         layout_c=len(glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')))
         for i in range(0,layout_c):
             filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
@@ -820,7 +809,6 @@ class ScreenSaver(object):
 
                 self.focusminsize(focusminsize)
 
-                out('--')
 
 
 
@@ -919,19 +907,16 @@ class ScreenSaver(object):
         out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
-       
+        print('num : nregions; offset; (focusminsize); (name); [regions]')
 
-        out('--')
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
-            out("%s (%s)"% (currentlayout,layoutname))
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
             os.system('%s -X layout dump \"%s\"' % (self.sc, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
             region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.get_focus_offset()
-            out("regions (%d); focus offset (%s); focusminsize (%s)" % (region_c,focus_offset,cfocusminsize))
             os.system('%s -X focus top' % (self.sc) )
             win=[]
             for i in range(0,region_c):
@@ -952,15 +937,16 @@ class ScreenSaver(object):
                     currentnumber="-1"
                 sizex=int(csize[0])
                 sizey=int(csize[1])
-                win.append("%s %d %d\n"%(currentnumber,sizex+1,sizey+1))
-                out("region = %s; window number = %s; size = (%d,%d)"%(i,currentnumber,sizex,sizey))
+                win.append("%s %d %d"%(currentnumber,sizex+1,sizey+1))
                 os.system('%s -X focus' % (self.sc) )
+            out("%s : %d; %s; (%s); (%s); %s" % (currentlayout,region_c,focus_offset,cfocusminsize,layoutname,win))
 
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
-            f.writelines("offset %d\n"%focus_offset)
-            f.writelines("dinfo %s %s\n"%(dinfo[0],dinfo[1]))
-            f.writelines("focusminsize %s\n"%cfocusminsize)
-            f.writelines(win)
+            f.write("offset %d\n"%focus_offset)
+            f.write("dinfo %s %s\n"%(dinfo[0],dinfo[1]))
+            f.write("focusminsize %s\n"%cfocusminsize)
+            for w in win:
+                f.write(w+'\n')
             f.close()
             
             #get back to originally focused window
@@ -970,7 +956,6 @@ class ScreenSaver(object):
             os.system('%s -X layout next' % (self.sc) )
             
             currentlayout,layoutname=self.get_layout_number()
-            out('--')
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
@@ -1037,6 +1022,7 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
+        print("['%s', '%s', '%s', '%s', '%s', '%s' ]"%(basedata[0],basedata[2],basedata[3],basedata[4],basedata[5],basedata[6]))
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)

@@ -779,9 +779,9 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	break;
     }
   c = fgetc (fp);
-  printf ("PRIMER: starting: ");
   getline (&proc_cwd, &proc_cwd_s, fp);
   proc_cwd = strtrim_right (proc_cwd, '\n');
+  printf ("PRIMER: CWD(%s) starting: ",proc_cwd);
   //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
   getline (&proc_exe, &proc_exe_s, fp);
   proc_exe = strtrim_right (proc_exe, '\n');
