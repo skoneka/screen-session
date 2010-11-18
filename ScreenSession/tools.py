@@ -168,9 +168,8 @@ def kill_win_last_proc(session,win="-1",sig="TERM"):
     import signal,os
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     ctty=ss.tty(win)
-    pids=sc.get_tty_pids(ctty)
-    pid = pids[len(pids)-1]
+    pids=sc._get_tty_pids_pgrep(ctty)
+    pid = pids[-1]
 
     sig=eval('signal.SIG'+sig)
-
     os.kill(int(pid),sig)

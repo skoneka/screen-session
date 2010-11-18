@@ -122,11 +122,11 @@ class ScreenSaver(object):
         #check if target Screen is currently in some group and set hostgroup to it
         hostgroup = self.get_group(homewindow)
 
-        #create root group and put it into host group
         if self.exact:
             rootgroup='none'
             hostgroup='none'
         else:
+            #create a root group and put it into host group
             rootgroup="restore_"+self.savedir
             os.system('%s -X screen -t \"%s\" %s //group' % (self.sc,rootgroup,0 ) )
             os.system('%s -X group \"%s\"' % (self.sc,hostgroup) )
@@ -134,7 +134,7 @@ class ScreenSaver(object):
         rootwindow=self.number()
         out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
-        out('number; time; group; type; title; filter; scrollback; processes;')
+        out('NUMBER; TIME; GROUP; TYPE; TITLE; FILTER; SCROLLBACK; PROCESSES;')
         wins=[]
         f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
         for id in f:
@@ -584,6 +584,7 @@ class ScreenSaver(object):
         searching=False
         rollback=None,None,None
         ctime=self.time()
+        out('NUM, GROUP, TYPE, TITLE, FILTER, SCROLLBACK')
         for i in range(0,self.MAXWIN+1):
             id=str(i)
             cwin,ctitle=self.get_number_and_title(id)
@@ -664,9 +665,9 @@ class ScreenSaver(object):
                         vim_name=str(None)
                         args=cpids_data[i][2].split('\0')
                         if self.primer==args[0]:
-                            out('Instance of primer detected. Importing files.')
+                            sys.stdout.write('Importing files : ')
                             rollback=self.__rollback(cpids_data[i][2])
-                            print(rollback)
+                            out(str(rollback))
                         elif args[0] in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
                             nargs=[]
@@ -766,15 +767,14 @@ class ScreenSaver(object):
                 
                 layout_trans[layoutnumber]=currentlayout
 
-                out("sourcing %s"%(filename))
                 os.system('%s -X source \"%s\"' % (self.sc, filename) )
                 (head,tail)=os.path.split(filename)
                 
                 filename2=os.path.join(head,"win"+tail) #read winlayout
                 f=open(filename2,'r')
-                focus_offset=int(f.readline().split(" ")[1])
-                dinfo=map(int,f.readline().split(" ")[1:])
-                focusminsize=f.readline().split(" ",1)[1].strip()
+                focus_offset=int(f.readline())
+                dinfo=map(int,f.readline().split(" "))
+                focusminsize=f.readline()
                 regions_size=[]
                 winlist=[]
                 for line in f:
@@ -795,9 +795,9 @@ class ScreenSaver(object):
 
                 # set region dimensions
                 os.system('%s -X focus top' % (self.sc) )
+                out("%s (%s) : regions : %s - %s"%(layoutnumber,layoutname,winlist,regions_size))
                 for size in regions_size:
                     if size[0]>0:
-                        out('region size: %d %d'%(size[0],size[1]))
                         self.resize('-h %d'%(size[0]))
                         self.resize('-v %d'%(size[1]))
                         self.fit()
@@ -907,7 +907,7 @@ class ScreenSaver(object):
         out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
         out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
-        print('num : nregions; offset; (focusminsize); (name); [regions]')
+        out('NUM : NREGIONS; OFFSET; (FOCUSMINSIZE); (NAME); [REGIONS]')
 
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
@@ -942,9 +942,9 @@ class ScreenSaver(object):
             out("%s : %d; %s; (%s); (%s); %s" % (currentlayout,region_c,focus_offset,cfocusminsize,layoutname,win))
 
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
-            f.write("offset %d\n"%focus_offset)
-            f.write("dinfo %s %s\n"%(dinfo[0],dinfo[1]))
-            f.write("focusminsize %s\n"%cfocusminsize)
+            f.write("%d\n"%focus_offset)
+            f.write("%s %s\n"%(dinfo[0],dinfo[1]))
+            f.write("%s\n"%cfocusminsize)
             for w in win:
                 f.write(w+'\n')
             f.close()
@@ -1022,7 +1022,7 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
-        print("['%s', '%s', '%s', '%s', '%s', '%s' ]"%(basedata[0],basedata[2],basedata[3],basedata[4],basedata[5],basedata[6]))
+        out("['%s', '%s', '%s', '%s', '%s', '%s' ]"%(basedata[0],basedata[2],basedata[3],basedata[4],basedata[5],basedata[6]))
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)

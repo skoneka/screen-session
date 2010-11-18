@@ -80,8 +80,8 @@ index da9188d..631f28d 100644
        debug("new termcap made\n");
        break;
 +    case RC_TTY:
-+      if(fore) 
-+        { 
++      if(fore)
++        {
 +          if (fore->w_type == W_TYPE_TELNET)
 +            OutputMsg(0, "telnet");
 +          else if (fore->w_type == W_TYPE_GROUP)

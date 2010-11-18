@@ -126,7 +126,7 @@ save\n\
   \n\
 Examples:\n\
 $ screen-session save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
-$ screen-session load --in mysavedsession --out SESSIONNAME\n\
+$ screen-session load --exact --in mysavedsession --out SESSIONNAME\n\
 \n'
 
 '''

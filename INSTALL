@@ -30,15 +30,16 @@ screen-session (if necessary as root):
     make clean install
 
 
-Make sure you have a recent version of Screen and apply necessary patch:
+Make sure you have a recent version of Screen and apply the necessary 
+patch (gnu_screen.diff):
 
     git clone git://git.sv.gnu.org/screen.git screen; cd screen
     
     git-apply ../screen-session-${VERSION}/gnu_screen.diff
 
-    cd src; autoreconf; autoheader; ./configure && make
+    cd src; autoreconf; autoheader; 
+    
+    ./configure && make
 
     sudo make install
 
-
-Make sure you have "lsof" installed.
