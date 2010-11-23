@@ -59,7 +59,7 @@ def renumber(session,min,max):
     wins_trans={}
     for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
-        wins.append((ss.get_group(win),iwin,type))
+        wins.append((ss.get_group(win)[1],iwin,type))
 
     win_biggest=wins[len(wins)-1][1]
     for i in range(0,win_biggest+1):
@@ -85,7 +85,7 @@ def sort(session,min,max,key=None):
     cgroup=None
     for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
-        group=ss.get_group(win)
+        group=ss.get_group(win)[1]
 
         lastval=(group,iwin,type,title)
         try:
@@ -140,7 +140,7 @@ def kill_current_group(ss,bKillHomeWindow=False,other_wins=[],homewindow=-1):
         homewindow=int(homewindow)
     protected=tuple([(homewindow)]+other_wins)
     print (protected)
-    cgroup=ss.get_group()
+    cgroup=ss.get_group()[1]
     print ('removing windows from group %s'%cgroup)
     while True:
         wins=sc.parse_windows(sc.get_windows(ss.pid))[0]

@@ -120,7 +120,7 @@ class ScreenSaver(object):
         out ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
-        hostgroup = self.get_group(homewindow)
+        hostgroupid,hostgroup = self.get_group(homewindow)
 
         if self.exact:
             rootgroup='none'
@@ -151,11 +151,12 @@ class ScreenSaver(object):
         f.close()
 
 
-        for win in wins:
-            self.__wins_trans[win[0]]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5],win[6],win[7])
+        for win,time,group,type,title,filter,scrollback_len,processes in wins:
+            self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
         
-        for win in wins:
-            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootgroup,win[0], win[1], win[2], win[3], win[4], win[5], win[6],win[7])
+        for win,time,group,type,title,filter,scrollback_len,processes in wins:
+            groupid,group=group.split(' ',1)
+            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
         os.system('%s -X select %s' % (self.sc,rootwindow))
@@ -205,10 +206,12 @@ class ScreenSaver(object):
         newwin = self.number()
         return newwin
     
-    def __order_group(self,newwin,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
-        if group=="none":
+    def __order_group(self,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
+        if groupid=="-1":
+            self.select(rootwindow)
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) )
-        else:    
+        else:
+            self.select(groupid)
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
     
     def __scrollback_clean(self):
@@ -320,6 +323,8 @@ class ScreenSaver(object):
                 else:
                     if(searching):
                         searching=False
+                        sys.stdout.write('\n')
+                        sys.stdout.flush()
                     cwin=int(self.number())
                     out('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
@@ -327,7 +332,7 @@ class ScreenSaver(object):
                     elif self.bKill:
                         self.__kill_list.append(cwin+shift)
                     
-                    cgroup = self.get_group(cwin)
+                    cgroupid,cgroup = self.get_group(cwin)
                     if cgroup=="none":
                         os.system('%s -X group %s' % (self.sc, group) )
                         if not self.win_none_g:
@@ -339,15 +344,13 @@ class ScreenSaver(object):
 
             if self.bKill:
                 self.__kill_list.reverse()
-
-        os.system('%s -X select %d' % (self.sc,homewindow))
+        self.select('%d'%(homewindow))
 
     def lastmsg(self):
         try:
             return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
         except:
             return ''
-
 
     def command_at(self,command,win="-1"):
         if win=="-1":
@@ -561,9 +564,11 @@ class ScreenSaver(object):
         msg=self.command_at('group',win)
         if msg.endswith('no group'):
             group = 'none'
+            groupid = '-1'
         else:
-            group = msg.rsplit(")",1)[0].split("(",1)[1]
-        return group
+            groupid,group = msg.rsplit(")",1)[0].split(" (",1)
+            groupid = groupid.rsplit(' ',1)[1]
+        return groupid,group
 
     def get_exec(self,win):
         msg=self.command_at('exec',win)
@@ -594,11 +599,13 @@ class ScreenSaver(object):
                     sys.stdout.write('.')
                     sys.stdout.flush()
                 else: 
-                    sys.stdout.write('\nSearching for windows (set --maxwin)...')
+                    sys.stdout.write('Searching for windows (set --maxwin)...')
                     searching=True
             else:
                 if(searching):
                     searching=False
+                    sys.stdout.write('\n')
+                    sys.stdout.flush()
 
                 # has to follow get_number_and_title() to recognize zombie windows
                 ctty = self.tty(id) 
@@ -609,7 +616,7 @@ class ScreenSaver(object):
 
                 cfilter = self.get_exec(id)
                 cscrollback_len = self.scrollback('',id)
-                cgroup = self.get_group(id)
+                cgroupid,cgroup = self.get_group(id)
                 
                 # display some output
                 if cfilter!=-1:
@@ -692,7 +699,7 @@ class ScreenSaver(object):
                     self.__scrollbacks.append(scrollback_filename)
 
                 if ctype!="zombie":
-                    self.__save_win(cwin,ctime,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename,cscrollback_len)
+                    self.__save_win(cwin,ctime,cgroupid,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename,cscrollback_len)
                 rollback=None,None,None
 
 
@@ -971,7 +978,7 @@ class ScreenSaver(object):
         self.stuff('^[^[:mksession %s^M'%fname, winid)
         return name
            
-    def __save_win(self,winid,time,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
+    def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
         fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
         fh.write(str(winid)+'\n')
         fh.close()
@@ -987,7 +994,7 @@ class ScreenSaver(object):
                     shutil.move(rollback[2],vim_fname)
                 except:
                     pass
-        basedata=(winid,time,group,type,title,filter,scrollback_len)
+        basedata=(winid,time,groupid+' '+group,type,title,filter,scrollback_len)
         basedata_len=len(basedata)
 
         f=open(fname,"w")
