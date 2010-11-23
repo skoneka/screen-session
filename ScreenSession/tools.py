@@ -85,7 +85,7 @@ def sort(session,min,max,key=None):
     cgroup=None
     for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
-        group=ss.get_group(win)[1]
+        groupid,group=ss.get_group(win)[2]
 
         lastval=(group,iwin,type,title)
         try:

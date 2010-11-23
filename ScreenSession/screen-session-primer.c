@@ -71,6 +71,9 @@
 #define none       ""
 #endif
 
+#define VIM_SESSION "_session"
+#define VIM_INFO "_info"
+
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
@@ -790,7 +793,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
     {
       proc_args_n += 2;
     }
-  proc_args = malloc ((proc_args_n + 3) * sizeof (char *));
+  proc_args = malloc ((proc_args_n + 5) * sizeof (char *));
 
   long file_pos = ftell (fp);
   char *buf = NULL;
@@ -810,6 +813,8 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   proc_args[proc_args_n] = NULL;
   proc_args[proc_args_n + 1] = NULL;
   proc_args[proc_args_n + 2] = NULL;
+  proc_args[proc_args_n + 3] = NULL;
+  proc_args[proc_args_n + 4] = NULL;
   int null_c = 0;
   int word_c = 0;
   while ((c = fgetc (fp)) != EOF)
@@ -844,25 +849,37 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   getline (&proc_vim, &proc_vim_s, fp);
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
-
   if (strcmp (proc_vim, "None") != 0)
     {
       proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
+      proc_args[proc_args_n+2] = malloc ((strlen ("-i") + 1) * sizeof (char));
       char *session = get_session (config);
       proc_args[proc_args_n + 1] =
 	malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
-		 5) * sizeof (char));
+		 strlen (VIM_SESSION)+5) * sizeof (char));
+      proc_args[proc_args_n + 3] =
+	malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
+		 strlen (VIM_INFO)+5) * sizeof (char));
       strcpy (proc_args[proc_args_n], "-S");
       strcpy (proc_args[proc_args_n + 1], basedir);
       strcat (proc_args[proc_args_n + 1], "/");
       strcat (proc_args[proc_args_n + 1], session);
       strcat (proc_args[proc_args_n + 1], "/");
       strcat (proc_args[proc_args_n + 1], proc_vim);
+      strcat (proc_args[proc_args_n + 1], VIM_SESSION);
+      strcpy (proc_args[proc_args_n + 2], "-i");
+      strcpy (proc_args[proc_args_n + 3], basedir);
+      strcat (proc_args[proc_args_n + 3], "/");
+      strcat (proc_args[proc_args_n + 3], session);
+      strcat (proc_args[proc_args_n + 3], "/");
+      strcat (proc_args[proc_args_n + 3], proc_vim);
+      strcat (proc_args[proc_args_n + 3], VIM_INFO);
       char *buf =
-	malloc ((strlen (session) + strlen (proc_vim) + 5) * sizeof (char));
+	malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) + 5) * sizeof (char));
       strcpy (buf, session);
       strcat (buf, "/");
       strcat (buf, proc_vim);
+      strcat (buf, VIM_SESSION);
       requireSession (basedir, buf, 1);
       free (buf);
     }

@@ -35,6 +35,7 @@ class ScreenSaver(object):
     blacklist = ("rm","shutdown")
    
     vim_names = ('vi','vim','viless','vimdiff')
+    __unique_ident=None
     __wins_trans = {}
     __scrollbacks=[]
     win_none_g=None
@@ -50,6 +51,7 @@ class ScreenSaver(object):
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
+        self.__unique_ident="%s%d"%(sessionname.split('.',1)[0],time.time())
 
     def save(self):
         self.homewindow,title=self.get_number_and_title()
@@ -156,7 +158,7 @@ class ScreenSaver(object):
         
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
             groupid,group=group.split(' ',1)
-            self.__order_group(self.__wins_trans[win[0]],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
+            self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
         os.system('%s -X select %s' % (self.sc,rootwindow))
@@ -301,7 +303,7 @@ class ScreenSaver(object):
                 os.system('%s -X group %s' % (self.sc, 'none') )
                 cwin=int(self.number())
                 self.wrap_group_id=cwin+shift
-                group=group+'_'+str(int(time.time()))
+                group=group+'_'+self.__unique_ident
                 os.system('%s -X title %s' % (self.sc, group) )
                 if cwin not in r:
                     r.append(cwin)
@@ -680,11 +682,11 @@ class ScreenSaver(object):
                             nargs=[]
                             rmarg=False
                             for arg in args:
-                                if arg=='-S':
-                                    rmarg=True
-                                elif rmarg:
+                                if rmarg:
                                     rmarg=False
                                     pass
+                                elif arg in ('-S','-i'):
+                                    rmarg=True
                                 else:
                                     nargs.append(arg)
                             args=nargs
@@ -712,7 +714,6 @@ class ScreenSaver(object):
             requireme(self.homedir,cmdline[2], cmdline[3],True)
             path=os.path.join(self.homedir,cmdline[2],cmdline[4])
             fhead,ftail=os.path.split(cmdline[4])
-            fhhead,fhtail=os.path.split(fhead)
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             
             number=ftail.split('_')[1]
@@ -726,7 +727,6 @@ class ScreenSaver(object):
                 pass
             
             fhead,ftail=os.path.split(cmdline[3])
-            fhhead,fhtail=os.path.split(fhead)
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[3]),target2)
@@ -735,18 +735,8 @@ class ScreenSaver(object):
                 target2=None
                 pass
 
-            source3=os.path.join(self.homedir,cmdline[2],oldsavedir,"vim_"+number)
-            target3=None
-            if os.path.isfile(source3):
-                target3=os.path.join(self.homedir,self.projectsdir,self.savedir,"vim_"+number+'__rollback')
-                try:
-                    shutil.move(source3,target3)
-                except:
-                    target3=None
-                    pass
-
             if os.path.isfile(target):
-                return (target,target2,target3)
+                return (target,target2,os.path.join(self.homedir,cmdline[2],fhead))
             else:
                 return (None,None,None)
         except:
@@ -973,9 +963,11 @@ class ScreenSaver(object):
         return True
 
     def __save_vim(self,winid):
-        name="vim_%s"%(winid)
-        fname=os.path.join(self.basedir,self.savedir,name)
-        self.stuff('^[^[:mksession %s^M'%fname, winid)
+        name="vim_%s%s"%(self.__unique_ident,winid)
+        fname_session=os.path.join(self.basedir,self.savedir,name+'_session')
+        fname_info=os.path.join(self.basedir,self.savedir,name+'_info')
+        self.stuff('^[^[:mksession %s^M'%fname_session, winid)
+        self.stuff(':wv %s^M'%fname_info, winid)
         return name
            
     def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
@@ -987,13 +979,6 @@ class ScreenSaver(object):
             time=linecache.getline(rollback[0],2).strip()
             #copy scrollback
             shutil.move(rollback[1],scrollback_filename)
-            if rollback[2]:
-                #copy vim
-                try:
-                    vim_fname=os.path.join(self.basedir,self.savedir,"vim_"+winid)
-                    shutil.move(rollback[2],vim_fname)
-                except:
-                    pass
         basedata=(winid,time,groupid+' '+group,type,title,filter,scrollback_len)
         basedata_len=len(basedata)
 
@@ -1005,10 +990,21 @@ class ScreenSaver(object):
                 f.write('\n')
         
         if rollback[0]:
+            rollback_dir=rollback[2]
             target=rollback[0]
             fr=open(target,'r')
-            for line in fr.readlines()[basedata_len:]:
+            last_sep=1
+            for i,line in enumerate(fr.readlines()[basedata_len:]):
                 f.write(line)
+                if line=='-\n':
+                    last_sep=i
+                elif i-last_sep==6 and line.startswith('vim_'):
+                    #copy vim
+                    for file in glob.glob(os.path.join(rollback_dir,line.strip()+'_*')):
+                        try:
+                            shutil.move(file,os.path.join(self.basedir,self.savedir,os.path.basename(file)))
+                        except:
+                            out('Unable to rollback: %s'%file)
             os.remove(target)
         else:
             pids_data_len="0"
@@ -1024,8 +1020,6 @@ class ScreenSaver(object):
                                 data=data[:len(data)-1]
                             f.write(str(len(data.split('\0'))-1)+'\n')
                             f.write(str(data)+'\n')
-                        elif i==5 and rollback[2]:
-                            f.write(os.path.basename(rollback[2]))
                         else:
                             f.write(str(data)+'\n')
         f.close()
