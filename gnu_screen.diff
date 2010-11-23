@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..2aded62 100644
+index 5f4af8a..1b3d027 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
@@ -20,7 +20,15 @@ index 5f4af8a..2aded62 100644
    { "hardcopy",		NEED_FORE|ARGS_012 },
    { "hardcopy_append",	ARGS_1 },
    { "hardcopydir",	ARGS_01 },
-@@ -284,7 +284,7 @@ struct comm comms[RC_LAST + 1] =
+@@ -274,6 +274,7 @@ struct comm comms[RC_LAST + 1] =
+ #endif
+   { "readreg",          ARGS_0|ARGS_ORMORE },
+   { "redisplay",	NEED_DISPLAY|ARGS_0 },
++  { "regionsize",      CAN_QUERY|NEED_DISPLAY|ARGS_0 },
+   { "register",		ARGS_24 },
+   { "remove",		NEED_DISPLAY|ARGS_0 },
+ #ifdef COPY_PASTE
+@@ -284,7 +285,7 @@ struct comm comms[RC_LAST + 1] =
    { "resize",		NEED_DISPLAY|ARGS_0|ARGS_ORMORE },
    { "screen",		ARGS_0|ARGS_ORMORE },
  #ifdef COPY_PASTE
@@ -29,7 +37,7 @@ index 5f4af8a..2aded62 100644
  #endif
    { "select",		CAN_QUERY|ARGS_01 },
    { "sessionname",	ARGS_01 },
-@@ -313,6 +313,7 @@ struct comm comms[RC_LAST + 1] =
+@@ -313,6 +314,7 @@ struct comm comms[RC_LAST + 1] =
    { "terminfo",		ARGS_23 },
    { "time",		CAN_QUERY|ARGS_01 },
    { "title",		CAN_QUERY|NEED_FORE|ARGS_01 },
@@ -72,10 +80,20 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..631f28d 100644
+index da9188d..99ac450 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -2661,6 +2661,19 @@ int key;
+@@ -1723,6 +1723,9 @@ int key;
+         copy_reg_fn(&ch, 0, NULL);
+       break;
+ #endif
++    case RC_REGIONSIZE:
++       OutputMsg(0, "%d %d",D_forecv->c_xe-D_forecv->c_xs+1,D_forecv->c_ye-D_forecv->c_ys+1);
++       break;
+     case RC_REGISTER:
+ #ifdef ENCODINGS
+       i = fore ? fore->w_encoding : display ? display->d_encoding : 0;
+@@ -2661,6 +2664,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
@@ -95,7 +113,7 @@ index da9188d..631f28d 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3066,14 +3079,16 @@ int key;
+@@ -3066,14 +3082,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -120,7 +138,7 @@ index da9188d..631f28d 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4209,19 +4224,21 @@ int key;
+@@ -4209,19 +4227,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -155,7 +173,7 @@ index da9188d..631f28d 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4237,13 +4254,10 @@ int key;
+@@ -4237,13 +4257,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}
