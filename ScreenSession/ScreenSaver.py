@@ -161,7 +161,7 @@ class ScreenSaver(object):
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
-        os.system('%s -X select %s' % (self.sc,rootwindow))
+        self.select(rootwindow)
         
         # select last selected window
         lastid=''
@@ -213,6 +213,10 @@ class ScreenSaver(object):
             self.select(rootwindow)
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) )
         else:
+            try:
+                groupid=self.__wins_trans[groupid]
+            except:
+                pass
             self.select(groupid)
             os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
     
@@ -266,8 +270,8 @@ class ScreenSaver(object):
     def __remove_all_layouts(self):
         currentlayout=0
         while currentlayout!=-1:
-            os.system('%s -X layout remove' % (self.sc) )
-            os.system('%s -X layout next' % (self.sc) )
+            self.layout('remove')
+            self.layout('next')
             currentlayout,currentlayoutname=self.get_layout_number()
 
     def __kill_windows(self,kill_list):
@@ -304,7 +308,7 @@ class ScreenSaver(object):
                 cwin=int(self.number())
                 self.wrap_group_id=cwin+shift
                 group=group+'_'+self.__unique_ident
-                os.system('%s -X title %s' % (self.sc, group) )
+                self.title(group)
                 if cwin not in r:
                     r.append(cwin)
             r.sort()
@@ -320,7 +324,7 @@ class ScreenSaver(object):
                     else:
                         msg='Searching for windows (set --maxwin)...'
                         sys.stdout.write('\n'+msg)
-                        os.system('%s -X echo \"%s\"' % (self.sc,msg))
+                        self.echo(msg)
                         searching=True
                 else:
                     if(searching):
@@ -499,7 +503,7 @@ class ScreenSaver(object):
         return msg.rsplit(' ',1)[1].strip()
 
     def source(self,args=''):
-        msg=self.command_at('source %s'%args)
+        msg=self.command_at('source "%s"'%args)
         return msg
 
     def select(self,args='',win="-1"):
@@ -764,7 +768,7 @@ class ScreenSaver(object):
                 
                 layout_trans[layoutnumber]=currentlayout
 
-                os.system('%s -X source \"%s\"' % (self.sc, filename) )
+                self.source(filename)
                 (head,tail)=os.path.split(filename)
                 
                 filename2=os.path.join(head,"win"+tail) #read winlayout
@@ -791,14 +795,15 @@ class ScreenSaver(object):
                 
 
                 # set region dimensions
-                os.system('%s -X focus top' % (self.sc) )
+                self.focus('top')
                 out("%s (%s) : regions : %s - %s"%(layoutnumber,layoutname,winlist,regions_size))
                 for size in regions_size:
                     if size[0]>0:
                         self.resize('-h %d'%(size[0]))
                         self.resize('-v %d'%(size[1]))
                         self.fit()
-                    os.system('%s -X focus' % (self.sc) )
+
+                    self.focus()
 
                 
                 # restore focus on the right region
@@ -819,19 +824,19 @@ class ScreenSaver(object):
             lastname=last[2]
             lastid_l=last[1]
             out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-            os.system('%s -X layout select %s' % (self.sc,layout_trans[lastid_l]))
-            # ^^ layout numbering may change, use layout_trans={} !
+            self.layout('select %s'%layout_trans[lastid_l])
+            # ^^ layout numbering may change, use layout_trans={}
 
         if homelayout!=-1:
             out("Returning homelayout %s"%homelayout)
-            os.system('%s -X layout select %s' % (self.sc,homelayout))
+            self.layout('select %s'%homelayout)
         else:
             out('No homelayout - unable to return.')
         
         if not self.restore_previous:
             try:
                 out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-                os.system('%s -X layout select %s' % (self.sc,layout_trans[lastid_l]))
+                self.layout('select %s'%layout_trans[lastid_l])
             except:
                 pass
         
@@ -843,7 +848,7 @@ class ScreenSaver(object):
             self.select_last_window()
         
         out ("Returning homewindow " +homewindow)
-        os.system('%s -X select %s' % (self.sc,homewindow))
+        self.select(homewindow)
        
         if not self.restore_previous:
             self.select_last_window()
@@ -878,7 +883,7 @@ class ScreenSaver(object):
         markertty = self.tty()
         markernum,markertitle=self.get_number_and_title()
         #out('markernum=%s; title=%s;'%(markernum,markertitle))
-        os.system('%s -X focus top' % (self.sc) )
+        self.focus('top')
 
 
         while True:
@@ -886,11 +891,11 @@ class ScreenSaver(object):
             if ctty==markertty:
                 break
             else:
-                os.system('%s -X focus' % (self.sc) )
+                self.focus()
                 focus_offset+=1
         #self.__terminate_processes(ident)
-        os.system('%s -p %s -X kill'%(self.sc,markernum))
-        os.system('%s -X select %s' % (self.sc,cnum))
+        self.kill(markernum)
+        self.select(cnum)
         return focus_offset
 
     def __save_layouts(self):
@@ -911,10 +916,10 @@ class ScreenSaver(object):
             loop_exit_allowed=True
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
-            os.system('%s -X layout dump \"%s\"' % (self.sc, os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) )
+            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname))
             region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.get_focus_offset()
-            os.system('%s -X focus top' % (self.sc) )
+            self.focus('top')
             win=[]
             for i in range(0,region_c):
                 currentnumber=self.number()
@@ -935,7 +940,7 @@ class ScreenSaver(object):
                 sizex=int(csize[0])
                 sizey=int(csize[1])
                 win.append("%s %d %d"%(currentnumber,sizex+1,sizey+1))
-                os.system('%s -X focus' % (self.sc) )
+                self.focus()
             out("%s : %d; %s; (%s); (%s); %s" % (currentlayout,region_c,focus_offset,cfocusminsize,layoutname,win))
 
             f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
@@ -950,15 +955,14 @@ class ScreenSaver(object):
             self.select_region(focus_offset)
 
             self.focusminsize(cfocusminsize)
-            os.system('%s -X layout next' % (self.sc) )
-            
+            self.layout('next')
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
         out("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
         
-        os.system('%s -X select %s' % (self.sc,self.homewindow_last))
+        self.select(self.homewindow_last)
 
         return True
 
@@ -967,7 +971,7 @@ class ScreenSaver(object):
         fname_session=os.path.join(self.basedir,self.savedir,name+'_session')
         fname_info=os.path.join(self.basedir,self.savedir,name+'_info')
         self.stuff('^[^[:mksession %s^M'%fname_session, winid)
-        self.stuff(':wv %s^M'%fname_info, winid)
+        self.stuff(':wviminfo %s^M'%fname_info, winid)
         return name
            
     def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):

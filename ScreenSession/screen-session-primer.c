@@ -74,6 +74,7 @@
 #define VIM_SESSION "_session"
 #define VIM_INFO "_info"
 
+#define PRIMER green"PRIMER: "none
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
@@ -784,7 +785,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   c = fgetc (fp);
   getline (&proc_cwd, &proc_cwd_s, fp);
   proc_cwd = strtrim_right (proc_cwd, '\n');
-  printf ("PRIMER: CWD(%s) starting: ",proc_cwd);
+  printf (PRIMER "CWD(%s) starting: ",proc_cwd);
   //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
   getline (&proc_exe, &proc_exe_s, fp);
   proc_exe = strtrim_right (proc_exe, '\n');
@@ -1284,11 +1285,11 @@ main (int argc, char **argv)
       {
 
       case EXIT:
-        printf ("PRIMER: Exiting...\n");
+        printf (PRIMER "Exiting...\n");
         return 0;
         break;
       case RESET:
-        printf("PRIMER: Reseting...\n");
+        printf(PRIMER "Reseting...\n");
         requireSession (fullpath, scrollbackfile, 1);
         execv (argv[0],argv);
         break;
@@ -1299,7 +1300,7 @@ main (int argc, char **argv)
         arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
         arglist[1] = NULL;
         strcpy (arglist[0], shell);
-        printf ("PRIMER: Starting default shell(%s) in last cwd(%s)...\n", shell,
+        printf (PRIMER "Starting default shell(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
         execvp (shell, arglist);
@@ -1307,7 +1308,7 @@ main (int argc, char **argv)
 
       case ONLY:
         read_scrollback(fullpath,scrollbackfile);
-        printf ("PRIMER: Starting processes ");
+        printf (PRIMER "Starting processes ");
         print_ints(numbers,numbers_c);
         printf("...\n");
         args[0] = numbers[0];
@@ -1323,7 +1324,7 @@ main (int argc, char **argv)
 
       case ALL:
         read_scrollback(fullpath,scrollbackfile);
-        printf ("PRIMER: Starting all programs...\n");
+        printf (PRIMER "Starting all programs...\n");
         for (i = 0; i < procs_c; i++)
           {
             args[i] = i;
@@ -1337,11 +1338,11 @@ main (int argc, char **argv)
       case NUMBER:
         read_scrollback(fullpath,scrollbackfile);
         number=numbers[0];
-        printf ("PRIMER: Starting programs up to %d...\n", number);
+        printf (PRIMER "Starting programs up to %d...\n", number);
         if (number > procs_c)
           {
             number = procs_c;
-            printf ("PRIMER: No such window. Starting programs up to %d...\n",
+            printf (PRIMER "No such window. Starting programs up to %d...\n",
                     number - 1);
           }
         else

@@ -106,6 +106,7 @@ Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space).
 Temporary files are stored in  /tmp/screen-session-$USER.
 
 By default session saver also tries to save vim sessions using ":mksession"
+and ":wviminfo".
 
 
 -----------------------------------------------------------------------
@@ -121,6 +122,6 @@ There are no bugs, only features.
   started by it. If session saver caused the lock it is usually enough to
   run: $ pkill -f "@lastmsg"
 
-Send suggestions to admin<[at]>adb.cba.pl or github issue tracker
+Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues
 

@@ -17,7 +17,6 @@ CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
 CFLAGS = -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
 LDFLAGS = -s ${LIBS}
 
-
 # compiler and linker
 CC = cc
 
