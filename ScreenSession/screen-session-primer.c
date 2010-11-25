@@ -1250,7 +1250,7 @@ main (int argc, char **argv)
       }
     fclose (fp);
     free(proc_vim);
-    free(proc_cwd);
+    //free(proc_cwd);
     free(proc_exe);
     free(title);
     free(buftext);

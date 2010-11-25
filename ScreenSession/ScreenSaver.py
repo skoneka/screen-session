@@ -14,6 +14,7 @@ class ScreenSaver(object):
     savedir=""
     procdir="/proc"
     MAXWIN=-1
+    MAXWIN_REAL=-1
     force=False
     lastlink="last"
     enable_layout = False
@@ -33,6 +34,8 @@ class ScreenSaver(object):
     
     # old static blacklist
     blacklist = ("rm","shutdown")
+    # list of excluded windows
+    excluded = None
    
     vim_names = ('vi','vim','viless','vimdiff')
     __unique_ident=None
@@ -75,20 +78,26 @@ class ScreenSaver(object):
         maxnewwindow=0
         newwindows=0
         try:
-            f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
-            winlist=f.readlines()
+            winlist=list(glob.glob(os.path.join(self.basedir,self.savedir,'win_*')))
             newwindows=len(winlist)
-            maxnewwindow=int(winlist[newwindows-1])
-            f.close()
             out('%d new windows'%newwindows)
-        except:
+        except Exception,e:
             out('Unable to open.')
+            out(str(e))
             return False
-        
 
         # keep original numbering, move existing windows
         self.homewindow=self.number()
         if self.exact:
+            maxnewwindow=-1
+            for w in winlist:
+                try:
+                    w = int(w.split('_',1)[1])
+                    if w > maxnewwindow:
+                        maxnewwindow = w
+                except:
+                    pass
+                
             out('Biggest new window number: %d'%maxnewwindow)
             if self.enable_layout:
                 self.__remove_all_layouts()
@@ -138,20 +147,18 @@ class ScreenSaver(object):
 
         out('NUMBER; TIME; GROUP; TYPE; TITLE; FILTER; SCROLLBACK; PROCESSES;')
         wins=[]
-        f = open(os.path.join(self.basedir,self.savedir,"winlist"),'r')
-        for id in f:
+        for id in range(0,int(self.MAXWIN_REAL)):
             try:
-                filename=os.path.join(self.basedir,self.savedir,"win_"+id.strip())
-                f=open(filename)
-                win=list(f)[0:8]
-                f.close()
-                win=self.__striplist(win)
-                out (str(win))
-                wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5], win[6],win[7]))
+                filename=os.path.join(self.basedir,self.savedir,"win_"+str(id))
+                if os.path.exists(filename):
+                    f=open(filename)
+                    win=list(f)[0:8]
+                    f.close()
+                    win=self.__striplist(win)
+                    out (str(win))
+                    wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5], win[6],win[7]))
             except:
-                out('Unable to load window %s'%id)
-        f.close()
-
+                out('%s Unable to load window'%id)
 
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
             self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
@@ -975,9 +982,10 @@ class ScreenSaver(object):
         return name
            
     def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
-        fh=open(os.path.join(self.basedir,self.savedir,"winlist"),'a')
-        fh.write(str(winid)+'\n')
-        fh.close()
+        if self.excluded and (winid in self.excluded or groupid in self.excluded):
+            out('%s excluded from saving'%winid)
+            return
+
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
             time=linecache.getline(rollback[0],2).strip()
@@ -1046,8 +1054,6 @@ class ScreenSaver(object):
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
                 linkify(basedir,savedir,self.lastlink)
-                f=open(os.path.join(basedir,savedir,'winlist'),'w')
-                f.close()
                 return True
             else:
                 out('Aborting.')
@@ -1055,7 +1061,5 @@ class ScreenSaver(object):
         else:
             os.makedirs(os.path.join(basedir,savedir))
             linkify(basedir,savedir,self.lastlink)
-            f=open(os.path.join(basedir,savedir,'winlist'),'w')
-            f.close()
             return True
 

@@ -55,7 +55,7 @@ def main():
         pass
 
     try :
-        opts,args = getopt.getopt(sys.argv[argstart:], "S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "E:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -73,6 +73,7 @@ def main():
     bList=False
     bFull=False
     idle=None
+    excluded=None
     restore = False
     verbose = False
     log=None
@@ -96,7 +97,6 @@ def main():
         elif o == "--log":
             log = a
         elif o == "-p":
-            #logpipe
             logpipe = a
         elif o == "--unpack":
             unpack = a
@@ -113,6 +113,8 @@ def main():
         elif o in ("-X","--exact-kill-other"):
             bExact = True
             bKill=True
+        elif o in ("-E","--exclude"):
+            excluded = a
         elif o in ("-r","--restore"):
             restore = True
         elif o in ("-f","--force"):
@@ -257,21 +259,26 @@ def main():
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     
-    if (maxwin==-1) and (mode==1):
-        out("for saving specify --maxwin (biggest window number in session)")
-        maxwin=scs.maxwin()
-    elif (maxwin==-1) and (mode==2) and bExact==True:
-        out("--exact option requires --maxwin (biggest window number in current session)")
-        maxwin=scs.maxwin()
+    maxwin_real=scs.maxwin()
+    if (maxwin==-1):
+        if (mode==1):
+            out("for saving specify --maxwin (biggest window number in session)")
+        elif (mode==2) and bExact==True:
+            out("--exact option requires --maxwin (biggest window number in current session)")
+        maxwin=maxwin_real
 
 
     scs.MAXWIN = maxwin
+    scs.MAXWIN_REAL = maxwin_real
     scs.force = force
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     scs.exact=bExact
     scs.bKill=bKill
     scs.bVim=bVim
+    if excluded:
+        excluded=excluded.split(',')
+    scs.excluded=excluded
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)
