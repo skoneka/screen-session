@@ -645,45 +645,44 @@ class ScreenSaver(object):
                     cpids = None
                     cpids_data=None
                     if self.excluded:
-                        if cwin in self.excluded :
-                            out('%s excluded from saving'%cwin)
+                        if cwin in self.excluded:
                             excluded_groups.append(cwin)
                         try:
                             group_groups[cgroupid]+=[cwin]
                         except:
                             group_groups[cgroupid]=[cwin]
-                elif(ctty=="telnet"):
-                    ctype="telnet"
-                    cpids = None
-                    cpids_data=None
                 else:
                     if self.excluded:
-                        if cwin in self.excluded :
-                            out('%s excluded from saving'%cwin)
+                        if cwin in self.excluded:
                             excluded_wins.append(cwin)
                         else:
                             try:
                                 group_wins[cgroupid]+=[cwin]
                             except:
                                 group_wins[cgroupid]=[cwin]
-                    ctype="basic"
-                    # get sorted pids in window
-                    cpids=sc.get_tty_pids(ctty)
-                    cpids_data=[]
-                    ncpids=[]
-                    for pid in cpids:
-                        try:
-                            pidinfo=sc.get_pid_info(pid)
-                            (exehead,exetail)=os.path.split(pidinfo[1])
-                            if exetail in self.blacklist:
-                                blacklist=True
-                            else:
-                                blacklist=False
-                            cpids_data.append(pidinfo+tuple([blacklist]))
-                            ncpids.append(pid)
-                        except OSError:
-                            out('%s: Unable to access. No permission or no procfs.'%pid)
-                    cpids=ncpids
+                    if(ctty=="telnet"):
+                        ctype="telnet"
+                        cpids = None
+                        cpids_data=None
+                    else:
+                        ctype="basic"
+                        # get sorted pids in window
+                        cpids=sc.get_tty_pids(ctty)
+                        cpids_data=[]
+                        ncpids=[]
+                        for pid in cpids:
+                            try:
+                                pidinfo=sc.get_pid_info(pid)
+                                (exehead,exetail)=os.path.split(pidinfo[1])
+                                if exetail in self.blacklist:
+                                    blacklist=True
+                                else:
+                                    blacklist=False
+                                cpids_data.append(pidinfo+tuple([blacklist]))
+                                ncpids.append(pid)
+                            except OSError:
+                                out('%s: Unable to access. No permission or no procfs.'%pid)
+                        cpids=ncpids
                 
                 if(cpids):
                     for i,pid in enumerate(cpids):

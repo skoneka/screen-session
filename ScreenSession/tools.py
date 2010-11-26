@@ -119,18 +119,58 @@ def kill_zombie(session,min,max):
         if type==-1:
             ss.kill(win)
 
-def kill_group(session,win):
-    print ('killing group %s'%win)
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    tty=ss.tty(win)
-    if tty!="group":
-        print('This window is not a group. Aborting.')
-        return
-    ss.select(win)
-    wins=sc.parse_windows(sc.get_windows(session))[0]
-    print (wins)
-    for w in wins:
-       print('killing %s'%w)
+def kill_group(session,min,max,groupids):
+    ss=ScreenSaver(session)
+    bAll=False
+    if groupids[0]=='current':
+        groupids[0]=ss.get_group()[0]
+    elif groupids[0]=='all':
+        bAll=True
+    group_wins={}
+    group_groups={}
+    excluded_wins=[]
+    excluded_groups=[]
+    for win,type,title,tty in sc.gen_all_windows(min,max,session):
+        cgroupid,cgroup=ss.get_group(win)
+        if(type==1): # group
+            if win in groupids or bAll:
+                excluded_groups.append(win)
+            try:
+                group_groups[cgroupid]+=[win]
+            except:
+                group_groups[cgroupid]=[win]
+        else: # anything other than group
+            if win in groupids:
+                excluded_wins.append(win)
+            else:
+                try:
+                    group_wins[cgroupid]+=[win]
+                except:
+                    group_wins[cgroupid]=[win]
+    excluded_groups_tmp=[]
+    while excluded_groups:
+        egroup=excluded_groups.pop()
+        if egroup not in excluded_groups_tmp:
+            excluded_groups_tmp.append(egroup)
+        try:
+            ngroups = group_groups[egroup]
+            if ngroups:
+                for g in ngroups:
+                    excluded_groups.append(g)
+        except:
+            pass
+    excluded_groups = excluded_groups_tmp
+    print('Killing groups: %s'%str(excluded_groups))
+    for egroup in excluded_groups:
+        excluded_wins.append(egroup)
+        try:
+            for w in group_wins[egroup]:
+                excluded_wins.append(w)
+        except:
+            pass
+    print('All killed windows: %s'%str(excluded_wins))
+    for win in excluded_wins:
+        ss.kill(win)
 
 def kill_current_group(ss,bKillHomeWindow=False,other_wins=[],homewindow=-1):
     if homewindow<0:

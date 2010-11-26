@@ -25,7 +25,7 @@ Available modes:\n\
     \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
     kill\t- send signal to last process started in a window\n\
-    kill-cgroup\t- kill all windows in the current group\n\
+    kill-group\t- kill a group and all windows inside\n\
     kill-zombie\t- kill all zombie windows in session\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
@@ -49,10 +49,12 @@ Useful for closing random emacs/vim instances.\n\
 help_kill_zombie="Kill all zombie windows in session.\n\
 \nUsage: screen-session kill-zombie [options] [maxwin=MAXWIN] [minwin=0]"
 
-help_kill_cgroup="Recursively kill all windows in the current group.\n\
-It does not kill the group itself and the window from which it was started.\n\
+help_kill_group="Recursively kill groups and windows inside.\n\
+Accepts group window numbers as arguments.\n\
+If the first argument is \"current\" kill the current group.\n\
+If the first argument is \"all\" kill all groups in session.\n\
 Take care with this command.\n\
-\nUsage: screen-session kill-cgroup [options] [more windows to kill]"
+\nUsage: screen-session kill-group [options] [groupNum0] [groupNum..]"
 
 help_dir="Start a new Screen window in the same working directory\n\
 on the position next to the current window.\n\
@@ -171,8 +173,8 @@ if __name__=='__main__':
         print(help_kill)
     elif mode=='kill-zombie':
         print(help_kill_zombie)
-    elif mode=='kill-cgroup':
-        print(help_kill_cgroup)
+    elif mode=='kill-group':
+        print(help_kill_group)
     elif mode=='dir':
         print(help_dir)
     elif mode=='dump':

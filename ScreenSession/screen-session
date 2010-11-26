@@ -104,10 +104,8 @@ elif [ $mode = "kill-zombie" ]; then
     python $SCRIPTPATH/kill-zombie.py $session $maxwin "$@"
 
 elif [ $mode = "kill-group" ]; then
-    python $SCRIPTPATH/kill-group.py $session "$@"
-
-elif [ $mode = "kill-cgroup" ]; then
-    python $SCRIPTPATH/kill-current-group.py $session "$@"
+    maxwin=`get_maxwin $session`
+    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $maxwin "$@"
 
 elif [ $mode = "renumber" ]; then
     maxwin=`get_maxwin $session`
