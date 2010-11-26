@@ -16,7 +16,7 @@ get_maxwin() {
     maxwin=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$1\").maxwin())"`
     echo $maxwin
 }
-
+MINWIN='0'
 waitfor=0
 nonest=0
 logpipe=1
@@ -30,23 +30,25 @@ mode=$1
 shift 1 "$@"
 
 # parse command line arguments
-while getopts ":WNP:S:": OPT; do
+while getopts ":WNP:S:M:m:": OPT; do
     case "$OPT" in
-    W)  
-        waitfor=1
+    W)  waitfor=1
         shift 1 "$@"
         ;;
-    N)  
-        logpipe=0
+    N)  logpipe=0
         shift 1 "$@"
         ;;
-    P)  
-        logpipe=1
+    P)  logpipe=1
         shift 1 "$@"
         ;;
-    S)  
-        session="$OPTARG"
+    S)  session="$OPTARG"
         shift 2 "$@"
+        ;;
+    M)  MAXWIN="$OPTARG"
+        shift 2 "$@"
+        ;;
+    U)  MINWIN="$OPTARG"
+        shift 2 "$@";
         ;;
     esac
 done
@@ -84,10 +86,10 @@ elif [ $mode = "group" ]; then
     sh $SCRIPTPATH/win-to-group $session "$@"
 
 elif [ $mode = "regions" ]; then
-    screen -m -d -c /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+    screen -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
 
 elif [ $mode = "nest" ]; then
-    screen -m -d -c /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+    screen -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
 
 elif [ $mode = "dir" ]; then
     python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
@@ -100,20 +102,28 @@ elif [ $mode = "kill" ]; then
     python $SCRIPTPATH/kill.py $session "$@"
 
 elif [ $mode = "kill-zombie" ]; then
-    maxwin=`get_maxwin $session`
-    python $SCRIPTPATH/kill-zombie.py $session $maxwin "$@"
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+    python $SCRIPTPATH/kill-zombie.py $session $MAXWIN "$@"
 
 elif [ $mode = "kill-group" ]; then
-    maxwin=`get_maxwin $session`
-    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $maxwin "$@"
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN "$@"
 
 elif [ $mode = "renumber" ]; then
-    maxwin=`get_maxwin $session`
-    python $SCRIPTPATH/renumber.py $session $maxwin "$@"
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+    python $SCRIPTPATH/renumber.py $session $MAXWIN "$@"
 
 elif [ $mode = "sort" ]; then
-    maxwin=`get_maxwin $session`
-    python $SCRIPTPATH/sort.py $session $maxwin "$@"
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+    python $SCRIPTPATH/sort.py $session $MAXWIN "$@"
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`
@@ -130,18 +140,22 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
         /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
 
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+
     argument0="logpipe=$scsfile"
     if [ $logpipe -eq 1 ]; then
         if [ -d "$scsfile" ]; then
             rm $scsfile
         fi
         mkfifo $scsfile
-        screen -m -d -c /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 "$@"
+        screen -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0 -M $MAXWIN $argument1 "$@"
         
         cat $scsfile
         rm $scsfile
     else
-        python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 "$@"
+        python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 -M $MAXWIN "$@"
     fi
 
 elif [ $mode = "--version" -o $mode = "-v" ]; then

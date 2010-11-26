@@ -102,7 +102,7 @@ save\n\
   \tsessionname(saving) or savefile(loading)\n\
 -o --out    <session or directory>\n\
   \tsessionname(loading) or savefile(saving)\n\
--m --maxwin <number>\n\
+-M --maxwin <number>\n\
   \tsupply biggest window number in your session\n\
 -f --force  <number>\n\
   \tforce saving even if savefile with the same\n\

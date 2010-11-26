@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=", "maxwin=", "load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -128,7 +128,7 @@ def main():
             # ignore, currently handled in wrapper script
             # waitfor = True
             pass
-        elif o in ("-M","--maxwin","--daxwin"):
+        elif o in ("-M","--maxwin"):
             maxwin = int(a)
         elif o in ("-s","--save"):
             mode = 1
