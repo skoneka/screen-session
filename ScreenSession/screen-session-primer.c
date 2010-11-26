@@ -719,7 +719,7 @@ is_blacklisted (char *basedir, char *program, int programid)
 
   if (!fp)
     {
-      fprintf (stderr,"%s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
+      fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
       perror("Error :");
       free (filepath);
       return 0;
@@ -765,7 +765,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   if (!fp)
     {
 
-      fprintf (stderr,"%s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
+      fprintf (stderr,PRIMER": %s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
       perror("Error :");
       printf ("Press any key to continue...\n");
       mygetch ();
@@ -1050,6 +1050,7 @@ read_scrollback(char *fullpath, char *scrollbackfile)
 {
   FILE *fp=NULL;
   char c;
+  chdir(fullpath);
   requireSession (fullpath, scrollbackfile, 1);
   fp = fopen (scrollbackfile, "r");
   if (fp)
@@ -1062,7 +1063,7 @@ read_scrollback(char *fullpath, char *scrollbackfile)
     }
   else
     {
-      fprintf (stderr,"%s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
+      fprintf (stderr,PRIMER": %s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
       perror("Error :");
     }
   fp = NULL;
@@ -1147,12 +1148,11 @@ main (int argc, char **argv)
     fp=read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-    printf ("%s%s'%s'%s ", none, green_r, datafile, none);
     requireSession (fullpath, datafile, 0);
     fp = fopen (datafile, "r");
     if (!fp)
       {
-        fprintf (stderr,"%s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
+        fprintf (stderr,PRIMER": %s:%d Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
         perror("Error :");
         printf ("Press any key to continue...\n");
         mygetch ();
@@ -1162,14 +1162,14 @@ main (int argc, char **argv)
     int procs_c = 0;
     size_t filter_s = 20;
     char *filter = malloc (filter_s * sizeof (char));
-    printf ("%sSAVED: ", none);
     size_t buftext_s;
     char *buftext = NULL;
     size_t title_s;
     char *title = NULL;
+    size_t timesaved_s;
+    char *timesaved = NULL;
     getline (&buftext, &buftext_s, fp);	//win number
-    getline (&buftext, &buftext_s, fp);	//save time
-    printf ("%s%s\n", green_r, buftext);
+    getline (&timesaved, &timesaved_s, fp);	//save time
     getline (&buftext, &buftext_s, fp);	//group
     getline (&buftext, &buftext_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
@@ -1177,13 +1177,15 @@ main (int argc, char **argv)
     getline (&filter, &filter_s, fp);	    //filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
 
+    printf ("%sTITLE:%s %s\n", green_r, none, title);
+    printf ("%sSAVED:%s %s\n", green_r, none, timesaved);
     filter = strtrim_right (filter, '\n');
     if (strcmp (filter, "-1") != 0)
-      printf ("\nFilter: %s\n", filter);
+      printf ("\nFILTER: %s\n", filter);
     printf ("%s", none);
 
     fscanf (fp, "%d\n", &procs_c);
-    printf ("%s%d%s in %s%s%s\n", red_r, procs_c, blue_r, red_r, title, none);
+    printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
 
     size_t proc_cwd_s = 0;
     size_t proc_exe_s = 0;
@@ -1253,10 +1255,12 @@ main (int argc, char **argv)
     //free(proc_cwd);
     free(proc_exe);
     free(title);
+    free(timesaved);
     free(buftext);
     int menu;
     int number;
     int *numbers;
+    chdir(proc_cwd);
     int numbers_c=userInput (&menu, &numbers, procs_c);
     char *shell = NULL;
     char **arglist = NULL;
@@ -1357,7 +1361,7 @@ main (int argc, char **argv)
         break;
 
       }
-    fprintf (stderr,"%s:%d fatal error - unsupported action\n",__FILE__,__LINE__);
+    fprintf (stderr,PRIMER": %s:%d fatal error - unsupported action\n",__FILE__,__LINE__);
     mygetch ();
     return 44;
   }
