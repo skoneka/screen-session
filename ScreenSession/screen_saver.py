@@ -54,8 +54,8 @@ def main():
         argstart=2
         pass
 
-    try :
-        opts,args = getopt.getopt(sys.argv[argstart:], "E:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
+    try:
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=","maxwin=","load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -113,7 +113,7 @@ def main():
         elif o in ("-X","--exact-kill-other"):
             bExact = True
             bKill=True
-        elif o in ("-E","--exclude"):
+        elif o in ("-e","--exclude"):
             excluded = a
         elif o in ("-r","--restore"):
             restore = True

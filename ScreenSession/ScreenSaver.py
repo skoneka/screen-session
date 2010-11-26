@@ -34,7 +34,7 @@ class ScreenSaver(object):
     
     # old static blacklist
     blacklist = ("rm","shutdown")
-    # list of excluded windows
+    # user submitted list of excluded windows
     excluded = None
    
     vim_names = ('vi','vim','viless','vimdiff')
@@ -595,7 +595,10 @@ class ScreenSaver(object):
     def __save_screen(self):
         homewindow=self.homewindow
         out ("Homewindow is " + homewindow)
-
+        group_wins={}
+        group_groups={}
+        excluded_wins=[]
+        excluded_groups=[]
         cwin=-1
         ctty=None
         cppids={}
@@ -641,11 +644,28 @@ class ScreenSaver(object):
                     ctype="group"
                     cpids = None
                     cpids_data=None
+                    if self.excluded:
+                        if cwin in self.excluded :
+                            out('%s excluded from saving'%cwin)
+                            excluded_groups.append(cwin)
+                        try:
+                            group_groups[cgroupid]+=[cwin]
+                        except:
+                            group_groups[cgroupid]=[cwin]
                 elif(ctty=="telnet"):
                     ctype="telnet"
                     cpids = None
                     cpids_data=None
                 else:
+                    if self.excluded:
+                        if cwin in self.excluded :
+                            out('%s excluded from saving'%cwin)
+                            excluded_wins.append(cwin)
+                        else:
+                            try:
+                                group_wins[cgroupid]+=[cwin]
+                            except:
+                                group_wins[cgroupid]=[cwin]
                     ctype="basic"
                     # get sorted pids in window
                     cpids=sc.get_tty_pids(ctty)
@@ -715,6 +735,35 @@ class ScreenSaver(object):
                     self.__save_win(cwin,ctime,cgroupid,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename,cscrollback_len)
                 rollback=None,None,None
 
+        if self.excluded:
+            excluded_groups_tmp=[]
+            while excluded_groups:
+                egroup=excluded_groups.pop()
+                if egroup not in excluded_groups_tmp:
+                    excluded_groups_tmp.append(egroup)
+                try:
+                    ngroups = group_groups[egroup]
+                    if ngroups:
+                        for g in ngroups:
+                            excluded_groups.append(g)
+                except:
+                    pass
+            excluded_groups = excluded_groups_tmp
+            out('\nExcluded groups: %s'%str(excluded_groups))
+            for egroup in excluded_groups:
+                excluded_wins.append(egroup)
+                try:
+                    for w in group_wins[egroup]:
+                        excluded_wins.append(w)
+                except:
+                    pass
+            out('All excluded windows: %s'%str(excluded_wins))
+            bpath = os.path.join(self.basedir, self.savedir, "win_")
+            for win in excluded_wins:
+                try:
+                    os.remove(bpath+win)
+                except:
+                    pass
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         out('\nsaved on '+str(ctime))
@@ -982,10 +1031,6 @@ class ScreenSaver(object):
         return name
            
     def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
-        if self.excluded and (winid in self.excluded or groupid in self.excluded):
-            out('%s excluded from saving'%winid)
-            return
-
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
             time=linecache.getline(rollback[0],2).strip()
