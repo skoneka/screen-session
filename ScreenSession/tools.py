@@ -2,7 +2,6 @@
 import GNUScreen as sc
 
 def find_pids_in_windows(session,minwin,maxwin,pids):
-    ss=ScreenSaver(session)
     import getpass,os
     tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
     #print(tty_and_pids)
@@ -17,11 +16,19 @@ def find_pids_in_windows(session,minwin,maxwin,pids):
         try:
             tty = int(os.path.split(tty)[1])
             if tty in ttys:
-                wins.append(win)
+                wins.append(tuple([win,title]))
         except Exception,x:
             pass
-
     return wins
+
+def find_files_in_pids(minwin,maxwin,files):
+    import os
+    cmd='lsof -F p %s | cut -c2-'%(" ".join(["\"%s\""%v for v in files]))
+    f = os.popen(cmd)
+    pids=f.read().strip().split('\n')
+    f.close()
+    return pids
+
 
 def dump(ss,minwin,maxwin):
     for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,ss.pid):

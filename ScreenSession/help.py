@@ -26,6 +26,7 @@ Available modes:\n\
     dir\t\t- start Screen window in the same working directory\n\
     dump\t- dump informations about windows in session\n\
     find-pid\t- find PIDs in windows\n\
+    find-file\t- find files in windows\n\
     grab\t- grab a process and attach it to current tty\n\
     \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
@@ -73,17 +74,25 @@ help_dump="Dump informations about windows in session.\n\
 \nUsage: screen-session dump [options] [maxwin] [minwin]"
 
 help_find_pid="Find PIDs in windows.\n\
+%s\
+%s\
 \nUsage: screen-session find-pid [options] [PIDs]\n\
-Example: screen-session find-pid $(pgrep vim)"
+Example: screen-session find-pid $(pgrep vim)"%(help_maxwin,help_minwin)
+
+help_find_file="Find files in windows.\n\
+%s\
+%s\
+\nUsage: screen-session find-file [options] [files]"%(help_maxwin,help_minwin)
 
 help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
 A simple demonstration of injcode tool by Thomas Habets.\n\
+http://blog.habets.pp.se/2009/03/Moving-a-process-to-another-terminal\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 
 help_group="Move windows to a group.\n\
-If no windows given, moves current window.\n\
+If no windows given, move the current window.\n\
 \nUsage: screen-session group [options] [GROUP] [windows]"
 
 help_manager="Sessions manager for GNU Screen with preview in a split window.\n\
@@ -198,6 +207,8 @@ if __name__=='__main__':
         print(help_dump)
     elif mode=='find-pid':
         print(help_find_pid)
+    elif mode=='find-file':
+        print(help_find_file)
     elif mode=='grab':
         print(help_grab)
     elif mode=='group':

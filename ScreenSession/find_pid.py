@@ -12,5 +12,5 @@ min=int(sys.argv[3])
 max=int(sys.argv[2])
 pids=map(int,sys.argv[4:])
 
-for win in tools.find_pids_in_windows(session,min,max,pids):
-    print(win)
+for win,title in tools.find_pids_in_windows(session,min,max,pids):
+    print("%s %s"%(win,title))
