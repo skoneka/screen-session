@@ -89,7 +89,9 @@ Works with applications without complicated output scheme.\n\
 A simple demonstration of injcode tool by Thomas Habets.\n\
 http://blog.habets.pp.se/2009/03/Moving-a-process-to-another-terminal\n\
 \nUsage: screen-session grab [PID]\n\
-on the previous shell type: $ disown"
+and on the previous shell type:\n\
+$ disown\n\
+It works more reliably if all commands in script are typed manually."
 
 help_group="Move windows to a group.\n\
 If no windows given, move the current window.\n\

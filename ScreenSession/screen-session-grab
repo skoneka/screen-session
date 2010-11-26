@@ -4,11 +4,8 @@
 # website: http://adb.cba.pl
 # description: attaches a process to current tty
 
-# Usage: screen-move-process PID
+# Usage: screen-session-grab PID
 # on the previous shell: disown
 
 injcode -m retty $1
-sleep 1
-kill -s STOP "$1"
-sleep 1
-kill -s CONT "$1"
+sh -c "/bin/sleep 1; /bin/kill -s STOP $1;/bin/sleep 1; /bin/kill -s CONT $1" &
