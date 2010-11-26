@@ -2,24 +2,13 @@
 # file: kill-zombie.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: kill all zombie window in a Screen session
+# description: kill all zombie windows in a Screen session
 
 import sys
 import tools
 
 session=sys.argv[1]
-
-try:
-    max=sys.argv[3]
-except:
-    max=sys.argv[2]
-max=int(max)
-
-try:
-    min=sys.argv[4]
-except:
-    min=0
-min=int(min)
-
+min=int(sys.argv[3])
+max=int(sys.argv[2])
 tools.kill_zombie(session,min,max)
 

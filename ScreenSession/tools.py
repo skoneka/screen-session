@@ -1,19 +1,25 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 
-def find_pids_in_windows(scs,pids,minwin,maxwin):
-    import getpass
+def find_pids_in_windows(session,minwin,maxwin,pids):
+    ss=ScreenSaver(session)
+    import getpass,os
     tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
+    #print(tty_and_pids)
     ttys=[]
-    print("hello")
-    tty_and_pids={"a":1,"b":2}
-    for tty,tpids in tty_and_pids:
-        if pids in tpids:
-            ttys.append(tty)
+    for tty,tpids in tty_and_pids.items():
+        #print('%s %s %s'%(pids,tty,tpids))
+        for pid in pids:
+            if pid in tpids:
+                ttys.append(tty)
     wins=[]
-    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,ss.pid):
-        if tty in ttys:
-            wins.append(win)
+    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,session):
+        try:
+            tty = int(os.path.split(tty)[1])
+            if tty in ttys:
+                wins.append(win)
+        except Exception,x:
+            pass
 
     return wins
 
@@ -59,7 +65,7 @@ def renumber(session,min,max):
     wins_trans={}
     for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
-        wins.append((ss.get_group(win)[1],iwin,type))
+        wins.append((ss.get_group(win)[0],iwin,type))
 
     win_biggest=wins[len(wins)-1][1]
     for i in range(0,win_biggest+1):
@@ -85,7 +91,7 @@ def sort(session,min,max,key=None):
     cgroup=None
     for win,type,title,tty in sc.gen_all_windows(min,max,session):
         iwin=int(win)
-        groupid,group=ss.get_group(win)[2]
+        groupid,group=ss.get_group(win)
 
         lastval=(group,iwin,type,title)
         try:

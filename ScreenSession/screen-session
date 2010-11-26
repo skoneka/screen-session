@@ -3,11 +3,9 @@
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: screen-session tools starter
-# it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen session
+# it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen
 
-# Absolute path to this script. /home/user/bin/foo.sh
 SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print (os.path.realpath(i.strip()))')
-# Absolute path this script is in. /home/user/bin
 SCRIPTPATH=`dirname $SCRIPT`
 
 export PYTHONPATH=$SCRIPTPATH
@@ -30,7 +28,7 @@ mode=$1
 shift 1 "$@"
 
 # parse command line arguments
-while getopts ":WNP:S:M:m:": OPT; do
+while getopts ":WNP:S:M:U:": OPT; do
     case "$OPT" in
     W)  waitfor=1
         shift 1 "$@"
@@ -48,7 +46,7 @@ while getopts ":WNP:S:M:m:": OPT; do
         shift 2 "$@"
         ;;
     U)  MINWIN="$OPTARG"
-        shift 2 "$@";
+        shift 2 "$@"
         ;;
     esac
 done
@@ -97,6 +95,12 @@ elif [ $mode = "dir" ]; then
 elif [ $mode = "dump" ]; then
     python $SCRIPTPATH/dump.py $session "$@"
 
+elif [ $mode = "find-pid" ]; then
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
+    fi
+    python $SCRIPTPATH/find_pid.py $session $MAXWIN $MINWIN "$@"
+
 elif [ $mode = "kill" ]; then
     # screen-session kill [signal=TERM] [win=current]
     python $SCRIPTPATH/kill.py $session "$@"
@@ -105,25 +109,25 @@ elif [ $mode = "kill-zombie" ]; then
     if [ "$MAXWIN" = '' ]; then
         MAXWIN=`get_maxwin $session`
     fi
-    python $SCRIPTPATH/kill-zombie.py $session $MAXWIN "$@"
+    python $SCRIPTPATH/kill-zombie.py $session $MAXWIN $MINWIN "$@"
 
 elif [ $mode = "kill-group" ]; then
     if [ "$MAXWIN" = '' ]; then
         MAXWIN=`get_maxwin $session`
     fi
-    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN "$@"
+    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
 
 elif [ $mode = "renumber" ]; then
     if [ "$MAXWIN" = '' ]; then
         MAXWIN=`get_maxwin $session`
     fi
-    python $SCRIPTPATH/renumber.py $session $MAXWIN "$@"
+    python $SCRIPTPATH/renumber.py $session $MAXWIN $MINWIN "$@"
 
 elif [ $mode = "sort" ]; then
     if [ "$MAXWIN" = '' ]; then
         MAXWIN=`get_maxwin $session`
     fi
-    python $SCRIPTPATH/sort.py $session $MAXWIN "$@"
+    python $SCRIPTPATH/sort.py $session $MAXWIN $MINWIN "$@"
 
 elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`

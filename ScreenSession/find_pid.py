@@ -1,8 +1,8 @@
 ﻿#!/usr/bin/env python
-# file: kill-group.py
+# file: find_pid.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: kill recursively all windows in a group
+# description: find pids in windows
 
 import sys
 import tools
@@ -10,6 +10,7 @@ import tools
 session=sys.argv[1]
 min=int(sys.argv[3])
 max=int(sys.argv[2])
-groupids=sys.argv[4:]
+pids=map(int,sys.argv[4:])
 
-tools.kill_group(session,min,max,groupids)
+for win in tools.find_pids_in_windows(session,min,max,pids):
+    print(win)

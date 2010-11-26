@@ -3,6 +3,10 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
+help_maxwin='-M <maxwin>\t- biggest window number\n'
+help_minwin='-U <minwin>\t- smallest window number\n'
+
+
 help_help="\
 Usage:\t scs [mode] [options]\n\
 \t scs [mode] -S session [options]\n\
@@ -13,7 +17,7 @@ Global Options:\n\
     -S [target]\t- target Screen session\n\
     -W\t\t- wait for keypress\n\
     -h --help\t- display mode help\n\
-    \n\
+\n\
 Available modes:\n\
     save\t- save session to disk\n\
     load\t- load session from file\n\
@@ -21,6 +25,7 @@ Available modes:\n\
     \n\
     dir\t\t- start Screen window in the same working directory\n\
     dump\t- dump informations about windows in session\n\
+    find-pid\t- find PIDs in windows\n\
     grab\t- grab a process and attach it to current tty\n\
     \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
@@ -47,14 +52,18 @@ Useful for closing random emacs/vim instances.\n\
 \nUsage: screen-session kill [options] [signal=TERM] [window=current]"
 
 help_kill_zombie="Kill all zombie windows in session.\n\
-\nUsage: screen-session kill-zombie [options] [maxwin=MAXWIN] [minwin=0]"
+%s\
+%s\
+\nUsage: screen-session kill-zombie [options]"%(help_maxwin,help_minwin)
 
 help_kill_group="Recursively kill groups and windows inside.\n\
 Accepts group window numbers as arguments.\n\
 If the first argument is \"current\" kill the current group.\n\
 If the first argument is \"all\" kill all groups in session.\n\
-Take care with this command.\n\
-\nUsage: screen-session kill-group [options] [groupNum0] [groupNum..]"
+Take extra care with this command.\n\
+%s\
+%s\
+\nUsage: screen-session kill-group [options] [groupNum0] [groupNum..]"%(help_maxwin,help_minwin)
 
 help_dir="Start a new Screen window in the same working directory\n\
 on the position next to the current window.\n\
@@ -63,9 +72,13 @@ on the position next to the current window.\n\
 help_dump="Dump informations about windows in session.\n\
 \nUsage: screen-session dump [options] [maxwin] [minwin]"
 
+help_find_pid="Find PIDs in windows.\n\
+\nUsage: screen-session find-pid [options] [PIDs]\n\
+Example: screen-session find-pid $(pgrep vim)"
+
 help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
-Require. injcode by Thomas Habets.\n\
+A simple demonstration of injcode tool by Thomas Habets.\n\
 \nUsage: screen-session grab [PID]\n\
 on the previous shell type: $ disown"
 
@@ -80,10 +93,14 @@ help_nest="Nest layout in the current region.\n\
 \nUsage: screen-session nest [options] [TARGET_LAYOUT]"
 
 help_renumber="Renumber windows to fill the gaps.\n\
-\nUsage: screen-session renumber [options] [maxwin=MAXWIN] [minwin=0]"
+%s\
+%s\
+\nUsage: screen-session renumber [options]"%(help_maxwin,help_minwin)
 
 help_sort="Sort windows by titles.\n\
-\nUsage: screen-session sort [options] [maxwin=MAXWIN] [minwin=0]"
+%s\
+%s\
+\nUsage: screen-session sort [options]"%(help_maxwin,help_minwin)
 
 help_name="Try to get the current sessionname.\n\
 \nUsage: screen-session name [options] [new_sessionname]"
@@ -179,6 +196,8 @@ if __name__=='__main__':
         print(help_dir)
     elif mode=='dump':
         print(help_dump)
+    elif mode=='find-pid':
+        print(help_find_pid)
     elif mode=='grab':
         print(help_grab)
     elif mode=='group':
