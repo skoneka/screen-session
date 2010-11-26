@@ -74,6 +74,8 @@
 #define VIM_SESSION "_session"
 #define VIM_INFO "_info"
 
+#define SEP green_r"|"none
+
 #define PRIMER green"PRIMER: "none
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
@@ -515,7 +517,7 @@ getinput (int *prefix, char *mode)
 }
 
 int
-userInput (int *menu_num, int **num, int max)
+userInput (int *menu_num, int **num, int max, int *bFilter)
 {
   char ch;			/* handles user input */
   char buffer[USERINPUTMAXBUFFERSIZE];	/* sufficient to handle one line */
@@ -531,9 +533,9 @@ userInput (int *menu_num, int **num, int max)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll / [%sE%s]xit / [%sD%s]efault / [%sR%s]eset / [%snumber%s] / [%sO%s]nly [%snumber%s] ?\n",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none);
-	  printf ("> ");
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault  "SEP" [%sR%s]eset  "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sF%s]ilter %s %s ? %s",
+	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, (*bFilter)?"OFF":"ON",green_r,none);
+	  printf (" > ");
 	  ch = getchar ();
 	  char_count = 0;
           char menu=ch;
@@ -614,6 +616,13 @@ userInput (int *menu_num, int **num, int max)
 	      else
 		valid_choice = 1;
 	      break;
+            case 'f':
+            case 'F':
+              *bFilter = (*bFilter)?0:1;
+              printf("Filter turned %s\n",(*bFilter)?"ON":"OFF");
+	      menu_choice = NONE;
+	      valid_choice = 0;
+              break;
 	    default:
 	      menu_choice = NONE;
 	      valid_choice = 0;
@@ -1181,7 +1190,7 @@ main (int argc, char **argv)
     printf ("%sSAVED:%s %s\n", green_r, none, timesaved);
     filter = strtrim_right (filter, '\n');
     if (strcmp (filter, "-1") != 0)
-      printf ("\nFILTER: %s\n", filter);
+      printf ("%sFILTER:%s %s\n",green_r, none, filter);
     printf ("%s", none);
 
     fscanf (fp, "%d\n", &procs_c);
@@ -1258,16 +1267,17 @@ main (int argc, char **argv)
     free(timesaved);
     free(buftext);
     int menu;
+    int bFilter=1;
     int number;
     int *numbers;
     chdir(proc_cwd);
-    int numbers_c=userInput (&menu, &numbers, procs_c);
+    int numbers_c=userInput (&menu, &numbers, procs_c, &bFilter);
     char *shell = NULL;
     char **arglist = NULL;
     int *args;
 
     // execute filter
-    if (strncmp (filter, "-1", 2) != 0)
+    if (bFilter && (strncmp (filter, "-1", 2) != 0))
       {
         printf ("Setting up filter...\n");
         char command0[] = "screen -X stuff \"exec ";
