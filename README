@@ -21,38 +21,27 @@ is no support for serial and telnet window types.
 Available screen-session modes:
 
 ----
-save        - save Screen session to file
-
-load        - load session from file
-
+save        - save GNU Screen session
+load        - load session
 ls          - list saved sessions
 ----
 
-manager     - sessions manager (screenie like) but featuring session 
-              preview in a split window
-
-nest        - nest layout in the current region
-
-regions     - display number in every region
-              (like tmux display-panes)
-
 dir         - starts a new Screen window in the same working directory 
               on the position next to the current window
-
+manager     - sessions manager (screenie like) but featuring session 
+              preview in a split window
+name        - get or set sessionname
+nest        - nest layout in the current region
+regions     - display number in every region (like tmux display-panes)
 dump        - dump informations about windows in session
-
+find-pid    - find PIDs in windows
+find-file   - find open files in windows (requires lsof)
 grab        - change tty of a process to this terminal
-
 group       - move windows to a group
-
 kill        - send signal to last process started in a window
-
 kill-zombie - kill all zombie windows in session
-
-kill-cgroup - recursively kill all windows in the current group
-
+kill-group  - recursively kill all windows in a group
 renumber    - renumber windows to fill gaps
-
 sort        - sort windows by title
 
 -----------------------------------------------------------------------

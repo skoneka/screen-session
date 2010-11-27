@@ -3,8 +3,8 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
-help_maxwin='-M <maxwin>\t- biggest window number\n'
-help_minwin='-U <minwin>\t- smallest window number\n'
+help_maxwin='-M <maxwin>\t- ending window number\n'
+help_minwin='-U <minwin>\t- starting window number\n'
 
 
 help_help="\
@@ -79,7 +79,7 @@ help_find_pid="Find PIDs in windows.\n\
 \nUsage: screen-session find-pid [options] [PIDs]\n\
 Example: screen-session find-pid $(pgrep vim)"%(help_maxwin,help_minwin)
 
-help_find_file="Find files in windows.\n\
+help_find_file="Find files in windows. Requires lsof.\n\
 %s\
 %s\
 \nUsage: screen-session find-file [options] [files]"%(help_maxwin,help_minwin)
