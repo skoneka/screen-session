@@ -15,16 +15,17 @@ class ScreenSaver(object):
     procdir="/proc"
     MAXWIN=-1
     MAXWIN_REAL=-1
+    MINWIN_REAL=0
     force=False
     lastlink="last"
     enable_layout = False
     restore_previous = False
     exact=False
-    bKill=False
     bVim=True
     group_other='OTHER_WINDOWS'
     homewindow=""
     sc=None
+    wrap_group_id=None
     
     primer="screen-session-primer"
     primer_arg="-p"
@@ -41,7 +42,6 @@ class ScreenSaver(object):
     __unique_ident=None
     __wins_trans = {}
     __scrollbacks=[]
-    win_none_g=None
 
     def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
@@ -54,7 +54,7 @@ class ScreenSaver(object):
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
-        self.__unique_ident="%s%d"%(sessionname.split('.',1)[0],time.time())
+        self.__unique_ident="%s_%s"%(sessionname.split('.',1)[0],time.strftime("%y%m%d_%H%M%S"))
 
     def save(self):
         self.homewindow,title=self.get_number_and_title()
@@ -302,22 +302,16 @@ class ScreenSaver(object):
         if self.MAXWIN>0:
             r=range(0,self.MAXWIN+1)
             
-            if self.bKill:
-                self.__kill_list=[]
-                #self.__kill_list.append(homewindow+shift)
-                os.system('%s -X at %d group %s' % (self.sc,homewindow,'none') )
-                
-            
             # create wrap group for existing windows
-            if not self.bKill or True:
-                os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
-                os.system('%s -X group %s' % (self.sc, 'none') )
-                cwin=int(self.number())
-                self.wrap_group_id=cwin+shift
-                group=group+'_'+self.__unique_ident
-                self.title(group)
-                if cwin not in r:
-                    r.append(cwin)
+            os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
+            os.system('%s -X group %s' % (self.sc, 'none') )
+            cwin=int(self.number())
+            self.wrap_group_id=str(cwin+shift)
+            self.number(self.wrap_group_id)
+            group=group+'_'+self.__unique_ident
+            self.title(group)
+            if cwin not in r:
+                r.append(cwin)
             r.sort()
             r.reverse()
             # move windows by shift and put them in a wrap group
@@ -339,24 +333,19 @@ class ScreenSaver(object):
                         sys.stdout.write('\n')
                         sys.stdout.flush()
                     cwin=int(self.number())
-                    out('Moving window %d to %d (+%d)'%(cwin,cwin+shift,shift))
                     if cwin==homewindow:
                         homewindow=cwin+shift
-                    elif self.bKill:
-                        self.__kill_list.append(cwin+shift)
                     
                     cgroupid,cgroup = self.get_group(cwin)
                     if cgroup=="none":
-                        os.system('%s -X group %s' % (self.sc, group) )
-                        if not self.win_none_g:
-                            self.win_none_g=cwin+shift
-                    command='%s -X number +%d' % (self.sc, shift) 
+                        self.select(self.wrap_group_id)
+                        self.group(group,str(cwin))
+                    command='%s -p %d -X number +%d' % (self.sc,cwin,shift)
+                    out('Moving window %d to %d'%(cwin,cwin+shift))
                     os.system(command)
                     # after moving or kill window number changes so have to update cwin
                     cwin=int(self.number())
 
-            if self.bKill:
-                self.__kill_list.reverse()
         self.select('%d'%(homewindow))
 
     def lastmsg(self):
@@ -575,6 +564,16 @@ class ScreenSaver(object):
 
     def get_group(self,win="-1"):
         msg=self.command_at('group',win)
+        if msg.endswith('no group'):
+            group = 'none'
+            groupid = '-1'
+        else:
+            groupid,group = msg.rsplit(")",1)[0].split(" (",1)
+            groupid = groupid.rsplit(' ',1)[1]
+        return groupid,group
+
+    def group(self,args='',win="-1"):
+        msg=self.command_at('group %s'%args,win)
         if msg.endswith('no group'):
             group = 'none'
             groupid = '-1'
@@ -1022,7 +1021,7 @@ class ScreenSaver(object):
         return True
 
     def __save_vim(self,winid):
-        name="vim_%s%s"%(self.__unique_ident,winid)
+        name="vim_%s_%s"%(self.__unique_ident,winid)
         fname_session=os.path.join(self.basedir,self.savedir,name+'_session')
         fname_info=os.path.join(self.basedir,self.savedir,name+'_info')
         self.stuff('^[^[:mksession %s^M'%fname_session, winid)

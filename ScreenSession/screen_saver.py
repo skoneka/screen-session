@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill-other","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","force","in=", "out=", "maxwin=", "load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "maxwin=", "load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -65,6 +65,7 @@ def main():
     util.archiveend='.tar.bz2'
     unpack=None
     current_session=None
+    special_output=None
     bNest=True
     bVim=True
     bExact=False
@@ -102,6 +103,8 @@ def main():
             unpack = a
         elif o in ("-S","--current-session"):
             current_session = a
+        elif o == "--special-output":
+            special_output = a
         elif o == "--full":
             bFull = True
         elif o in ("-I","--idle"):
@@ -110,7 +113,7 @@ def main():
             bVim = False
         elif o in ("-x","--exact"):
             bExact = True
-        elif o in ("-X","--exact-kill-other"):
+        elif o == "-X":
             bExact = True
             bKill=True
         elif o in ("-e","--exclude"):
@@ -274,7 +277,6 @@ def main():
     scs.enable_layout=enable_layout
     scs.restore_previous = restore
     scs.exact=bExact
-    scs.bKill=bKill
     scs.bVim=bVim
     if excluded:
         excluded=excluded.split(',')
@@ -346,6 +348,13 @@ def main():
 
         try:
             ret = scs.load()
+            if special_output:
+                f = open(special_output,'w')
+                f.write("%s\n"%(scs.pid))
+                f.write("%s\n"%(scs.MAXWIN_REAL))
+                f.write("%s\n"%(scs.MINWIN_REAL))
+                f.write("%s\n"%(str(scs.wrap_group_id)))
+                f.close()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)
@@ -357,15 +366,6 @@ def main():
             out('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    
-            if scs.bKill:
-                #scs.kill_old_windows()
-                pass
-                import tools
-                print ('homewindow:'+scs.homewindow)
-                print ('select:'+str(scs.win_none_g))
-                scs.select(scs.win_none_g)
-                print ('group:'+scs.get_group()[1])
-                tools.kill_current_group(scs,False,[scs.wrap_group_id],scs.homewindow)
             os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
 
     else:

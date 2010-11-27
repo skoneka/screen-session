@@ -15,6 +15,7 @@ get_maxwin() {
     echo $maxwin
 }
 MINWIN='0'
+bKill=0
 waitfor=0
 nonest=0
 logpipe=1
@@ -28,7 +29,7 @@ mode=$1
 shift 1 "$@"
 
 # parse command line arguments
-while getopts ":WNP:S:M:U:": OPT; do
+while getopts ":WNPXS:M:U:": OPT; do
     case "$OPT" in
     W)  waitfor=1
         shift 1 "$@"
@@ -37,6 +38,9 @@ while getopts ":WNP:S:M:U:": OPT; do
         shift 1 "$@"
         ;;
     P)  logpipe=1
+        shift 1 "$@"
+        ;;
+    X)  bKill=1
         shift 1 "$@"
         ;;
     S)  session="$OPTARG"
@@ -140,19 +144,25 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
 
 
     scsfile="$scsfiledir/___scspipe-$$"
+    scsfiletmp="$scsfiledir/___scstmp-$$"
 
     argument0=""
     argument1=""
+    argument2=""
 
     if [ "${testargument}" = "True" ]; then
-        argument1="--current-session $session"
+        if [ "$MAXWIN" = '' ]; then
+            MAXWIN=`get_maxwin $session`
+        fi
+        argument1="-M $MAXWIN --current-session $session"
     else
         /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
 
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
+    if [ $bKill -eq 1 ]; then
+        argument2="-X --special-output $scsfiletmp"
     fi
+
 
     argument0="logpipe=$scsfile"
     if [ $logpipe -eq 1 ]; then
@@ -160,13 +170,24 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
             rm $scsfile
         fi
         mkfifo $scsfile
-        screen -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0 -M $MAXWIN $argument1 "$@"
+        screen -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
         
         cat $scsfile
         rm $scsfile
     else
-        python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 -M $MAXWIN "$@"
+        python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 $argument2 "$@"
     fi
+
+    if [ $bKill -eq 1 ]; then
+        exec < $scsfiletmp
+        read session
+        read maxwin
+        read minwin
+        read twin
+        rm $scsfiletmp
+        screen-session kill-group -S $session -M $maxwin -U $minwin $twin
+    fi
+
 
 elif [ $mode = "--version" -o $mode = "-v" ]; then
     python $SCRIPTPATH/help.py --version

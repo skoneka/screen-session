@@ -91,7 +91,7 @@ http://blog.habets.pp.se/2009/03/Moving-a-process-to-another-terminal\n\
 \nUsage: screen-session grab [PID]\n\
 and on the previous shell type:\n\
 $ disown\n\
-It works more reliably if all commands in script are typed manually."
+It works more reliably if commands from the script are typed manually."
 
 help_group="Move windows to a group.\n\
 If no windows given, move the current window.\n\
@@ -138,6 +138,8 @@ save\n\
 -x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
+-X\n\
+  \tsame as exact, but kill all existing windows\n\
 -e --exclude <windows>\n\
   \tcomma separated list of windows to be ignored during saving\n\
   \tif a window is a group all subwindows are also ignored\n\
@@ -163,11 +165,6 @@ $ screen-session save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
 $ screen-session load --exact --in mysavedsession --out SESSIONNAME\n\
 \n'
 
-'''
-broken:
--X --exact-kill-other\n\
-  \tsame as exact, but kills all existing windows\n\
-'''
 
 if __name__=='__main__':
     import sys
