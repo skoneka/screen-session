@@ -696,15 +696,23 @@ class ScreenSaver(object):
                             text="BLACKLISTED"
                         else: 
                             text=""
-                        if self.primer in cpids_data[i][2]:
-                            # clean zsh -c 'primer..' by removing '-c' 'primer..'
-                            l=cpids_data[i][2].split('\0')
-                            if l[1]=='-c' and l[2].startswith(self.primer) and l[3]==self.primer_arg:
-                                s=str(l[0])+'\0'
-                                for j in range(3,len(l)):
-                                    s+=str(l[j])+'\0'
-                                newdata=(cpids_data[i][0],cpids_data[i][1],s,cpids_data[i][3])
-                                cpids_data[i]=newdata
+                        l=cpids_data[i][2].split('\0')
+                        jremove=[]
+                        wprev=False
+                        for j,w in enumerate(l):
+                            if w == '-c':
+                                wprev=True
+                            elif wprev:
+                                if w.startswith(self.primer):
+                                    jremove+=j,j-1
+                                wprev=False
+                        if jremove:
+                            s=[]
+                            for j,w in enumerate(l):
+                                if j not in jremove:
+                                    s.append(w)
+                            newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in s]),cpids_data[i][3])
+                            cpids_data[i]=newdata
 
                         #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                         vim_name=str(None)
