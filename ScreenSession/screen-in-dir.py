@@ -5,7 +5,7 @@
 # description: start new GNU Screen window in the same working directory
 
 # screen-in-dir sessionname [program] [args..]
-import os,sys
+import os,sys,platform
 import GNUScreen as sc
 
 primer='screen-session-primer -D'
@@ -21,7 +21,11 @@ windows_old = sc.parse_windows(sc.get_windows(session))[0]
 f = os.popen('screen %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
-pids=sc._get_tty_pids_pgrep(ctty)
+if platform.system() == 'FreeBSD':
+    pids=sc.get_tty_pids(ctty)
+else:
+    pids=sc._get_tty_pids_pgrep(ctty)
+
 try:
     p_i=[i for i,x in enumerate(pids) if x==ppid][0]-1
     thepid = pids[p_i]

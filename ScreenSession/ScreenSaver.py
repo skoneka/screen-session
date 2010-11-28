@@ -359,6 +359,7 @@ class ScreenSaver(object):
             win=""
         else:
             win="-p %s"%win
+        #print('%s %s -X %s'% (self.sc,win,command))
         os.system('%s %s -X %s'% (self.sc,win,command)) 
         l=self.lastmsg()
         if not l:
@@ -404,6 +405,7 @@ class ScreenSaver(object):
         msg=self.command_at('maxwin')
         maxwin=int(msg.split(':')[1].strip())
         return maxwin
+
     def maxwin(self):
         return self.get_maxwin()
     '''
@@ -703,9 +705,9 @@ class ScreenSaver(object):
                         vim_name=str(None)
                         args=cpids_data[i][2].split('\0')
                         if self.primer==args[0]:
-                            sys.stdout.write('Importing files : ')
+                            sys.stdout.write('Importing : ')
                             rollback=self.__rollback(cpids_data[i][2])
-                            out(str(rollback))
+                            #out(str(rollback))
                         elif args[0] in self.vim_names and self.bVim:
                             vim_name=self.__save_vim(cwin)
                             nargs=[]
@@ -1023,10 +1025,10 @@ class ScreenSaver(object):
     def __save_vim(self,winid):
         name="vim_%s_%s"%(self.__unique_ident,winid)
         fname=os.path.join(self.basedir,self.savedir,name)
-        cmd = '^[^[:mksession %s | wviminfo %s^M'%(fname+'_session',fname+'_info')
+        cmd = '^[^[:mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
         self.stuff(cmd, winid)
         # undo files are useless if the target file changes even a single bit
-        # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')^M"%(fname+'_undo_'), winid)
+        # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
            
     def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):

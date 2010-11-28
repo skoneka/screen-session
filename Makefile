@@ -18,26 +18,25 @@ options:
 	@echo "CC       = ${CC}"
 
 .c.o:
-	@echo CC $<
-	@${CC} -o $@ -c ${CFLAGS} $<
+	${CC} -o $@ -c ${CFLAGS} $<
 
 ${OBJ}: config.mk
 
 screen-session-primer: ${OBJ}
-	@echo CC -o ${SRCDIR}/$@
-	@${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
+	${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
-	@rm -f ${SRCDIR}/screen-session-primer ${OBJ} screen-session-${VERSION}.tar.gz
+	@rm -f ${SRCDIR}/screen-session-primer ${OBJ}
 
-dist: clean
+dist:
 	@echo creating dist tarball
 	@mkdir -p screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
 	@cp -R LICENSE Makefile README INSTALL HOWTO config.mk gnu_screen.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRC} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
+	@rm -f screen-session-${VERSION}.tar.gz
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}

@@ -108,8 +108,8 @@ char *fonts[] = {
   " $$$$ ",
   /*  */
   "  $$$$",
-  " $$$$$",
-  "$$$$$$",
+  " $V$$$",
+  "$$ $$$",
   "   $$$",
   "   $$$",
   "   $$$",
@@ -754,12 +754,12 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 {
   if (procs_n == 0)
     return 0;
-  size_t proc_cwd_s = 0;
-  size_t proc_exe_s = 0;
-  size_t proc_vim_s = 0;
-  char *proc_cwd = NULL;
-  char *proc_exe = NULL;
-  char *proc_vim = NULL;
+  size_t proc_cwd_s = 1;
+  size_t proc_exe_s = 1;
+  size_t proc_vim_s = 1;
+  char *proc_cwd = malloc (proc_cwd_s * sizeof (char));
+  char *proc_exe = malloc (proc_exe_s * sizeof (char));
+  char *proc_vim = malloc (proc_vim_s * sizeof (char));
   int proc_args_n;
   char proc_blacklisted[7];
   char **proc_args;
@@ -806,8 +806,8 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   proc_args = malloc ((proc_args_n + 5) * sizeof (char *));
 
   long file_pos = ftell (fp);
-  char *buf = NULL;
-  size_t buf_size = 0;
+  size_t buf_size = 1;
+  char *buf = malloc (buf_size * sizeof (char));
   getline (&buf, &buf_size, fp);
   fseek (fp, file_pos, SEEK_SET);
   int l = 0, prev_l = 0;
@@ -1083,8 +1083,10 @@ read_scrollback(char *fullpath, char *scrollbackfile)
 int
 main (int argc, char **argv)
 {
-// /full/path/to/program workingdir scrollbackfile datafile
-//./program -s basedir thisprogramname datafile [processes..]
+/* 
+/full/path/to/program -p workingdir scrollbackfile datafile
+./program -s basedir thisprogramname datafile [processes_ids..]
+*/  
   int i;
   FILE *fp = NULL;
   int c;
@@ -1169,14 +1171,14 @@ main (int argc, char **argv)
       }
 
     int procs_c = 0;
-    size_t filter_s = 20;
+    size_t filter_s = 1;
     char *filter = malloc (filter_s * sizeof (char));
-    size_t buftext_s;
-    char *buftext = NULL;
-    size_t title_s;
-    char *title = NULL;
-    size_t timesaved_s;
-    char *timesaved = NULL;
+    size_t buftext_s=1;
+    char *buftext = malloc(buftext_s*sizeof(char));
+    size_t title_s=1;
+    char *title = malloc(title_s*sizeof(char));
+    size_t timesaved_s=1;
+    char *timesaved = malloc(timesaved_s*sizeof(char));
     getline (&buftext, &buftext_s, fp);	//win number
     getline (&timesaved, &timesaved_s, fp);	//save time
     getline (&buftext, &buftext_s, fp);	//group
@@ -1196,12 +1198,12 @@ main (int argc, char **argv)
     fscanf (fp, "%d\n", &procs_c);
     printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
 
-    size_t proc_cwd_s = 0;
-    size_t proc_exe_s = 0;
-    size_t proc_vim_s = 0;
-    char *proc_cwd = NULL;
-    char *proc_exe = NULL;
-    char *proc_vim = NULL;
+    size_t proc_cwd_s = 1;
+    size_t proc_exe_s = 1;
+    size_t proc_vim_s = 1;
+    char *proc_cwd = malloc (proc_cwd_s * sizeof (char));
+    char *proc_exe = malloc (proc_exe_s * sizeof (char));
+    char *proc_vim = malloc (proc_vim_s * sizeof (char));
     int proc_args_n;
     char cmdline_begin[CMDLINE_BEGIN + 1];
     int cmdline_begin_c = 0;

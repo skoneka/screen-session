@@ -9,12 +9,12 @@ INSTFOLDER = /usr/share/screen-session
 PREFIX = /usr
 
 # includes and libs
-INCS = 
-LIBS = 
+INCS =
+LIBS =
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
-CFLAGS = -std=c99 -pedantic -Wall -Os ${INCS} ${CPPFLAGS}
+CFLAGS = -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
 LDFLAGS = -s ${LIBS}
 
 # compiler and linker

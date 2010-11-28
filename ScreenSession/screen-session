@@ -3,7 +3,7 @@
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: screen-session tools starter
-# it is necessary to run screen_saver.py embedded in other screen session to be able to run it from saved/loaded screen
+# it is necessary to run screen_saver.py and some other tools embedded in other screen session to be able to run it in target screen
 
 SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print (os.path.realpath(i.strip()))')
 SCRIPTPATH=`dirname $SCRIPT`
@@ -66,7 +66,7 @@ umask 0077
 
 scsfiledir="/tmp/screen-session-$USER"
 if [ ! -d "$scsfiledir" ]; then
-    mkdirhier $scsfiledir
+    mkdir -p $scsfiledir
 fi
 
 if [ "$session" = '' ]; then

@@ -63,7 +63,7 @@ def dump(ss,minwin,maxwin):
                     print ("%s P %s EXE \t %s"%(win,pid,exe))
                     print ("%s P %s CMD \t %s"%(win,pid,cmd.split('\0')))
                 except:
-                    print ("%s PID \t %s No permission"%(win,pid))
+                    print ("%s PID \t %s\t No permission"%(win,pid))
         print("")
 
 def renumber(session,min,max):
@@ -218,10 +218,13 @@ def kill_current_group(ss,bKillHomeWindow=False,other_wins=[],homewindow=-1):
 
     
 def kill_win_last_proc(session,win="-1",sig="TERM"):
-    import signal,os
+    import signal,os,platform
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     ctty=ss.tty(win)
-    pids=sc._get_tty_pids_pgrep(ctty)
+    if platform.system() == 'FreeBSD':
+        pids=sc.get_tty_pids(ctty)
+    else:
+        pids=sc._get_tty_pids_pgrep(ctty)
     pid = pids[-1]
 
     sig=eval('signal.SIG'+sig)

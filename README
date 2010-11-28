@@ -103,13 +103,12 @@ Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
 
-- Do not try to save/load a completly detached session with enabled 
-  layouts in screen-session because Screen will crash.
-  Disable layouts saving/loading with --no-layout flag.
+- Most tools does not work with detached Screen sessions because :lastmsg
+  needs display.
 
 - If screen-session locks your session try to find and kill all processes
   started by it. If session saver caused the lock it is usually enough to
-  run: $ pkill -f "@lastmsg"
+  run: $ pkill -f "@lastmsg".
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues
