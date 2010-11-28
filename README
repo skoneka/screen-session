@@ -103,12 +103,8 @@ Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
 
-- Most tools does not work with detached Screen sessions because :lastmsg
-  needs display.
-
-- If screen-session locks your session try to find and kill all processes
-  started by it. If session saver caused the lock it is usually enough to
-  run: $ pkill -f "@lastmsg".
+- Most tools do not work with detached Screen sessions because :lastmsg
+  command needs display.
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues

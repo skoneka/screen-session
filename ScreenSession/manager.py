@@ -473,8 +473,6 @@ def main():
             scs.command_at(False , 'defmousetrack on')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
             data=mmap.mmap(-1,100)
-            #pipeout = os.open(fifoname, os.O_WRONLY)
-            #os.write(pipeout,'%s\n'%'help')
             
             pid=os.fork()
             if pid==0:
