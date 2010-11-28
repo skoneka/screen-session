@@ -526,6 +526,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
   enum menu menu_choice = NONE;
   int *args=malloc(USERINPUTMAXBUFFERSIZE*sizeof(int));
   int args_index=0;
+  int show_filter=*bFilter;
   
   while (exit_flag == 0 && menu_choice == NONE)
     {
@@ -533,9 +534,11 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault  "SEP" [%sR%s]eset  "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sF%s]ilter %s %s ? %s",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, (*bFilter)?"OFF":"ON",green_r,none);
-	  printf (" > ");
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault  "SEP" [%sR%s]eset  "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] ",
+	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none );
+          if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
+
+	  printf (" %s ? %s > ",green_r,none);
 	  ch = getchar ();
 	  char_count = 0;
           char menu=ch;
@@ -1269,7 +1272,7 @@ main (int argc, char **argv)
     free(timesaved);
     free(buftext);
     int menu;
-    int bFilter=1;
+    int bFilter=(strncmp(filter,"-1",2)!=0)?1:0;
     int number;
     int *numbers;
     chdir(proc_cwd);
