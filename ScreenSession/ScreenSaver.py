@@ -139,8 +139,8 @@ class ScreenSaver(object):
         else:
             #create a root group and put it into host group
             rootgroup="restore_"+self.savedir
-            os.system('%s -X screen -t \"%s\" %s //group' % (self.sc,rootgroup,0 ) )
-            os.system('%s -X group \"%s\"' % (self.sc,hostgroup) )
+            self.screen('-t \"%s\" %s //group' % (rootgroup,0 ) )
+            self.group(False,'%s' % (hostgroup) )
         
         rootwindow=self.number()
         out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
@@ -204,10 +204,10 @@ class ScreenSaver(object):
         else:
             winarg=""
         
-        if type=='basic':
-            os.system('screen -S %s -X screen -h %s -t \"%s\" %s %s %s %s %s %s' % (pid,scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
-        elif type=='group':
-            os.system('screen -S %s -X screen -t \"%s\" %s //group' % (pid,title,winarg ) )
+        if type[0]=='b':
+            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
+        elif type[0]=='g':
+            self.screen('-t \"%s\" %s //group' % (title,winarg ) )
         else:
             out ('%s Unknown window type "%s". Ignoring.'%(win,type))
             return -1
@@ -218,14 +218,14 @@ class ScreenSaver(object):
     def __order_group(self,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
         if groupid=="-1":
             self.select(rootwindow)
-            os.system('screen -S %s -X at %s group %s' % (pid,newwin,rootgroup) )
+            self.group(False,rootgroup,newwin)
         else:
             try:
                 groupid=self.__wins_trans[groupid]
             except:
                 pass
             self.select(groupid)
-            os.system('screen -S %s -X at %s group %s' % (pid,newwin,group) )
+            self.group(False,group,newwin)
     
     def __scrollback_clean(self):
         '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
@@ -277,8 +277,8 @@ class ScreenSaver(object):
     def __remove_all_layouts(self):
         currentlayout=0
         while currentlayout!=-1:
-            self.layout('remove')
-            self.layout('next')
+            self.layout('remove',False)
+            self.layout('next',False)
             currentlayout,currentlayoutname=self.get_layout_number()
 
     def __kill_windows(self,kill_list):
@@ -286,7 +286,7 @@ class ScreenSaver(object):
         for w in kill_list:
             number,title=self.get_number_and_title(w)
             out('killing: '+str(w)+ ':'+number+':'+title)
-            os.system('%s -X at %s kill' % (self.sc, w) )
+            self.kill(w)
     def kill_old_windows(self):
         out ('killing: '+str(self.__kill_list))
         self.__kill_windows(self.__kill_list)
@@ -298,77 +298,82 @@ class ScreenSaver(object):
         ctty=None
         cppids={}
         searching=False
+        other_max_win=self.MINWIN_REAL
+        other_min_win=self.MAXWIN_REAL
 
-        if self.MAXWIN>0:
-            r=range(0,self.MAXWIN+1)
-            
-            # create wrap group for existing windows
-            os.system('%s -X screen -t \"%s\" //group' % (self.sc,group) )
-            os.system('%s -X group %s' % (self.sc, 'none') )
-            cwin=int(self.number())
-            self.wrap_group_id=str(cwin+shift)
-            self.number(self.wrap_group_id)
-            group=group+'_'+self.__unique_ident
-            self.title(group)
-            if cwin not in r:
-                r.append(cwin)
-            r.sort()
-            r.reverse()
-            # move windows by shift and put them in a wrap group
-            for i in r:
-                cselect = self.select(i)
-                if cselect:
-                    #no such window
-                    if searching:
-                        sys.stdout.write('.')
-                        sys.stdout.flush()
-                    else:
-                        msg='Searching for windows (set --maxwin)...'
-                        sys.stdout.write('\n'+msg)
-                        self.echo(msg)
-                        searching=True
+        r=range(0,self.MAXWIN+1)
+        
+        # create wrap group for existing windows
+        self.screen('-t \"%s\" //group' % (group) )
+        self.group(False,'none')
+        cwin=int(self.number())
+        self.wrap_group_id=str(cwin+shift)
+        self.number(self.wrap_group_id)
+        group=group+'_'+self.__unique_ident
+        self.title(group)
+        if cwin not in r:
+            r.append(cwin)
+        r.sort()
+        r.reverse()
+        # move windows by shift and put them in a wrap group
+        for i in r:
+            cselect = self.select(i)
+            if cselect:
+                #no such window
+                if searching:
+                    sys.stdout.write('.')
+                    sys.stdout.flush()
                 else:
-                    if(searching):
-                        searching=False
-                        sys.stdout.write('\n')
-                        sys.stdout.flush()
-                    cwin=int(self.number())
-                    if cwin==homewindow:
-                        homewindow=cwin+shift
-                    
-                    cgroupid,cgroup = self.get_group(cwin)
-                    if cgroup=="none":
-                        self.select(self.wrap_group_id)
-                        self.group(group,str(cwin))
-                    command='%s -p %d -X number +%d' % (self.sc,cwin,shift)
-                    out('Moving window %d to %d'%(cwin,cwin+shift))
-                    os.system(command)
-                    # after moving or kill window number changes so have to update cwin
-                    cwin=int(self.number())
-
+                    msg='Searching for windows (set --maxwin)...'
+                    sys.stdout.write('\n'+msg)
+                    self.echo(msg)
+                    searching=True
+            else:
+                if(searching):
+                    searching=False
+                    sys.stdout.write('\n')
+                    sys.stdout.flush()
+                cwin=int(self.number())
+                if cwin==homewindow:
+                    homewindow=cwin+shift
+                
+                cgroupid,cgroup = self.get_group(cwin)
+                if cgroup=="none":
+                    self.select(self.wrap_group_id)
+                    self.group(False,group,str(cwin))
+                command='%s -p %d -X number +%d' % (self.sc,cwin,shift)
+                out('Moving window %d to %d'%(cwin,cwin+shift))
+                os.system(command)
+                # after moving or kill window number changes so have to update cwin
+                cwin=int(self.number())
+                if cwin > other_max_win:
+                    other_max_win = cwin
+                if cwin < other_min_win:
+                    other_min_win = cwin
+        
+        self.other_max_win = other_max_win
+        self.other_min_win = other_min_win
         self.select('%d'%(homewindow))
 
     def lastmsg(self):
-        try:
-            return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
-        except:
-            return ''
+        return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
 
-    def command_at(self,command,win="-1"):
+    def command_at(self,output,command,win="-1"):
         if win=="-1":
             win=""
         else:
             win="-p %s"%win
         #print('%s %s -X %s'% (self.sc,win,command))
         os.system('%s %s -X %s'% (self.sc,win,command)) 
-        l=self.lastmsg()
-        if not l:
-            return ''
-        if l.startswith('C'):
-            #no such window
-            return -1
-        else:
-            return l
+        if output:
+            l=self.lastmsg()
+            if not l:
+                return ''
+            if l.startswith('C'):
+                #no such window
+                return -1
+            else:
+                return l
 
     def query_at(self,command,win="-1"):
         if win=="-1":
@@ -386,7 +391,7 @@ class ScreenSaver(object):
             return None
 
     def get_number_and_title(self,win="-1"):
-        msg=self.command_at('number',win)
+        msg=self.command_at(True, 'number',win)
         if msg==-1:
             return -1,-1
         number,title = msg.split("(",1)
@@ -395,14 +400,14 @@ class ScreenSaver(object):
         return number,title
 
     def get_sessionname(self):
-        return self.command_at('number',win).strip("'").split("'",1)[1]
+        return self.command_at(True, 'number',win).strip("'").split("'",1)[1]
 
     def tty(self,win="-1"):
         msg=self.query_at('tty',win)
         return msg
 
     def get_maxwin(self):
-        msg=self.command_at('maxwin')
+        msg=self.command_at(True, 'maxwin')
         maxwin=int(msg.split(':')[1].strip())
         return maxwin
 
@@ -411,7 +416,7 @@ class ScreenSaver(object):
     '''
     def get_info(self,win):
        
-        msg=self.command_at('info',win)
+        msg=self.command_at(True, 'info',win)
         return msg
     '''
     def info(self,win="-1"):
@@ -430,11 +435,11 @@ class ScreenSaver(object):
         else:
             return None
     def get_regionsize(self,win="-1"):
-        msg=self.command_at('regionsize',win)
+        msg=self.command_at(True, 'regionsize',win)
         return msg.split(' ')
     
     def dinfo(self):
-        msg=self.command_at('dinfo')
+        msg=self.command_at(True, 'dinfo')
         msg = msg.split(' ')
         nmsg=msg.pop(0).strip('(').rstrip(')').split(',',1)
         nmsg=nmsg+msg
@@ -450,59 +455,56 @@ class ScreenSaver(object):
             return msg.split(' (',1)[0]
 
     def focusminsize(self,args=''):
-        msg=self.command_at('focusminsize %s'%args)
+        msg=self.command_at(True, 'focusminsize %s'%args)
         try:
             return msg.split('is ',1)[1].strip()
         except:
             return '0 0'
     
     def stuff(self,args='',win="-1"):
-        msg=self.command_at('stuff "%s"'%args,win)
+        self.command_at(False, 'stuff "%s"'%args,win)
 
 
     def colon(self,args='',win="-1"):
-        msg=self.command_at('colon "%s"'%args,win)
+        self.command_at(False, 'colon "%s"'%args,win)
     
     def resize(self,args=''):
-        msg=self.command_at('resize %s'%args)
+        self.command_at(False, 'resize %s'%args)
 
     def focus(self,args=''):
-        msg=self.command_at('focus %s'%args)
+        self.command_at(False, 'focus %s'%args)
 
     def kill(self,win="-1"):
-        msg=self.command_at('kill',win)
-        return msg
+        self.command_at(False, 'kill',win)
 
     def idle(self,timeout,args):
-        msg=self.command_at('idle %s %s'%(timeout,args))
+        self.command_at(False , 'idle %s %s'%(timeout,args))
 
     def only(self):
-        self.command_at('only')
+        self.command_at(False , 'only')
 
     def quit(self):
-        msg=self.command_at('quit')
+        self.command_at(False , 'quit')
 
     def fit(self):
-        msg=self.command_at('fit')
+        self.command_at(False , 'fit')
 
-    def layout(self,args=''):
-        msg=self.command_at('layout %s'%args)
+    def layout(self,args='',output=True):
+        msg=self.command_at(output, 'layout %s'%args)
         return msg
 
     def split(self,args=''):
-        msg=self.command_at('split %s'%args)
+        self.command_at(False , 'split %s'%args)
 
     def screen(self,args='',win="-1"):
-        msg=self.command_at('screen %s'%args,win)
-        return msg
+        self.command_at(False , 'screen %s'%args,win)
 
     def scrollback(self,args='',win="-1"):
-        msg=self.command_at('scrollback %s'%args,win)
+        msg=self.command_at(True, 'scrollback %s'%args,win)
         return msg.rsplit(' ',1)[1].strip()
 
     def source(self,args=''):
-        msg=self.command_at('source "%s"'%args)
-        return msg
+        self.command_at(False , 'source "%s"'%args)
 
     def select(self,args='',win="-1"):
         msg=self.query_at('select %s'%args,win)
@@ -510,11 +512,11 @@ class ScreenSaver(object):
 
     def sessionname(self,args=''):
         if len(args)>0:
-            name=self.command_at('sessionname').rsplit('\'',1)[0].split('\'',1)[1]
+            name=self.command_at(True, 'sessionname').rsplit('\'',1)[0].split('\'',1)[1]
             nsessionname="%s.%s"%(name.split('.',1)[0],args)
         else:
             nsessionname=None
-        msg=self.command_at('sessionname %s'%args)
+        msg=self.command_at(True, 'sessionname %s'%args)
         if nsessionname:
             self.pid=nsessionname
             self.set_session(self.pid)
@@ -533,7 +535,7 @@ class ScreenSaver(object):
     def title(self,args='',win="-1"):
         if args:
             args='"%s"'%args
-            msg=self.command_at('title %s'%args,win)
+            self.command_at(False , 'title %s'%args,win)
         else:
             msg=self.query_at('title',win)
             return msg
@@ -546,10 +548,10 @@ class ScreenSaver(object):
         os.popen('screen -wipe %s'%args)
 
     def backtick(self,id,lifespan='',autorefresh='',args=''):
-        msg=self.command_at('backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
+        self.command_at(False , 'backtick %s %s %s %s'%(id,lifespan,autorefresh,args))
 
     def get_layout_number(self):
-        msg=self.command_at('layout number')
+        msg=self.command_at(True, 'layout number')
         if not msg.startswith('This is layout'):
             return -1,-1
         currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
@@ -558,14 +560,14 @@ class ScreenSaver(object):
         return currentlayout,currentlayoutname
     
     def get_layout_new(self,name=''):
-        msg=self.command_at('layout new %s'%name)
+        msg=self.command_at(True, 'layout new %s'%name)
         if msg.startswith('No more'):
             return False
         else:
             return True
 
     def get_group(self,win="-1"):
-        msg=self.command_at('group',win)
+        msg=self.command_at(True, 'group',win)
         if msg.endswith('no group'):
             group = 'none'
             groupid = '-1'
@@ -574,18 +576,21 @@ class ScreenSaver(object):
             groupid = groupid.rsplit(' ',1)[1]
         return groupid,group
 
-    def group(self,args='',win="-1"):
-        msg=self.command_at('group %s'%args,win)
-        if msg.endswith('no group'):
-            group = 'none'
-            groupid = '-1'
-        else:
-            groupid,group = msg.rsplit(")",1)[0].split(" (",1)
-            groupid = groupid.rsplit(' ',1)[1]
-        return groupid,group
+    def group(self,output=True,args='',win="-1"):
+        if args:
+            args='"%s"'%args
+        msg=self.command_at(True, 'group %s'%args,win)
+        if output:
+            if msg.endswith('no group'):
+                group = 'none'
+                groupid = '-1'
+            else:
+                groupid,group = msg.rsplit(")",1)[0].split(" (",1)
+                groupid = groupid.rsplit(' ',1)[1]
+            return groupid,group
 
     def get_exec(self,win):
-        msg=self.command_at('exec',win)
+        msg=self.command_at(True, 'exec',win)
         msg = msg.split(':',1)[1].strip()
         if msg.startswith('(none)'):
             return -1
@@ -641,7 +646,7 @@ class ScreenSaver(object):
                 else:
                     cfilter='-1'
 
-                if(ctty=="group"):
+                if(ctty[0]=="g"): # group
                     ctype="group"
                     cpids = None
                     cpids_data=None
@@ -661,7 +666,7 @@ class ScreenSaver(object):
                                 group_wins[cgroupid]+=[cwin]
                             except:
                                 group_wins[cgroupid]=[cwin]
-                    if(ctty=="telnet"):
+                    if(ctty[0]=="t"): # telnet
                         ctype="telnet"
                         cpids = None
                         cpids_data=None
@@ -728,7 +733,7 @@ class ScreenSaver(object):
                 scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
                 if not rollback[1]:
                     # save scrollback
-                    os.system('%s -X at %s hardcopy -h %s' % (self.sc, cwin, scrollback_filename) )
+                    self.command_at(False , 'hardcopy -h %s'%scrollback_filename,cwin)
                     self.__scrollbacks.append(scrollback_filename)
 
                 if ctype!="zombie":
@@ -878,19 +883,19 @@ class ScreenSaver(object):
             lastname=last[2]
             lastid_l=last[1]
             #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-            self.layout('select %s'%layout_trans[lastid_l])
+            self.layout('select %s'%layout_trans[lastid_l],False)
             # ^^ layout numbering may change, use layout_trans={}
 
         if homelayout!=-1:
             out("Returning homelayout %s"%homelayout)
-            self.layout('select %s'%homelayout)
+            self.layout('select %s'%homelayout,False)
         else:
             out('No homelayout - unable to return.')
         
         if not self.restore_previous:
             try:
                 #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-                self.layout('select %s'%layout_trans[lastid_l])
+                self.layout('select %s'%layout_trans[lastid_l],False)
             except:
                 pass
         
@@ -931,7 +936,7 @@ class ScreenSaver(object):
     def get_focus_offset(self):
         focus_offset=0
         cnum=self.number()
-        os.system('%s -X screen %s -m %d-%d'%(self.sc,self.primer,os.getpid(),self.__get_focus_offset_c))
+        self.screen('%s -m %d-%d'%(self.primer,os.getpid(),self.__get_focus_offset_c))
         #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
         self.__get_focus_offset_c+=1
         markertty = self.tty()
@@ -970,7 +975,7 @@ class ScreenSaver(object):
             loop_exit_allowed=True
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
-            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname))
+            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
             region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             focus_offset=self.get_focus_offset()
             self.focus('top')
@@ -1009,7 +1014,7 @@ class ScreenSaver(object):
             self.select_region(focus_offset)
 
             self.focusminsize(cfocusminsize)
-            self.layout('next')
+            self.layout('next',False)
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")

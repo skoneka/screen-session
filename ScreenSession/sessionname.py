@@ -2,6 +2,7 @@
 
 import os,sys
 import GNUScreen as sc
+from util import timeout_command
 
 def get_sessionname(session=None):
     if session:
@@ -10,8 +11,7 @@ def get_sessionname(session=None):
         session_arg=''
     p=os.popen('screen %s -X sessionname'%session_arg)
     p.close()
-    p=os.popen('screen %s -Q @lastmsg'%session_arg)
-    s=p.readlines()
+    s=timeout_command('screen %s -Q @lastmsg'%session_arg)[0]
     return s.split('\'',1)[1].rsplit('\'',1)[0]
 
 try:

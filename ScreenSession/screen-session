@@ -10,14 +10,17 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 export PYTHONPATH=$SCRIPTPATH
 
-get_maxwin() {
-    maxwin=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$1\").maxwin())"`
-    echo $maxwin
-}
+MAXWIN=''
 MINWIN='0'
 bKill=0
 waitfor=0
 logpipe=1
+
+set_MAXWIN() {
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$1\").maxwin())"`
+    fi
+}
 
 if [ $# -eq 0 ]; then
     python $SCRIPTPATH/help.py
@@ -116,10 +119,6 @@ else
     done
     shift $shiftcount "$@"
 
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-
     if [ $mode = "name" ]; then
         python $SCRIPTPATH/sessionname.py $session "$@"
 
@@ -142,28 +141,36 @@ else
         python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
 
     elif [ $mode = "dump" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/dump.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "find-pid" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/find_pid.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "find-file" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/find_file.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "kill" ]; then
+        set_MAXWIN $session
         # screen-session kill [signal=TERM] [win=current]
         python $SCRIPTPATH/kill.py $session "$@"
 
     elif [ $mode = "kill-zombie" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/kill-zombie.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "kill-group" ]; then
+        set_MAXWIN $session
         screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "renumber" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/renumber.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "sort" ]; then
+        set_MAXWIN $session
         python $SCRIPTPATH/sort.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "--version" -o $mode = "-v" ]; then

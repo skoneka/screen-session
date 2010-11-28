@@ -25,7 +25,7 @@ def main():
     foff = scs.get_focus_offset()
     hsize=scs.dinfo();
     hsize=int(hsize[0]),int(hsize[1])
-    rsize=tuple(map(int,scs.command_at('regionsize').split(' ')))
+    rsize=tuple(map(int,scs.command_at(True, 'regionsize').split(' ')))
     rsize=rsize[0],rsize[1]+2 # +1 for caption +1 for hardstatus
     if rsize[0]==hsize[0] and rsize[1]+2==hsize[1]:
         rsize=hsize
@@ -43,7 +43,7 @@ def main():
     region_c = int(os.popen('grep -c "split" %s' % (dumpfile)).readline())+1
     for i in range(0,region_c):
         win=scs.number()
-        trsize=scs.command_at('regionsize').split(' ')
+        trsize=scs.command_at(True, 'regionsize').split(' ')
         trsizex=int(trsize[0])+1
         trsizey=int(trsize[1])+1
         winlist.append((win,tuple([trsizex,trsizey])))
