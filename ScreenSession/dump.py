@@ -10,15 +10,17 @@ import tools
 if __name__=='__main__':
     session=sys.argv[1]
     ss=ScreenSaver(session)
+    maxwin=int(sys.argv[2])
+    minwin=int(sys.argv[3])
     try:
-        maxwin=int(sys.argv[2])
+        maxwin=int(sys.argv[4])
     except:
-        maxwin=ss.maxwin()
-        minwin=0
+        pass
     else:
         try:
-            minwin=int(sys.argv[3])
+            minwin=int(sys.argv[5])
         except:
-            minwin=0
+            pass
+
     tools.dump(ss,minwin,maxwin)
 

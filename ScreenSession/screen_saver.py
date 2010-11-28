@@ -22,8 +22,8 @@ def doexit(var=0,waitfor=True):
     global logpipeh
     if logpipeh:
         logpipeh.close()
-    if waitfor:
-        raw_input('Press any key to exit...')
+    #if waitfor:
+    #    raw_input('Press any key to exit...')
     if sys.stdout!=sys.__stdout__:
         sys.stdout.close()
     sys.exit(var)
@@ -104,7 +104,7 @@ def main():
         elif o in ("-S","--current-session"):
             current_session = a
         elif o == "--special-output":
-            special_output = a
+            special_output = open(a,'w')
         elif o == "--full":
             bFull = True
         elif o in ("-I","--idle"):
@@ -127,9 +127,7 @@ def main():
         elif o in ("-h","--help"):
             bHelp=True
         elif o in ("-W"):
-            # wait for any key press
-            # ignore, currently handled in wrapper script
-            # waitfor = True
+            waitfor = True
             pass
         elif o in ("-M","--maxwin"):
             maxwin = int(a)
@@ -147,6 +145,9 @@ def main():
             out('Error parsing: '+o)
             raise SystemExit
             break;
+    
+    if waitfor:
+        special_output.write("W\n")
 
     home=os.path.expanduser('~')
     
@@ -264,12 +265,7 @@ def main():
     
     maxwin_real=scs.maxwin()
     if (maxwin==-1):
-        if (mode==1):
-            out("for saving specify --maxwin (biggest window number in session)")
-        elif (mode==2) and bExact==True:
-            out("--exact option requires --maxwin (biggest window number in current session)")
         maxwin=maxwin_real
-
 
     scs.MAXWIN = maxwin
     scs.MAXWIN_REAL = maxwin_real
@@ -348,13 +344,13 @@ def main():
 
         try:
             ret = scs.load()
-            if special_output:
-                f = open(special_output,'w')
-                f.write("%s\n"%(scs.pid))
-                f.write("%s\n"%(scs.MAXWIN_REAL))
-                f.write("%s\n"%(scs.MINWIN_REAL))
-                f.write("%s\n"%(str(scs.wrap_group_id)))
-                f.close()
+            if special_output and bKill:
+                special_output.write("X\n")
+                special_output.write("%s\n"%(scs.pid))
+                special_output.write("%s\n"%(scs.MAXWIN_REAL))
+                special_output.write("%s\n"%(scs.MINWIN_REAL))
+                special_output.write("%s\n"%(str(scs.wrap_group_id)))
+                special_output.close()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)

@@ -17,7 +17,6 @@ get_maxwin() {
 MINWIN='0'
 bKill=0
 waitfor=0
-nonest=0
 logpipe=1
 
 if [ $# -eq 0 ]; then
@@ -28,32 +27,6 @@ fi
 mode=$1
 shift 1 "$@"
 
-# parse command line arguments
-while getopts ":WNPXS:M:U:": OPT; do
-    case "$OPT" in
-    W)  waitfor=1
-        shift 1 "$@"
-        ;;
-    N)  logpipe=0
-        shift 1 "$@"
-        ;;
-    P)  logpipe=1
-        shift 1 "$@"
-        ;;
-    X)  bKill=1
-        shift 1 "$@"
-        ;;
-    S)  session="$OPTARG"
-        shift 2 "$@"
-        ;;
-    M)  MAXWIN="$OPTARG"
-        shift 2 "$@"
-        ;;
-    U)  MINWIN="$OPTARG"
-        shift 2 "$@"
-        ;;
-    esac
-done
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
@@ -75,71 +48,7 @@ fi
 
 screen -S $session -X msgminwait 0
 
-if [ $mode = "name" ]; then
-    python $SCRIPTPATH/sessionname.py $session "$@"
-
-elif [ $mode = "manager" ]; then
-    python $SCRIPTPATH/manager.py p $session
-
-elif [ $mode = "grab" ]; then
-    sh $SCRIPTPATH/screen-session-grab "$@"
-
-elif [ $mode = "group" ]; then
-    sh $SCRIPTPATH/win-to-group $session "$@"
-
-elif [ $mode = "regions" ]; then
-    screen -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
-
-elif [ $mode = "nest" ]; then
-    screen -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
-
-elif [ $mode = "dir" ]; then
-    python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
-
-elif [ $mode = "dump" ]; then
-    python $SCRIPTPATH/dump.py $session "$@"
-
-elif [ $mode = "find-pid" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    python $SCRIPTPATH/find_pid.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "find-file" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    python $SCRIPTPATH/find_file.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "kill" ]; then
-    # screen-session kill [signal=TERM] [win=current]
-    python $SCRIPTPATH/kill.py $session "$@"
-
-elif [ $mode = "kill-zombie" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    python $SCRIPTPATH/kill-zombie.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "kill-group" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "renumber" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    python $SCRIPTPATH/renumber.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "sort" ]; then
-    if [ "$MAXWIN" = '' ]; then
-        MAXWIN=`get_maxwin $session`
-    fi
-    python $SCRIPTPATH/sort.py $session $MAXWIN $MINWIN "$@"
-
-elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
+if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`
 
 
@@ -151,17 +60,12 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
     argument2=""
 
     if [ "${testargument}" = "True" ]; then
-        if [ "$MAXWIN" = '' ]; then
-            MAXWIN=`get_maxwin $session`
-        fi
-        argument1="-M $MAXWIN --current-session $session"
+        argument1="--current-session $session"
     else
         /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"
     fi
 
-    if [ $bKill -eq 1 ]; then
-        argument2="-X --special-output $scsfiletmp"
-    fi
+    argument2="--special-output $scsfiletmp"
 
 
     argument0="logpipe=$scsfile"
@@ -178,21 +82,95 @@ elif [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; th
         python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 $argument2 "$@"
     fi
 
-    if [ $bKill -eq 1 ]; then
-        exec < $scsfiletmp
-        read session
-        read maxwin
-        read minwin
-        read twin
-        rm $scsfiletmp
-        screen-session kill-group -S $session -M $maxwin -U $minwin $twin
+    while read cmd
+    do
+        if [ "$cmd" = "X" ]; then
+            read session
+            read maxwin
+            read minwin
+            read twin
+            rm $scsfiletmp
+            screen-session kill-group -S $session -M $maxwin -U $minwin $twin
+        elif [ "$cmd" = "W" ]; then
+            waitfor=1
+        fi
+    done < $scsfiletmp
+else
+    shiftcount=0
+    # parse command line arguments
+    while getopts ":WS:M:U:": OPT; do
+        case "$OPT" in
+        W)  waitfor=1
+            shiftcount=`expr $shiftcount + 1`
+            ;;
+        S)  session="$OPTARG"
+            shiftcount=`expr $shiftcount + 2`
+            ;;
+        M)  MAXWIN="$OPTARG"
+            shiftcount=`expr $shiftcount + 2`
+            ;;
+        U)  MINWIN="$OPTARG"
+            shiftcount=`expr $shiftcount + 2`
+            ;;
+        esac
+    done
+    shift $shiftcount "$@"
+
+    if [ "$MAXWIN" = '' ]; then
+        MAXWIN=`get_maxwin $session`
     fi
 
+    if [ $mode = "name" ]; then
+        python $SCRIPTPATH/sessionname.py $session "$@"
 
-elif [ $mode = "--version" -o $mode = "-v" ]; then
-    python $SCRIPTPATH/help.py --version
-else
-    python $SCRIPTPATH/help.py
+    elif [ $mode = "manager" ]; then
+        python $SCRIPTPATH/manager.py p $session
+
+    elif [ $mode = "grab" ]; then
+        sh $SCRIPTPATH/screen-session-grab "$@"
+
+    elif [ $mode = "group" ]; then
+        sh $SCRIPTPATH/win-to-group $session "$@"
+
+    elif [ $mode = "regions" ]; then
+        screen -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+
+    elif [ $mode = "nest" ]; then
+        screen -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+
+    elif [ $mode = "dir" ]; then
+        python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
+
+    elif [ $mode = "dump" ]; then
+        python $SCRIPTPATH/dump.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "find-pid" ]; then
+        python $SCRIPTPATH/find_pid.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "find-file" ]; then
+        python $SCRIPTPATH/find_file.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "kill" ]; then
+        # screen-session kill [signal=TERM] [win=current]
+        python $SCRIPTPATH/kill.py $session "$@"
+
+    elif [ $mode = "kill-zombie" ]; then
+        python $SCRIPTPATH/kill-zombie.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "kill-group" ]; then
+        screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "renumber" ]; then
+        python $SCRIPTPATH/renumber.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "sort" ]; then
+        python $SCRIPTPATH/sort.py $session $MAXWIN $MINWIN "$@"
+
+    elif [ $mode = "--version" -o $mode = "-v" ]; then
+        python $SCRIPTPATH/help.py --version
+    else
+        python $SCRIPTPATH/help.py
+    fi
 fi
 
 if [ $waitfor -eq 1 ]; then

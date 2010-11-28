@@ -128,7 +128,7 @@ class ScreenSaver(object):
 
     def __load_screen(self):
         homewindow=self.homewindow
-        out ("Homewindow is " +homewindow)
+        # out ("Homewindow is " +homewindow)
         
         #check if target Screen is currently in some group and set hostgroup to it
         hostgroupid,hostgroup = self.get_group(homewindow)
@@ -178,7 +178,7 @@ class ScreenSaver(object):
             self.lastid=lasttail.split("_",1)[1]
             self.select_last_window()
         
-        out ("Returning homewindow " +homewindow)
+        # out ("Returning homewindow " +homewindow)
         self.select(homewindow)
        
         if not self.restore_previous:
@@ -186,7 +186,7 @@ class ScreenSaver(object):
 
     def select_last_window(self):
         try:
-            out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
+            #out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
             self.select(self.__wins_trans[self.lastid])
         except:
             self.select('-')
@@ -595,7 +595,7 @@ class ScreenSaver(object):
 
     def __save_screen(self):
         homewindow=self.homewindow
-        out ("Homewindow is " + homewindow)
+        # out ("Homewindow is " + homewindow)
         group_wins={}
         group_groups={}
         excluded_wins=[]
@@ -705,7 +705,7 @@ class ScreenSaver(object):
                         vim_name=str(None)
                         args=cpids_data[i][2].split('\0')
                         if self.primer==args[0]:
-                            sys.stdout.write('Importing : ')
+                            sys.stdout.write('Import : ')
                             rollback=self.__rollback(cpids_data[i][2])
                             #out(str(rollback))
                         elif args[0] in self.vim_names and self.bVim:
@@ -808,8 +808,6 @@ class ScreenSaver(object):
         out('Terminal size: %s %s'%(cdinfo[0],cdinfo[1]))
         homewindow=self.homewindow
         homelayout,homelayoutname=self.get_layout_number()
-        if homelayout==-1:
-            out("No homelayout")
         layout_trans={}
         layout_c=len(glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')))
         for i in range(0,layout_c):
@@ -879,7 +877,7 @@ class ScreenSaver(object):
             last=lasttail.split("_",2)
             lastname=last[2]
             lastid_l=last[1]
-            out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+            #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
             self.layout('select %s'%layout_trans[lastid_l])
             # ^^ layout numbering may change, use layout_trans={}
 
@@ -891,7 +889,7 @@ class ScreenSaver(object):
         
         if not self.restore_previous:
             try:
-                out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+                #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
                 self.layout('select %s'%layout_trans[lastid_l])
             except:
                 pass
@@ -903,7 +901,7 @@ class ScreenSaver(object):
             self.lastid=lasttail.split("_",1)[1]
             self.select_last_window()
         
-        out ("Returning homewindow " +homewindow)
+        # out ("Returning homewindow " +homewindow)
         self.select(homewindow)
        
         if not self.restore_previous:
