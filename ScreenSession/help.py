@@ -98,6 +98,7 @@ If no windows given, move the current window.\n\
 \nUsage: screen-session group [options] [GROUP] [windows]"
 
 help_manager="Sessions manager for GNU Screen with preview in a split window.\n\
+Requires python 2.5+\n\
 \nUsage: screen-session manager"
 
 help_nest="Nest layout in the current region.\n\

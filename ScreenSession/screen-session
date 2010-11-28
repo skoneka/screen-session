@@ -92,12 +92,12 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             read maxwin
             read minwin
             read twin
-            rm $scsfiletmp
             screen-session kill-group -S $session -M $maxwin -U $minwin $twin
         elif [ "$cmd" = "W" ]; then
             waitfor=1
         fi
     done < $scsfiletmp
+    rm $scsfiletmp
 else
     shiftcount=0
     # parse command line arguments

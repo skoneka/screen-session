@@ -298,8 +298,6 @@ class ScreenSaver(object):
         ctty=None
         cppids={}
         searching=False
-        other_max_win=self.MINWIN_REAL
-        other_min_win=self.MAXWIN_REAL
 
         r=range(0,self.MAXWIN+1)
         
@@ -315,6 +313,8 @@ class ScreenSaver(object):
             r.append(cwin)
         r.sort()
         r.reverse()
+        other_max_win=cwin+shift
+        other_min_win=self.MAXWIN_REAL
         # move windows by shift and put them in a wrap group
         for i in r:
             cselect = self.select(i)
@@ -344,8 +344,7 @@ class ScreenSaver(object):
                 command='%s -p %d -X number +%d' % (self.sc,cwin,shift)
                 out('Moving window %d to %d'%(cwin,cwin+shift))
                 os.system(command)
-                # after moving or kill window number changes so have to update cwin
-                cwin=int(self.number())
+                cwin=cwin+shift
                 if cwin > other_max_win:
                     other_max_win = cwin
                 if cwin < other_min_win:
