@@ -491,10 +491,6 @@ def main():
                 options,command=command.split(';;;',1)
                 options=options.split(';')
                 command=command.split(';')
-                '''
-                for m in command:
-                    print('[]%d|mode=%s'%(len(m),m
-                '''
                 if len(options)>0:
                     tui=int(options[0])
                     psession=options[1]
@@ -509,7 +505,6 @@ def main():
                     cmd='screen -m %s'%command[1]
                     print ("creating session: [%s]"%(cmd))
                     os.popen(cmd)
-                    
                 else:
                     try:
                         os.remove(fifoname)

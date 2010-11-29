@@ -1035,7 +1035,7 @@ class ScreenSaver(object):
     def __save_vim(self,winid):
         name="vim_%s_%s"%(self.__unique_ident,winid)
         fname=os.path.join(self.basedir,self.savedir,name)
-        cmd = '^[^[:mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
+        cmd = '^[^[:silent call histdel(\':\',-1) | mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
         self.stuff(cmd, winid)
         # undo files are useless if the target file changes even a single bit
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)

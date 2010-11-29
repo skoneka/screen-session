@@ -38,7 +38,7 @@ Saving:
     scs save --maxwin {biggest window number}
     
     # save current session without layouts
-    scs save --layout 
+    scs save --no-layout 
 
     # save saving session with PID in mysavedsession folder
     scs save --in PID --out mysavedsession
@@ -57,13 +57,13 @@ Loading:
     scs load --exact --maxwin {biggest window number}
     
     # load last saved session inside current session without layouts
-    scs load --layout
+    scs load --no-layout
 
     # load session from savefile loaded to Screen with PID
     scs load --in mysavedsession --out PID
 
     # load saved session into a new Screen session
-    screen -m scs load --exact-kill-other
+    screen -m scs load --exact-kill
 
 
 Example bindings:
