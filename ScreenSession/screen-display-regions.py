@@ -60,14 +60,26 @@ def handler(signum,frame):
     os.remove(inputfile)
     if ch[0]=='s':
         mode=1
-    elif ch[0]=="'" or ch[0]=='g':
+    elif ch[0]=='S':
+        mode=1
+        bSelect=True
+    elif ch[0]=="'" or ch[0]=='g' or ch[0]=='G':
         mode=0
         bSelect=True
     elif ch[0]=="l":
         mode=2
-        number=-1*number
-    elif ch[0]=="r":
+        rnumber=-1*number
+    elif ch[0]=="L":
         mode=2
+        rnumber=-1*number
+        bSelect=True
+    elif ch[0]=="r":
+        rnumber=number
+        mode=2
+    elif ch[0]=="R":
+        rnumber=number
+        mode=2
+        bSelect=True
     else:
         mode=0
 
@@ -77,7 +89,7 @@ def handler(signum,frame):
         win_history[0]=win_history[number]
         win_history[number]=tmp
     elif mode==2:
-        win_history=rotate_list(win_history,number)
+        win_history=rotate_list(win_history,rnumber)
 
     cleanup()
 
