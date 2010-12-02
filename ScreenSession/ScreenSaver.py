@@ -12,7 +12,6 @@ class ScreenSaver(object):
     basedir=""
     projectsdir=".screen-sessions"
     savedir=""
-    procdir="/proc"
     MAXWIN=-1
     MAXWIN_REAL=-1
     MINWIN_REAL=0
@@ -858,7 +857,6 @@ class ScreenSaver(object):
                             out('Unable to set focus for: %s'%window)
                     self.focus()
                 f.close()
-                
 
                 # set region dimensions
                 self.focus('top')
@@ -870,7 +868,6 @@ class ScreenSaver(object):
                         self.fit()
 
                     self.focus()
-
                 
                 # restore focus on the right region
                 self.select_region(focus_offset)
@@ -982,11 +979,19 @@ class ScreenSaver(object):
             loop_exit_allowed=True
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
-            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
+
             try:
+                self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
                 region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
             except:
-                region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+                # layout dump may fail so try again
+                try:
+                    self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
+                    region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+                except:
+                    # and again
+                    self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
+                    region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
 
             focus_offset=self.get_focus_offset()
             self.focus('top')

@@ -60,6 +60,8 @@ def _get_pid_info_bsd(pid):
     exe=os.readlink(os.path.join(piddir,"file"))
     f=open(os.path.join(piddir,"cmdline"),"r")
     cmdline=f.read()
+    if not cmdline.endswith('\0'):
+        cmdline+='\0'
     f.close()
     return (cwd,exe,cmdline)
 
@@ -70,6 +72,8 @@ def _get_pid_info_linux(pid):
     exe=os.readlink(os.path.join(piddir,"exe"))
     f=open(os.path.join(piddir,"cmdline"),"r")
     cmdline=f.read()
+    if not cmdline.endswith('\0'):
+        cmdline+='\0'
     f.close()
     
     return (cwd,exe,cmdline)
