@@ -983,7 +983,11 @@ class ScreenSaver(object):
             cfocusminsize=self.focusminsize()
             self.focusminsize('0 0')
             self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
-            region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+            try:
+                region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+            except:
+                region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
+
             focus_offset=self.get_focus_offset()
             self.focus('top')
             win=[]

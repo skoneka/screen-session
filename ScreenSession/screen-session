@@ -5,7 +5,7 @@
 # description: screen-session tools starter
 # it is necessary to run screen_saver.py and some other tools embedded in other screen session to be able to run it in target screen
 
-SCRIPT=$(/bin/echo $0|python -c 'import os,sys;i=sys.stdin.read();print (os.path.realpath(i.strip()))')
+SCRIPT=$(python -c "import os;print (os.path.realpath(\"$0\"))")
 SCRIPTPATH=`dirname $SCRIPT`
 
 export PYTHONPATH=$SCRIPTPATH

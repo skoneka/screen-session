@@ -1194,8 +1194,12 @@ main (int argc, char **argv)
     printf ("%sTITLE:%s %s\n", green_r, none, title);
     printf ("%sSAVED:%s %s\n", green_r, none, timesaved);
     filter = strtrim_right (filter, '\n');
+    int bFilter=0;
     if (strcmp (filter, "-1") != 0)
-      printf ("%sFILTER:%s %s\n",green_r, none, filter);
+      {
+        bFilter=1;
+        printf ("%sFILTER:%s %s\n",green_r, none, filter);
+      }
     printf ("%s", none);
 
     fscanf (fp, "%d\n", &procs_c);
@@ -1272,7 +1276,6 @@ main (int argc, char **argv)
     free(timesaved);
     free(buftext);
     int menu;
-    int bFilter=(strncmp(filter,"-1",2)!=0)?1:0;
     int number;
     int *numbers;
     chdir(proc_cwd);

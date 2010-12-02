@@ -157,7 +157,7 @@ save\n\
 -d --dir\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 -W\n\
-  \twait for keypress when finished.
+  \twait for keypress when finished.\n\
 -h --help\n\
   \tshow this message\n\
   \n\
