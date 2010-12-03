@@ -534,7 +534,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault  "SEP" [%sR%s]eset  "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] ",
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s]",
 	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
@@ -731,8 +731,10 @@ is_blacklisted (char *basedir, char *program, int programid)
 
   if (!fp)
     {
+      /* 
       fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
       perror("Error :");
+      */      
       free (filepath);
       return 0;
     }

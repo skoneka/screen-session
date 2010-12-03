@@ -204,7 +204,7 @@ class ScreenSaver(object):
             winarg=""
         
         if type[0]=='b':
-            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"scrollback_"+win),os.path.join(self.savedir,"win_"+win)) )
+            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"hardcopy."+win),os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':
             self.screen('-t \"%s\" %s //group' % (title,winarg ) )
         else:
@@ -228,7 +228,7 @@ class ScreenSaver(object):
     
     def __scrollback_clean(self):
         '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
-        for f in self.__scrollbacks:
+        for f in glob.glob(os.path.join(self.basedir,self.savedir,'hardcopy.*')):
             try:
                 ftmp=f+"_tmp"
                 temp=open(ftmp,'w')
@@ -609,6 +609,9 @@ class ScreenSaver(object):
         searching=False
         rollback=None,None,None
         ctime=self.time()
+        self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
+        self.command_at(False, 'at \# hardcopy -h')
+        self.command_at(False, 'hardcopydir $CWD')
         out('NUM, GROUP, TYPE, TITLE, FILTER, SCROLLBACK')
         for i in range(0,self.MAXWIN+1):
             id=str(i)
@@ -736,11 +739,7 @@ class ScreenSaver(object):
                             cpids_data[i]=newdata
                         
                         cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
-                scrollback_filename=os.path.join(self.basedir,self.savedir,"scrollback_"+cwin)
-                if not rollback[1]:
-                    # save scrollback
-                    self.command_at(False , 'hardcopy -h %s'%scrollback_filename,cwin)
-                    self.__scrollbacks.append(scrollback_filename)
+                scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+cwin)
 
                 if ctype!="zombie":
                     self.__save_win(cwin,ctime,cgroupid,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename,cscrollback_len)
@@ -1115,7 +1114,7 @@ class ScreenSaver(object):
                 out('forcing..')
                 out('cleaning up \"%s\"' % savedir)
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'win_*')))
-                map(os.remove,glob.glob(os.path.join(basedir,savedir,'scrollback_*')))
+                map(os.remove,glob.glob(os.path.join(basedir,savedir,'hardcopy.*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
                 linkify(basedir,savedir,self.lastlink)
