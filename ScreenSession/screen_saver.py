@@ -63,6 +63,7 @@ def main():
     waitfor=False
     mode = 0
     util.archiveend='.tar.bz2'
+    lastlink='last'
     unpack=None
     current_session=None
     special_output=None
@@ -256,7 +257,7 @@ def main():
         out('No such session: %s'%pid)
         doexit(1,waitfor)
         
-    if savedir in (scs.lastlink,'__tmp_pack') and mode==1:
+    if savedir in (lastlink,'__tmp_pack') and mode==1:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     elif savedir == scs.blacklistfile:
@@ -312,7 +313,7 @@ def main():
         else:
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(util.tmpdir,savedir_real))
-            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,scs.lastlink,savedir_real)
+            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,lastlink,savedir_real)
             removeit(os.path.join(home,projectsdir,savedir_tmp))
             removeit(os.path.join(util.tmpdir,savedir_tmp))
             scs.savedir=savedir_real
@@ -322,7 +323,7 @@ def main():
             os.system('screen -S %s -X echo "screen-session finished saving as \"%s\""'%(scs.pid,savedir))
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,scs.lastlink,200)
+        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,lastlink,200)
         # unpack and load
         try:
             unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)

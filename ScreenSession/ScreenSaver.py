@@ -16,7 +16,6 @@ class ScreenSaver(object):
     MAXWIN_REAL=-1
     MINWIN_REAL=0
     force=False
-    lastlink="last"
     enable_layout = False
     restore_previous = False
     exact=False
@@ -1117,13 +1116,11 @@ class ScreenSaver(object):
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'hardcopy.*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
                 map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
-                linkify(basedir,savedir,self.lastlink)
                 return True
             else:
                 out('Aborting.')
                 return False
         else:
             os.makedirs(os.path.join(basedir,savedir))
-            linkify(basedir,savedir,self.lastlink)
             return True
 

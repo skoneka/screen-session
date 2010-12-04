@@ -146,8 +146,10 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     removeit(os.path.join(workingpath,savedir+'__tmp'))
     removeit(os.path.join(workingpath2,savedir_real))
     removeit(os.path.join(workingpath2,savedir_real+'__tmp'))
-
-    os.remove(os.path.join(home,projectsdir,lastlink))
+    try:
+        os.remove(os.path.join(home,projectsdir,lastlink))
+    except:
+        pass
     shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath2,savedir_real))
     os.chdir(workingpath2)
     os.mkdir(savedir_real+'__tmp')
