@@ -58,7 +58,7 @@ class ScreenSaver(object):
         self.homewindow,title=self.get_number_and_title()
         out("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
-            return False
+            return 1
         out("\n======SAVING___SCREEN___SESSION======")
         self.__save_screen()
         
@@ -68,7 +68,7 @@ class ScreenSaver(object):
             self.__save_layouts()
         out("\n======CLEANUP======")
         self.__scrollback_clean()
-        return True
+        return 0
 
     def load(self):
         out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
@@ -82,7 +82,7 @@ class ScreenSaver(object):
         except Exception,e:
             out('Unable to open.')
             out(str(e))
-            return False
+            return 1
 
         # keep original numbering, move existing windows
         self.homewindow=self.number()
@@ -108,7 +108,7 @@ class ScreenSaver(object):
         if self.enable_layout:
             out("\n======LOADING___LAYOUTS======")
             self.__load_layouts()
-        return True
+        return 0
 
     def exists(self):
         msg=self.echo('test')
@@ -391,6 +391,8 @@ class ScreenSaver(object):
         msg=self.command_at(True, 'number',win)
         if msg==-1:
             return -1,-1
+        elif msg[0]!='T': # This is window...
+            return self.get_number_and_title(win)
         number,title = msg.split("(",1)
         number = number.strip().rsplit(' ',1)[1]
         title = title.rsplit(")",1)[0]

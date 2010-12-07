@@ -17,6 +17,7 @@ import util
 
 
 logpipeh=None
+special_output=None
 
 def doexit(var=0,waitfor=True):
     global logpipeh
@@ -26,6 +27,10 @@ def doexit(var=0,waitfor=True):
     #    raw_input('Press any key to exit...')
     if sys.stdout!=sys.__stdout__:
         sys.stdout.close()
+    if special_output:
+        special_output.write("R\n")
+        special_output.write("%s\n"%(var))
+        special_output.close()
     sys.exit(var)
 
 def usageMode():
@@ -41,6 +46,7 @@ def main():
 
     bad_arg=None
     logpipe=None
+    global special_output
     
     try:
         logpipe=sys.argv[2].split('=')[1]
@@ -66,7 +72,6 @@ def main():
     lastlink='last'
     unpack=None
     current_session=None
-    special_output=None
     bNest=True
     bVim=True
     bExact=False
@@ -230,7 +235,7 @@ def main():
     scs=ScreenSaver(pid,projectsdir,savedir)
 
     if idle:
-        d_args_d=('-I','-i','--current-session','--idle','--in')
+        d_args_d=('-I','-i','--current-session','--idle','--in','--special-output')
         nargv=[]
         bSkipNext=False
         for arg in sys.argv:
@@ -307,7 +312,7 @@ def main():
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
 
-        if not ret:
+        if ret:
             out('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
@@ -351,7 +356,6 @@ def main():
                 special_output.write("%s\n"%(scs.other_max_win))
                 special_output.write("%s\n"%(scs.other_min_win))
                 special_output.write("%s\n"%(str(scs.wrap_group_id)))
-                special_output.close()
         except:
             ret=0
             traceback.print_exc(file=sys.stdout)
@@ -359,7 +363,7 @@ def main():
             os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
             doexit(1,waitfor)
 
-        if not ret:
+        if ret:
             out('session loading failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:    

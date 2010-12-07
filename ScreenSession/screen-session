@@ -10,6 +10,7 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 export PYTHONPATH=$SCRIPTPATH
 
+ret=0
 MAXWIN=''
 MINWIN='0'
 bKill=0
@@ -24,7 +25,7 @@ set_MAXWIN() {
 
 if [ $# -eq 0 ]; then
     python $SCRIPTPATH/help.py
-    exit 1
+    exit $?
 fi
 
 mode=$1
@@ -34,7 +35,7 @@ shift 1 "$@"
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
         python $SCRIPTPATH/help.py $mode
-        exit 0
+        exit $?
     fi
 fi
 
@@ -74,13 +75,13 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     argument0="logpipe=$scsfile"
     if [ $logpipe -eq 1 ]; then
         if [ -d "$scsfile" ]; then
-            rm $scsfile
+            /bin/rm -f $scsfile
         fi
         mkfifo $scsfile
-        screen -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
+        screen -S SCREEN-SESSION-SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
         
         cat $scsfile
-        rm $scsfile
+        /bin/rm -f $scsfile
     else
         python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 $argument2 "$@"
     fi
@@ -95,9 +96,11 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             screen-session kill-group -S $session -M $maxwin -U $minwin $twin
         elif [ "$cmd" = "W" ]; then
             waitfor=1
+        elif [ "$cmd" = "R" ]; then
+            read ret
         fi
     done < $scsfiletmp
-    rm $scsfiletmp
+    /bin/rm -f $scsfiletmp
 else
     shiftcount=0
     # parse command line arguments
@@ -132,10 +135,10 @@ else
         sh $SCRIPTPATH/win-to-group $session "$@"
 
     elif [ $mode = "regions" ]; then
-        screen -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
 
     elif [ $mode = "nest" ]; then
-        screen -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+        screen -S SCREEN-SESSION-NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
 
     elif [ $mode = "dir" ]; then
         python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
@@ -163,7 +166,7 @@ else
 
     elif [ $mode = "kill-group" ]; then
         set_MAXWIN $session
-        screen -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
+        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
 
     elif [ $mode = "renumber" ]; then
         set_MAXWIN $session
@@ -175,12 +178,21 @@ else
 
     elif [ $mode = "--version" -o $mode = "-v" ]; then
         python $SCRIPTPATH/help.py --version
-    else
+    elif [ $mode = "--help" -o $mode = "-h" ]; then
         python $SCRIPTPATH/help.py
+    else
+        echo "No such mode: $mode"
+        ret=1
     fi
+fi
+
+if [ $ret -eq 0 ]; then
+    ret=$?
 fi
 
 if [ $waitfor -eq 1 ]; then
     /bin/echo 'Press any key...'
     stty cbreak echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
 fi
+
+exit $ret

@@ -224,9 +224,10 @@ if __name__=='__main__':
     elif mode=='name':
         print(help_name)
     elif mode=='save' or mode=='load' or mode=='ls':
-        print(help_saver_modes)
+        print(help_saver_modes+'\n')
         print(help_saver)
 
     else:
         print('No help for mode: %s'%mode)
+        sys.exit(1)
 
