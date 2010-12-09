@@ -12,11 +12,11 @@ def find_pids_in_windows(session,minwin,maxwin,pids):
             if pid in tpids:
                 ttys.append(tty)
     wins=[]
-    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,session):
+    for win,groupid,ctype,tty in sc.gen_all_windows_fast(session):
         try:
             tty = int(os.path.split(tty)[1])
             if tty in ttys:
-                wins.append(tuple([win,title]))
+                wins.append(tuple([win,""]))
         except Exception,x:
             pass
     return wins
@@ -30,65 +30,55 @@ def find_files_in_pids(minwin,maxwin,files):
     return pids
 
 
-def dump(ss,minwin,maxwin):
-    for win,type,title,tty in sc.gen_all_windows(minwin,maxwin,ss.pid):
-        if type==0:
-            type_string="basic"
-        elif type==1:
-            type_string="group"
-        elif type==-1:
-            type_string="zombie"
-        elif type==2:
-            type_string="telnet"
-        else:
-            type_string="unknown"
-
-        print("%s TYPE\t %s"%(win,type_string))
-        print("%s TITL\t %s"%(win,title))
-        filter=ss.get_exec(win)
-        if filter!=-1:
-            print("%s EXEC\t %s"%(win,filter))
-        print("%s TTY \t %s"%(win,tty))
-        if type==0:
+def dump(ss):
+    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid):
+        print("----------------------------------------")
+        print("%s TYPE\t %s"%(cwin,ctypestr))
+        print("%s TITL\t %s"%(cwin,ctitle))
+        if cfilter!='-1':
+            print("%s EXEC\t %s"%(cwin,cfilter))
+        print("%s TTY \t %s"%(cwin,ctty))
+        if ctype==0:
             try:
-                pids=sc.get_tty_pids(tty)
+                pids=sc.get_tty_pids(ctty)
             except:
-                print ("%s No access"%win)
+                print ("%s No access"%cwin)
                 pass
             for pid in pids:
                 try:
                     cwd,exe,cmd=sc.get_pid_info(pid)
-                    print ("%s PID \t %s"%(win,pid))
-                    print ("%s P %s CWD \t %s"%(win,pid,cwd))
-                    print ("%s P %s EXE \t %s"%(win,pid,exe))
-                    print ("%s P %s CMD \t %s"%(win,pid,cmd.split('\0')))
+                    print ("%s PID \t %s"%(cwin,pid))
+                    print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
+                    print ("%s P %s EXE \t %s"%(cwin,pid,exe))
+                    print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')))
                 except:
-                    print ("%s PID \t %s\t No permission"%(win,pid))
-        print("")
+                    print ("%s PID \t %s\t No permission"%(cwin,pid))
+
 
 def renumber(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
-    for win,type,title,tty in sc.gen_all_windows(min,max,session):
+    for win,groupid,ctype,tty in sc.gen_all_windows_fast(session):
         iwin=int(win)
-        wins.append((ss.get_group(win)[0],iwin,type))
-
-    win_biggest=wins[len(wins)-1][1]
-    for i in range(0,win_biggest+1):
-        wins_trans[i]=i
+        wins.append((iwin,groupid,ctype))
+        wins_trans[iwin]=iwin
 
     wins.sort(key=lambda wins:wins[0])
-
+    print wins_trans
     i=0
-    for group,win,type in wins:
+    for win,groupid,ctype in wins:
         if wins_trans[win]!=i:
             #print("win %d(%d)(%s) as %d"%(wins_trans[win],win,group,i))
             ss.number(str(i),str(wins_trans[win]))
             tmp=wins_trans[win]
-            wins_trans[win]=wins_trans[i]
+            try:
+                wins_trans[win]=wins_trans[i]
+            except:
+                wins_trans[win]=-1
             wins_trans[i]=tmp
         i+=1
+    print wins_trans
 
 def sort(session,min,max,key=None):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
@@ -96,30 +86,29 @@ def sort(session,min,max,key=None):
     wins_trans={}
     groups={}
     cgroup=None
-    for win,type,title,tty in sc.gen_all_windows(min,max,session):
+    for win,groupid,ctype,tty in sc.gen_all_windows_fast(session):
         iwin=int(win)
-        groupid,group=ss.get_group(win)
-
-        lastval=(group,iwin,type,title)
+        lastval=(groupid,iwin,ctype,ss.title('',iwin))
         try:
-            groups[group].append(lastval)
+            groups[groupid].append(lastval)
         except:
-            groups[group]=[lastval]
+            groups[groupid]=[lastval]
+        wins_trans[iwin]=iwin
             
-    win_biggest=lastval[1]
-    for i in range(0,win_biggest+1):
-        wins_trans[i]=i
 
     i=0
     for group,props in groups.items():
         props.sort(key=lambda wins:wins[3].lower())
         #print( str(len(props))+' : '+group + ' : ' + str(props))
-        for group,win,type,title in props:
+        for groupid,win,ctype,title in props:
             if wins_trans[win]!=i:
                 #print("win %d(%d)(%s) as %d"%(wins_trans[win],win,group,i))
                 ss.number(str(i),str(wins_trans[win]))
                 tmp=wins_trans[win]
-                wins_trans[win]=wins_trans[i]
+                try:
+                    wins_trans[win]=wins_trans[i]
+                except:
+                    wins_trans[win]=-1
                 wins_trans[i]=tmp
             i+=1
     return
@@ -128,8 +117,8 @@ def sort(session,min,max,key=None):
 def kill_zombie(session,min,max):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
 
-    for win,type,title,tty in sc.gen_all_windows(min,max,session):
-        if type==-1:
+    for win,groupid,ctype,tty in sc.gen_all_windows_fast(session):
+        if ctype==-1:
             ss.kill(win)
 
 def kill_group(session,min,max,groupids):
@@ -143,9 +132,8 @@ def kill_group(session,min,max,groupids):
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    for win,type,title,tty in sc.gen_all_windows(min,max,session):
-        cgroupid,cgroup=ss.get_group(win)
-        if(type==1): # group
+    for win,cgroupid,ctype,tty in sc.gen_all_windows_fast(session):
+        if(ctype==1): # group
             if win in groupids or bAll:
                 excluded_groups.append(win)
             try:

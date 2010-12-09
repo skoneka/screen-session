@@ -109,6 +109,16 @@ def removeit(path):
             pass
         pass
 
+def remove(path):
+    try:
+        os.remove(path)
+    except:
+        try:
+            shutil.rmtree(path)
+        except:
+            pass
+        pass
+
 def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
     #cleanup old temporary files and directories
     ctime=time.time()

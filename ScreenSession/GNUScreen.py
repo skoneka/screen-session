@@ -1,5 +1,75 @@
 #!/usr/bin/env python
 import os,subprocess,re,sys,platform
+def gen_all_windows_fast(session):
+    from ScreenSaver import ScreenSaver
+    from util import tmpdir,remove
+    ss=ScreenSaver(session)
+    tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
+    ss.command_at(False,"at \# dumpscswindow %s -N"%(tfile))
+    fp=None
+    while fp==None:
+        try:
+            fp=open(tfile,'r')
+        except:
+            pass
+    for line in fp:
+        try:
+            cwin,cgroupid,ctty=line.strip().split(' ')
+        except:
+            cwin,cgroupid=line.strip().split(' ')
+            ctty=None
+        if not ctty:
+            ctypeid=-1
+        elif ctty[0]=='g':
+            ctypeid=1
+        elif ctty[0]=='t':
+            ctypeid=2
+        else:
+            ctypeid=0
+        yield cwin,cgroupid,ctypeid,ctty
+    remove(tfile)
+
+def gen_all_windows_full(session):
+    from ScreenSaver import ScreenSaver
+    import string
+    from util import tmpdir,removeit,remove
+    tdir=os.path.join(tmpdir,'___dump-%d'%os.getpid())
+    if not os.path.exists(tdir):
+        os.mkdir(tdir)
+    ss=ScreenSaver(session)
+    tfile=os.path.join(tdir,'winlist')
+    ss.command_at(False,"at \# dumpscswindow %s -F"%(tdir))
+    ss.command_at(False,"at \# dumpscswindow %s -N"%(tfile))
+    fp=None
+    while fp==None:
+        try:
+            fp=open(tfile,'r')
+        except:
+            pass
+    for line in fp:
+        try:
+            cwin,cgroupid,ctty=line.strip().split(' ')
+        except:
+            cwin,cgroupid=line.strip().split(' ')
+            ctty=None
+        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
+        if not ctty:
+            ctypeid=-1
+        elif ctype[0]=='g':
+            ctypeid=1
+        elif ctype[0]=='t':
+            ctypeid=2
+        else:
+            ctypeid=0
+        try:
+            cgroupid,cgroup = cgroup.split(' ')
+        except:
+            cgroup='none'
+        yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime
+    removeit(tdir)
+
+
+    
 def gen_all_windows(minwin,maxwin,session):
     from ScreenSaver import ScreenSaver
     ss=ScreenSaver(session,'/dev/null','/dev/null')

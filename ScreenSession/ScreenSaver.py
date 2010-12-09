@@ -164,7 +164,11 @@ class ScreenSaver(object):
             self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
         
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
-            groupid,group=group.split(' ',1)
+            try:
+                groupid,group=group.split(' ',1)
+            except:
+                groupid="-1"
+                group=""
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
@@ -269,7 +273,7 @@ class ScreenSaver(object):
                     thefile.close()
                     temp.close()
                 else:
-                    os.remove(f)
+                    util.remove(f)
                     os.rename(ftmp,f)
             except:
                 out ('Unable to clean scrollback file: '+f)
@@ -612,142 +616,119 @@ class ScreenSaver(object):
         searching=False
         rollback=None,None,None
         ctime=self.time()
+        findir=os.path.join(self.basedir,self.savedir)
+        self.command_at(False, 'at \# dumpscswindow %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
+        self.command_at(False, 'at \# dumpscswindow %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
         self.command_at(False, 'hardcopydir $CWD')
-        out('NUM, GROUP, TYPE, TITLE, FILTER, SCROLLBACK')
-        for i in range(0,self.MAXWIN+1):
-            id=str(i)
-            cwin,ctitle=self.get_number_and_title(id)
-            if (cwin==-1):
-                #no such window
-                if searching:
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                else: 
-                    sys.stdout.write('Searching for windows (set --maxwin)...')
-                    searching=True
+        for line in open(os.path.join(findir,"winlist"),'r'):
+            try:
+                id,cgroupid,ctty,= line.strip().split(' ')
+            except:
+                id,cgroupid = line.strip().split(' ')
+                out('%s is a zombie window. Ignoring.'%(id))
+                util.remove(os.path.join(findir,'win_'+id))
+                continue;
+            cwin=id
+
+
+            if(ctty[0]=="g"): # group
+                ctype="group"
+                cpids = None
+                cpids_data=None
+                if self.excluded:
+                    if cwin in self.excluded:
+                        excluded_groups.append(cwin)
+                    try:
+                        group_groups[cgroupid]+=[cwin]
+                    except:
+                        group_groups[cgroupid]=[cwin]
             else:
-                if(searching):
-                    searching=False
-                    sys.stdout.write('\n')
-                    sys.stdout.flush()
-
-                # has to follow get_number_and_title() to recognize zombie windows
-                ctty = self.tty(id) 
-                if not ctty:
-                    out('%s is a zombie window. Ignoring.'%(cwin))
-                    ctype="zombie"
-                    continue;
-
-                cfilter = self.get_exec(id)
-                cscrollback_len = self.scrollback('',id)
-                cgroupid,cgroup = self.get_group(id)
-                
-                # display some output
-                if cfilter!=-1:
-                    out('filter: exec %s'%(cfilter))
-                else:
-                    cfilter='-1'
-
-                if(ctty[0]=="g"): # group
-                    ctype="group"
+                if self.excluded:
+                    if cwin in self.excluded:
+                        excluded_wins.append(cwin)
+                    else:
+                        try:
+                            group_wins[cgroupid]+=[cwin]
+                        except:
+                            group_wins[cgroupid]=[cwin]
+                if(ctty[0]=="t"): # telnet
+                    ctype="telnet"
                     cpids = None
                     cpids_data=None
-                    if self.excluded:
-                        if cwin in self.excluded:
-                            excluded_groups.append(cwin)
-                        try:
-                            group_groups[cgroupid]+=[cwin]
-                        except:
-                            group_groups[cgroupid]=[cwin]
                 else:
-                    if self.excluded:
-                        if cwin in self.excluded:
-                            excluded_wins.append(cwin)
-                        else:
-                            try:
-                                group_wins[cgroupid]+=[cwin]
-                            except:
-                                group_wins[cgroupid]=[cwin]
-                    if(ctty[0]=="t"): # telnet
-                        ctype="telnet"
-                        cpids = None
-                        cpids_data=None
-                    else:
-                        ctype="basic"
-                        # get sorted pids in window
-                        cpids=sc.get_tty_pids(ctty)
-                        cpids_data=[]
-                        ncpids=[]
-                        for pid in cpids:
-                            try:
-                                pidinfo=sc.get_pid_info(pid)
-                                (exehead,exetail)=os.path.split(pidinfo[1])
-                                if exetail in self.blacklist:
-                                    blacklist=True
-                                else:
-                                    blacklist=False
-                                cpids_data.append(pidinfo+tuple([blacklist]))
-                                ncpids.append(pid)
-                            except OSError:
-                                out('%s: Unable to access. No permission or no procfs.'%pid)
-                        cpids=ncpids
-                
-                if(cpids):
-                    for i,pid in enumerate(cpids):
-                        if(cpids_data[i][3]):
-                            text="BLACKLISTED"
-                        else: 
-                            text=""
-                        l=cpids_data[i][2].split('\0')
-                        jremove=[]
-                        wprev=False
+                    ctype="basic"
+                    # get sorted pids in window
+                    cpids=sc.get_tty_pids(ctty)
+                    cpids_data=[]
+                    ncpids=[]
+                    for pid in cpids:
+                        try:
+                            pidinfo=sc.get_pid_info(pid)
+                            (exehead,exetail)=os.path.split(pidinfo[1])
+                            if exetail in self.blacklist:
+                                blacklist=True
+                            else:
+                                blacklist=False
+                            cpids_data.append(pidinfo+tuple([blacklist]))
+                            ncpids.append(pid)
+                        except OSError:
+                            out('%s: Unable to access. No permission or no procfs.'%pid)
+                    cpids=ncpids
+            
+            if(cpids):
+                for i,pid in enumerate(cpids):
+                    if(cpids_data[i][3]):
+                        text="BLACKLISTED"
+                    else: 
+                        text=""
+                    l=cpids_data[i][2].split('\0')
+                    jremove=[]
+                    wprev=False
+                    for j,w in enumerate(l):
+                        if w == '-c':
+                            wprev=True
+                        elif wprev:
+                            if w.startswith(self.primer):
+                                jremove+=j,j-1
+                            wprev=False
+                    if jremove:
+                        s=[]
                         for j,w in enumerate(l):
-                            if w == '-c':
-                                wprev=True
-                            elif wprev:
-                                if w.startswith(self.primer):
-                                    jremove+=j,j-1
-                                wprev=False
-                        if jremove:
-                            s=[]
-                            for j,w in enumerate(l):
-                                if j not in jremove:
-                                    s.append(w)
-                            newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in s]),cpids_data[i][3])
-                            cpids_data[i]=newdata
+                            if j not in jremove:
+                                s.append(w)
+                        newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in s]),cpids_data[i][3])
+                        cpids_data[i]=newdata
 
-                        #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
-                        vim_name=str(None)
-                        args=cpids_data[i][2].split('\0')
-                        if self.primer==args[0]:
-                            sys.stdout.write('Import : ')
-                            rollback=self.__rollback(cpids_data[i][2])
-                            #out(str(rollback))
-                        elif args[0] in self.vim_names and self.bVim:
-                            vim_name=self.__save_vim(cwin)
-                            nargs=[]
-                            rmarg=False
-                            for arg in args:
-                                if rmarg:
-                                    rmarg=False
-                                    pass
-                                elif arg in ('-S','-i'):
-                                    rmarg=True
-                                else:
-                                    nargs.append(arg)
-                            args=nargs
-                            newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in args]),cpids_data[i][3])
-                            cpids_data[i]=newdata
-                        
-                        cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
-                scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+cwin)
-
-                if ctype!="zombie":
-                    self.__save_win(cwin,ctime,cgroupid,cgroup,ctype,ctitle,cfilter,cpids_data,rollback,scrollback_filename,cscrollback_len)
-                rollback=None,None,None
-
+                    #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
+                    vim_name=str(None)
+                    args=cpids_data[i][2].split('\0')
+                    if self.primer==args[0]:
+                        sys.stdout.write('Import : ')
+                        rollback=self.__rollback(cpids_data[i][2])
+                        #out(str(rollback))
+                    elif args[0] in self.vim_names and self.bVim:
+                        vim_name=self.__save_vim(id)
+                        nargs=[]
+                        rmarg=False
+                        for arg in args:
+                            if rmarg:
+                                rmarg=False
+                                pass
+                            elif arg in ('-S','-i'):
+                                rmarg=True
+                            else:
+                                nargs.append(arg)
+                        args=nargs
+                        newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in args]),cpids_data[i][3])
+                        cpids_data[i]=newdata
+                    
+                    cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
+            scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+id)
+            self.__save_win(id,ctype,cpids_data,rollback)
+            rollback=None,None,None
+        
         if self.excluded:
             excluded_groups_tmp=[]
             while excluded_groups:
@@ -773,10 +754,7 @@ class ScreenSaver(object):
             out('All excluded windows: %s'%str(excluded_wins))
             bpath = os.path.join(self.basedir, self.savedir, "win_")
             for win in excluded_wins:
-                try:
-                    os.remove(bpath+win)
-                except:
-                    pass
+                util.remove(bpath+win)
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         out('\nsaved on '+str(ctime))
@@ -1052,22 +1030,16 @@ class ScreenSaver(object):
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
            
-    def __save_win(self,winid,time,groupid,group,type,title,filter,pids_data,rollback,scrollback_filename,scrollback_len):
+    def __save_win(self,winid,ctype,pids_data,rollback):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
-            time=linecache.getline(rollback[0],2).strip()
+            #time=linecache.getline(rollback[0],2).strip()
             #copy scrollback
-            shutil.move(rollback[1],scrollback_filename)
-        basedata=(winid,time,groupid+' '+group,type,title,filter,scrollback_len)
-        basedata_len=len(basedata)
+            shutil.move(rollback[1],os.path.join(self.basedir,self.savedir,"hardcopy."+winid))
 
-        f=open(fname,"w")
-        for data in basedata:
-            if data:
-                f.write(data+'\n')
-            else:
-                f.write('\n')
-        
+        basedata_len=7
+
+        f=open(fname,"a")
         if rollback[0]:
             rollback_dir=rollback[2]
             target=rollback[0]
@@ -1084,7 +1056,7 @@ class ScreenSaver(object):
                             shutil.move(file,os.path.join(self.basedir,self.savedir,os.path.basename(file)))
                         except:
                             out('Unable to rollback: %s'%file)
-            os.remove(target)
+            util.remove(target)
         else:
             pids_data_len="0"
             if(pids_data):
@@ -1102,7 +1074,7 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
-        out("['%s', '%s', '%s', '%s', '%s', '%s' ]"%(basedata[0],basedata[2],basedata[3],basedata[4],basedata[5],basedata[6]))
+        out("%s %s" % (winid,ctype))
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)
