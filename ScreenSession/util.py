@@ -123,7 +123,7 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
         if delta > timeout: # if seconds passed since last modification
             removeit(file)
     files_remove=glob.glob(os.path.join(tmpdir,'*'))
-    files_noremove=glob.glob(os.path.join(tmpdir,'__*'))
+    files_noremove=glob.glob(os.path.join(tmpdir,'___*'))
     files_remove=list(set(files_remove)-set(files_noremove))
     for file in files_remove:
         try:
@@ -137,7 +137,7 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
 def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     cwd=os.getcwd()
     workingpath=tmpdir
-    workingpath2=os.path.join(tmpdir,'__tmp_pack')
+    workingpath2=os.path.join(tmpdir,'___tmp_pack')
     if not os.path.exists(workingpath2):
         os.makedirs(workingpath2)
     

@@ -59,13 +59,15 @@ class ScreenSaver(object):
         out("\n======CREATING___DIRECTORIES======")
         if not self.__setup_savedir(self.basedir,self.savedir):
             return 1
-        out("\n======SAVING___SCREEN___SESSION======")
-        self.__save_screen()
-        
+
         if self.enable_layout:
             out("\n======SAVING___LAYOUTS======")
             self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
+
+        out("\n======SAVING___SCREEN___SESSION======")
+        self.__save_screen()
+        
         out("\n======CLEANUP======")
         self.__scrollback_clean()
         return 0

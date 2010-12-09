@@ -6,8 +6,8 @@ from ScreenSaver import ScreenSaver
 
 
 def main():
-    logfile="__log-nest-layout"
-    dumpfile="__scs-nest-layout-dump-%d"%os.getpid()
+    logfile="___log-nest-layout"
+    dumpfile="___scs-nest-layout-dump-%d"%os.getpid()
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
     logfile=os.path.join(tmpdir,logfile)

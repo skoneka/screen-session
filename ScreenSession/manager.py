@@ -449,8 +449,8 @@ def main():
         if not os.path.exists(tmpdir):
             os.makedirs(tmpdir)
         #files may get deleted by screen-session need to prevent
-        fifoname=os.path.join(tmpdir,'__internal_manager_logic_%s'%os.getpid())
-        fifoname2=os.path.join(tmpdir,'__internal_manager_ui2_%s'%os.getpid())
+        fifoname=os.path.join(tmpdir,'___internal_manager_logic_%s'%os.getpid())
+        fifoname2=os.path.join(tmpdir,'___internal_manager_ui2_%s'%os.getpid())
         last_session=None
        
         if not os.path.exists(fifoname):
@@ -525,7 +525,7 @@ def main():
         ui2(fifoname)
 
 if __name__=='__main__':
-    log=os.path.join(tmpdir,'__log-manager')
+    log=os.path.join(tmpdir,'___log-manager')
     if not os.path.exists(log):
         sys.stderr=open(log,'w')
     else:

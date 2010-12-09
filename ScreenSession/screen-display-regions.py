@@ -9,8 +9,8 @@ from util import tmpdir
 import GNUScreen as sc
 from ScreenSaver import ScreenSaver
 
-logfile="__log-regions"
-inputfile="__scs-regions-input-%d"%(os.getpid())
+logfile="___log-regions"
+inputfile="___scs-regions-input-%d"%(os.getpid())
 subprogram='screen-session-primer'
 subprogram_args='-nh'
 

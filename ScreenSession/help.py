@@ -139,10 +139,10 @@ save\n\
 -x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
--X\n\
+-X --exact-kill\n\
   \tsame as exact, but kill all existing windows\n\
 -e --exclude <windows>\n\
-  \tcomma separated list of windows to be ignored during saving\n\
+  \tcomma separated list of windows to be ignored during saving,\n\
   \tif a window is a group all subwindows are also ignored\n\
 -r --restore\n\
   \treturn to home window and home layout after session loading\n\
