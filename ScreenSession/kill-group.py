@@ -8,7 +8,5 @@ import sys
 import tools
 
 session=sys.argv[1]
-min=int(sys.argv[3])
-max=int(sys.argv[2])
-groupids=sys.argv[4:]
-tools.kill_group(session,min,max,groupids)
+groupids=sys.argv[2:]
+tools.kill_group(session,groupids)

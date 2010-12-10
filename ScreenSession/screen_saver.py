@@ -61,7 +61,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "maxwin=", "load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -353,8 +353,6 @@ def main():
             if special_output and bKill:
                 special_output.write("X\n")
                 special_output.write("%s\n"%(scs.pid))
-                special_output.write("%s\n"%(scs.other_max_win))
-                special_output.write("%s\n"%(scs.other_min_win))
                 special_output.write("%s\n"%(str(scs.wrap_group_id)))
         except:
             ret=0

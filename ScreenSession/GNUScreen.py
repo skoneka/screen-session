@@ -55,6 +55,7 @@ def gen_all_windows_full(session):
         cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
         if not ctty:
             ctypeid=-1
+            ctype='zombie'
         elif ctype[0]=='g':
             ctypeid=1
         elif ctype[0]=='t':

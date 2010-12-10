@@ -7,7 +7,4 @@
 import os,sys
 import tools
 session=sys.argv[1]
-min=int(sys.argv[3])
-max=int(sys.argv[2])
-
-tools.sort(session,min,max)
+tools.sort(session)

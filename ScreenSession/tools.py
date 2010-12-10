@@ -1,7 +1,7 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 
-def find_pids_in_windows(session,minwin,maxwin,pids):
+def find_pids_in_windows(session,pids):
     import getpass,os
     tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
     #print(tty_and_pids)
@@ -21,7 +21,7 @@ def find_pids_in_windows(session,minwin,maxwin,pids):
             pass
     return wins
 
-def find_files_in_pids(minwin,maxwin,files):
+def find_files_in_pids(files):
     import os
     cmd='lsof -F p %s | cut -c2-'%(" ".join(["\"%s\""%v for v in files]))
     f = os.popen(cmd)
@@ -34,11 +34,12 @@ def dump(ss):
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid):
         print("----------------------------------------")
         print("%s TYPE\t %s"%(cwin,ctypestr))
+        print("%s GRP \t %s"%(cwin,cgroupid+' '+cgroup))
         print("%s TITL\t %s"%(cwin,ctitle))
         if cfilter!='-1':
             print("%s EXEC\t %s"%(cwin,cfilter))
-        print("%s TTY \t %s"%(cwin,ctty))
         if ctype==0:
+            print("%s TTY \t %s"%(cwin,ctty))
             try:
                 pids=sc.get_tty_pids(ctty)
             except:
@@ -47,7 +48,7 @@ def dump(ss):
             for pid in pids:
                 try:
                     cwd,exe,cmd=sc.get_pid_info(pid)
-                    print ("%s PID \t %s"%(cwin,pid))
+                    print ("%s PID \t %s \t <<<<<<"%(cwin,pid))
                     print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
                     print ("%s P %s EXE \t %s"%(cwin,pid,exe))
                     print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')))
@@ -55,7 +56,7 @@ def dump(ss):
                     print ("%s PID \t %s\t No permission"%(cwin,pid))
 
 
-def renumber(session,min,max):
+def renumber(session):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
@@ -80,7 +81,7 @@ def renumber(session,min,max):
         i+=1
     print wins_trans
 
-def sort(session,min,max,key=None):
+def sort(session,key=None):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
@@ -113,14 +114,14 @@ def sort(session,min,max,key=None):
     return
 
 
-def kill_zombie(session,min,max):
+def kill_zombie(session):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
 
     for win,groupid,ctype,tty in sc.gen_all_windows_fast(session):
         if ctype==-1:
             ss.kill(win)
 
-def kill_group(session,min,max,groupids):
+def kill_group(session,groupids):
     ss=ScreenSaver(session)
     bAll=False
     if groupids[0]=='current':

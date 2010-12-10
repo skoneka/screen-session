@@ -8,11 +8,9 @@ import sys
 import tools
 
 session=sys.argv[1]
-min=int(sys.argv[3])
-max=int(sys.argv[2])
-files=sys.argv[4:]
+files=sys.argv[2:]
 
-pids=tools.find_files_in_pids(min,max,files)
+pids=tools.find_files_in_pids(files)
 pids=map(int,pids)
-for win,title in tools.find_pids_in_windows(session,min,max,pids):
+for win,title in tools.find_pids_in_windows(session,pids):
     print("%s %s"%(win,title))

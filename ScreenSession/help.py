@@ -3,8 +3,8 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
-help_maxwin='-M <maxwin>\t- ending window number\n'
-help_minwin='-U <minwin>\t- starting window number\n'
+help_maxwin=''
+help_minwin=''
 
 
 help_help="\
@@ -71,7 +71,7 @@ on the position next to the current window.\n\
 \nUsage: screen-session dir [options] [program]"
 
 help_dump="Dump informations about windows in session.\n\
-\nUsage: screen-session dump [options] [maxwin] [minwin]"
+\nUsage: screen-session dump [options]"
 
 help_find_pid="Find PIDs in windows.\n\
 %s\
@@ -131,8 +131,6 @@ save\n\
   \tsessionname(saving) or savefile(loading)\n\
 -o --out    <session or directory>\n\
   \tsessionname(loading) or savefile(saving)\n\
--M --maxwin <number>\n\
-  \tsupply biggest window number in your session\n\
 -f --force  <number>\n\
   \tforce saving even if savefile with the same\n\
   \talready exists name exists\n\
@@ -162,7 +160,7 @@ save\n\
   \tshow this message\n\
   \n\
 Examples:\n\
-$ screen-session save --maxwin 20 --in SESSIONNAME --out mysavedsession\n\
+$ screen-session save --in SESSIONNAME --out mysavedsession\n\
 $ screen-session load --exact --in mysavedsession --out SESSIONNAME\n\
 \n'
 

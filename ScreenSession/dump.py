@@ -10,6 +10,5 @@ import tools
 if __name__=='__main__':
     session=sys.argv[1]
     ss=ScreenSaver(session)
-
     tools.dump(ss)
 

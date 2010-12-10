@@ -64,6 +64,7 @@ class ScreenSaver(object):
             out("\n======SAVING___LAYOUTS======")
             self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
+            out("")
 
         out("\n======SAVING___SCREEN___SESSION======")
         self.__save_screen()
@@ -101,7 +102,6 @@ class ScreenSaver(object):
             out('Biggest new window number: %d'%maxnewwindow)
             if self.enable_layout:
                 self.__remove_all_layouts()
-            out('Moving windows...')
             self.__move_all_windows(maxnewwindow+1,self.group_other,False)
         
         self.homewindow=self.number()
@@ -298,64 +298,29 @@ class ScreenSaver(object):
 
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
-        cwin=-1
-        ctty=None
-        cppids={}
-        searching=False
-
-        r=range(0,self.MAXWIN+1)
-        
         # create wrap group for existing windows
-        self.screen('-t \"%s\" //group' % (group) )
+        self.screen('-t \"%s\" //group' % ('%s_%s'%(group,self.__unique_ident)) )
         self.group(False,'none')
         cwin=int(self.number())
         self.wrap_group_id=str(cwin+shift)
         self.number(self.wrap_group_id)
-        group=group+'_'+self.__unique_ident
-        self.title(group)
-        if cwin not in r:
-            r.append(cwin)
-        r.sort()
-        r.reverse()
-        other_max_win=cwin+shift
-        other_min_win=self.MAXWIN_REAL
+
         # move windows by shift and put them in a wrap group
-        for i in r:
-            cselect = self.select(i)
-            if cselect:
-                #no such window
-                if searching:
-                    sys.stdout.write('.')
-                    sys.stdout.flush()
-                else:
-                    msg='Searching for windows (set --maxwin)...'
-                    sys.stdout.write('\n'+msg)
-                    self.echo(msg)
-                    searching=True
-            else:
-                if(searching):
-                    searching=False
-                    sys.stdout.write('\n')
-                    sys.stdout.flush()
-                cwin=int(self.number())
-                if cwin==homewindow:
-                    homewindow=cwin+shift
-                
-                cgroupid,cgroup = self.get_group(cwin)
-                if cgroup=="none":
-                    self.select(self.wrap_group_id)
-                    self.group(False,group,str(cwin))
-                command='%s -p %d -X number +%d' % (self.sc,cwin,shift)
-                out('Moving window %d to %d'%(cwin,cwin+shift))
-                os.system(command)
-                cwin=cwin+shift
-                if cwin > other_max_win:
-                    other_max_win = cwin
-                if cwin < other_min_win:
-                    other_min_win = cwin
+        for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
+            if cwin==self.wrap_group_id:
+                continue
+            iwin=int(cwin)
+            if iwin==homewindow:
+                homewindow=iwin+shift
+            
+            cgroupid,cgroup = self.get_group(cwin)
+            if cgroup=="none":
+                self.select(self.wrap_group_id)
+                self.group(False,group,str(cwin))
+            command='%s -p %s -X number +%d' % (self.sc,cwin,shift)
+            out('Moving window %s to %d'%(cwin,iwin+shift))
+            os.system(command)
         
-        self.other_max_win = other_max_win
-        self.other_min_win = other_min_win
         self.select('%d'%(homewindow))
 
     def lastmsg(self):
@@ -613,7 +578,6 @@ class ScreenSaver(object):
         cwin=-1
         ctty=None
         cppids={}
-        searching=False
         rollback=None,None,None
         ctime=self.time()
         findir=os.path.join(self.basedir,self.savedir)
@@ -631,7 +595,6 @@ class ScreenSaver(object):
                 sys.stdout.write("%s(zombie); "%(id))
                 continue;
             cwin=id
-            sys.stdout.write("%s(%s); "%(cwin,ctty))
 
 
             if(ctty[0]=="g"): # group
@@ -727,6 +690,7 @@ class ScreenSaver(object):
                     
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+id)
+            sys.stdout.write("%s(%s); "%(cwin,ctype))
             self.__save_win(id,ctype,cpids_data,rollback)
             rollback=None,None,None
         
@@ -959,9 +923,7 @@ class ScreenSaver(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             sys.stdout.write("%s(%s); "%(currentlayout,layoutname))
-            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
-            self.command_at(False,'dumpscreen layout \"%s\"'%os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname))
-            self.layout('next',False)
+            self.command_at(False,'eval \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\' \'layout next\''%(os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname)))
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")

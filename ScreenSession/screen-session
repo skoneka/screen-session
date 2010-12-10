@@ -90,10 +90,8 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     do
         if [ "$cmd" = "X" ]; then
             read session
-            read maxwin
-            read minwin
             read twin
-            screen-session kill-group -S $session -M $maxwin -U $minwin $twin
+            screen-session kill-group -S $session $twin
         elif [ "$cmd" = "W" ]; then
             waitfor=1
         elif [ "$cmd" = "R" ]; then
@@ -144,37 +142,29 @@ else
         python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
 
     elif [ $mode = "dump" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/dump.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/dump.py $session "$@"
 
     elif [ $mode = "find-pid" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/find_pid.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/find_pid.py $session "$@"
 
     elif [ $mode = "find-file" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/find_file.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/find_file.py $session "$@"
 
     elif [ $mode = "kill" ]; then
-        set_MAXWIN $session
         # screen-session kill [signal=TERM] [win=current]
         python $SCRIPTPATH/kill.py $session "$@"
 
     elif [ $mode = "kill-zombie" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/kill-zombie.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/kill-zombie.py $session "$@"
 
     elif [ $mode = "kill-group" ]; then
-        set_MAXWIN $session
-        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session $MAXWIN $MINWIN "$@"
+        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
 
     elif [ $mode = "renumber" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/renumber.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/renumber.py $session "$@"
 
     elif [ $mode = "sort" ]; then
-        set_MAXWIN $session
-        python $SCRIPTPATH/sort.py $session $MAXWIN $MINWIN "$@"
+        python $SCRIPTPATH/sort.py $session "$@"
 
     elif [ $mode = "--version" -o $mode = "-v" ]; then
         python $SCRIPTPATH/help.py --version

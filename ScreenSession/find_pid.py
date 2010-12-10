@@ -8,9 +8,7 @@ import sys
 import tools
 
 session=sys.argv[1]
-min=int(sys.argv[3])
-max=int(sys.argv[2])
-pids=map(int,sys.argv[4:])
+pids=map(int,sys.argv[2:])
 
-for win,title in tools.find_pids_in_windows(session,min,max,pids):
+for win,title in tools.find_pids_in_windows(session,pids):
     print("%s %s"%(win,title))

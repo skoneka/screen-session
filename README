@@ -103,8 +103,7 @@ Bugs
 -----------------------------------------------------------------------
 There are no bugs, only features.
 
-- Most tools do not work with detached Screen sessions because :lastmsg
-  command needs display.
+- Most tools do not work with detached Screen sessions.
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues
