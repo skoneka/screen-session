@@ -617,8 +617,8 @@ class ScreenSaver(object):
         rollback=None,None,None
         ctime=self.time()
         findir=os.path.join(self.basedir,self.savedir)
-        self.command_at(False, 'at \# dumpscswindow %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
-        self.command_at(False, 'at \# dumpscswindow %s -F'%os.path.join(self.basedir,self.savedir))
+        self.command_at(False, 'at \# dumpscreen window %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
+        self.command_at(False, 'at \# dumpscreen window %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
         self.command_at(False, 'hardcopydir $CWD')
@@ -627,10 +627,11 @@ class ScreenSaver(object):
                 id,cgroupid,ctty,= line.strip().split(' ')
             except:
                 id,cgroupid = line.strip().split(' ')
-                out('%s is a zombie window. Ignoring.'%(id))
                 util.remove(os.path.join(findir,'win_'+id))
+                sys.stdout.write("%s(zombie); "%(id))
                 continue;
             cwin=id
+            sys.stdout.write("%s(%s); "%(cwin,ctty))
 
 
             if(ctty[0]=="g"): # group
@@ -817,14 +818,18 @@ class ScreenSaver(object):
                 (head,tail)=os.path.split(filename)
                 
                 filename2=os.path.join(head,"win"+tail) #read winlayout
+                focus_offset=0
                 f=open(filename2,'r')
-                focus_offset=int(f.readline())
                 dinfo=map(int,f.readline().split(" "))
                 focusminsize=f.readline()
                 regions_size=[]
                 winlist=[]
-                for line in f:
-                    window,sizex,sizey=line.split(' ')
+                for i,line in enumerate(f):
+                    try:
+                        window,sizex,sizey=line.split(' ')
+                    except:
+                        focus_offset,window,sizex,sizey=line.split(' ')
+                        focus_offset=i
                     winlist.append(window)
                     nsizex=(int(sizex)*cdinfo[0])/dinfo[0]
                     nsizey=(int(sizey)*cdinfo[1])/dinfo[1]
@@ -948,77 +953,20 @@ class ScreenSaver(object):
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
             return False
-        dinfo=self.dinfo()
-        out('Terminal size: %s %s'%(dinfo[0],dinfo[1]))
-        out("Homelayout is %s (%s)"% (homelayout,homelayoutname))
         currentlayout=homelayout
-        out('NUM : NREGIONS; OFFSET; (FOCUSMINSIZE); (NAME); [REGIONS]')
 
         loop_exit_allowed=False
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
-            cfocusminsize=self.focusminsize()
-            self.focusminsize('0 0')
-
-            try:
-                self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
-                region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
-            except:
-                # layout dump may fail so try again
-                try:
-                    self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
-                    region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
-                except:
-                    # and again
-                    self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
-                    region_c = int(subprocess.Popen('grep -c "split" %s' % (os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname)) , shell=True, stdout=subprocess.PIPE).communicate()[0].strip())+1
-
-            focus_offset=self.get_focus_offset()
-            self.focus('top')
-            win=[]
-            for i in range(0,region_c):
-                currentnumber=self.number()
-                windows = self.windows()
-                csize=self.get_regionsize(currentnumber)
-                offset=0
-                findactive=False
-                wnums,wactive=sc.parse_windows(windows)
-                #out('cnum='+currentnumber.strip()+'; wactive='+str(wactive))
-                #out (windows)
-                if wactive==-1:
-                    findactive=False
-                else:
-                    findactive=True
-
-                if not findactive:
-                    currentnumber="-1"
-                sizex=int(csize[0])
-                sizey=int(csize[1])
-                win.append("%s %d %d"%(currentnumber,sizex+1,sizey+1))
-                self.focus()
-            out("%s : %d; %s; (%s); (%s); %s" % (currentlayout,region_c,focus_offset,cfocusminsize,layoutname,win))
-
-            f=open(os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname),"w")
-            f.write("%d\n"%focus_offset)
-            f.write("%s %s\n"%(dinfo[0],dinfo[1]))
-            f.write("%s\n"%cfocusminsize)
-            for w in win:
-                f.write(w+'\n')
-            f.close()
-            
-            #get back to originally focused window
-            self.select_region(focus_offset)
-
-            self.focusminsize(cfocusminsize)
+            sys.stdout.write("%s(%s); "%(currentlayout,layoutname))
+            self.layout('dump \"%s\"'%os.path.join(self.basedir,self.savedir,"layout_"+currentlayout+"_"+layoutname),False)
+            self.command_at(False,'dumpscreen layout \"%s\"'%os.path.join(self.basedir,self.savedir,"winlayout_"+currentlayout+"_"+layoutname))
             self.layout('next',False)
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
-        out("Returned homelayout %s (%s)"% (homelayout,homelayoutname))
-        
         self.select(self.homewindow_last)
-
         return True
 
     def __save_vim(self,winid):
@@ -1074,7 +1022,6 @@ class ScreenSaver(object):
                         else:
                             f.write(str(data)+'\n')
         f.close()
-        out("%s %s" % (winid,ctype))
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)

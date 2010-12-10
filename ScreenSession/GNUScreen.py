@@ -5,7 +5,7 @@ def gen_all_windows_fast(session):
     from util import tmpdir,remove
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-    ss.command_at(False,"at \# dumpscswindow %s -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window %s -N"%(tfile))
     fp=None
     while fp==None:
         try:
@@ -38,8 +38,8 @@ def gen_all_windows_full(session):
         os.mkdir(tdir)
     ss=ScreenSaver(session)
     tfile=os.path.join(tdir,'winlist')
-    ss.command_at(False,"at \# dumpscswindow %s -F"%(tdir))
-    ss.command_at(False,"at \# dumpscswindow %s -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window %s -F"%(tdir))
+    ss.command_at(False,"at \# dumpscreen window %s -N"%(tfile))
     fp=None
     while fp==None:
         try:

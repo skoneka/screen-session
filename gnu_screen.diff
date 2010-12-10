@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..2269740 100644
+index 5f4af8a..d6253f0 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
@@ -15,7 +15,7 @@ index 5f4af8a..2269740 100644
    { "digraph",		NEED_LAYER|ARGS_012 },
    { "dinfo",		NEED_DISPLAY|ARGS_0 },
    { "displays",		NEED_LAYER|ARGS_0 },
-+  { "dumpscswindow",	ARGS_2 },
++  { "dumpscreen",       ARGS_23 },
    { "dumptermcap",	NEED_FORE|ARGS_0 },
    { "echo",		CAN_QUERY|ARGS_12 },
  #ifdef ENCODINGS
@@ -124,7 +124,7 @@ index 88fbf64..3e5dab6 100644
  	case DUMP_EXCHANGE:
  	  Msg(0, "Copybuffer written to \"%s\".", fn);
 diff --git a/src/layout.c b/src/layout.c
-index 196d10b..93cc3c9 100644
+index 196d10b..469c767 100644
 --- a/src/layout.c
 +++ b/src/layout.c
 @@ -33,6 +33,7 @@
@@ -144,6 +144,44 @@ index 196d10b..93cc3c9 100644
    D_cvlist = 0;
    D_forecv = lay->lay_forecv;
    DupLayoutCv(&lay->lay_canvas, &D_canvas, 0);
+@@ -369,3 +372,37 @@ char *filename;
+   return 1;
+ }
+ 
++static void
++dump_canvas_scs(cv, file)
++struct canvas *cv;
++FILE *file;
++{
++  struct canvas *c;
++  struct win *p;
++
++  for (c = cv->c_slperp; c; c = c->c_slnext)
++    {
++      if (c->c_slperp)
++	dump_canvas_scs(c, file);
++      else
++        {
++          p = Layer2Window(c->c_layer);
++          fprintf(file, "%s%d %d %d\n", (D_forecv==c) ? "f ":"",(p) ? p->w_number : -1, c->c_xe-c->c_xs+1,c->c_ye-c->c_ys+1);
++        }
++    }
++}
++
++int
++LayoutDumpCanvasScs(cv, filename)
++struct canvas *cv;
++char *filename;
++{
++  FILE *file = secfopen(filename, "a");
++  if (!file)
++    return 0;
++  fprintf(file,"%d %d\n%d %d\n",D_width, D_height, D_layout->lay_focusminwidth, D_layout->lay_focusminheight);
++  dump_canvas_scs(cv, file);
++  fclose(file);
++  return 1;
++}
++
 diff --git a/src/layout.h b/src/layout.h
 index 065edb7..3b79b0c 100644
 --- a/src/layout.h
@@ -158,32 +196,42 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..813382a 100644
+index da9188d..0689902 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -1268,6 +1268,21 @@ int key;
+@@ -1268,6 +1268,31 @@ int key;
      case RC_DUMPTERMCAP:
        WriteFile(user, (char *)0, DUMP_TERMCAP);
        break;
-+    case RC_DUMPSCSWINDOW:
++    case RC_DUMPSCREEN:
++      if (!strcmp(args[0], "window"))
 +        {
 +          int mode;
-+          if (!strcmp(args[1],"-F"))
++          if (!strcmp(args[2],"-F"))
 +            mode = DUMP_SCSWINDOWFULL;
-+          else if (!strcmp(args[1],"-N"))
++          else if (!strcmp(args[2],"-N"))
 +            mode = DUMP_SCSWINDOW;
 +          else
 +            {
 +              OutputMsg(0, "Usage: ");
 +              break;
 +            }
-+            WriteFile(user, args[0], mode);
++            WriteFile(user, args[1], mode);
 +        }
++      else if (!strcmp(args[0], "layout"))
++	{
++	  if (!display)
++	    OutputMsg(0, "Must have a display for 'dumpscreen layout'.");
++	  else if (!LayoutDumpCanvasScs(&D_canvas, args[1] ? args[1] : "layout-dump-size"))
++	    OutputMsg(errno, "Error dumping layout size.");
++	  else
++	    OutputMsg(0, "Layout dumped to \"%s\"", args[1] ? args[1] : "layout-dump-size");
++	}
 +      break;
      case RC_HARDCOPY:
        {
  	int mode = DUMP_HARDCOPY;
-@@ -1723,6 +1738,9 @@ int key;
+@@ -1723,6 +1748,9 @@ int key;
          copy_reg_fn(&ch, 0, NULL);
        break;
  #endif
@@ -193,7 +241,7 @@ index da9188d..813382a 100644
      case RC_REGISTER:
  #ifdef ENCODINGS
        i = fore ? fore->w_encoding : display ? display->d_encoding : 0;
-@@ -2661,6 +2679,19 @@ int key;
+@@ -2661,6 +2689,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
@@ -213,7 +261,7 @@ index da9188d..813382a 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3066,14 +3097,16 @@ int key;
+@@ -3066,14 +3107,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -238,7 +286,7 @@ index da9188d..813382a 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4209,19 +4242,21 @@ int key;
+@@ -4209,19 +4252,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -273,7 +321,7 @@ index da9188d..813382a 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4237,13 +4272,10 @@ int key;
+@@ -4237,13 +4282,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}

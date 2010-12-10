@@ -94,7 +94,6 @@ def sort(session,min,max,key=None):
         except:
             groups[groupid]=[lastval]
         wins_trans[iwin]=iwin
-            
 
     i=0
     for group,props in groups.items():
