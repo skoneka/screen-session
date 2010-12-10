@@ -669,7 +669,7 @@ class ScreenSaver(object):
                     vim_name=str(None)
                     args=cpids_data[i][2].split('\0')
                     if self.primer==args[0]:
-                        sys.stdout.write('Import : ')
+                        sys.stdout.write('Import ')
                         rollback=self.__rollback(cpids_data[i][2])
                         #out(str(rollback))
                     elif args[0] in self.vim_names and self.bVim:
@@ -691,7 +691,7 @@ class ScreenSaver(object):
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+id)
             sys.stdout.write("%s(%s); "%(cwin,ctype))
-            self.__save_win(id,ctype,cpids_data,rollback)
+            self.__save_win(id,ctype,cpids_data,ctime,rollback)
             rollback=None,None,None
         
         if self.excluded:
@@ -722,7 +722,7 @@ class ScreenSaver(object):
                 util.remove(bpath+win)
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
-        out('\nsaved on '+str(ctime))
+        out('\nSAVED: '+str(ctime))
     
     def __rollback(self,cmdline):
         try:
@@ -940,7 +940,7 @@ class ScreenSaver(object):
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
            
-    def __save_win(self,winid,ctype,pids_data,rollback):
+    def __save_win(self,winid,ctype,pids_data,ctime,rollback):
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
             #time=linecache.getline(rollback[0],2).strip()
@@ -983,6 +983,7 @@ class ScreenSaver(object):
                             f.write(str(data)+'\n')
                         else:
                             f.write(str(data)+'\n')
+                f.write(ctime)
         f.close()
 
     def __setup_savedir(self,basedir,savedir):

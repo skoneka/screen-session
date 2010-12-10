@@ -209,8 +209,8 @@ def list_sessions(home,projectsdir,archiveend):
         file_name = os.path.split(file[1])[1]
         file_name = file_name[:len(file_name)-fileending_l]
         # convert date tuple to MM/DD/YYYY HH:MM:SS format
-        file_date = time.strftime("%m/%d/%y %H:%M:%S", file[0])
-        out("\t%-30s %s" % (file_name, file_date))
+        file_date = time.strftime("%d/%m/%Y\t%H:%M:%S", file[0])
+        out("  %s\t%s" % (file_date, file_name))
     
     if len(date_file_list)>0:
         out('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))

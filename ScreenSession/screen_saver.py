@@ -188,9 +188,7 @@ def main():
         doexit(0,waitfor)
     
     if not projectsdir:
-        directory = '.screen-sessions'
-        projectsdir = directory
-    
+        projectsdir = '.screen-sessions'    
     if bList:
         list_sessions(home,projectsdir,util.archiveend)
         doexit(0,waitfor)

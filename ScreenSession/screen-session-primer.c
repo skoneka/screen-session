@@ -1185,7 +1185,7 @@ main (int argc, char **argv)
     size_t timesaved_s=1;
     char *timesaved = malloc(timesaved_s*sizeof(char));
     getline (&buftext, &buftext_s, fp);	//win number
-    getline (&timesaved, &timesaved_s, fp);	//save time
+    getline (&buftext, &buftext_s, fp);	//EMPTY
     getline (&buftext, &buftext_s, fp);	//group
     getline (&buftext, &buftext_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
@@ -1194,7 +1194,6 @@ main (int argc, char **argv)
     getline (&buftext, &buftext_s, fp);	//scrollback len
 
     printf ("%sTITLE:%s %s\n", green_r, none, title);
-    printf ("%sSAVED:%s %s\n", green_r, none, timesaved);
     filter = strtrim_right (filter, '\n');
     int bFilter=0;
     if (strcmp (filter, "-1") != 0)
@@ -1270,6 +1269,8 @@ main (int argc, char **argv)
           printf ("\t%sBLACKLISTED - program and child processes\n\
                       \tcannot be started (use [O]nly)%s\n", magenta, none);
       }
+    getline (&buftext, &buftext_s, fp);	//last line - timesaved
+    printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
     free(proc_vim);
     //free(proc_cwd);
