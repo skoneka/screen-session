@@ -1,11 +1,38 @@
 #!/usr/bin/env python
 import os,subprocess,re,sys,platform
+
+def get_regions(session):
+    from ScreenSaver import ScreenSaver
+    from util import tmpdir,remove
+    ss=ScreenSaver(session)
+    tfile=os.path.join(tmpdir,'___regions-%d'%os.getpid())
+    ss.command_at(False,'dumpscreen layout \"%s\"'%tfile)
+    tfiled=None
+    while tfiled==None:
+        try:
+            tfiled=open(tfile,'r')
+        except:
+            pass
+    ret=[0,tuple(tfiled.readline().strip().split(' ')),tuple(tfiled.readline().strip().split(' '))]
+    i=0
+    for i,line in enumerate(tfiled):
+        if line[0]=='f':
+            line=line.split(' ',1)[1].strip().split(' ')
+            ret[0]=i
+        else:
+            line=line.strip().split(' ')
+        ret.append(tuple(line))
+    ret.insert(0,i+1)
+    tfiled.close()
+    remove(tfile)
+    return ret
+
 def gen_all_windows_fast(session):
     from ScreenSaver import ScreenSaver
     from util import tmpdir,remove
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-    ss.command_at(False,"at \# dumpscreen window %s -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window \"%s\" -N"%(tfile))
     fp=None
     while fp==None:
         try:
@@ -38,8 +65,8 @@ def gen_all_windows_full(session):
         os.mkdir(tdir)
     ss=ScreenSaver(session)
     tfile=os.path.join(tdir,'winlist')
-    ss.command_at(False,"at \# dumpscreen window %s -F"%(tdir))
-    ss.command_at(False,"at \# dumpscreen window %s -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
+    ss.command_at(False,"at \# dumpscreen window \"%s\" -N"%(tfile))
     fp=None
     while fp==None:
         try:

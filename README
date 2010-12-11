@@ -1,4 +1,4 @@
-screen-session - collection of tools for GNU Screen
+screen-session - a collection of tools for GNU Screen
 =========================================
 
 Website: http://adb.cba.pl
@@ -10,8 +10,8 @@ Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 -----------------------------------------------------------------------
 Description
 -----------------------------------------------------------------------
-screen-session is a collection of tools for GNU Screen, including
-session saver.
+screen-session is a collection of tools for GNU Screen. 
+It includes a session saver and a session manager, among others.
 
 session saver currently supports saving of:
 layouts, scrollbacks, titles, filters and is able to restart programs 

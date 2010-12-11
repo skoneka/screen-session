@@ -13,6 +13,7 @@ export PYTHONPATH=$SCRIPTPATH
 ret=0
 MAXWIN=''
 MINWIN='0'
+SHOWPID='1'
 bKill=0
 waitfor=0
 logpipe=1
@@ -102,7 +103,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
 else
     shiftcount=0
     # parse command line arguments
-    while getopts ":WS:M:U:": OPT; do
+    while getopts ":WPS:M:U:": OPT; do
         case "$OPT" in
         W)  waitfor=1
             shiftcount=`expr $shiftcount + 1`
@@ -115,6 +116,9 @@ else
             ;;
         U)  MINWIN="$OPTARG"
             shiftcount=`expr $shiftcount + 2`
+            ;;
+        P)  SHOWPID="0"
+            shiftcount=`expr $shiftcount + 1`
             ;;
         esac
     done
@@ -142,7 +146,7 @@ else
         python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
 
     elif [ $mode = "dump" ]; then
-        python $SCRIPTPATH/dump.py $session "$@"
+        python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
 
     elif [ $mode = "find-pid" ]; then
         python $SCRIPTPATH/find_pid.py $session "$@"
@@ -168,8 +172,9 @@ else
 
     elif [ $mode = "--version" -o $mode = "-v" ]; then
         python $SCRIPTPATH/help.py --version
-    elif [ $mode = "--help" -o $mode = "-h" ]; then
-        python $SCRIPTPATH/help.py
+
+    elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
+        python $SCRIPTPATH/help.py "$@"
     else
         echo "No such mode: $mode"
         ret=1

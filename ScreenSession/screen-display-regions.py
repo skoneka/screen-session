@@ -104,9 +104,8 @@ def handler(signum,frame):
 def cleanup():
     print('restoring windows '+str(win_history))
     for i,w in enumerate(win_history):
-        scs.select(w)
-        scs.kill(wins[i])
-        scs.focus()
+        cmd='eval \'select %s\' \'at %s kill\' \'focus\''%(w,wins[i])
+        scs.command_at(False,cmd)
     scs.focusminsize(focusminsize)
     try:
         os.remove(inputfile)
@@ -115,21 +114,30 @@ def cleanup():
 
 
 def prepare_windows(scs):
+    global focusminsize
+    regions=sc.get_regions(scs.pid)
+    focusminsize="%s %s"%(regions[3][0], regions[3][0])
+    regions_c=regions[0]
+    focus_offset=regions[1]
     this_win_history=[]
+
+    for i in range(0,regions_c):
+        cmd='eval \'screen -t scs-regions-helper %s %s %s %d\' \'focus\''%(subprogram,subprogram_args,inputfile,i)
+        scs.command_at(False,cmd)
     new_windows=[]
-    i=0
-    win=scs.number()
-    while True:
-        this_win_history.append(win)
-        scs.screen('-t scs-regions-helper %s %s %s %d'%(subprogram,subprogram_args,inputfile,i))
-        i+=1
-        new_windows.append(scs.number())
-        scs.focus()
-        win=scs.number()
-        if win==new_windows[0]:
-            break
+    regions_n=sc.get_regions(scs.pid)
+
+    for r in regions[4+focus_offset:]:
+        this_win_history.append(r[0])
+    for r in regions[4:4+focus_offset]:
+        this_win_history.append(r[0])
+
+    for r in regions_n[4+focus_offset:]:
+        new_windows.append(r[0])
+    for r in regions_n[4:4+focus_offset]:
+        new_windows.append(r[0])
         
-    return this_win_history,new_windows,len(this_win_history)
+    return this_win_history,new_windows,regions_c
 
 
 if __name__=='__main__':
@@ -140,6 +148,7 @@ if __name__=='__main__':
     file=os.path.join(tmpdir,logfile)
     sys.stdout=open(logfile,'w')
     sys.stderr=sys.stdout
+    print('regions script')
     subprogram=os.path.join(os.path.dirname(sys.argv[0]),subprogram)
 
     session=sys.argv[1]

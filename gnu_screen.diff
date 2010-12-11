@@ -196,7 +196,7 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..0689902 100644
+index da9188d..3c81a6b 100644
 --- a/src/process.c
 +++ b/src/process.c
 @@ -1268,6 +1268,31 @@ int key;
@@ -220,8 +220,8 @@ index da9188d..0689902 100644
 +        }
 +      else if (!strcmp(args[0], "layout"))
 +	{
-+	  if (!display)
-+	    OutputMsg(0, "Must have a display for 'dumpscreen layout'.");
++	  if (!display || !D_layout)
++	    OutputMsg(0, "Must have a display and a layout for 'dumpscreen layout'.");
 +	  else if (!LayoutDumpCanvasScs(&D_canvas, args[1] ? args[1] : "layout-dump-size"))
 +	    OutputMsg(errno, "Error dumping layout size.");
 +	  else

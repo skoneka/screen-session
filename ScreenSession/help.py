@@ -71,6 +71,7 @@ on the position next to the current window.\n\
 \nUsage: screen-session dir [options] [program]"
 
 help_dump="Dump informations about windows in session.\n\
+-P \t- do not show pid data\n\
 \nUsage: screen-session dump [options]"
 
 help_find_pid="Find PIDs in windows.\n\

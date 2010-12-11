@@ -30,7 +30,7 @@ def find_files_in_pids(files):
     return pids
 
 
-def dump(ss):
+def dump(ss,showpid=True):
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid):
         print("----------------------------------------")
         print("%s TYPE\t %s"%(cwin,ctypestr))
@@ -40,20 +40,21 @@ def dump(ss):
             print("%s EXEC\t %s"%(cwin,cfilter))
         if ctype==0:
             print("%s TTY \t %s"%(cwin,ctty))
-            try:
-                pids=sc.get_tty_pids(ctty)
-            except:
-                print ("%s No access"%cwin)
-                pass
-            for pid in pids:
+            if showpid:
                 try:
-                    cwd,exe,cmd=sc.get_pid_info(pid)
-                    print ("%s PID \t %s \t <<<<<<"%(cwin,pid))
-                    print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
-                    print ("%s P %s EXE \t %s"%(cwin,pid,exe))
-                    print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')))
+                    pids=sc.get_tty_pids(ctty)
                 except:
-                    print ("%s PID \t %s\t No permission"%(cwin,pid))
+                    print ("%s No access"%cwin)
+                    pass
+                for pid in pids:
+                    try:
+                        cwd,exe,cmd=sc.get_pid_info(pid)
+                        print ("%s PID \t %s \t <<<<<<"%(cwin,pid))
+                        print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
+                        print ("%s P %s EXE \t %s"%(cwin,pid,exe))
+                        print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')))
+                    except:
+                        print ("%s PID \t %s\t No permission"%(cwin,pid))
 
 
 def renumber(session):

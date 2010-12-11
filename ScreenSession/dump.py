@@ -9,6 +9,11 @@ import tools
 
 if __name__=='__main__':
     session=sys.argv[1]
+    showpid=sys.argv[2]
+    if showpid=='0':
+        showpid=False
+    else:
+        showpid=True
     ss=ScreenSaver(session)
-    tools.dump(ss)
+    tools.dump(ss,showpid)
 
