@@ -111,6 +111,7 @@ def cleanup():
     for i,w in enumerate(win_history):
         cmd='eval \'select %s\' \'at %s kill\' \'focus\''%(w,wins[i])
         scs.command_at(False,cmd)
+    print (focusminsize)
     scs.focusminsize(focusminsize)
     try:
         os.remove(inputfile)
@@ -132,6 +133,7 @@ def prepare_windows(scs):
         except:
             pass
     print("regions = "+str(regions))
+    scs.focusminsize('0 0')
     this_win_history=[]
 
     for i in range(0,regions_c):
@@ -175,8 +177,6 @@ if __name__=='__main__':
 
     session=sys.argv[1]
     scs=ScreenSaver(session)
-    focusminsize=scs.focusminsize()
-    scs.focusminsize('0 0')
 
     win_history,wins,regions_c=prepare_windows(scs)
     print('helper windows '+str(wins))

@@ -124,7 +124,7 @@ index 88fbf64..3e5dab6 100644
  	case DUMP_EXCHANGE:
  	  Msg(0, "Copybuffer written to \"%s\".", fn);
 diff --git a/src/layout.c b/src/layout.c
-index 196d10b..469c767 100644
+index 196d10b..450417c 100644
 --- a/src/layout.c
 +++ b/src/layout.c
 @@ -33,6 +33,7 @@
@@ -144,28 +144,31 @@ index 196d10b..469c767 100644
    D_cvlist = 0;
    D_forecv = lay->lay_forecv;
    DupLayoutCv(&lay->lay_canvas, &D_canvas, 0);
-@@ -369,3 +372,37 @@ char *filename;
+@@ -369,3 +372,42 @@ char *filename;
    return 1;
  }
  
-+static void
++int
 +dump_canvas_scs(cv, file)
 +struct canvas *cv;
 +FILE *file;
 +{
 +  struct canvas *c;
 +  struct win *p;
-+
++  int count=0;
++  
 +  for (c = cv->c_slperp; c; c = c->c_slnext)
 +    {
 +      if (c->c_slperp)
-+	dump_canvas_scs(c, file);
-+      else
-+        {
++        count+=dump_canvas_scs(c, file);
++      else 
++        { 
++          count++;
 +          p = Layer2Window(c->c_layer);
 +          fprintf(file, "%s%d %d %d\n", (D_forecv==c) ? "f ":"",(p) ? p->w_number : -1, c->c_xe-c->c_xs+1,c->c_ye-c->c_ys+1);
 +        }
 +    }
++  return count;
 +}
 +
 +int
@@ -174,10 +177,12 @@ index 196d10b..469c767 100644
 +char *filename;
 +{
 +  FILE *file = secfopen(filename, "a");
++  int count=0;
 +  if (!file)
 +    return 0;
 +  fprintf(file,"%d %d\n%d %d\n",D_width, D_height, D_layout->lay_focusminwidth, D_layout->lay_focusminheight);
-+  dump_canvas_scs(cv, file);
++  count=dump_canvas_scs(cv, file);
++  fprintf(file,"%d\n",count);
 +  fclose(file);
 +  return 1;
 +}

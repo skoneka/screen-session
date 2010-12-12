@@ -7,23 +7,31 @@ def get_regions(session):
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___regions-%d'%os.getpid())
     ss.command_at(False,'dumpscreen layout \"%s\"'%tfile)
-    tfiled=None
-    while tfiled==None:
-        try:
-            tfiled=open(tfile,'r')
-        except:
-            pass
-    ret=[0,tuple(tfiled.readline().strip().split(' ')),tuple(tfiled.readline().strip().split(' '))]
-    i=0
-    for i,line in enumerate(tfiled):
-        if line[0]=='f':
-            line=line.split(' ',1)[1].strip().split(' ')
-            ret[0]=i
-        else:
-            line=line.strip().split(' ')
-        ret.append(tuple(line))
-    ret.insert(0,i+1)
-    tfiled.close()
+    while True:
+        tfiled=None
+        while tfiled==None:
+            try:
+                tfiled=open(tfile,'r')
+            except:
+                pass
+        ret=[0,tuple(tfiled.readline().strip().split(' ')),tuple(tfiled.readline().strip().split(' '))]
+        i=0
+        for i,line in enumerate(tfiled):
+            if line[0]=='f':
+                line=line.split(' ',1)[1].strip().split(' ')
+                ret[0]=i
+            else:
+                line=line.strip().split(' ')
+            ret.append(tuple(line))
+        tfiled.close()
+        if len(ret[-1])==1:
+            try:
+                region_c=int(ret.pop()[0])
+                if region_c==i:
+                    ret.insert(0,region_c)
+                    break
+            except:
+                pass
     remove(tfile)
     return ret
 

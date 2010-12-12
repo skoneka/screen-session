@@ -788,12 +788,20 @@ class ScreenSaver(object):
                 focusminsize=f.readline()
                 regions_size=[]
                 winlist=[]
+                focus_offset=0
                 for i,line in enumerate(f):
                     try:
-                        window,sizex,sizey=line.split(' ')
+                        if line[0]=='f':
+                            focus_offset,window,sizex,sizey=line.strip().split(' ')
+                            focus_offset=i
+                        else:
+                            window,sizex,sizey=line.strip().split(' ')
                     except:
-                        focus_offset,window,sizex,sizey=line.split(' ')
-                        focus_offset=i
+                        try:
+                            region_c=line.strip()
+                        except:
+                            pass
+                        break
                     winlist.append(window)
                     nsizex=(int(sizex)*cdinfo[0])/dinfo[0]
                     nsizey=(int(sizey)*cdinfo[1])/dinfo[1]
@@ -809,7 +817,7 @@ class ScreenSaver(object):
 
                 # set region dimensions
                 self.focus('top')
-                out("%s (%s) : regions : %s - %s"%(layoutnumber,layoutname,winlist,regions_size))
+                out("%s (%s) : regions : %s(%s) %s - %s"%(layoutnumber,layoutname,region_c,focus_offset,winlist,regions_size))
                 for size in regions_size:
                     if size[0]>0:
                         self.resize('-h %d'%(size[0]))
