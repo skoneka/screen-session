@@ -14,6 +14,7 @@ gnu_screen.diff changes:
 - add "regionsize" command
 - make "group" queryable
 - associate focuminsize with the layout
+- add "dumpscreen window|layout" command
 
 
 -----------------------------------------------------------------------

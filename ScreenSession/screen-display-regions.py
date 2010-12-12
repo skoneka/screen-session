@@ -43,8 +43,13 @@ def rotate_list(l, offset):
         rv = (l[real_offset:] + l[:real_offset])
     return rv
 
-
+handler_lock=False
 def handler(signum,frame):
+    global handler_lock
+    if handler_lock:
+        return
+    else:
+        handler_lock=True
     global win_history
     bSelect=False
     mode=-1
@@ -115,23 +120,40 @@ def cleanup():
 
 def prepare_windows(scs):
     global focusminsize
-    regions=sc.get_regions(scs.pid)
-    focusminsize="%s %s"%(regions[3][0], regions[3][0])
-    regions_c=regions[0]
-    focus_offset=regions[1]
+    regions=[]
+    while True:
+        regions=sc.get_regions(scs.pid)
+        try:
+            focusminsize="%s %s"%(regions[3][0], regions[3][1])
+            regions_c=regions[0]
+            focus_offset=regions[1]
+            if regions[4][0]:
+                break
+        except:
+            pass
+    print("regions = "+str(regions))
     this_win_history=[]
 
     for i in range(0,regions_c):
         cmd='eval \'screen -t scs-regions-helper %s %s %s %d\' \'focus\''%(subprogram,subprogram_args,inputfile,i)
         scs.command_at(False,cmd)
-    new_windows=[]
-    regions_n=sc.get_regions(scs.pid)
+    
+    regions_n=[]
+    while True:
+        regions_n=sc.get_regions(scs.pid)
+        try:
+            if regions_n[i][0]:
+                break
+        except:
+            pass
+    print("regions_n = "+str(regions_n))
 
     for r in regions[4+focus_offset:]:
         this_win_history.append(r[0])
     for r in regions[4:4+focus_offset]:
         this_win_history.append(r[0])
 
+    new_windows=[]
     for r in regions_n[4+focus_offset:]:
         new_windows.append(r[0])
     for r in regions_n[4:4+focus_offset]:
@@ -160,8 +182,6 @@ if __name__=='__main__':
     print('helper windows '+str(wins))
 
     signal.signal(signal.SIGUSR1,handler)
-    time.sleep(10)
-
-    cleanup()
+    signal.pause()
 
 
