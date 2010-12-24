@@ -11,21 +11,20 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 
 usagestr='\n===HELP===\n\
-h[elp]  - show this message\n\
-q[uit]  - exit session manager\n\
-e[nter] - enter into session\n\
+q[uit]    - exit session manager\n\
+e[nter]   - enter into session\n\
 a[ttach] <name> - attach and select\n\
 d[etach] <name> - detach and deselect\n\
 n[ame] <name>   - rename\n\
 s[creen] <args> - create session\n\
-w[ipe] - wipe dead sessions\n\
-restart - restart session manager\n\
-r[efresh] - refresh session list\n\
-l[ayout] - toggle layout\n\
-kill - kill selected session\n\
 save <output> - save session\n\
-ALT + T - toggle between regions\n\
-CTRL + G - default escape key\n\
+w[ipe]    - wipe dead sessions\n\
+restart   - restart session manager\n\
+r[efresh] - refresh session list\n\
+l[ayout]  - toggle layout\n\
+kill K    - kill selected session\n\
+ALT + T   - toggle between regions\n\
+CTRL + G  - default escape key\n\
 '
 tui = 1
 tui_focus = 0
@@ -51,7 +50,7 @@ def menu_tmp(preselect=None):
     command=None
     inputstring=None
     if True:
-        sys.stdout.write("\nGNU Screen sessions...\n\n")
+        sys.stdout.write("GNU Screen sessions...\n\n")
         tries = 0
         while tries < 3:
             i = 1
@@ -243,7 +242,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
                 if line:
                     print2ui('UI: %s'%line)
                 ret=None                
-                e=eval_command(scs,line,last_session,psession)
+                e=eval_command(scs,line,last_session,psession,fifoname2)
                 if e:
                     try:
                         if e[1]:
@@ -298,7 +297,7 @@ def tui_attach_session(scs,arg,psession):
     scs.focus('top')
     return None,arg
 
-def eval_command(scs,command,last_session,psession):
+def eval_command(scs,command,last_session,psession,fifoname2):
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
@@ -318,10 +317,10 @@ def eval_command(scs,command,last_session,psession):
         scs.select('-')
         scs.focus('top')
         return None,'\0'
-    elif mode=='kill':
+    elif mode=='kill' or mode == 'K':
         if last_session:
             print2ui('LOGIC: killing session \"%s\"'%last_session)
-            scs=ScreenSaver(last_session,'/dev/null','/dev/null')
+            scs=ScreenSaver(last_session)
             scs.quit()
             scs.focus('top')
     elif mode.startswith('p'): # print
@@ -373,7 +372,7 @@ def eval_command(scs,command,last_session,psession):
         else:
             arg_out='%s'%last_session
         print2ui('LOGIC: saving session as %s'%arg_out)
-        os.popen('screen-session save --force --log /dev/null --in \"%s\" --out \"%s\"'%(last_session,arg_out))
+        os.system('screen-session save --force --log \"%s\" --in \"%s\" --out \"%s\" 1>&- 2>&-'%(fifoname2,last_session,arg_out))
     elif mode.startswith('s'): # screen
         if args and len(args[0])>0:
             arg=" ".join(["%s"%v for v in args])
@@ -420,7 +419,7 @@ def eval_command(scs,command,last_session,psession):
 def ui1(fifoname):
     sys.stderr.write('starting ui1\n')
     sys.stderr.flush()
-    print ('ui1 writing [%s]'%fifoname)
+    #print ('ui1 writing [%s]'%fifoname)
     pipeout = os.open(fifoname, os.O_WRONLY)
     selection=''
     while selection!=None:
@@ -467,8 +466,8 @@ def main():
             scs.title('command window',"0")
             scs.command_at(False, 'rendition so ky')
             scs.command_at(False, 'caption string "%?%F%{kr}%?%t"')
-            scs.command_at(False , 'bindkey ^[t exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
-            scs.command_at(False , 'bindkey ^[T focus prev')
+            scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
+            scs.command_at(False , 'bindkey ^[t focus prev')
             scs.command_at(False , 'escape ^Gg')
             scs.command_at(False , 'defmousetrack on')
             scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))

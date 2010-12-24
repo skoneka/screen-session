@@ -4,7 +4,7 @@
 # website http://adb.cba.pl
 # description: script for GNU Screen reassembling functionality of tmux display-panes + swap regions + rotate regions
 
-import sys,os,subprocess,time,signal,tempfile,pwd,copy
+import sys,os,time,signal,tempfile,pwd,copy
 from util import tmpdir
 import GNUScreen as sc
 from ScreenSaver import ScreenSaver

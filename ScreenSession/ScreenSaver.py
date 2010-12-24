@@ -1,5 +1,5 @@
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
+import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 
 from util import out,requireme,linkify,which,timeout_command
 import util
@@ -285,17 +285,6 @@ class ScreenSaver(object):
             self.layout('next',False)
             currentlayout,currentlayoutname=self.get_layout_number()
 
-    def __kill_windows(self,kill_list):
-        #kill_list.pop(len(kill_list)-1)
-        for w in kill_list:
-            number,title=self.get_number_and_title(w)
-            out('killing: '+str(w)+ ':'+number+':'+title)
-            self.kill(w)
-    def kill_old_windows(self):
-        out ('killing: '+str(self.__kill_list))
-        self.__kill_windows(self.__kill_list)
-
-
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
         # create wrap group for existing windows
@@ -331,8 +320,9 @@ class ScreenSaver(object):
             win=""
         else:
             win="-p %s"%win
-        #print('%s %s -X %s'% (self.sc,win,command))
-        os.system('%s %s -X %s'% (self.sc,win,command)) 
+        cmd = '%s %s -X %s'% (self.sc,win,command)
+        #print ('command_at(%s): %s'%(output,cmd))
+        os.system(cmd) 
         if output:
             l=self.lastmsg()
             if not l:
@@ -349,7 +339,8 @@ class ScreenSaver(object):
         else:
             win="-p %s"%win
         try:
-            l=util.timeout_command('%s %s -Q @%s'% (self.sc,win,command),self.timeout)[0] 
+            cmd='%s %s -Q @%s'% (self.sc,win,command)
+            l=util.timeout_command(cmd,self.timeout)[0] 
             if l.startswith('C'):
                 #no such window
                 return -1
@@ -549,7 +540,7 @@ class ScreenSaver(object):
     def group(self,output=True,args='',win="-1"):
         if args:
             args='"%s"'%args
-        msg=self.command_at(True, 'group %s'%args,win)
+        msg=self.command_at(output, 'group %s'%args,win)
         if output:
             if msg.endswith('no group'):
                 group = 'none'
@@ -770,8 +761,8 @@ class ScreenSaver(object):
             filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
             layoutname=filename.split('_',2)[2]
             layoutnumber=filename.split('_',2)[1]
-            stat=self.get_layout_new(layoutname)
-            if not stat:
+            status=self.get_layout_new(layoutname)
+            if not status:
                 out('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
             else:
                 currentlayout,currentlayoutname=self.get_layout_number()
@@ -877,46 +868,6 @@ class ScreenSaver(object):
         self.focus('top')
         for i in range(0,region):
             self.focus()
-
-    def __terminate_processes(self,ident):
-        #get list of subprograms and finish them all
-        procs=subprocess.Popen('ps x |grep "%s"' % (ident), shell=True, stdout=subprocess.PIPE).communicate()[0]
-        procs=procs.split('\n')
-        nprocs=[]
-        for p in procs:
-            nprocs.append(p.strip().split(' ')[0])
-        procs=nprocs
-        
-        for p in procs:
-            try:
-                os.kill(int(p),signal.SIGTERM)
-            except:
-                pass
-
-    __get_focus_offset_c=0
-    def get_focus_offset(self):
-        focus_offset=0
-        cnum=self.number()
-        self.screen('%s -m %d-%d'%(self.primer,os.getpid(),self.__get_focus_offset_c))
-        #ident="%s -m %d-%d" %(self.primer,os.getpid(),self.__get_focus_offset_c)
-        self.__get_focus_offset_c+=1
-        markertty = self.tty()
-        markernum,markertitle=self.get_number_and_title()
-        #out('markernum=%s; title=%s;'%(markernum,markertitle))
-        self.focus('top')
-
-
-        while True:
-            ctty = self.tty()
-            if ctty==markertty:
-                break
-            else:
-                self.focus()
-                focus_offset+=1
-        #self.__terminate_processes(ident)
-        self.kill(markernum)
-        self.select(cnum)
-        return focus_offset
 
     def __save_layouts(self):
         homelayout,homelayoutname=self.get_layout_number()

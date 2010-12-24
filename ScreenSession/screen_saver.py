@@ -9,7 +9,7 @@ issues:
     - program won't recognize telnet and serial window types
 '''
 
-import subprocess,sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
+import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
 from ScreenSaver import ScreenSaver
 from util import *
 from util import tmpdir

@@ -510,8 +510,8 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s]",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none );
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sH%s]elp ",
+	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
 	  printf (" %s ? %s > ",green_r,none);
@@ -568,6 +568,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	      break;
 	    case 'o':
 	    case 'O':
+            case '/':
 	      menu_choice = ONLY;
 	      number = args[0];
 	      if (number == -1)
@@ -602,9 +603,21 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	      menu_choice = NONE;
 	      valid_choice = 0;
               break;
+            case 'h':
+            case 'H':
+              printf("Help:\n\
+[A]ll     \t- try to restart all saved processes\n\
+[E]xit    \t- terminate primer\n\
+[D]efault \t- start default shell in last working directory\n\
+[R]eset   \t- reload primer\n\
+[number]  \t- try to restart saved processes up to [number]\n\
+[O]nly [numbers..] - select processes which will be restarted\n");
+	      valid_choice = 0;
+	      menu_choice = NONE;
 	    default:
 	      menu_choice = NONE;
 	      valid_choice = 0;
+              break;
 	    }
 
 
@@ -1266,7 +1279,7 @@ main (int argc, char **argv)
     if (bFilter && (strncmp (filter, "-1", 2) != 0))
       {
         printf ("Setting up filter...\n");
-        char command0[] = "screen -X stuff \"exec ";
+        char command0[] = "screen -S $(scs name) -X stuff \"exec ";
         char command1[] = "\"^M";
         char *command =
           malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
