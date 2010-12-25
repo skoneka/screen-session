@@ -4,7 +4,7 @@
 # website: http://adb.cba.pl
 # description: sessions manager with preview in a split window
 
-import commands, os, re, sys,time,tempfile,pwd,mmap
+import commands, os, re, sys,time,tempfile,pwd,mmap,string
 import GNUScreen as sc
 import util
 from util import tmpdir
@@ -17,7 +17,7 @@ a[ttach] <name> - attach and select\n\
 d[etach] <name> - detach and deselect\n\
 n[ame] <name>   - rename\n\
 s[creen] <args> - create session\n\
-save <output> - save session\n\
+save <output>   - save session\n\
 w[ipe]    - wipe dead sessions\n\
 restart   - restart session manager\n\
 r[efresh] - refresh session list\n\
@@ -29,11 +29,77 @@ CTRL + G  - default escape key\n\
 tui = 1
 tui_focus = 0
 maxtui = 3
+HOME=os.getenv('HOME')
+USER=os.getenv('USER')
+HOSTNAME=commands.getoutput('hostname')
+configdir=os.path.join(HOME,'.screen-session')
+accountsfile=os.path.join(configdir,'accounts')
 
+def menu_account(accounts,last_selection):
+    try:
+        while True:
+            #os.system('clear')
+            print('Registered accounts "$HOME/.screen-session/accounts":')
+            for i,acc in enumerate(accounts):
+                if(i==last_selection):
+                    sys.stdout.write('->')
+                print('\t%d. %s'%(i+1,acc))
+            inputstring = raw_input("\nHelp:\tadd user@host\t del <id>\nChoose 1-%d or press Enter: "%(i+1))
+            if not inputstring:
+                return last_selection
+            else:
+                try:
+                    choice=int(inputstring)
+                    if choice==0:
+                        return -1
+                    elif choice>0 and choice<=i+1:
+                        return choice-1
+                    else:
+                        pass
+                except:
+                    if inputstring in ('q','Q') :
+                        return -1
+                    elif inputstring.startswith('h'):
+                        print('HELP')
+                        raw_input('Press Enter to continue...')
+                    elif inputstring.startswith('a'):
+                        print('adding')
+                        try:
+                            account=inputstring.split(' ',1)[1]
+                            accounts.append(account)
+                            f = open(accountsfile,'a')
+                            f.write('\n'+account.strip())
+                            f.close()
+                        except:
+                            raw_input('Usage: add user@host')
+                    elif inputstring.startswith('d'):
+                        print('deleting')
+                        try:
+                            i = int(inputstring.split(' ',1)[1])
+                            if i > 1:
+                                f = open(accountsfile,'r')
+                                paccounts=map(string.strip,f.readlines())
+                                f.close()
+                                accounts=[accounts[0]]
+                                for a in paccounts:
+                                    if a:
+                                        accounts.append(a)
+                                accounts.pop(i-1)
+                                f = open(accountsfile,'w')
+                                for a in accounts[1:]:
+                                    f.write(a+'\n')
+                        except:
+                            print('Usage: del <id>')
+                            pass
+                    else:
+                        pass
+    except KeyboardInterrupt:
+        return -1
+
+menu_tmp_last_selection=-1
 def menu_tmp(preselect=None):
     # taken from byobu
-    PREFIX = "/usr"
-    SHELL = os.getenv("SHELL", "/bin/zsh")
+    global menu_tmp_last_selection
     choice = ""
     sessions = []
     text = []
@@ -49,48 +115,53 @@ def menu_tmp(preselect=None):
                 i += 1
     command=None
     inputstring=None
-    if True:
-        sys.stdout.write("GNU Screen sessions...\n\n")
-        tries = 0
-        while tries < 3:
-            i = 1
-            for s in text:
-                sys.stdout.write("  %d. %s\n" % (i, s))
-                i += 1
-            sys.stdout.write("  %d.  Create a new session\n" % i)
+    tries = 0
+    while tries < 3:
+        sys.stdout.write("[%s@%s] GNU Screen sessions:\n\n"%(USER,HOSTNAME))
+        i = 1
+        for s in text:
+            if i==menu_tmp_last_selection:
+                sys.stdout.write(" > ")
+            else:
+                sys.stdout.write("   ")
+            sys.stdout.write("%d. %s\n" % (i, s))
             i += 1
-            try:
-                command=None
-                inputstring=None
-                if preselect:
-                    inputstring = preselect
-                else:
-                    inputstring = raw_input("\nChoose 1-%d or help: " % (i-1))
-                if inputstring:
-                    try:
-                        choice=int(inputstring)
-                        if choice >= 0 and choice < i:
-                            break
-                    except:
-                        command=inputstring
-                        if command.startswith('h'):
-                            print(usagestr)
-                            raw_input("Press Return to continue" )
+        sys.stdout.write("   %d.  Create a new session\n" % i)
+        i += 1
+        try:
+            command=None
+            inputstring=None
+            if preselect:
+                inputstring = preselect
+            else:
+                inputstring = raw_input("\nChoose 1-%d or help: " % (i-1))
+            if inputstring:
+                try:
+                    choice=int(inputstring)
+                    if choice >= 0 and choice < i:
+                        menu_tmp_last_selection=choice
                         break
-                else:
-                    return "enter"
-            except KeyboardInterrupt:
-                command='quit'
-                print ('panic!')
-                return command
-                break
-            except:
-                if choice == "":
-                    choice = 1
+                    print2ui('UI: Out of range')
+                    os.system('clear')
+                except:
+                    command=inputstring
+                    if command.startswith('h'):
+                        print(usagestr)
+                        raw_input("Press Return to continue" )
                     break
-                tries += 1
-                choice = ""
-                sys.stderr.write("\nERROR: Invalid input\n");
+            else:
+                return "enter"
+        except KeyboardInterrupt:
+            command='quit'
+            return command
+            break
+        except:
+            if choice == "":
+                choice = 1
+                break
+            tries += 1
+            choice = ""
+            sys.stderr.write("\nERROR: Invalid input\n");
 
     if inputstring:
         if command:
@@ -103,9 +174,6 @@ def menu_tmp(preselect=None):
         else:
             # Attach to the chosen session; must use the 'screen' binary
             return "attach "+sessions[choice-1]
-
-    # No valid selection, default to the youngest session, create if necessary
-    #os.execv(PREFIX+"/bin/byobu", ["", "-AOxRR"])
 
 
 def prime(fifoname):
@@ -320,8 +388,8 @@ def eval_command(scs,command,last_session,psession,fifoname2):
     elif mode=='kill' or mode == 'K':
         if last_session:
             print2ui('LOGIC: killing session \"%s\"'%last_session)
-            scs=ScreenSaver(last_session)
-            scs.quit()
+            scst=ScreenSaver(last_session)
+            scst.quit()
             scs.focus('top')
     elif mode.startswith('p'): # print
          print2ui(" ".join(["%s"%v for v in args]))
@@ -433,88 +501,127 @@ def ui1(fifoname):
 def attach_session(session):
     sys.stderr.write('attaching %s'%session)
     os.popen('screen -x \"%s\"'%(session))
+
+def run(psession):
+    if not os.path.exists(tmpdir):
+        os.makedirs(tmpdir)
+    #files may get deleted by screen-session need to prevent
+    fifoname=os.path.join(tmpdir,'___internal_manager_logic_%s'%os.getpid())
+    fifoname2=os.path.join(tmpdir,'___internal_manager_ui2_%s'%os.getpid())
+    last_session=None
+   
+    if not os.path.exists(fifoname):
+        os.mkfifo(fifoname)
+    if not os.path.exists(fifoname2):
+        os.mkfifo(fifoname2)
+    while True:
+        sys.stderr.write('priming..\n')
+        session=prime(fifoname)
+        session_pid=session.split('.',1)[0]
+        fifoname_access=os.path.join(tmpdir,'__manager_'+session_pid)
+        os.symlink(fifoname,fifoname_access)
+        scs=ScreenSaver(session,'/dev/null','/dev/null')
+        scs.title('command window',"0")
+        scs.command_at(False, 'rendition so ky')
+        scs.command_at(False, 'caption string "%?%F%{kr}%?%t"')
+        scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
+        scs.command_at(False , 'bindkey ^[t focus next')
+        scs.command_at(False , 'escape ^Gg')
+        scs.command_at(False , 'defmousetrack on')
+        scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
+        data=mmap.mmap(-1,100)
+        
+        pid=os.fork()
+        if pid==0:
+            command=logic(scs,fifoname,fifoname2,session,psession,last_session)
+            for i,c in enumerate(command):
+                data[i]=c
+            break
+        else:
+            attach_session(session)
+            os.waitpid(pid,0)
+            try:
+                os.remove(fifoname_access)
+            except:
+                pass
+            command=data.readline().strip()
+            options,command=command.split(';;;',1)
+            options=options.split(';')
+            command=command.split(';')
+            if len(options)>0:
+                tui=int(options[0])
+                psession=options[1]
+                last_session=options[2]
+            if command[0]=='enter':
+                print ("entering \"%s\""%(command[1]))
+                attach_session(command[1])
+            elif command[0]=='restart':
+                print('restarting...')
+                pass
+            elif command[0]=='new':
+                cmd='screen -m %s'%command[1]
+                print ("creating session: [%s]"%(cmd))
+                os.popen(cmd)
+            else:
+                try:
+                    os.remove(fifoname)
+                except:
+                    pass
+                try:
+                    os.remove(fifoname2)
+                except:
+                    pass
+                break
+    pass
     
 def main():
     global tui
     sys.stderr.write('starting..\n')
     if(sys.argv)==0:
-        print('Usage: program [p|ui|ui2] [session or named pipe]')
-    if sys.argv[1]=='p':
+        print('Usage: program [p|ui|ui2] [psession=session or named pipe]')
+    if sys.argv[1][0]=='p':
+        bMenuRemote=False
         try:
-            psession=sys.argv[2]
+            psession=sys.argv[2].split('=',1)[1]
         except:
             psession=None
-
-        if not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
-        #files may get deleted by screen-session need to prevent
-        fifoname=os.path.join(tmpdir,'___internal_manager_logic_%s'%os.getpid())
-        fifoname2=os.path.join(tmpdir,'___internal_manager_ui2_%s'%os.getpid())
-        last_session=None
-       
-        if not os.path.exists(fifoname):
-            os.mkfifo(fifoname)
-        if not os.path.exists(fifoname2):
-            os.mkfifo(fifoname2)
+        try:
+            account=sys.argv[3]
+        except:
+            account='current'
+            if sys.argv[1][1]=='r':
+                bMenuRemote=True
+        iaccount=0
         while True:
-            sys.stderr.write('priming..\n')
-            session=prime(fifoname)
-            session_pid=session.split('.',1)[0]
-            fifoname_access=os.path.join(tmpdir,'__manager_'+session_pid)
-            os.symlink(fifoname,fifoname_access)
-            scs=ScreenSaver(session,'/dev/null','/dev/null')
-            scs.title('command window',"0")
-            scs.command_at(False, 'rendition so ky')
-            scs.command_at(False, 'caption string "%?%F%{kr}%?%t"')
-            scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
-            scs.command_at(False , 'bindkey ^[t focus prev')
-            scs.command_at(False , 'escape ^Gg')
-            scs.command_at(False , 'defmousetrack on')
-            scs.source(os.path.join(os.getenv('HOME'),'.screenrc_MANAGER'))
-            data=mmap.mmap(-1,100)
-            
-            pid=os.fork()
-            if pid==0:
-                command=logic(scs,fifoname,fifoname2,session,psession,last_session)
-                for i,c in enumerate(command):
-                    data[i]=c
-                break
-            else:
-                attach_session(session)
-                os.waitpid(pid,0)
-                try:
-                    os.remove(fifoname_access)
-                except:
-                    pass
-                command=data.readline().strip()
-                options,command=command.split(';;;',1)
-                options=options.split(';')
-                command=command.split(';')
-                if len(options)>0:
-                    tui=int(options[0])
-                    psession=options[1]
-                    last_session=options[2]
-                if command[0]=='enter':
-                    print ("entering \"%s\""%(command[1]))
-                    attach_session(command[1])
-                elif command[0]=='restart':
-                    print('restarting...')
-                    pass
-                elif command[0]=='new':
-                    cmd='screen -m %s'%command[1]
-                    print ("creating session: [%s]"%(cmd))
-                    os.popen(cmd)
-                else:
-                    try:
-                        os.remove(fifoname)
-                    except:
-                        pass
-                    try:
-                        os.remove(fifoname2)
-                    except:
-                        pass
+            if bMenuRemote:
+                f = open(accountsfile,'r')
+                accounts_tmp=map(string.strip,f.readlines())
+                accounts=['%s@%s'%(USER,HOSTNAME)]
+                for a in accounts_tmp:
+                    if a:
+                        accounts.append(a)
+                iaccount=menu_account(accounts,iaccount)
+                if iaccount==-1:
                     break
+                elif iaccount==0:
+                    account='current'
+                else:
+                    account=accounts[iaccount]
 
+            if account!='current':
+                print('Connecting with %s'%account)
+                user,host=account.split('@',1)
+                if host=='localhost' or host==HOSTNAME:
+                    if user==USER:
+                        run(psession)
+                    else:
+                        os.system('su %s -c "screen-session manager current"'%user)
+                else:
+                    os.system('ssh -t %s screen-session manager current'%account)
+            else:
+                run(psession)
+            if not bMenuRemote:
+                break;
 
     elif sys.argv[1]=='ui':
         fifoname=sys.argv[2]
@@ -529,4 +636,9 @@ if __name__=='__main__':
         sys.stderr=open(log,'w')
     else:
         sys.stderr=open(log,'a')
+    if not os.path.exists(configdir):
+        os.mkdir(configdir)
+    if not os.path.exists(accountsfile):
+        f=open(accountsfile,'w')
+        f.close()
     main()

@@ -128,7 +128,10 @@ else
         python $SCRIPTPATH/sessionname.py $session "$@"
 
     elif [ $mode = "manager" ]; then
-        python $SCRIPTPATH/manager.py p $session
+        python $SCRIPTPATH/manager.py pn psession=$session "$@"
+
+    elif [ $mode = "manager-remote" ]; then
+        python $SCRIPTPATH/manager.py pr psession=$session "$@"
 
     elif [ $mode = "grab" ]; then
         sh $SCRIPTPATH/screen-session-grab "$@"

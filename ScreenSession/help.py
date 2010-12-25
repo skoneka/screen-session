@@ -100,7 +100,11 @@ If no windows given, move the current window.\n\
 
 help_manager="Sessions manager for GNU Screen with preview in a split window.\n\
 Requires python 2.5+\n\
-\nUsage: screen-session manager"
+\nUsage: screen-session manager [account@host]"
+
+help_manager_remote="Sessions manager for GNU Screen with preview in a split window and support for multiple hosts.\n\
+Requires python 2.5+\n\
+\nUsage: screen-session manager-remote"
 
 help_nest="Nest layout in the current region.\n\
 \nUsage: screen-session nest [options] [TARGET_LAYOUT]"
@@ -214,6 +218,8 @@ if __name__=='__main__':
         print(help_group)
     elif mode=='manager':
         print(help_manager)
+    elif mode=='manager-remote':
+        print(help_manager_remote)
     elif mode=='nest':
         print(help_nest)
     elif mode=='renumber':
