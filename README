@@ -61,7 +61,8 @@ Detailed Description
 -----------------------------------------------------------------------
 session saver saves directories and programs by directly reading /proc 
 filesystem and sorts them by parent pid.  There is almost no "stuffing" 
-so there is no interaction with programs in windows.
+(except when saving vim sessions) so there is no interaction with 
+programs in windows.
 
 After session loading, in every new window starts screen-session-primer 
 (small C program) which displays a list of processes and asks user what 
@@ -101,7 +102,6 @@ and ":wviminfo".
 -----------------------------------------------------------------------
 Bugs
 -----------------------------------------------------------------------
-There are no bugs, only features.
 
 - Most tools do not work with detached Screen sessions.
 
