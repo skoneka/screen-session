@@ -12,10 +12,12 @@
 * Hardcopy with color escapes
 
 // saver:
-* Make it possible for primer to automatically start applications ( --force-start )
-* Create shellrc plug for more accurate command line saving
-* Write .vimrc snippet for automatic undo history saving in vim 7.3+
-* Save parameters which can be passed to :screen:
+* Make it possible for primer to automatically start applications 
+  ( --force-start )
+* Create shellrc plug for more accurate command line saving 
+  and an ability to save other users processes
+* Write a .vimrc snippet for automatic undo history saving in vim 7.3+
+* Save parameters which can be passed to :screen
     flow-control options (-f, -fn and -fa), monitoring (-M), logging (-L) 
     login options (-l and -ln) , terminal type  option  (-T  <term>),  
     the  all-capability-flag  (-a)
@@ -29,4 +31,4 @@
 * Set some environment variables on attach
 
 // grab:
-* Make it work reliably...
+* Fix it to work reliably...

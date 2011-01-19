@@ -124,7 +124,7 @@ class ScreenSaver(object):
 
     def __remove_and_escape_bad_chars(self,str):
         # some characters are causing problems when setting window titles
-        return str.replace('\\','\\\\\\\\').replace('|','I')# how to properly escape "|"?
+        return str.replace('|','I').replace('\\','\\\\\\\\')# how to properly escape "|"?
 
     def __load_screen(self):
         homewindow=self.homewindow
@@ -290,14 +290,10 @@ class ScreenSaver(object):
         # create wrap group for existing windows
         self.screen('-t \"%s\" //group' % ('%s_%s'%(group,self.__unique_ident)) )
         self.group(False,'none')
-        cwin=int(self.number())
-        self.wrap_group_id=str(cwin+shift)
-        self.number(self.wrap_group_id)
+        self.wrap_group_id=self.number()
 
         # move windows by shift and put them in a wrap group
         for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
-            if cwin==self.wrap_group_id:
-                continue
             iwin=int(cwin)
             if iwin==homewindow:
                 homewindow=iwin+shift
@@ -307,9 +303,12 @@ class ScreenSaver(object):
                 self.select(self.wrap_group_id)
                 self.group(False,group,str(cwin))
             command='%s -p %s -X number +%d' % (self.sc,cwin,shift)
-            out('Moving window %s to %d'%(cwin,iwin+shift))
+            if str(cwin)==str(self.wrap_group_id):
+                out('Moving wrap group %s to %d'%(cwin,iwin+shift))
+                self.wrap_group_id=str(iwin+shift)
+            else:
+                out('Moving window %s to %d'%(cwin,iwin+shift))
             os.system(command)
-        
         self.select('%d'%(homewindow))
 
     def lastmsg(self):
@@ -409,6 +408,9 @@ class ScreenSaver(object):
     def echo(self,args,win="-1"):
         msg=self.query_at('echo \"%s\"'%args,win)
         return msg
+
+    def Xecho(self,args,win="-1"):
+        msg=self.command_at(False, 'echo \"%s\"'%args)
 
     def number(self,args='',win="-1"):
         msg=self.query_at('number %s'%args,win)
@@ -768,73 +770,79 @@ class ScreenSaver(object):
         homelayout,homelayoutname=self.get_layout_number()
         layout_trans={}
         layout_c=len(glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')))
-        for i in range(0,layout_c):
-            filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%i))[0]
-            layoutname=filename.split('_',2)[2]
-            layoutnumber=filename.split('_',2)[1]
-            status=self.get_layout_new(layoutname)
-            if not status:
-                out('Maximum number of layouts reached. Ignoring layout %s (%s)'%(layoutnumber,layoutname))
-            else:
-                currentlayout,currentlayoutname=self.get_layout_number()
-                
-                layout_trans[layoutnumber]=currentlayout
-
-                self.source(filename)
-                (head,tail)=os.path.split(filename)
-                
-                filename2=os.path.join(head,"win"+tail) #read winlayout
-                focus_offset=0
-                f=open(filename2,'r')
-                dinfo=map(int,f.readline().split(" "))
-                focusminsize=f.readline()
-                regions_size=[]
-                winlist=[]
-                focus_offset=0
-                for i,line in enumerate(f):
-                    try:
-                        if line[0]=='f':
-                            focus_offset,window,sizex,sizey=line.strip().split(' ')
-                            focus_offset=i
-                        else:
-                            window,sizex,sizey=line.strip().split(' ')
-                    except:
-                        try:
-                            region_c=line.strip()
-                        except:
-                            pass
+        lc=0
+        while lc < layout_c:
+            filename=None
+            try:
+                try:
+                    filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%lc))[0]
+                    layoutname=filename.split('_',2)[2]
+                    layoutnumber=filename.split('_',2)[1]
+                    status=self.get_layout_new(layoutname)
+                    if not status:
+                        out('Maximum number of layouts reached. Ignoring layout %s (%s).'%(layoutnumber,layoutname))
                         break
-                    winlist.append(window)
-                    nsizex=(int(sizex)*cdinfo[0])/dinfo[0]
-                    nsizey=(int(sizey)*cdinfo[1])/dinfo[1]
-                    regions_size.append((nsizex,nsizey))
-                    if not window=="-1":
-                        try:
-                            # __wins_trans may be incomplete
-                            self.select("%s"%self.__wins_trans[window])
-                        except:
-                            out('Unable to set focus for: %s'%window)
-                    self.focus()
-                f.close()
+                    else:
+                        currentlayout,currentlayoutname=self.get_layout_number()
+                        
+                        layout_trans[layoutnumber]=currentlayout
 
-                # set region dimensions
-                self.focus('top')
-                out("%s (%s) : regions : %s(%s) %s - %s"%(layoutnumber,layoutname,region_c,focus_offset,winlist,regions_size))
-                for size in regions_size:
-                    if size[0]>0:
-                        self.resize('-h %d'%(size[0]))
-                        self.resize('-v %d'%(size[1]))
-                        self.fit()
+                        self.source(filename)
+                        (head,tail)=os.path.split(filename)
+                        
+                        filename2=os.path.join(head,"win"+tail) #read winlayout
+                        focus_offset=0
+                        f=open(filename2,'r')
+                        dinfo=map(int,f.readline().split(" "))
+                        focusminsize=f.readline()
+                        regions_size=[]
+                        winlist=[]
+                        focus_offset=0
+                        for i,line in enumerate(f):
+                            try:
+                                if line[0]=='f':
+                                    focus_offset,window,sizex,sizey=line.strip().split(' ')
+                                    focus_offset=i
+                                else:
+                                    window,sizex,sizey=line.strip().split(' ')
+                            except:
+                                try:
+                                    region_c=line.strip()
+                                except:
+                                    pass
+                                break
+                            winlist.append(window)
+                            nsizex=(int(sizex)*cdinfo[0])/dinfo[0]
+                            nsizey=(int(sizey)*cdinfo[1])/dinfo[1]
+                            regions_size.append((nsizex,nsizey))
+                            if not window=="-1":
+                                try:
+                                    # __wins_trans may be incomplete
+                                    self.select("%s"%self.__wins_trans[window])
+                                except:
+                                    out('Unable to set focus for: %s'%window)
+                            self.focus()
+                        f.close()
 
-                    self.focus()
-                
-                # restore focus on the right region
-                self.select_region(focus_offset)
+                        # set region dimensions
+                        self.focus('top')
+                        out("%s (%s) : regions : %s(%s) %s - %s"%(layoutnumber,layoutname,region_c,focus_offset,winlist,regions_size))
+                        for size in regions_size:
+                            if size[0]>0:
+                                self.resize('-h %d'%(size[0]))
+                                self.resize('-v %d'%(size[1]))
+                                self.fit()
 
-                self.focusminsize(focusminsize)
+                            self.focus()
+                        
+                        # restore focus on the right region
+                        self.select_region(focus_offset)
 
-
-
+                        self.focusminsize(focusminsize)
+                except:
+                    layout_c+=1
+            finally:
+                lc+=1
 
         # select last layout
         lastname=None

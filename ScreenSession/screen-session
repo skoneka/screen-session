@@ -51,29 +51,14 @@ if [ "$session" = '' ]; then
     session=`python $SCRIPTPATH/sessionname.py`
 fi
 
-screen -S $session -X msgminwait 0
-
 if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
-    testargument=`python -c "import sys;from ScreenSaver import ScreenSaver; print(ScreenSaver(\"$session\").exists())"`
-
-
     scsfile="$scsfiledir/___scspipe-$$"
     scsfiletmp="$scsfiledir/___scstmp-$$"
 
-    argument0=""
-    argument1=""
-    argument2=""
-
-    if [ "${testargument}" = "True" ]; then
-        argument1="--current-session $session"
-    else
-        /bin/echo "--- not running inside patched Screen, this session cannot be saved properly"
-    fi
-
-    argument2="--special-output $scsfiletmp"
-
-
     argument0="logpipe=$scsfile"
+    argument1="--current-session $session"
+    argument2="--special-output $scsfiletmp"
+    
     if [ $logpipe -eq 1 ]; then
         if [ -d "$scsfile" ]; then
             /bin/rm -f $scsfile
@@ -99,7 +84,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             read ret
         fi
     done < $scsfiletmp
-    /bin/rm -f $scsfiletmp
+    #/bin/rm -f $scsfiletmp
 else
     shiftcount=0
     # parse command line arguments
@@ -123,11 +108,8 @@ else
         esac
     done
     shift $shiftcount "$@"
-
-    if [ $mode = "name" ]; then
-        python $SCRIPTPATH/sessionname.py $session "$@"
-
-    elif [ $mode = "manager" ]; then
+    screen -S $session -X msgminwait 0
+    if [ $mode = "manager" ]; then
         python $SCRIPTPATH/manager.py pn psession=$session "$@"
 
     elif [ $mode = "manager-remote" ]; then
@@ -136,51 +118,59 @@ else
     elif [ $mode = "grab" ]; then
         sh $SCRIPTPATH/screen-session-grab "$@"
 
-    elif [ $mode = "group" ]; then
-        sh $SCRIPTPATH/win-to-group $session "$@"
-
-    elif [ $mode = "regions" ]; then
-        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
-
-    elif [ $mode = "nest" ]; then
-        screen -S SCREEN-SESSION-NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
-
-    elif [ $mode = "dir" ]; then
-        python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
-
-    elif [ $mode = "dump" ]; then
-        python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
-
-    elif [ $mode = "find-pid" ]; then
-        python $SCRIPTPATH/find_pid.py $session "$@"
-
-    elif [ $mode = "find-file" ]; then
-        python $SCRIPTPATH/find_file.py $session "$@"
-
-    elif [ $mode = "kill" ]; then
-        # screen-session kill [signal=TERM] [win=current]
-        python $SCRIPTPATH/kill.py $session "$@"
-
-    elif [ $mode = "kill-zombie" ]; then
-        python $SCRIPTPATH/kill-zombie.py $session "$@"
-
-    elif [ $mode = "kill-group" ]; then
-        screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
-
-    elif [ $mode = "renumber" ]; then
-        python $SCRIPTPATH/renumber.py $session "$@"
-
-    elif [ $mode = "sort" ]; then
-        python $SCRIPTPATH/sort.py $session "$@"
-
     elif [ $mode = "--version" -o $mode = "-v" ]; then
         python $SCRIPTPATH/help.py --version
 
     elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
         python $SCRIPTPATH/help.py "$@"
+
+    elif [ $session != "__no__session__" ]; then
+        if [ $mode = "name" ]; then
+            python $SCRIPTPATH/sessionname.py $session "$@"
+
+        elif [ $mode = "group" ]; then
+            sh $SCRIPTPATH/win-to-group $session "$@"
+
+        elif [ $mode = "regions" ]; then
+            screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+
+        elif [ $mode = "nest" ]; then
+            screen -S SCREEN-SESSION-NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+
+        elif [ $mode = "dir" ]; then
+            python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
+
+        elif [ $mode = "dump" ]; then
+            python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
+
+        elif [ $mode = "find-pid" ]; then
+            python $SCRIPTPATH/find_pid.py $session "$@"
+
+        elif [ $mode = "find-file" ]; then
+            python $SCRIPTPATH/find_file.py $session "$@"
+
+        elif [ $mode = "kill" ]; then
+            # screen-session kill [signal=TERM] [win=current]
+            python $SCRIPTPATH/kill.py $session "$@"
+
+        elif [ $mode = "kill-zombie" ]; then
+            python $SCRIPTPATH/kill-zombie.py $session "$@"
+
+        elif [ $mode = "kill-group" ]; then
+            screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+
+        elif [ $mode = "renumber" ]; then
+            python $SCRIPTPATH/renumber.py $session "$@"
+
+        elif [ $mode = "sort" ]; then
+            python $SCRIPTPATH/sort.py $session "$@"
+
+        else
+            echo "No such mode: $mode"
+            ret=1
+        fi
     else
-        echo "No such mode: $mode"
-        ret=1
+      ret=1
     fi
 fi
 

@@ -228,9 +228,8 @@ def main():
         pid = output
         savedir = input
     
-
-    
     scs=ScreenSaver(pid,projectsdir,savedir)
+    scs.command_at(False,"msgminwait 0")
 
     if idle:
         d_args_d=('-I','-i','--current-session','--idle','--in','--special-output')
@@ -294,7 +293,7 @@ def main():
         # save and archivize
         if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+util.archiveend)):
             if force==False:
-                os.system('screen -S %s -X echo "screen-session saving FAILED. Savefile exists."'%scs.pid)
+                scs.Xecho("screen-session saving FAILED. Savefile exists. Use --force")
                 out('Savefile exists. Use --force to overwrite.')
                 doexit(1,waitfor)
             else:
@@ -307,15 +306,15 @@ def main():
             ret=0
             traceback.print_exc(file=sys.stdout)
             out('session saving totally failed')
-            os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
+            scs.Xecho("screen-session saving totally FAILED")
             doexit(1,waitfor)
 
         if ret:
             out('session saving failed')
-            os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
+            scs.Xecho("screen-session saving FAILED")
         else:
             out('compressing...')
-            os.system('screen -S %s -X echo "compressing..."'%scs.pid)
+            scs.Xecho("screen-session compressing...")
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(util.tmpdir,savedir_real))
             archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,lastlink,savedir_real)
@@ -325,7 +324,7 @@ def main():
             savedir=savedir_real
             out('session "%s"'%scs.pid) 
             out('saved as "%s"'%(scs.savedir))
-            os.system('screen -S %s -X echo "screen-session finished saving as \"%s\""'%(scs.pid,savedir))
+            scs.Xecho("screen-session finished saving as \"%s\""%(savedir))
     elif mode==2: #mode load
         #cleanup old temporary files and directories
         cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,lastlink,200)
@@ -358,14 +357,14 @@ def main():
             ret=0
             traceback.print_exc(file=sys.stdout)
             out('session loading totally failed')
-            os.system('screen -S %s -X echo "screen-session TOTALLY FAILED"'%scs.pid)
+            scs.Xecho("screen-session loading TOTALLY FAILED")
             doexit(1,waitfor)
 
         if ret:
             out('session loading failed')
-            os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
+            scs.Xecho("screen-session loading FAILED")
         else:    
-            os.system('screen -S %s -X echo "screen-session finished loading"'%scs.pid)
+            scs.Xecho("screen-session finished loading")
 
     else:
         out('No mode specified --load or --save')
