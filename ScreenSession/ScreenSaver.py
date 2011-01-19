@@ -560,6 +560,7 @@ class ScreenSaver(object):
 
 
     def __save_screen(self):
+        errors=[]
         homewindow=self.homewindow
         # out ("Homewindow is " + homewindow)
         group_wins={}
@@ -577,13 +578,18 @@ class ScreenSaver(object):
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
         self.command_at(False, 'hardcopydir $CWD')
+        try:
+            f=open(os.path.join(findir,"winlist"),'r')
+            f.close()
+        except:
+            self.command_at(False, 'at \# dumpscreen window %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
         for line in open(os.path.join(findir,"winlist"),'r'):
             try:
                 id,cgroupid,ctty,= line.strip().split(' ')
             except:
                 id,cgroupid = line.strip().split(' ')
                 util.remove(os.path.join(findir,'win_'+id))
-                sys.stdout.write("%s(zombie); "%(id))
+                sys.stdout.write("%s zombie | "%(id))
                 continue;
             cwin=id
 
@@ -628,8 +634,8 @@ class ScreenSaver(object):
                                 blacklist=False
                             cpids_data.append(pidinfo+tuple([blacklist]))
                             ncpids.append(pid)
-                        except OSError:
-                            out('%s: Unable to access. No permission or no procfs.'%pid)
+                        except:
+                            errors.append('%s PID %s: Unable to access. No permission or no procfs.'%(cwin,pid))
                     cpids=ncpids
             
             if(cpids):
@@ -660,7 +666,7 @@ class ScreenSaver(object):
                     vim_name=str(None)
                     args=cpids_data[i][2].split('\0')
                     if self.primer==args[0]:
-                        sys.stdout.write('Import ')
+                        sys.stdout.write('imp ')
                         rollback=self.__rollback(cpids_data[i][2])
                         #out(str(rollback))
                     elif args[0] in self.vim_names and self.bVim:
@@ -681,10 +687,10 @@ class ScreenSaver(object):
                     
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(self.basedir,self.savedir,"hardcopy."+id)
-            sys.stdout.write("%s(%s); "%(cwin,ctype))
-            self.__save_win(id,ctype,cpids_data,ctime,rollback)
+            sys.stdout.write("%s %s | "%(cwin,ctype))
+            errors+=self.__save_win(id,ctype,cpids_data,ctime,rollback)
             rollback=None,None,None
-        
+        out('')
         if self.excluded:
             excluded_groups_tmp=[]
             while excluded_groups:
@@ -699,7 +705,7 @@ class ScreenSaver(object):
                 except:
                     pass
             excluded_groups = excluded_groups_tmp
-            out('\nExcluded groups: %s'%str(excluded_groups))
+            out('Excluded groups: %s'%str(excluded_groups))
             for egroup in excluded_groups:
                 excluded_wins.append(egroup)
                 try:
@@ -713,7 +719,12 @@ class ScreenSaver(object):
                 util.remove(bpath+win)
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        if errors:
+            out('Errors:')
+            for error in errors:
+                out(error)
         out('\nSAVED: '+str(ctime))
+        
     
     def __rollback(self,cmdline):
         try:
@@ -900,6 +911,7 @@ class ScreenSaver(object):
         return name
            
     def __save_win(self,winid,ctype,pids_data,ctime,rollback):
+        errors=[]
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
             #time=linecache.getline(rollback[0],2).strip()
@@ -924,7 +936,7 @@ class ScreenSaver(object):
                         try:
                             shutil.move(file,os.path.join(self.basedir,self.savedir,os.path.basename(file)))
                         except:
-                            out('Unable to rollback: %s'%file)
+                            errors.append('Unable to rollback: %s'%file)
             util.remove(target)
         else:
             pids_data_len="0"
@@ -944,6 +956,7 @@ class ScreenSaver(object):
                             f.write(str(data)+'\n')
                 f.write(ctime)
         f.close()
+        return errors
 
     def __setup_savedir(self,basedir,savedir):
         out ("Setting up session directory %s" % savedir)

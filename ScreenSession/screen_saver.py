@@ -314,6 +314,8 @@ def main():
             out('session saving failed')
             os.system('screen -S %s -X echo "screen-session FAILED"'%scs.pid)
         else:
+            out('compressing...')
+            os.system('screen -S %s -X echo "compressing..."'%scs.pid)
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(util.tmpdir,savedir_real))
             archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,lastlink,savedir_real)

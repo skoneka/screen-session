@@ -166,7 +166,7 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     for win in glob.glob(os.path.join(savedir_real,'win_*')):
         shutil.move(win,os.path.join(savedir_real+'__tmp',os.path.split(win)[1]))
     shutil.move(os.path.join(savedir_real,'last_win'),os.path.join(savedir_real+'__tmp','last_win'))
-    
+    # this call may take long time if scrollbacks are long
     os.system('tar cjf %s__data%s %s'%(savedir_real,archiveend,savedir_real))
     removeit(os.path.join(workingpath2,savedir_real))
     shutil.move(savedir_real+'__tmp',savedir_real)

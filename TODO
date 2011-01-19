@@ -1,0 +1,32 @@
++---------------------------------------------------------+
+| TODO                                                    |
++---------------------------------------------------------+
+
+// new tools:
+* yank-ring (kill-ring)
+* edit-scrollback
+* Set terminal emulator title
+
+// Screen:
+* Remove command length cap (MAXSTR)
+* Hardcopy with color escapes
+
+// saver:
+* Make it possible for primer to automatically start applications ( --force-start )
+* Create shellrc plug for more accurate command line saving
+* Write .vimrc snippet for automatic undo history saving in vim 7.3+
+* Save parameters which can be passed to :screen:
+    flow-control options (-f, -fn and -fa), monitoring (-M), logging (-L) 
+    login options (-l and -ln) , terminal type  option  (-T  <term>),  
+    the  all-capability-flag  (-a)
+* Detect and filter "orphaned" processes (eg started with &)
+* Encrypt savefiles
+
+// manager:
+* Add session-wide window search
+* Support automatic connection to multiple hosts
+* Write a scrollable menu
+* Set some environment variables on attach
+
+// grab:
+* Make it work reliably...
