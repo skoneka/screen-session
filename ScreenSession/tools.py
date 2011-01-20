@@ -52,7 +52,7 @@ def dump(ss,showpid=True):
                         print ("%s PID \t %s \t <<<<<<"%(cwin,pid))
                         print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
                         print ("%s P %s EXE \t %s"%(cwin,pid,exe))
-                        print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')))
+                        print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')[:-1]))
                     except:
                         print ("%s PID \t %s\t No permission"%(cwin,pid))
 
@@ -123,6 +123,8 @@ def kill_zombie(session):
             ss.kill(win)
 
 def kill_group(session,groupids):
+    #sys.stdout=open('/tmp/___log_kill_group','w')
+    #sys.stderr=sys.stdout
     ss=ScreenSaver(session)
     bAll=False
     if groupids[0]=='current':

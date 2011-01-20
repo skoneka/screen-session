@@ -64,7 +64,6 @@ Loading:
 
 
 Example bindings:
-    # start scs in a new window logging output and quickly 
-    # return to previous window before saving begins
-    bind S exec sh -c "sleep 0.01; screen scs save --force > /dev/null"
+    # press S to save the current session
+    bind S exec screen -mdc /dev/null screen-session save -fi $PID.$STY
 

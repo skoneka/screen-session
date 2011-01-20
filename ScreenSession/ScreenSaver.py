@@ -52,7 +52,7 @@ class ScreenSaver(object):
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
-        self.__unique_ident="%s_%s"%(sessionname.split('.',1)[0],time.strftime("%y%m%d_%H%M%S"))
+        self.__unique_ident="S%s_%s"%(sessionname.split('.',1)[0],time.strftime("%d%b%y_%H-%M-%S"))
 
     def save(self):
         self.homewindow,title=self.get_number_and_title()
@@ -122,7 +122,7 @@ class ScreenSaver(object):
         except:
             return False
 
-    def __remove_and_escape_bad_chars(self,str):
+    def __escape_bad_chars(self,str):
         # some characters are causing problems when setting window titles
         return str.replace('|','I').replace('\\','\\\\\\\\')# how to properly escape "|"?
 
@@ -156,7 +156,7 @@ class ScreenSaver(object):
                     f.close()
                     win=self.__striplist(win)
                     out (str(win))
-                    wins.append((win[0], win[1], win[2], win[3], self.__remove_and_escape_bad_chars(win[4]), win[5], win[6],win[7]))
+                    wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7]))
             except:
                 out('%s Unable to load window'%id)
 
@@ -172,6 +172,7 @@ class ScreenSaver(object):
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
+        out ("Wrap group is "+self.wrap_group_id)
         self.select(rootwindow)
         
         # select last selected window
@@ -910,7 +911,7 @@ class ScreenSaver(object):
         return True
 
     def __save_vim(self,winid):
-        name="vim_%s_%s"%(self.__unique_ident,winid)
+        name="vim_W%s_%s"%(winid,self.__unique_ident)
         fname=os.path.join(self.basedir,self.savedir,name)
         cmd = '^[^[:silent call histdel(\':\',-1) | mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
         self.stuff(cmd, winid)

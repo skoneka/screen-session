@@ -84,7 +84,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             read ret
         fi
     done < $scsfiletmp
-    #/bin/rm -f $scsfiletmp
+    /bin/rm -f $scsfiletmp
 else
     shiftcount=0
     # parse command line arguments

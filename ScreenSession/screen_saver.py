@@ -190,7 +190,7 @@ def main():
     if not projectsdir:
         projectsdir = '.screen-sessions'    
     if bList:
-        list_sessions(home,projectsdir,util.archiveend)
+        list_sessions(home,projectsdir,util.archiveend,input)
         doexit(0,waitfor)
     
     if mode==0:
@@ -249,7 +249,7 @@ def main():
         for arg in nargv:
             scscall+=" "+arg
         scscall+=" --in "+input
-        command='exec sh -c \"screen '+scscall+' > /dev/null\"' 
+        command='exec screen -mdc /dev/null '+scscall 
         scs.idle(idle,command)
         out(':idle %s %s'%(idle,command))
         return 0

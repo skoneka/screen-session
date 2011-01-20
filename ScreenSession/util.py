@@ -182,8 +182,10 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
 
-def list_sessions(home,projectsdir,archiveend):
-    files=glob.glob(os.path.join(home,projectsdir,'*__win'+archiveend))
+def list_sessions(home,projectsdir,archiveend,match):
+    if not match:
+        match=''
+    files=glob.glob(os.path.join(home,projectsdir,'*%s*__win%s'%(match,archiveend)))
     
     date_file_list=[]
     for file in files:
