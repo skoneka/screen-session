@@ -119,12 +119,12 @@ def remove(path):
             pass
         pass
 
-def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
+def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
     #cleanup old temporary files and directories
     ctime=time.time()
     files_all=glob.glob(os.path.join(home,projectsdir,'*'))
     files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))
-    files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,blacklistfile),os.path.join(home,projectsdir,lastlink)]))
+    files_remove=list(set(files_all)-set(files_archives)-set([os.path.join(home,projectsdir,blacklistfile)]))
     for file in files_remove:
         try:
             delta=ctime-os.path.getmtime(file)
@@ -144,7 +144,7 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,lastlink,timeout):
             removeit(file)
 
 
-def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
+def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
     cwd=os.getcwd()
     workingpath=tmpdir
     workingpath2=os.path.join(tmpdir,'___tmp_pack')
@@ -156,10 +156,6 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
     removeit(os.path.join(workingpath,savedir+'__tmp'))
     removeit(os.path.join(workingpath2,savedir_real))
     removeit(os.path.join(workingpath2,savedir_real+'__tmp'))
-    try:
-        os.remove(os.path.join(home,projectsdir,lastlink))
-    except:
-        pass
     shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath2,savedir_real))
     os.chdir(workingpath2)
     os.mkdir(savedir_real+'__tmp')
@@ -179,7 +175,6 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,lastlink,savedir_real):
         shutil.move(file,os.path.join(home,projectsdir,file))
 
     os.chdir(cwd)
-    linkify(os.path.join(home,projectsdir),savedir_real+'__win'+archiveend,lastlink)
 
 
 def list_sessions(home,projectsdir,archiveend,match):

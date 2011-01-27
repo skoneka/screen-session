@@ -69,7 +69,6 @@ def main():
     waitfor=False
     mode = 0
     util.archiveend='.tar.bz2'
-    lastlink='last'
     unpack=None
     current_session=None
     bNest=True
@@ -213,9 +212,17 @@ def main():
             savedir = output
     elif mode == 2:
         if not input:
-            input="last"
             try:
-                input=os.readlink(os.path.join(home,projectsdir,input)).rsplit('__',1)[0]
+                files=glob.glob(os.path.join(home,projectsdir,'*__win%s'%(util.archiveend)))
+                date_file_list=[]
+                for file in files:
+                    stats = os.stat(file)
+                    lastmod_date = time.localtime(stats[8])
+                    date_file_tuple = lastmod_date, file
+                    date_file_list.append(date_file_tuple)
+                date_file_list.sort()
+                input=os.path.split(date_file_list[-1][1])[1].rsplit('__',1)[0]
+                print(input)
             except:
                 out("No recent session to load")
                 doexit("Aborting",waitfor)
@@ -259,7 +266,7 @@ def main():
         out('No such session: %s'%pid)
         doexit(1,waitfor)
         
-    if savedir in (lastlink,'__tmp_pack') and mode==1:
+    if savedir == '__tmp_pack' and mode==1:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1,waitfor)
     elif savedir == scs.blacklistfile:
@@ -317,7 +324,7 @@ def main():
             scs.Xecho("screen-session compressing...")
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(util.tmpdir,savedir_real))
-            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,lastlink,savedir_real)
+            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,savedir_real)
             removeit(os.path.join(home,projectsdir,savedir_tmp))
             removeit(os.path.join(util.tmpdir,savedir_tmp))
             scs.savedir=savedir_real
@@ -327,7 +334,7 @@ def main():
             scs.Xecho("screen-session finished saving as \"%s\""%(savedir))
     elif mode==2: #mode load
         #cleanup old temporary files and directories
-        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,lastlink,200)
+        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,200)
         # unpack and load
         try:
             unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
