@@ -40,6 +40,7 @@ class ScreenSaver(object):
     __unique_ident=None
     __wins_trans = {}
     __scrollbacks=[]
+    __layouts_loaded=False
 
     def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
@@ -56,20 +57,20 @@ class ScreenSaver(object):
 
     def save(self):
         self.homewindow,title=self.get_number_and_title()
-        out("\n======CREATING___DIRECTORIES======")
+        out("\nCreating directories:")
         if not self.__setup_savedir(self.basedir,self.savedir):
             return 1
 
         if self.enable_layout:
-            out("\n======SAVING___LAYOUTS======")
+            out("\nSaving layouts:")
             self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
             out("")
 
-        out("\n======SAVING___SCREEN___SESSION======")
+        out("\nSaving windows:")
         self.__save_screen()
         
-        out("\n======CLEANUP======")
+        out("\nCleaning up:")
         self.__scrollback_clean()
         return 0
 
@@ -105,11 +106,13 @@ class ScreenSaver(object):
             self.__move_all_windows(maxnewwindow+1,self.group_other,False)
         
         self.homewindow=self.number()
-        out("\n======LOADING___SCREEN___SESSION======")
+        out("\nLoading windows:")
         self.__load_screen()
         if self.enable_layout:
-            out("\n======LOADING___LAYOUTS======")
+            out("\nLoading layouts:")
             self.__load_layouts()
+        out("\nRestoring Most Recently Used windows order.")
+        self.__restore_mru()
         return 0
 
     def exists(self):
@@ -172,31 +175,10 @@ class ScreenSaver(object):
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
-        out ("Wrap group is "+self.wrap_group_id)
+        if self.wrap_group_id:
+            out ("Wrap group is "+self.wrap_group_id)
         self.select(rootwindow)
         
-        # select last selected window
-        lastid=''
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-            (lasthead,lasttail)=os.path.split(last)
-            self.lastid=lasttail.split("_",1)[1]
-            self.select_last_window()
-        
-        # out ("Returning homewindow " +homewindow)
-        self.select(homewindow)
-       
-        if not self.restore_previous:
-            self.select_last_window()
-
-    def select_last_window(self):
-        try:
-            #out("Selecting last window %s [ previously %s ]"%(self.__wins_trans[self.lastid],self.lastid))
-            self.select(self.__wins_trans[self.lastid])
-        except:
-            self.select('-')
-            
-
     # Take a list of string objects and return the same list
     # stripped of extra whitespace.
     def __striplist(self,l):
@@ -222,6 +204,7 @@ class ScreenSaver(object):
     
     def __order_group(self,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
         if groupid=="-1":
+            # this select is necessary in case of a group name conflict
             self.select(rootwindow)
             self.group(False,rootgroup,newwin)
         else:
@@ -229,6 +212,7 @@ class ScreenSaver(object):
                 groupid=self.__wins_trans[groupid]
             except:
                 pass
+            # this select is necessary in case of a group name conflict
             self.select(groupid)
             self.group(False,group,newwin)
     
@@ -298,6 +282,7 @@ class ScreenSaver(object):
             iwin=int(cwin)
             if iwin==homewindow:
                 homewindow=iwin+shift
+                self.homewindow=str(homewindow)
             
             cgroupid,cgroup = self.get_group(cwin)
             if cgroup=="none":
@@ -586,6 +571,7 @@ class ScreenSaver(object):
             f.close()
         except:
             self.command_at(False, 'at \# dumpscreen window %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
+        fmru = open(os.path.join(findir,"mru"),"w") 
         for line in open(os.path.join(findir,"winlist"),'r'):
             try:
                 id,cgroupid,ctty,= line.strip().split(' ')
@@ -595,6 +581,7 @@ class ScreenSaver(object):
                 sys.stdout.write("%s zombie | "%(id))
                 continue;
             cwin=id
+            fmru.write("%s "%cwin)
 
 
             if(ctty[0]=="g"): # group
@@ -694,6 +681,8 @@ class ScreenSaver(object):
             errors+=self.__save_win(id,ctype,cpids_data,ctime,rollback)
             rollback=None,None,None
         out('')
+        fmru.close()
+        #util.remove(os.path.join(findir,"winlist"))
         if self.excluded:
             excluded_groups_tmp=[]
             while excluded_groups:
@@ -726,9 +715,29 @@ class ScreenSaver(object):
             out('Errors:')
             for error in errors:
                 out(error)
-        out('\nSAVED: '+str(ctime))
+        out('\nSaved: '+str(ctime))
         
-    
+    def __restore_mru(self):
+        mru=open(os.path.join(self.basedir,self.savedir,"mru"),'r').read().strip().split(' ')
+        mru.reverse()
+        for win in mru:
+            self.select("%s"%self.__wins_trans[win])
+        if self.restore_previous:
+            self.select(self.homewindow)
+        #elif self.__layouts_loaded:
+        #    pass
+        elif os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
+            # select last selected window
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
+            (lasthead,lasttail)=os.path.split(last)
+            lastid=lasttail.split("_",1)[1]
+            try:
+                self.select(self.__wins_trans[lastid])
+            except:
+                self.select('-')
+        else:
+            self.select('-')
+
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')
@@ -771,6 +780,8 @@ class ScreenSaver(object):
         homelayout,homelayoutname=self.get_layout_number()
         layout_trans={}
         layout_c=len(glob.glob(os.path.join(self.basedir,self.savedir,'layout_*')))
+        if layout_c > 0:
+            self.__layouts_loaded=True
         lc=0
         while lc < layout_c:
             filename=None
@@ -848,15 +859,6 @@ class ScreenSaver(object):
         # select last layout
         lastname=None
         lastid_l=None
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
-            (lasthead,lasttail)=os.path.split(last)
-            last=lasttail.split("_",2)
-            lastname=last[2]
-            lastid_l=last[1]
-            #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
-            self.layout('select %s'%layout_trans[lastid_l],False)
-            # ^^ layout numbering may change, use layout_trans={}
 
         if homelayout!=-1:
             out("Returning homelayout %s"%homelayout)
@@ -865,24 +867,14 @@ class ScreenSaver(object):
             out('No homelayout - unable to return.')
         
         if not self.restore_previous:
-            try:
-                #out("Selecting last layout %s (%s) [ previously %s ]"%(layout_trans[lastid_l],lastname,lastid_l))
+            if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
+                last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
+                (lasthead,lasttail)=os.path.split(last)
+                last=lasttail.split("_",2)
+                lastname=last[2]
+                lastid_l=last[1]
                 self.layout('select %s'%layout_trans[lastid_l],False)
-            except:
-                pass
-        
-        # select last selected window
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-            (lasthead,lasttail)=os.path.split(last)
-            self.lastid=lasttail.split("_",1)[1]
-            self.select_last_window()
-        
-        # out ("Returning homewindow " +homewindow)
-        self.select(homewindow)
-       
-        if not self.restore_previous:
-            self.select_last_window()
+                # ^^ layout numbering may change, use layout_trans={}
             
     def select_region(self,region):
         self.focus('top')
@@ -907,7 +899,6 @@ class ScreenSaver(object):
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
         
-        self.select(self.homewindow_last)
         return True
 
     def __save_vim(self,winid):

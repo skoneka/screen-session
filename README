@@ -104,6 +104,7 @@ Bugs
 -----------------------------------------------------------------------
 
 - Most tools do not work with detached Screen sessions.
+- :msgminwait is set to 0 the original value is not restored
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues

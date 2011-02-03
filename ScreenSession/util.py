@@ -54,14 +54,21 @@ def touch(fname, times = None):
         pass
 
 def linkify(dir,dest,targ):
-    cwd=os.getcwd()
+    try:
+        cwd=os.getcwd()
+    except:
+        cwd=None
     os.chdir(dir)
     try:
         os.remove(targ)
     except:
         pass
     os.symlink(dest,targ)
-    os.chdir(cwd)
+    if cwd:
+        try:
+            os.chdir(cwd)
+        except:
+            pass
 
 def requireme(home,projectsdir,file_in_session,full=False):
     global archiveend
@@ -87,13 +94,20 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         os.makedirs(os.path.join(tmpdir,savedir))
     if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
         raise IOError
-    cwd=os.getcwd()
+    try:
+        cwd=os.getcwd()
+    except:
+        cwd=None
     os.chdir(tmpdir)
     if full:
         os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__data'),archiveend))
     os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))
     touch(os.path.join(tmpdir,savedir))
-    os.chdir(cwd)
+    if cwd:
+        try:
+            os.chdir(cwd)
+        except:
+            pass
     removeit(os.path.join(home,projectsdir,savedir))
     #print("%s"%str([home,projectsdir,savedir,archiveend,tmpdir,full]))
     os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
@@ -145,7 +159,10 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
 
 
 def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
-    cwd=os.getcwd()
+    try:
+        cwd=os.getcwd()
+    except:
+        cwd=None
     workingpath=tmpdir
     workingpath2=os.path.join(tmpdir,'___tmp_pack')
     if not os.path.exists(workingpath2):
@@ -173,8 +190,11 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
     for file in glob.glob('*'+archiveend):
         removeit(os.path.join(home,projectsdir,file))
         shutil.move(file,os.path.join(home,projectsdir,file))
-
-    os.chdir(cwd)
+    if cwd:
+        try:
+            os.chdir(cwd)
+        except:
+            pass
 
 
 def list_sessions(home,projectsdir,archiveend,match):

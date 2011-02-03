@@ -64,7 +64,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             /bin/rm -f $scsfile
         fi
         mkfifo $scsfile
-        screen -S SCREEN-SESSION-SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
+        screen -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
         
         cat $scsfile
         /bin/rm -f $scsfile
@@ -112,7 +112,7 @@ else
     if [ $mode = "manager" ]; then
         python $SCRIPTPATH/manager.py pn psession=$session "$@"
 
-    elif [ $mode = "manager-remote" ]; then
+    elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
         python $SCRIPTPATH/manager.py pr psession=$session "$@"
 
     elif [ $mode = "grab" ]; then
@@ -132,10 +132,10 @@ else
             sh $SCRIPTPATH/win-to-group $session "$@"
 
         elif [ $mode = "regions" ]; then
-            screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+            screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
 
         elif [ $mode = "nest" ]; then
-            screen -S SCREEN-SESSION-NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+            screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
 
         elif [ $mode = "dir" ]; then
             python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
@@ -143,21 +143,25 @@ else
         elif [ $mode = "dump" ]; then
             python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
 
-        elif [ $mode = "find-pid" ]; then
+        elif [ $mode = "find-pid" -o $mode = "fp" ]; then
             python $SCRIPTPATH/find_pid.py $session "$@"
 
-        elif [ $mode = "find-file" ]; then
+        elif [ $mode = "find-file" -o $mode = "ff" ]; then
             python $SCRIPTPATH/find_file.py $session "$@"
 
         elif [ $mode = "kill" ]; then
             # screen-session kill [signal=TERM] [win=current]
             python $SCRIPTPATH/kill.py $session "$@"
 
-        elif [ $mode = "kill-zombie" ]; then
+        elif [ $mode = "kill-zombie" -o $mode = "kz" ]; then
             python $SCRIPTPATH/kill-zombie.py $session "$@"
 
-        elif [ $mode = "kill-group" ]; then
-            screen -S SCREEN-SESSION-REGIONS -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+        elif [ $mode = "kill-group" -o $mode = "kg" ]; then
+            if [ $# -eq 0 ]; then
+                python $SCRIPTPATH/help.py $mode
+            else
+                screen -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+            fi
 
         elif [ $mode = "renumber" ]; then
             python $SCRIPTPATH/renumber.py $session "$@"
