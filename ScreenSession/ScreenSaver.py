@@ -20,6 +20,7 @@ class ScreenSaver(object):
     restore_previous = False
     exact=False
     bVim=True
+    mru=True
     group_other='OTHER_WINDOWS'
     homewindow=""
     sc=None
@@ -111,8 +112,9 @@ class ScreenSaver(object):
         if self.enable_layout:
             out("\nLoading layouts:")
             self.__load_layouts()
-        out("\nRestoring Most Recently Used windows order.")
-        self.__restore_mru()
+        if self.mru:
+            out("\nRestoring Most Recently Used windows order.")
+            self.__restore_mru()
         return 0
 
     def exists(self):
@@ -745,7 +747,6 @@ class ScreenSaver(object):
             path=os.path.join(self.homedir,cmdline[2],cmdline[4])
             fhead,ftail=os.path.split(cmdline[4])
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
-            
             number=ftail.split('_')[1]
             oldsavedir=fhead
             

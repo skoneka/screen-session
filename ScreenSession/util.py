@@ -80,37 +80,27 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
-    if full:
-        fullstr=" full"
-    else:
-        fullstr=""
-    #out('unpacking%s...'%fullstr)
+    import tarfile
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
-    if not os.path.exists(tmpdir):
-        os.makedirs(tmpdir)
     if os.path.exists(os.path.join(tmpdir,savedir)):
-        shutil.rmtree(os.path.join(tmpdir,savedir))
-        os.makedirs(os.path.join(tmpdir,savedir))
+        removeit(os.path.join(tmpdir,savedir))
     if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
         raise IOError
-    try:
-        cwd=os.getcwd()
-    except:
-        cwd=None
-    os.chdir(tmpdir)
+    os.makedirs(os.path.join(tmpdir,savedir))
+    t1 = tarfile.open(os.path.join(home,projectsdir,savedir+'__win'+archiveend),'r')
+    t1.extractall(os.path.join(tmpdir,savedir))
+    t1.close()
     if full:
-        os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__data'),archiveend))
-    os.system('tar xjf %s%s'%(os.path.join(home,projectsdir,savedir+'__win'),archiveend))
-    touch(os.path.join(tmpdir,savedir))
-    if cwd:
-        try:
-            os.chdir(cwd)
-        except:
-            pass
-    removeit(os.path.join(home,projectsdir,savedir))
-    #print("%s"%str([home,projectsdir,savedir,archiveend,tmpdir,full]))
-    os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+        t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
+        t2.extractall(os.path.join(tmpdir,savedir))
+        t2.close()
+    # taking care of old archive types
+    if os.path.split(glob.glob(os.path.join(tmpdir,savedir,'*'))[0])[1]==savedir:
+        os.symlink(os.path.join(tmpdir,savedir,savedir),os.path.join(home,projectsdir,savedir))
+    else:
+        os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+
 
 
 def removeit(path):
@@ -157,44 +147,27 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
         if delta > timeout: # if seconds passed since last modification
             removeit(file)
 
-
 def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
+    import tarfile
     try:
-        cwd=os.getcwd()
-    except:
-        cwd=None
-    workingpath=tmpdir
-    workingpath2=os.path.join(tmpdir,'___tmp_pack')
-    if not os.path.exists(workingpath2):
-        os.makedirs(workingpath2)
+        t1 = tarfile.open(os.path.join(home,projectsdir,"%s__win%s"%(savedir_real,archiveend)),'w:bz2')
+        for f in glob.glob(os.path.join(home,projectsdir,savedir_real+'__tmp','win_*')):
+            t1.add(f,os.path.split(f)[1])
+            remove(f)
+        t1.add(os.path.join(home,projectsdir,savedir_real+'__tmp','last_win'),'last_win')
+        t1.close()
+    except Exception,x:
+        print(str(x))
+        raise x
     
-    os.chdir(workingpath)
-    removeit(os.path.join(workingpath,savedir))
-    removeit(os.path.join(workingpath,savedir+'__tmp'))
-    removeit(os.path.join(workingpath2,savedir_real))
-    removeit(os.path.join(workingpath2,savedir_real+'__tmp'))
-    shutil.move(os.path.join(home,projectsdir,savedir),os.path.join(workingpath2,savedir_real))
-    os.chdir(workingpath2)
-    os.mkdir(savedir_real+'__tmp')
-    for win in glob.glob(os.path.join(savedir_real,'win_*')):
-        shutil.move(win,os.path.join(savedir_real+'__tmp',os.path.split(win)[1]))
-    shutil.move(os.path.join(savedir_real,'last_win'),os.path.join(savedir_real+'__tmp','last_win'))
-    # this call may take long time if scrollbacks are long
-    os.system('tar cjf %s__data%s %s'%(savedir_real,archiveend,savedir_real))
-    removeit(os.path.join(workingpath2,savedir_real))
-    shutil.move(savedir_real+'__tmp',savedir_real)
-    
-    os.system('tar cjf %s__win%s %s'%(savedir_real,archiveend,savedir_real))
-    removeit(os.path.join(workingpath2,savedir_real))
-    
-    for file in glob.glob('*'+archiveend):
-        removeit(os.path.join(home,projectsdir,file))
-        shutil.move(file,os.path.join(home,projectsdir,file))
-    if cwd:
-        try:
-            os.chdir(cwd)
-        except:
-            pass
+    try:
+        t2 = tarfile.open(os.path.join(home,projectsdir,"%s__data%s"%(savedir_real,archiveend)),'w:bz2')
+        for f in glob.glob(os.path.join(home,projectsdir,savedir_real+'__tmp','*')):
+            t2.add(f,os.path.split(f)[1])
+        t2.close()
+    except Exception,x:
+        print(str(x))
+        raise x
 
 
 def list_sessions(home,projectsdir,archiveend,match):

@@ -8,7 +8,7 @@
 * Set terminal emulator title
 
 // Screen:
-* Remove command length cap (MAXSTR)
+* Remove -X command length cap (MAXSTR)
 * Hardcopy with color escapes
 
 // saver:
@@ -24,9 +24,7 @@
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
 * Encrypt savefiles
-* Add option for disabling scrollback saving
-* Savefiles shouldn't have a directory inside so it would be possible to
-  rename them easily
+* Add option for disabling, per window, scrollback saving
 
 // manager:
 * Add session-wide window search

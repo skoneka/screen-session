@@ -145,31 +145,31 @@ Options:\n\
   \tfilter listed savefiles by <string>\n\
 --log       <file>\n\
   \toutput to a file instead of stdout\n\
--d --dir\n\
+-d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
 "
 
 help_saver_save="Usage: scs save [options]\n\n\
 Save GNU Screen sessions to a file.\n\n\
 Options:\n\
--i --in     <sesionnname>\n\
+-i --in  <sesionnname>\n\
   \tspecify target Screen session (by default current session)\n\
--o --out    <savefile>\n\
-  \tspecify target filename (by default it is Screen's session name\n\
--f --force  <number>\n\
+-o --out  <savefile>\n\
+  \tspecify target filename (by default Screen's session name)\n\
+-f --force\n\
   \tforce saving even if savefile with the same name already exists\n\
--e --exclude <windows>\n\
+-e --exclude  <windows>\n\
   \tcomma separated list of windows to be ignored during saving,\n\
   \tif a window is a group all subwindows are also ignored\n\
 -y --no-layout\n\
   \tdisable layout saving\n\
 -V --no-vim\n\
   \tdisable vim session saving\n\
--I --idle <seconds>\n\
+--idle  <seconds>\n\
   \tstart command after <seconds> of inactivity\n\
---log       <file>\n\
+--log <file>\n\
   \toutput to a file instead of stdout\n\
--d --dir\n\
+-d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 \n\
 Example:\n\
@@ -179,9 +179,9 @@ $ screen-session save --in SESSIONNAME --out mysavedsession\
 help_saver_load="Usage: scs load [options]\n\n\
 Load saved session from a file.\n\n\
 Options:\n\
--i --in     <savefile>\n\
+-i --in  <savefile>\n\
   \tspecify source savefile (by default last saved file)\n\
--o --out    <sessionname>\n\
+-o --out  <sessionname>\n\
   \tspecify target Screen session (by default current session\n\
 -x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
@@ -192,9 +192,11 @@ Options:\n\
   \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout loading\n\
---log       <file>\n\
+-M --no-mru\n\
+  \tdo not restore Most Recently Used order of windows\n\
+--log  <file>\n\
   \toutput to a file instead of stdout\n\
--d --dir\n\
+-d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
   \n\
 Example:\n\
@@ -264,10 +266,6 @@ def run(argv):
         print(help_saver_save)
     elif mode=='load':
         print(help_saver_load)
-    elif mode=='save' or mode=='load' or mode=='ls':
-        print(help_saver_modes+'\n')
-        print(help_saver)
-
     else:
         print('No help for mode: %s'%mode)
         return 1

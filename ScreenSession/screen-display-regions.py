@@ -109,6 +109,8 @@ def handler(signum,frame):
 def cleanup():
     print('restoring windows '+str(win_history))
     for i,w in enumerate(win_history):
+        if w == "-1":
+            w = "-"
         cmd='eval \'select %s\' \'at %s kill\' \'focus\''%(w,wins[i])
         scs.command_at(False,cmd)
     print (focusminsize)
@@ -120,6 +122,7 @@ def cleanup():
 
 
 def prepare_windows(scs):
+    print('prepare_windows()')
     global focusminsize
     regions=[]
     while True:
@@ -144,7 +147,7 @@ def prepare_windows(scs):
     while True:
         regions_n=sc.get_regions(scs.pid)
         try:
-            if regions_n[i][0]:
+            if regions_n[2+i][0]:
                 break
         except:
             pass
@@ -177,7 +180,6 @@ if __name__=='__main__':
 
     session=sys.argv[1]
     scs=ScreenSaver(session)
-
     win_history,wins,regions_c=prepare_windows(scs)
     print('helper windows '+str(wins))
 

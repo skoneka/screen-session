@@ -61,7 +61,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:M:ntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:MntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-mru" "no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "load","save","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -78,6 +78,7 @@ def main():
     bHelp=False
     bList=False
     bFull=False
+    mru=True
     idle=None
     excluded=None
     restore = False
@@ -134,8 +135,8 @@ def main():
         elif o in ("-W"):
             waitfor = True
             pass
-        elif o in ("-M","--maxwin"):
-            maxwin = int(a)
+        elif o in ("-M","--no-mru"):
+            mru=False
         elif o in ("-s","--save"):
             mode = 1
         elif o in ("-l","--load"):
@@ -284,6 +285,7 @@ def main():
     scs.restore_previous = restore
     scs.exact=bExact
     scs.bVim=bVim
+    scs.mru=mru
     if excluded:
         excluded=excluded.split(',')
     scs.excluded=excluded
