@@ -61,7 +61,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:MntxXryi:c:Wfi:o:lsd:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-mru" "no-vim", "no-layout","current-session=","special-output=","force","in=", "out=", "load","save","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:MntxXryi:c:WfF:i:o:d:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-mru" "no-vim", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -79,6 +79,7 @@ def main():
     bList=False
     bFull=False
     mru=True
+    force_start=[]
     idle=None
     excluded=None
     restore = False
@@ -128,6 +129,8 @@ def main():
             restore = True
         elif o in ("-f","--force"):
             force = True
+        elif o in ("-F","--force-start"):
+            force_start = a
         elif o in ("-y","--no-layout"):
             enable_layout = False
         elif o in ("-h","--help"):
@@ -137,10 +140,6 @@ def main():
             pass
         elif o in ("-M","--no-mru"):
             mru=False
-        elif o in ("-s","--save"):
-            mode = 1
-        elif o in ("-l","--load"):
-            mode = 2
         elif o in ("-d","--dir"):
             projectsdir = a
         elif o in ("-i","--in"):
@@ -286,9 +285,10 @@ def main():
     scs.exact=bExact
     scs.bVim=bVim
     scs.mru=mru
+    if force_start:
+        scs.force_start=force_start.strip().split(',')
     if excluded:
-        excluded=excluded.split(',')
-    scs.excluded=excluded
+        scs.excluded=excluded.split(',')
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)

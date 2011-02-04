@@ -21,6 +21,7 @@ class ScreenSaver(object):
     exact=False
     bVim=True
     mru=True
+    force_start=[]
     group_other='OTHER_WINDOWS'
     homewindow=""
     sc=None
@@ -76,6 +77,9 @@ class ScreenSaver(object):
         return 0
 
     def load(self):
+        if self.force_start and 'all' in self.force_start:
+                self.primer_arg+='S'
+                self.force_start=[]
         out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
@@ -166,7 +170,7 @@ class ScreenSaver(object):
                 out('%s Unable to load window'%id)
 
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
-            self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
+            self.__wins_trans[win]=self.__create_win(self.force_start,self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
         
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
             try:
@@ -187,14 +191,18 @@ class ScreenSaver(object):
         return([x.strip() for x in l])
 
 
-    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
+    def __create_win(self,force_start,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
         if keep_numbering:
             winarg=win
         else:
             winarg=""
         
         if type[0]=='b':
-            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,self.primer_arg,self.projectsdir,os.path.join(self.savedir,"hardcopy."+win),os.path.join(self.savedir,"win_"+win)) )
+            if win in force_start:
+                primer_arg=self.primer_arg+'S'
+            else:
+                primer_arg=self.primer_arg
+            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,os.path.join(self.savedir,"hardcopy."+win),os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':
             self.screen('-t \"%s\" %s //group' % (title,winarg ) )
         else:
@@ -720,10 +728,14 @@ class ScreenSaver(object):
         out('\nSaved: '+str(ctime))
         
     def __restore_mru(self):
-        mru=open(os.path.join(self.basedir,self.savedir,"mru"),'r').read().strip().split(' ')
-        mru.reverse()
-        for win in mru:
-            self.select("%s"%self.__wins_trans[win])
+        try:
+            mru=open(os.path.join(self.basedir,self.savedir,"mru"),'r').read().strip().split(' ')
+            mru.reverse()
+            for win in mru:
+                self.select("%s"%self.__wins_trans[win])
+        except:
+            out('Unable to restore MRU!')
+            pass
         if self.restore_previous:
             self.select(self.homewindow)
         #elif self.__layouts_loaded:

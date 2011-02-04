@@ -12,8 +12,6 @@
 * Hardcopy with color escapes
 
 // saver:
-* Make it possible for primer to automatically start applications 
-  ( --force-start )
 * Split primer into screen-session-primer and screen-session-helper
 * Create shellrc plug for more accurate command line saving 
   and an ability to save other users processes

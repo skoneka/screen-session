@@ -366,6 +366,7 @@ def tui_attach_session(scs,arg,psession):
     return None,arg
 
 def eval_command(scs,command,last_session,psession,fifoname2):
+    global menu_tmp_last_selection
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
@@ -387,6 +388,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         return None,'\0'
     elif mode=='kill' or mode == 'K':
         if last_session:
+            menu_tmp_last_selection=-1
             print2ui('LOGIC: killing session \"%s\"'%last_session)
             scst=ScreenSaver(last_session)
             scst.quit()
@@ -433,6 +435,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             scs.focus('top')
     elif mode.startswith('w'): # wipe
         print2ui('LOGIC: wiping out dead sessions')
+        menu_tmp_last_selection=-1
         scs.wipe()
     elif mode.startswith('save'): # save 
         if args[0]:

@@ -92,14 +92,20 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     t1.extractall(os.path.join(tmpdir,savedir))
     t1.close()
     if full:
-        t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
-        t2.extractall(os.path.join(tmpdir,savedir))
-        t2.close()
+        try:
+            t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
+            t2.extractall(os.path.join(tmpdir,savedir))
+            t2.close()
+        except:
+            out('Unable to extract __data!')
     # taking care of old archive types
-    if os.path.split(glob.glob(os.path.join(tmpdir,savedir,'*'))[0])[1]==savedir:
-        os.symlink(os.path.join(tmpdir,savedir,savedir),os.path.join(home,projectsdir,savedir))
-    else:
-        os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+    try:
+        if os.path.split(glob.glob(os.path.join(tmpdir,savedir,'*'))[0])[1]==savedir:
+            os.symlink(os.path.join(tmpdir,savedir,savedir),os.path.join(home,projectsdir,savedir))
+        else:
+            os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+    except:
+        pass
 
 
 

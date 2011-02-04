@@ -1136,7 +1136,8 @@ main (int argc, char **argv)
       regions_helper (argv[2], argv[3]);
       return 0;
     }
-  else if (strcmp (argv[1], "-p") == 0) {
+  else if (strncmp (argv[1], "-p", 2) == 0) {
+    int force_start = (argv[1][2]=='S') ? 1 : 0;
     //session saver primer
     char *homedir = getenv ("HOME");
     char *workingdir = argv[2];
@@ -1180,19 +1181,21 @@ main (int argc, char **argv)
 
     getline (&filter, &filter_s, fp);	    //filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
-
-    printf ("%sTITLE:%s %s\n", green_r, none, title);
-    filter = strtrim_right (filter, '\n');
-    int bFilter=0;
-    if (strcmp (filter, "-1") != 0)
-      {
-        bFilter=1;
-        printf ("%sFILTER:%s %s\n",green_r, none, filter);
-      }
-    printf ("%s", none);
-
     fscanf (fp, "%d\n", &procs_c);
-    printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+    int bFilter=0;
+    if (!force_start)
+      {
+        printf ("%sTITLE:%s %s\n", green_r, none, title);
+        filter = strtrim_right (filter, '\n');
+        if (strcmp (filter, "-1") != 0)
+          {
+            bFilter=1;
+            printf ("%sFILTER:%s %s\n",green_r, none, filter);
+          }
+        printf ("%s", none);
+
+        printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+      }
 
     size_t proc_cwd_s = 1;
     size_t proc_exe_s = 1;
@@ -1208,7 +1211,8 @@ main (int argc, char **argv)
     for (i = 0; i < procs_c; i++)
       {
         fscanf (fp, "%s\n", buf);	//read --
-        printf ("%s%s %d%s: ", blue_b, buf, i, none);
+        if (!force_start)
+          printf ("%s%s %d%s: ", blue_b, buf, i, none);
         //cwd exe args
         getline (&proc_cwd, &proc_cwd_s, fp);
         proc_cwd = strtrim_right (proc_cwd, '\n');
@@ -1225,21 +1229,24 @@ main (int argc, char **argv)
                 cmdline_begin[cmdline_begin_c + 1] = '\0';
                 cmdline_begin_c++;
               }
-            if (c == '\0')
+            if (!force_start)
               {
-                null_c++;
-                if (null_c == 1)
-                  fputs (" \"", stdout);
+                if (c == '\0')
+                  {
+                    null_c++;
+                    if (null_c == 1)
+                      fputs (" \"", stdout);
+                    else
+                      fputs ("\" \"", stdout);
+                  }
+                else if (c == '\n')
+                  {
+                    fputs ("\" ", stdout);
+                    break;
+                  }
                 else
-                  fputs ("\" \"", stdout);
+                  fputc (c, stdout);
               }
-            else if (c == '\n')
-              {
-                fputs ("\" ", stdout);
-                break;
-              }
-            else
-              fputc (c, stdout);
             if (null_c > proc_args_n)
               break;
           }
@@ -1247,18 +1254,22 @@ main (int argc, char **argv)
         fscanf (fp, "%s\n", proc_blacklisted);
         getline (&proc_vim, &proc_vim_s, fp);
         proc_vim = strtrim_right (proc_vim, '\n');
-        printf ("\n");
-        printf ("\tCWD: %s\n", proc_cwd);
-        printf ("\tEXE: %s\n", proc_exe);
-        if (strcmp ("None", proc_vim) != 0)
-          printf ("\tVIMSESSION: %s\n", proc_vim);
-        if (strncmp (proc_blacklisted, "True", 4) == 0
-            || is_blacklisted (fullpath, cmdline_begin, i))
-          printf ("\t%sBLACKLISTED - program and child processes\n\
-                      \tcannot be started (use [O]nly)%s\n", magenta, none);
+        if (!force_start)
+          {
+            printf ("\n");
+            printf ("\tCWD: %s\n", proc_cwd);
+            printf ("\tEXE: %s\n", proc_exe);
+            if (strcmp ("None", proc_vim) != 0)
+              printf ("\tVIMSESSION: %s\n", proc_vim);
+            if (strncmp (proc_blacklisted, "True", 4) == 0
+                || is_blacklisted (fullpath, cmdline_begin, i))
+              printf ("\t%sBLACKLISTED - program and child processes\n\
+                          \tcannot be started (use [O]nly)%s\n", magenta, none);
+          }
       }
     getline (&buftext, &buftext_s, fp);	//last line - timesaved
-    printf ("%sSAVED:%s %s\n", green_r, none, buftext);
+    if (!force_start)
+      printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
     free(proc_vim);
     //free(proc_cwd);
@@ -1269,8 +1280,12 @@ main (int argc, char **argv)
     int menu;
     int number;
     int *numbers;
+    int numbers_c;
     chdir(proc_cwd);
-    int numbers_c=userInput (&menu, &numbers, procs_c, &bFilter);
+    if (force_start)
+      menu=ALL;
+    else
+      numbers_c=userInput (&menu, &numbers, procs_c, &bFilter);
     char *shell = NULL;
     char **arglist = NULL;
     int *args;
@@ -1336,7 +1351,8 @@ main (int argc, char **argv)
         break;
 
       case ALL:
-        read_scrollback(fullpath,scrollbackfile);
+        if (!force_start)
+          read_scrollback(fullpath,scrollbackfile);
         printf (PRIMER "Starting all programs...\n");
         for (i = 0; i < procs_c; i++)
           {

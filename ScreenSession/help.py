@@ -159,7 +159,7 @@ Options:\n\
 -f --force\n\
   \tforce saving even if savefile with the same name already exists\n\
 -e --exclude  <windows>\n\
-  \tcomma separated list of windows to be ignored during saving,\n\
+  \ta comma separated list of windows to be ignored during saving,\n\
   \tif a window is a group all subwindows are also ignored\n\
 -y --no-layout\n\
   \tdisable layout saving\n\
@@ -188,6 +188,10 @@ Options:\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
 -X --exact-kill\n\
   \tsame as exact, but kill all existing windows\n\
+-F --force-start  <windows>\n\
+    a comma separeted list of windows which will start programs immediately,\n\
+    using keyword \"all\" causes all loaded windows to start their subprograms\n\
+    without waiting for user confirmation\n\
 -r --restore\n\
   \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
