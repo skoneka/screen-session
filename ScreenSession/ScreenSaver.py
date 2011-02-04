@@ -22,6 +22,7 @@ class ScreenSaver(object):
     bVim=True
     mru=True
     force_start=[]
+    scroll=[]
     group_other='OTHER_WINDOWS'
     homewindow=""
     sc=None
@@ -52,6 +53,7 @@ class ScreenSaver(object):
         self.pid=str(pid)
         self.set_session(self.pid)
         self.primer=os.path.join(os.path.dirname(sys.argv[0]),self.primer)
+        self.__scrollfile=os.path.join(self.savedir,"hardcopy.")
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
@@ -77,9 +79,11 @@ class ScreenSaver(object):
         return 0
 
     def load(self):
-        if self.force_start and 'all' in self.force_start:
+        if 'all' in self.force_start:
                 self.primer_arg+='S'
                 self.force_start=[]
+        if 'all' in self.scroll:
+            self.__scrollfile=None
         out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
@@ -170,7 +174,7 @@ class ScreenSaver(object):
                 out('%s Unable to load window'%id)
 
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
-            self.__wins_trans[win]=self.__create_win(self.force_start,self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
+            self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
         
         for win,time,group,type,title,filter,scrollback_len,processes in wins:
             try:
@@ -191,18 +195,23 @@ class ScreenSaver(object):
         return([x.strip() for x in l])
 
 
-    def __create_win(self,force_start,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
+    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
         if keep_numbering:
             winarg=win
         else:
             winarg=""
         
         if type[0]=='b':
-            if win in force_start:
+            if win in self.force_start:
                 primer_arg=self.primer_arg+'S'
             else:
                 primer_arg=self.primer_arg
-            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,os.path.join(self.savedir,"hardcopy."+win),os.path.join(self.savedir,"win_"+win)) )
+            if win in self.scroll or not self.__scrollfile:
+                scrollfile='0'
+            else:
+                scrollfile=self.__scrollfile+win
+            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)) )
+            #self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,"0",os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':
             self.screen('-t \"%s\" %s //group' % (title,winarg ) )
         else:
@@ -719,6 +728,14 @@ class ScreenSaver(object):
             bpath = os.path.join(self.basedir, self.savedir, "win_")
             for win in excluded_wins:
                 util.remove(bpath+win)
+        if 'all' in self.scroll:
+            for f in glob.glob(os.path.join(self.basedir, self.savedir, "hardcopy.*")):
+                open(f,'w')
+        elif self.scroll:
+            for w in self.scroll:
+                open(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w),'w')
+                #util.remove(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w))
+
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         if errors:

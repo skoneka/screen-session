@@ -22,7 +22,7 @@
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
 * Encrypt savefiles
-* Add option for disabling, per window, scrollback saving
+* Add option for disabling, per window, scrollback saving/loading
 
 // manager:
 * Add session-wide window search

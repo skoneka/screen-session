@@ -161,6 +161,9 @@ Options:\n\
 -e --exclude  <windows>\n\
   \ta comma separated list of windows to be ignored during saving,\n\
   \tif a window is a group all subwindows are also ignored\n\
+-H --no-scroll  <windows>\n\
+    a comma separeted list of windows which will not save scrollbacks,\n\
+    using keyword \"all\" affects all windows\n\
 -y --no-layout\n\
   \tdisable layout saving\n\
 -V --no-vim\n\
@@ -192,12 +195,15 @@ Options:\n\
     a comma separeted list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
     without waiting for user confirmation\n\
+-H --no-scroll  <windows>\n\
+    a comma separeted list of windows which will not load scrollbacks,\n\
+    using keyword \"all\" affects all windows\n\
 -r --restore\n\
   \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout loading\n\
--M --no-mru\n\
-  \tdo not restore Most Recently Used order of windows\n\
+-m --mru\n\
+  \trestore Most Recently Used order of windows\n\
 --log  <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\

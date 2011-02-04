@@ -40,8 +40,8 @@ if [ ! -d "$scsfiledir" ]; then
 fi
 
 if [ "$session" = '' ]; then
-    session=`python $SCRIPTPATH/sessionname.py`
-    #session=$STY
+    #session=`python $SCRIPTPATH/sessionname.py`
+    session=$STY
 fi
 
 if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then

@@ -61,7 +61,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:MntxXryi:c:WfF:i:o:d:hvp:V", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore","no-mru" "no-vim", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:WfF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -78,8 +78,9 @@ def main():
     bHelp=False
     bList=False
     bFull=False
-    mru=True
+    mru=False
     force_start=[]
+    scroll=[]
     idle=None
     excluded=None
     restore = False
@@ -118,6 +119,8 @@ def main():
             idle = a
         elif o in ("-V","--no-vim"):
             bVim = False
+        elif o in ("-H","--no-scroll"):
+            scroll = a
         elif o in ("-x","--exact"):
             bExact = True
         elif o in ("-X","--exact-kill"):
@@ -138,8 +141,8 @@ def main():
         elif o in ("-W"):
             waitfor = True
             pass
-        elif o in ("-M","--no-mru"):
-            mru=False
+        elif o in ("-m","mru"):
+            mru=True
         elif o in ("-d","--dir"):
             projectsdir = a
         elif o in ("-i","--in"):
@@ -289,6 +292,8 @@ def main():
         scs.force_start=force_start.strip().split(',')
     if excluded:
         scs.excluded=excluded.split(',')
+    if scroll:
+        scs.scroll=scroll.split(',')
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)

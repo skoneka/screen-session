@@ -71,25 +71,28 @@ def handler(signum,frame):
     elif ch[0]=="'" or ch[0]=='g' or ch[0]=='G':
         mode=0
         bSelect=True
+        if ch[0]=='G':
+            number=-1*number
     elif ch[0]=="l":
         mode=2
-        rnumber=-1*number
+        rnumber=number
     elif ch[0]=="L":
         mode=2
-        rnumber=-1*number
+        rnumber=number
+        number=-1*number
         bSelect=True
     elif ch[0]=="r":
-        rnumber=number
+        rnumber=-1*number
         mode=2
     elif ch[0]=="R":
-        rnumber=number
+        rnumber=-1*number
         mode=2
         bSelect=True
     else:
         mode=0
 
     
-    if number!=-1 and mode==1:
+    if number!=0 and mode==1:
         tmp=win_history[0]
         win_history[0]=win_history[number]
         win_history[number]=tmp
@@ -98,12 +101,16 @@ def handler(signum,frame):
 
     cleanup()
 
-    if number!=-1 and bSelect:
-        if(number!=0 and number<regions_c):
-            command='screen -S %s -X eval'%session
-            for i in range(0,number):
-                command+=' "focus"'
-            os.system(command)
+    if number!=0 and bSelect:
+        command='screen -S %s -X eval'%session
+        if number<0:
+            number=abs(number)
+            cfocus='focus prev'
+        else:
+            cfocus='focus'
+        for i in range(0,number):
+            command+=' "%s"'%cfocus
+        os.system(command)
     sys.exit(0)
 
 def cleanup():

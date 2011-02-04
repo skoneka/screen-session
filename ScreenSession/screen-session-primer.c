@@ -1047,9 +1047,11 @@ rotate right:\t [number]r\n\
   kill (pid, SIGUSR1);
 
 }
-FILE *
+int
 read_scrollback(char *fullpath, char *scrollbackfile)
 {
+  if (strcmp(scrollbackfile,"0")==0)
+    return 0;
   FILE *fp=NULL;
   char c;
   chdir(fullpath);
@@ -1066,10 +1068,10 @@ read_scrollback(char *fullpath, char *scrollbackfile)
   else
     {
       fprintf (stderr,PRIMER": %s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
-      perror("Error :");
+      return 1;
     }
   fp = NULL;
-  return fp;
+  return 0;
 
 }
 #ifndef TEST
@@ -1150,7 +1152,7 @@ main (int argc, char **argv)
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
     chdir (fullpath);
-    fp=read_scrollback(fullpath,scrollbackfile);
+    read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
     requireSession (fullpath, datafile, 0);
@@ -1318,7 +1320,10 @@ main (int argc, char **argv)
         break;
       case RESET:
         printf(PRIMER "Reseting...\n");
-        requireSession (fullpath, scrollbackfile, 1);
+        if ( strcmp(scrollbackfile,"0")==0)
+          requireSession (fullpath, datafile, 0);
+        else
+          requireSession (fullpath, scrollbackfile, 1);
         execv (argv[0],argv);
         break;
       case DEFAULT:

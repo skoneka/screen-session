@@ -80,6 +80,10 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
+    if full:
+        print('Full unpacking...')
+    else:
+        print('Partial unpacking...')
     import tarfile
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
@@ -161,6 +165,7 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
             t1.add(f,os.path.split(f)[1])
             remove(f)
         t1.add(os.path.join(home,projectsdir,savedir_real+'__tmp','last_win'),'last_win')
+        remove(os.path.join(home,projectsdir,savedir_real+'__tmp','last_win'))
         t1.close()
     except Exception,x:
         print(str(x))
