@@ -112,8 +112,8 @@ else
             python $SCRIPTPATH/manager.py pn psession=$session "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
         #    python $SCRIPTPATH/manager.py pr psession=$session "$@"
-        elif [ $mode = "grab" ]; then
-            sh $SCRIPTPATH/screen-session-grab "$@"
+        #elif [ $mode = "grab" ]; then
+        #    sh $SCRIPTPATH/screen-session-grab "$@"
         elif [ $mode = "--version" -o $mode = "-v" ]; then
             python $SCRIPTPATH/help.py --version
         elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
@@ -146,8 +146,8 @@ else
                 fi
             elif [ $mode = "renumber" ]; then
                 python $SCRIPTPATH/renumber.py $session "$@"
-            elif [ $mode = "sort" ]; then
-                python $SCRIPTPATH/sort.py $session "$@"
+            #elif [ $mode = "sort" ]; then
+            #    python $SCRIPTPATH/sort.py $session "$@"
             else
                 echo "No such mode: $mode"
                 ret=1

@@ -2,14 +2,15 @@
 |    TODO    |
 +------------+
 
+// Screen:
+* Remove -X command length cap (MAXSTR)
+* Hardcopy with color escapes
+* Be able to dump any layout without changing the current layout
+
 // new tools:
 * yank-ring (kill-ring)
 * edit-scrollback
 * Set terminal emulator title
-
-// Screen:
-* Remove -X command length cap (MAXSTR)
-* Hardcopy with color escapes
 
 // saver:
 * Split primer into screen-session-primer and screen-session-helper
@@ -29,5 +30,7 @@
 * Write a scrollable menu
 * Set some environment variables on attach
 
-// grab:
-* Fix it to work reliably...
+// broken/unfinished tools:
+* grab
+* sort
+* manager-remote

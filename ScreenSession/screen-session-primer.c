@@ -1155,7 +1155,7 @@ main (int argc, char **argv)
     read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-    requireSession (fullpath, datafile, 0);
+    requireSession (fullpath, datafile, 1);
     fp = fopen (datafile, "r");
     if (!fp)
       {
@@ -1265,8 +1265,7 @@ main (int argc, char **argv)
               printf ("\tVIMSESSION: %s\n", proc_vim);
             if (strncmp (proc_blacklisted, "True", 4) == 0
                 || is_blacklisted (fullpath, cmdline_begin, i))
-              printf ("\t%sBLACKLISTED - program and child processes\n\
-                          \tcannot be started (use [O]nly)%s\n", magenta, none);
+              printf ("\t%sBLACKLISTED - program and child processes\n\tcannot be started (use [O]nly)%s\n", magenta, none);
           }
       }
     getline (&buftext, &buftext_s, fp);	//last line - timesaved
@@ -1391,7 +1390,7 @@ main (int argc, char **argv)
         break;
 
       }
-    fprintf (stderr,PRIMER": %s:%d fatal error - unsupported action\n",__FILE__,__LINE__);
+    fprintf (stderr,PRIMER": %s:%d fatal error - unsupported action %d\n",__FILE__,__LINE__,menu);
     mygetch ();
     return 44;
   }

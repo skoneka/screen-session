@@ -6,6 +6,8 @@
 
 # Usage: screen-session-grab PID
 # on the previous shell: disown
-
+if [ $# -eq 0 ]; then
+    exit 0
+fi
 injcode -m retty $1
 sh -c "/bin/sleep 1; /bin/kill -s STOP $1;/bin/sleep 1; /bin/kill -s CONT $1" &

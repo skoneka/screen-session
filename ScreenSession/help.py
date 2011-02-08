@@ -3,21 +3,15 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
-help_maxwin=''
-help_minwin=''
-
 
 help_help="\
-Usage:\t scs [mode] [options]\n\
+Usage:\t screen-session [mode] [options]\n\
 \t scs [mode] -S session [options]\n\
-\n\
 Help:\t scs [mode] --help\n\
-\n\
 Global Options:\n\
     -S [target]\t- target Screen session\n\
     -W\t\t- wait for keypress\n\
     -h --help\t- display mode help\n\
-\n\
 Saver modes:\n\
     save\t- save session to disk\n\
     load\t- load session from file\n\
@@ -27,8 +21,6 @@ Other tools:\n\
     dump\t- dump informations about windows in session\n\
     find-pid\t- find PIDs in windows\n\
     find-file\t- find files in windows\n\
-    grab\t- grab a process and attach it to current tty\n\
-    \t\t  (requires injcode)\n\
     group\t- move windows to a group\n\
     kill\t- send signal to last process started in a window\n\
     kill-group\t- kill a group and all windows inside\n\
@@ -36,13 +28,17 @@ Other tools:\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
     nest\t- nest layout in the current region\n\
-    regions\t- display number in each region\n\
-    \t\t  (like tmux display-panes)\n\
+    regions\t- display number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
-    sort\t- sort windows by title\n\
-    \n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
     "
+'''
+broken/unfinished:
+    grab\t- grab a process and attach it to current tty\n\
+    \t\t  (requires injcode)\n\
+    sort\t- sort windows by title\n\
+    manager-remote - 
+'''
 
 help_regions="Usage: screen-session regions [options]\n\n\
 Display number in each region.\n\
@@ -55,9 +51,7 @@ Useful for closing random emacs/vim instances.\
 "
 
 help_kill_zombie="Kill all zombie windows in session.\n\
-%s\
-%s\
-\nUsage: screen-session kill-zombie [options]"%(help_maxwin,help_minwin)
+\nUsage: screen-session kill-zombie [options]"
 
 help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\n\
 Recursively kill groups and windows inside.\n\
@@ -65,9 +59,7 @@ Accepts group window numbers as arguments.\n\
 If the first argument is \"current\" kill the current group.\n\
 If the first argument is \"all\" kill all groups in session.\n\
 Take extra care with this command.\
-%s\
-%s\
-"%(help_maxwin,help_minwin)
+"
 
 help_dir="Usage: screen-session dir [options] [program]\n\n\
 Start a new Screen window in the same working directory\n\
@@ -82,15 +74,11 @@ Dump informations about windows in session.\n\
 help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\n\
 Example: screen-session find-pid $(pgrep vim)\n\n\
 Find PIDs in windows.\
-%s\
-%s\
-"%(help_maxwin,help_minwin)
+"
 
 help_find_file="Usage: screen-session find-file [options] [files]\n\n\
 Find files in windows. Requires lsof.\
-%s\
-%s\
-"%(help_maxwin,help_minwin)
+"
 
 help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
@@ -121,16 +109,12 @@ Nest layout in the current region.\
 "
 
 help_renumber="Usage: screen-session renumber [options]\n\n\
-Renumber windows to fill the gaps.\n\
-%s\
-%s\
-"%(help_maxwin,help_minwin)
+Renumber windows to fill the gaps.\
+"
 
 help_sort="Usage: screen-session sort [options]\n\n\
-Sort windows by titles.\n\
-%s\
-%s\
-"%(help_maxwin,help_minwin)
+Sort windows by titles.\
+"
 
 help_name="Usage: screen-session name [options] [new_sessionname]\n\n\Try to get the current sessionname.\
 "

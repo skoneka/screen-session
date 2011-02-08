@@ -100,6 +100,7 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
             t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
             t2.extractall(os.path.join(tmpdir,savedir))
             t2.close()
+            #print glob.glob(os.path.join(tmpdir,savedir,'*'))
         except:
             out('Unable to extract __data!')
     # taking care of old archive types

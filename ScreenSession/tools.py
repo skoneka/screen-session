@@ -107,7 +107,12 @@ def sort(session,key=None):
 
     i=0
     for group,props in groups.items():
-        props.sort(key=lambda wins:wins[3].lower())
+        try:
+            props.sort(key=lambda wins:wins[3].lower())
+        except:
+            print('FAIL')
+            print( str(len(props))+' : '+group + ' : ' + str(props))
+            pass
         #print( str(len(props))+' : '+group + ' : ' + str(props))
         for groupid,win,ctype,title in props:
             if wins_trans[win]!=i:
