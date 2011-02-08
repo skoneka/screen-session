@@ -31,31 +31,39 @@ def find_files_in_pids(files):
 
 
 def dump(ss,showpid=True):
+    from sys import stdout
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid):
         print("----------------------------------------")
-        print("%s TYPE\t %s"%(cwin,ctypestr))
-        print("%s GRP \t %s"%(cwin,cgroupid+' '+cgroup))
-        print("%s TITL\t %s"%(cwin,ctitle))
+        lines=[]
+        lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
+        lines.append("%s GRP   %s\n"%(cwin,cgroupid+' '+cgroup))
+        lines.append("%s TITL  %s\n"%(cwin,ctitle))
         if cfilter!='-1':
-            print("%s EXEC\t %s"%(cwin,cfilter))
+            lines.append("%s EXEC  %s\n"%(cwin,cfilter))
         if ctype==0:
-            print("%s TTY \t %s"%(cwin,ctty))
+            lines.append("%s TTY   %s\n"%(cwin,ctty))
             if showpid:
                 try:
                     pids=sc.get_tty_pids(ctty)
                 except:
-                    print ("%s No access"%cwin)
+                    lines.append ("%s No access\n"%cwin)
                     pass
                 for pid in pids:
                     try:
                         cwd,exe,cmd=sc.get_pid_info(pid)
-                        print ("%s PID \t %s \t <<<<<<"%(cwin,pid))
-                        print ("%s P %s CWD \t %s"%(cwin,pid,cwd))
-                        print ("%s P %s EXE \t %s"%(cwin,pid,exe))
-                        print ("%s P %s CMD \t %s"%(cwin,pid,cmd.split('\0')[:-1]))
+                        lines.append ("%s PID > %s <\n"%(cwin,pid))
+                        lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
+                        lines.append ("%s PID   %s EXE %s\n"%(cwin,pid,exe))
+                        cmd=cmd.split('\0')[:-1]
+                        lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,cmd))
+                        try:
+                            if exe.endswith('screen-session-primer') and cmd[1]=='-p':
+                                lines[0]="%s TYPE   primer\n"%(cwin)
+                        except:
+                            pass
                     except:
-                        print ("%s PID \t %s\t No permission"%(cwin,pid))
-
+                        lines.append ("%s PID   %s No permission\n"%(cwin,pid))
+        map(stdout.write,lines)
 
 def renumber(session):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
