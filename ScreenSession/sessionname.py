@@ -4,14 +4,15 @@ import os,sys
 import GNUScreen as sc
 from util import timeout_command
 
+# sessions must have a display (must be attached) to be detected
+
 def get_sessionname(session=None):
     if session:
         session_arg='-S '+session
     else:
         session_arg=''
-    p=os.popen('screen %s -X sessionname'%session_arg)
-    p.close()
-    s=timeout_command('screen %s -Q @lastmsg'%session_arg)[0]
+    p=os.popen('screen %s -X sessionname'%session_arg).close()
+    s=timeout_command('screen %s -Q @lastmsg'%session_arg,3)[0]
     return s.split('\'',1)[1].rsplit('\'',1)[0]
 
 try:
@@ -43,7 +44,7 @@ if s:
     try:
         if session and s.find(session)>-1:
             newname=sys.argv[2]
-            os.system('screen -S %s -X sessionname %s'%(s,newname))
+            os.popen('screen -S %s -X sessionname %s'%(s,newname)).close()
         else:
             raise Exception
     except:
@@ -54,7 +55,6 @@ if s:
             print ('__no__session__')
             sys.exit(1)
 else:
-   
     print ('__no__session__')
     sys.exit(1)
 
