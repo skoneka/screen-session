@@ -54,7 +54,7 @@ index 5f4af8a..d6253f0 100644
    { "unbindall",	ARGS_0 },
    { "unsetenv",		ARGS_1 },
 diff --git a/src/fileio.c b/src/fileio.c
-index 88fbf64..3e5dab6 100644
+index 88fbf64..b84b6c7 100644
 --- a/src/fileio.c
 +++ b/src/fileio.c
 @@ -452,6 +452,23 @@ int dump;
@@ -104,7 +104,7 @@ index 88fbf64..3e5dab6 100644
 +                    }
 +                  else
 +                    {
-+                      sprintf(buf,"%d\n%s\n%d %s\n%s\n%s\n%s\n%d\n",fore->w_number,"TIME", (fore->w_group) ? fore->w_group->w_number: -1, (fore->w_group) ? fore->w_group->w_title : "", tty ,fore->w_title,  fore->w_pwin ? fore->w_pwin->p_cmd : "-1", fore->w_histheight);
++                      sprintf(buf,"%d\n%s\n%d %s\n%s\n%s\n%s\n%d\n",fore->w_number,"\0", (fore->w_group) ? fore->w_group->w_number: -1, (fore->w_group) ? fore->w_group->w_title : "", tty ,fore->w_title,  fore->w_pwin ? fore->w_pwin->p_cmd : "-1", fore->w_histheight);
 +                    }
 +                  fprintf(f, buf);
 +                }
@@ -201,10 +201,10 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index da9188d..3c81a6b 100644
+index cb85adc..cb807bb 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -1268,6 +1268,31 @@ int key;
+@@ -1275,6 +1275,28 @@ int key;
      case RC_DUMPTERMCAP:
        WriteFile(user, (char *)0, DUMP_TERMCAP);
        break;
@@ -212,16 +212,11 @@ index da9188d..3c81a6b 100644
 +      if (!strcmp(args[0], "window"))
 +        {
 +          int mode;
-+          if (!strcmp(args[2],"-F"))
++          if (args[2] && !strcmp(args[2],"-F"))
 +            mode = DUMP_SCSWINDOWFULL;
-+          else if (!strcmp(args[2],"-N"))
-+            mode = DUMP_SCSWINDOW;
 +          else
-+            {
-+              OutputMsg(0, "Usage: ");
-+              break;
-+            }
-+            WriteFile(user, args[1], mode);
++            mode = DUMP_SCSWINDOW;
++          WriteFile(user, args[1], mode);
 +        }
 +      else if (!strcmp(args[0], "layout"))
 +	{
@@ -232,11 +227,13 @@ index da9188d..3c81a6b 100644
 +	  else
 +	    OutputMsg(0, "Layout dumped to \"%s\"", args[1] ? args[1] : "layout-dump-size");
 +	}
++      else
++        OutputMsg(0, "Usage: dumpscreen [window|layout] filename [-F]");
 +      break;
      case RC_HARDCOPY:
        {
  	int mode = DUMP_HARDCOPY;
-@@ -1723,6 +1748,9 @@ int key;
+@@ -1730,6 +1752,9 @@ int key;
          copy_reg_fn(&ch, 0, NULL);
        break;
  #endif
@@ -246,7 +243,7 @@ index da9188d..3c81a6b 100644
      case RC_REGISTER:
  #ifdef ENCODINGS
        i = fore ? fore->w_encoding : display ? display->d_encoding : 0;
-@@ -2661,6 +2689,19 @@ int key;
+@@ -2676,6 +2701,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
@@ -266,7 +263,7 @@ index da9188d..3c81a6b 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3066,14 +3107,16 @@ int key;
+@@ -3081,14 +3119,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -291,7 +288,7 @@ index da9188d..3c81a6b 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4209,19 +4252,21 @@ int key;
+@@ -4224,19 +4264,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -326,7 +323,7 @@ index da9188d..3c81a6b 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4237,13 +4282,10 @@ int key;
+@@ -4252,13 +4294,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}
