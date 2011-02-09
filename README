@@ -17,11 +17,12 @@ session saver currently supports saving of:
 layouts, scrollbacks, titles, filters and is able to restart programs 
 run in windows. It recognizes groups and regular windows. Currently there 
 is no support for serial and telnet window types.
+Session saver also saves VIM sessions inside Screen session.
 
 Available screen-session modes:
 
 ----
-save        - save GNU Screen session
+save        - save Screen ( and VIM ) session
 load        - load session
 ls          - list saved sessions
 ----
@@ -101,8 +102,8 @@ and ":wviminfo".
 Bugs
 -----------------------------------------------------------------------
 
-- Most tools do not work with detached Screen sessions.
-- :msgminwait is set to 0 the original value is not restored
+- Many of the tools do not work with detached Screen sessions.
+- :msgminwait is set to 0 the original value is not restored.
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
 http://github.com/skoneka/screen-session/issues

@@ -134,7 +134,7 @@ Options:\n\
 "
 
 help_saver_save="Usage: scs save [options]\n\n\
-Save GNU Screen sessions to a file.\n\n\
+Save GNU Screen and VIM sessions to a file.\n\n\
 Options:\n\
 -i --in  <sesionnname>\n\
   \tspecify target Screen session (by default current session)\n\
