@@ -50,10 +50,13 @@ Kill last process started in a window.\n\
 Useful for closing random emacs/vim instances.\
 "
 
-help_kill_zombie="Kill all zombie windows in session.\n\
-\nUsage: screen-session kill-zombie [options]"
+help_kill_zombie="Usage: screen-session kill-zombie [options]\n\
+       screen-session kz [options]\n\n\
+Kill all zombie windows in session.\
+"
 
-help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\n\
+help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\
+       screen-session kg [options] [groupNum0] [groupNum..]\n\n\
 Recursively kill groups and windows inside.\n\
 Accepts group window numbers as arguments.\n\
 If the first argument is \"current\" kill the current group.\n\
@@ -71,12 +74,14 @@ Dump informations about windows in session.\n\
 -P \t- do not show pid data\
 "
 
-help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\n\
+help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\
+       screen-session fp [options] [PIDs]\n\n\
 Example: screen-session find-pid $(pgrep vim)\n\n\
 Find PIDs in windows.\
 "
 
-help_find_file="Usage: screen-session find-file [options] [files]\n\n\
+help_find_file="Usage: screen-session find-file [options] [files]\n\
+       screen-session ff [options] [files]\n\n\
 Find files in windows. Requires lsof.\
 "
 

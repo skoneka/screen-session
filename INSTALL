@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
-screen-session  requires a recent version of Screen patched with screen-session.diff
-screen-session uses "ps", "tar", "pgrep", "grep" and reads /proc filesystem.
+screen-session  requires a recent version of Screen patched with gnu_screen.diff
+screen-session uses "ps", "pgrep" and reads /proc filesystem.
 
 tested on:
 linux, python 2.5.2

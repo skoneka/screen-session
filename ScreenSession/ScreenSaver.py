@@ -28,7 +28,8 @@ class ScreenSaver(object):
     sc=None
     wrap_group_id=None
     
-    primer="screen-session-primer"
+    primer_base="screen-session-primer"
+    primer=primer_base
     primer_arg="-p"
     
     # blacklist file in projects directory
@@ -674,7 +675,7 @@ class ScreenSaver(object):
                     #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
                     vim_name=str(None)
                     args=cpids_data[i][2].split('\0')
-                    if self.primer==args[0]:
+                    if args[0].endswith(self.primer_base) and args[1]=='-p':
                         sys.stdout.write('imp ')
                         rollback=self.__rollback(cpids_data[i][2])
                         #out(str(rollback))

@@ -57,7 +57,7 @@ def dump(ss,showpid=True):
                         cmd=cmd.split('\0')[:-1]
                         lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,cmd))
                         try:
-                            if exe.endswith('screen-session-primer') and cmd[1]=='-p':
+                            if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
                                 lines[0]="%s TYPE   primer\n"%(cwin)
                         except:
                             pass
