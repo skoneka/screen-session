@@ -10,7 +10,6 @@ Usage:\t screen-session [mode] [options]\n\
 Help:\t scs [mode] --help\n\
 Global Options:\n\
     -S [target]\t- target Screen session\n\
-    -W\t\t- wait for keypress\n\
     -h --help\t- display mode help\n\
 Saver modes:\n\
     save\t- save session to disk\n\
@@ -28,7 +27,7 @@ Other tools:\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
     nest\t- nest layout in the current region\n\
-    regions\t- display number in each region (tmux display-panes)\n\
+    regions\t- display a number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
     "
@@ -41,8 +40,19 @@ broken/unfinished:
 '''
 
 help_regions="Usage: screen-session regions [options]\n\n\
-Display number in each region.\n\
-Reassembles the functionality of tmux display-panes.\
+Display a number in each region.\n\
+Allows selecting, swapping and rotating. Inspired by tmux display-panes.\n\
+\n\
+Keys:\n\
+goto region  -> number and <g> or <'> or <space>\n\
+swap regions -> number and <s>\n\
+rotate left  -> number and <l>\n\
+rotate right -> number and <r>\n\
+\n\
+reverse goto region     -> number and <G>\n\
+swap regions and select -> number and <S>\n\
+rotate left  and select -> number and <L>\n\
+rotate right and select -> number and <R>\
 "
 
 help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n\n\
@@ -60,7 +70,7 @@ help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNu
 Recursively kill groups and windows inside.\n\
 Accepts group window numbers as arguments.\n\
 If the first argument is \"current\" kill the current group.\n\
-If the first argument is \"all\" kill all groups in session.\n\
+If the first argument is \"all\" kill all groups in the session.\n\
 Take extra care with this command.\
 "
 

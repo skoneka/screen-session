@@ -13,12 +13,9 @@ export PYTHONPATH=$SCRIPTPATH
 ret=0
 SHOWPID='1'
 bKill=0
-waitfor=0
-logpipe=1
 
 if [ $# -eq 0 ]; then
-    python $SCRIPTPATH/help.py
-    exit $?
+    exec python $SCRIPTPATH/help.py
 fi
 
 mode=$1
@@ -27,8 +24,7 @@ shift 1 "$@"
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
-        python $SCRIPTPATH/help.py $mode
-        exit $?
+        exec python $SCRIPTPATH/help.py $mode
     fi
 fi
 
@@ -56,18 +52,14 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     argument1="--current-session $session"
     argument2="--special-output $scsfiletmp"
     
-    if [ $logpipe -eq 1 ]; then
-        if [ -d "$scsfile" ]; then
-            /bin/rm -f $scsfile
-        fi
-        mkfifo $scsfile
-        screen -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
-        
-        cat $scsfile
+    if [ -d "$scsfile" ]; then
         /bin/rm -f $scsfile
-    else
-        python $SCRIPTPATH/screen_saver.py $mode $argument0 $argument1 $argument2 "$@"
     fi
+    mkfifo $scsfile
+    screen -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
+    
+    cat $scsfile
+    /bin/rm -f $scsfile
 
     while read cmd
     do
@@ -75,8 +67,6 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
             read session
             read twin
             screen-session kill-group -S $session $twin
-        elif [ "$cmd" = "W" ]; then
-            waitfor=1
         elif [ "$cmd" = "R" ]; then
             read ret
         fi
@@ -86,11 +76,8 @@ else
     shiftcount=0
     bSession=0
     # parse command line arguments
-    while getopts ":WPS:M:U:": OPT; do
+    while getopts ":PS:M:U:": OPT; do
         case "$OPT" in
-        W)  waitfor=1
-            shiftcount=`expr $shiftcount + 1`
-            ;;
         S)  session="$OPTARG"
             bSession=1
             shiftcount=`expr $shiftcount + 2`
@@ -105,47 +92,47 @@ else
         if [ $bSession -eq 0 ]; then
             session=`python $SCRIPTPATH/sessionname.py`
         fi
-        python $SCRIPTPATH/sessionname.py $session "$@"
+        exec python $SCRIPTPATH/sessionname.py $session "$@"
     else
         screen -S $session -X msgminwait 0
         if [ $mode = "manager" ]; then
-            python $SCRIPTPATH/manager.py pn psession=$session "$@"
+            exec python $SCRIPTPATH/manager.py pn psession=$session "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
         #    python $SCRIPTPATH/manager.py pr psession=$session "$@"
         #elif [ $mode = "grab" ]; then
         #    sh $SCRIPTPATH/screen-session-grab "$@"
         elif [ $mode = "--version" -o $mode = "-v" ]; then
-            python $SCRIPTPATH/help.py --version
+            exec python $SCRIPTPATH/help.py --version
         elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
-            python $SCRIPTPATH/help.py "$@"
+            exec python $SCRIPTPATH/help.py "$@"
         elif [ $session != "__no__session__" ]; then
             if [ $mode = "group" ]; then
-                sh $SCRIPTPATH/win-to-group $session "$@"
+                exec sh $SCRIPTPATH/win-to-group $session "$@"
             elif [ $mode = "regions" ]; then
-                screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+                exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
             elif [ $mode = "nest" ]; then
-                screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+                exec screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
             elif [ $mode = "dir" ]; then
-                python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
+                exec python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
             elif [ $mode = "dump" ]; then
-                python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
+                exec python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
-                python $SCRIPTPATH/find_pid.py $session "$@"
+                exec python $SCRIPTPATH/find_pid.py $session "$@"
             elif [ $mode = "find-file" -o $mode = "ff" ]; then
-                python $SCRIPTPATH/find_file.py $session "$@"
+                exec python $SCRIPTPATH/find_file.py $session "$@"
             elif [ $mode = "kill" ]; then
                 # screen-session kill [signal=TERM] [win=current]
-                python $SCRIPTPATH/kill.py $session "$@"
+                exec python $SCRIPTPATH/kill.py $session "$@"
             elif [ $mode = "kill-zombie" -o $mode = "kz" ]; then
-                python $SCRIPTPATH/kill-zombie.py $session "$@"
+                exec python $SCRIPTPATH/kill-zombie.py $session "$@"
             elif [ $mode = "kill-group" -o $mode = "kg" ]; then
                 if [ $# -eq 0 ]; then
-                    python $SCRIPTPATH/help.py $mode
+                    exec python $SCRIPTPATH/help.py $mode
                 else
-                    screen -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+                    exec screen -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
                 fi
             elif [ $mode = "renumber" ]; then
-                python $SCRIPTPATH/renumber.py $session "$@"
+                exec python $SCRIPTPATH/renumber.py $session "$@"
             #elif [ $mode = "sort" ]; then
             #    python $SCRIPTPATH/sort.py $session "$@"
             else
@@ -161,10 +148,4 @@ fi
 if [ $ret -eq 0 ]; then
     ret=$?
 fi
-
-if [ $waitfor -eq 1 ]; then
-    /bin/echo 'Press any key...'
-    stty cbreak echo; KEY=$(dd bs=1 count=1 2>/dev/null); stty -cbreak echo
-fi
-
 exit $ret

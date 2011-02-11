@@ -58,11 +58,13 @@ def dump(ss,showpid=True):
                         lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,cmd))
                         try:
                             if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
-                                lines[0]="%s TYPE   primer\n"%(cwin)
+                                lines[0]=lines[0][:-1]+" / primer\n"
+                            elif cmd[0] in ('vi','vim','viless','vimdiff'): 
+                                lines[0]=lines[0][:-1]+" / VIM\n"
                         except:
                             pass
                     except:
-                        lines.append ("%s PID   %s No permission\n"%(cwin,pid))
+                        lines.append ("%s PID > %s < No permission\n"%(cwin,pid))
         map(stdout.write,lines)
 
 def renumber(session):

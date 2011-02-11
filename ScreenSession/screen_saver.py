@@ -19,12 +19,10 @@ import util
 logpipeh=None
 special_output=None
 
-def doexit(var=0,waitfor=True):
+def doexit(var=0):
     global logpipeh
     if logpipeh:
         logpipeh.close()
-    #if waitfor:
-    #    raw_input('Press any key to exit...')
     if sys.stdout!=sys.__stdout__:
         sys.stdout.close()
     if special_output:
@@ -61,12 +59,11 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:WfF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
     
-    waitfor=False
     mode = 0
     util.archiveend='.tar.bz2'
     unpack=None
@@ -138,9 +135,6 @@ def main():
             enable_layout = False
         elif o in ("-h","--help"):
             bHelp=True
-        elif o in ("-W"):
-            waitfor = True
-            pass
         elif o in ("-m","mru"):
             mru=True
         elif o in ("-d","--dir"):
@@ -154,9 +148,6 @@ def main():
             raise SystemExit
             break;
     
-    if waitfor:
-        special_output.write("W\n")
-
     home=os.path.expanduser('~')
     
     if log:
@@ -168,7 +159,7 @@ def main():
 
     if bad_arg:
         out('Unhandled option: %s'%bad_arg)
-        doexit(1,waitfor)
+        doexit(1)
 
     if sys.argv[1] in ('save','s'):
         mode=1
@@ -183,31 +174,31 @@ def main():
         pass
     else:
         usageMode()
-        doexit(1,waitfor)
+        doexit(1)
     
     if bHelp:        
         usage()
-        doexit(0,waitfor)
+        doexit(0)
     
     if not projectsdir:
         projectsdir = '.screen-sessions'    
     if bList:
         list_sessions(home,projectsdir,util.archiveend,input)
-        doexit(0,waitfor)
+        doexit(0)
     
     if mode==0:
         if unpack:
             unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,bFull)
         else:
             usage()
-        doexit(0,waitfor)
+        doexit(0)
     elif mode==1:
         if not input:
             if current_session:
                 input = current_session
             else:
                 out("for saving you must specify target Screen session PID as --in")
-                doexit("Aborting",waitfor)
+                doexit("Aborting")
         pid = input
         if not output:
             savedir = pid
@@ -228,13 +219,13 @@ def main():
                 print(input)
             except:
                 out("No recent session to load")
-                doexit("Aborting",waitfor)
+                doexit("Aborting")
         if not output:
             if current_session:
                 output = current_session
             else:
                 out("for loading you must specify target Screen session PID as --out")
-                doexit("Aborting",waitfor)
+                doexit("Aborting")
         pid = output
         savedir = input
     
@@ -267,14 +258,14 @@ def main():
 
     if not scs.exists():
         out('No such session: %s'%pid)
-        doexit(1,waitfor)
+        doexit(1)
         
     if savedir == '__tmp_pack' and mode==1:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
-        doexit(1,waitfor)
+        doexit(1)
     elif savedir == scs.blacklistfile:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
-        doexit(1,waitfor)
+        doexit(1)
     
     maxwin_real=scs.maxwin()
     if (maxwin==-1):
@@ -309,7 +300,7 @@ def main():
             if force==False:
                 scs.Xecho("screen-session saving FAILED. Savefile exists. Use --force")
                 out('Savefile exists. Use --force to overwrite.')
-                doexit(1,waitfor)
+                doexit(1)
             else:
                 out('Savefile exists. Forcing...')
         scs.savedir=savedir_tmp
@@ -321,7 +312,7 @@ def main():
             traceback.print_exc(file=sys.stdout)
             out('session saving totally failed')
             scs.Xecho("screen-session saving totally FAILED")
-            doexit(1,waitfor)
+            doexit(1)
 
         if ret:
             out('session saving failed')
@@ -372,7 +363,7 @@ def main():
             traceback.print_exc(file=sys.stdout)
             out('session loading totally failed')
             scs.Xecho("screen-session loading TOTALLY FAILED")
-            doexit(1,waitfor)
+            doexit(1)
 
         if ret:
             out('session loading failed')
@@ -382,7 +373,7 @@ def main():
 
     else:
         out('No mode specified --load or --save')
-    doexit(ret,waitfor)
+    doexit(ret)
 
 
 

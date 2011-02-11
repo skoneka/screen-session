@@ -54,7 +54,7 @@ def handler(signum,frame):
     bSelect=False
     mode=-1
     f=open(inputfile,'r')
-    ch=f.readline().strip()
+    ch=f.readline()
     f.close()
     try:
         number=int(ch[1:])
@@ -68,7 +68,7 @@ def handler(signum,frame):
     elif ch[0]=='S':
         mode=1
         bSelect=True
-    elif ch[0]=="'" or ch[0]=='g' or ch[0]=='G':
+    elif ch[0]==" " or ch[0]=="'" or ch[0]=='g' or ch[0]=='G':
         mode=0
         bSelect=True
         if ch[0]=='G':

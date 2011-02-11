@@ -21,10 +21,11 @@ dir:
     :bind c exec scs dir
 
 regions:
-    scs regions
-    
     # example binding:
-    :bind c exec scs regions
+    :bind x exec scs regions
+
+    # example binding (provided that window 0 is always present):
+    :bind x at 0 exec scs regions
 
 
 -----------------------------------------------------------------------

@@ -1023,11 +1023,10 @@ regions_helper (char *fname, char *n)
     {
       print_number ("0", red);
 printf ("\
-goto:\t [number]'\n\
-goto:\t [number]g\n\
-swap:\t [number]s \n\
-rotate left:\t [number]l\n\
-rotate right:\t [number]r\n\
+goto:\t [number]<space><g><'>\n\
+swap:\t [number]<s> \n\
+rotate left:\t [number]<l>\n\
+rotate right:\t [number]<r>\n\
 ");
     }
   else

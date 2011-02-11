@@ -9,8 +9,13 @@
 
 // new tools:
 * yank-ring (kill-ring)
-* edit-scrollback
+* edit-register
 * Set terminal emulator title
+
+// broken/unfinished tools:
+* grab
+* sort
+* manager-remote
 
 // saver:
 * Split primer into screen-session-primer and screen-session-helper
@@ -25,12 +30,8 @@
 * Encrypt savefiles
 
 // manager:
-* Add session-wide window search
+* Add session-wide and host-wide window search
 * Support automatic connection to multiple hosts
 * Write a scrollable menu
 * Set some environment variables on attach
 
-// broken/unfinished tools:
-* grab
-* sort
-* manager-remote
