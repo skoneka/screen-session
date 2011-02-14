@@ -121,12 +121,11 @@ def menu_tmp(preselect=None):
         i = 1
         for s in text:
             if i==menu_tmp_last_selection:
-                sys.stdout.write(" > ")
+                sys.stdout.write(">%d<%s\n" % (i, s))
             else:
-                sys.stdout.write("   ")
-            sys.stdout.write("%d. %s\n" % (i, s))
+                sys.stdout.write(" %d|%s\n" % (i, s))
             i += 1
-        sys.stdout.write("   %d.  Create a new session\n" % i)
+        sys.stdout.write(" %d| Create a new session\n" % i)
         i += 1
         try:
             command=None

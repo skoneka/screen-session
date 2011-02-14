@@ -102,6 +102,7 @@ def handler(signum,frame):
     cleanup()
 
     if number!=0 and bSelect:
+        # this will work properly up to 62 regions (MAXSTR-4)/8
         command='screen -S %s -X eval'%session
         if number<0:
             number=abs(number)
@@ -115,11 +116,12 @@ def handler(signum,frame):
 
 def cleanup():
     print('restoring windows '+str(win_history))
+    cmd=''
     for i,w in enumerate(win_history):
         if w == "-1":
             w = "-"
-        cmd='eval \'select %s\' \'at %s kill\' \'focus\''%(w,wins[i])
-        scs.command_at(False,cmd)
+        cmd+='screen -S %s -X eval \'select %s\' \'at %s kill\' \'focus\'; '%(scs.pid,w,wins[i])
+    os.system(cmd)
     print (focusminsize)
     scs.focusminsize(focusminsize)
     try:
@@ -145,10 +147,10 @@ def prepare_windows(scs):
     print("regions = "+str(regions))
     scs.focusminsize('0 0')
     this_win_history=[]
-
+    cmd=''
     for i in range(0,regions_c):
-        cmd='eval \'screen -t scs-regions-helper %s %s %s %d\' \'focus\''%(subprogram,subprogram_args,inputfile,i)
-        scs.command_at(False,cmd)
+        cmd+='screen -S %s -X eval \'screen -t scs-regions-helper %s %s %s %d\' \'focus\'; '%(scs.pid,subprogram,subprogram_args,inputfile,i)
+    os.system(cmd)
     
     regions_n=[]
     while True:

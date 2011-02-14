@@ -5,11 +5,12 @@
 // Screen:
 * Remove -X command length cap (MAXSTR)
 * Hardcopy with color escapes
-* Be able to dump any layout without changing the current layout
+* access any layout without changing the current layout
+* access any region without changing focus
 
 // new tools:
 * yank-ring (kill-ring)
-* edit-register
+* register edit cp mv rm
 * Set terminal emulator title
 
 // broken/unfinished tools:
@@ -28,6 +29,7 @@
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
 * Encrypt savefiles
+* Savefile editing (like in screeninator)
 
 // manager:
 * Add session-wide and host-wide window search

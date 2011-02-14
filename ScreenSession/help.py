@@ -17,7 +17,7 @@ Saver modes:\n\
     ls\t\t- list saved sessions\n\
 Other tools:\n\
     dir\t\t- start Screen window in the same working directory\n\
-    dump\t- dump informations about windows in session\n\
+    dump\t- print informations about windows in session\n\
     find-pid\t- find PIDs in windows\n\
     find-file\t- find files in windows\n\
     group\t- move windows to a group\n\
