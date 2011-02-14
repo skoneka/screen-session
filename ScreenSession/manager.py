@@ -123,9 +123,9 @@ def menu_tmp(preselect=None):
             if i==menu_tmp_last_selection:
                 sys.stdout.write(">%d<%s\n" % (i, s))
             else:
-                sys.stdout.write(" %d|%s\n" % (i, s))
+                sys.stdout.write("|%d|%s\n" % (i, s))
             i += 1
-        sys.stdout.write(" %d| Create a new session\n" % i)
+        sys.stdout.write("|%d| Create a new session\n" % i)
         i += 1
         try:
             command=None
@@ -502,7 +502,7 @@ def ui1(fifoname):
        
 def attach_session(session):
     sys.stderr.write('attaching %s'%session)
-    os.popen('screen -x \"%s\"'%(session))
+    os.system('screen -x \"%s\"'%(session))
 
 def run(psession):
     if not os.path.exists(tmpdir):
@@ -551,6 +551,7 @@ def run(psession):
                 last_session=options[2]
             if command[0]=='enter':
                 print ("entering \"%s\""%(command[1]))
+                #os.execvp('screen',['-x',command[1]])
                 attach_session(command[1])
             elif command[0]=='restart':
                 print('restarting...')

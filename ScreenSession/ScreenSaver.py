@@ -676,10 +676,11 @@ class ScreenSaver(object):
                     vim_name=str(None)
                     args=cpids_data[i][2].split('\0')
                     if args[0].endswith(self.primer_base) and args[1]=='-p':
-                        sys.stdout.write('imp ')
+                        sys.stdout.write('(primer)')
                         rollback=self.__rollback(cpids_data[i][2])
                         #out(str(rollback))
                     elif args[0] in self.vim_names and self.bVim:
+                        sys.stdout.write('(vim)')
                         vim_name=self.__save_vim(id)
                         nargs=[]
                         rmarg=False
@@ -702,7 +703,7 @@ class ScreenSaver(object):
             rollback=None,None,None
         out('')
         fmru.close()
-        #util.remove(os.path.join(findir,"winlist"))
+        util.remove(os.path.join(findir,"winlist"))
         if self.excluded:
             excluded_groups_tmp=[]
             while excluded_groups:
