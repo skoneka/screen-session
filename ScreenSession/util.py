@@ -93,14 +93,15 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         raise IOError
     os.makedirs(os.path.join(tmpdir,savedir))
     t1 = tarfile.open(os.path.join(home,projectsdir,savedir+'__win'+archiveend),'r')
+    path=os.path.join(tmpdir,savedir)
     for m in t1.getmembers():
-        t1.extract(m,os.path.join(tmpdir,savedir))
+        t1.extract(m,path)
     t1.close()
     if full:
         try:
             t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
             for m in t2.getmembers():
-                t2.extract(m,os.path.join(tmpdir,savedir))
+                t2.extract(m,path)
             t2.close()
         except:
             out('Unable to extract __data!')

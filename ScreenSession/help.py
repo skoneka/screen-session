@@ -26,7 +26,7 @@ Other tools:\n\
     kill-zombie\t- kill all zombie windows in session\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
-    nest\t- nest layout in the current region\n\
+    nest-layout\t- nest a layout in the current region\n\
     regions\t- display a number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
@@ -119,8 +119,9 @@ Sessions manager for GNU Screen with preview in a split window and support for m
 Requires python 2.5+\
 "
 
-help_nest="Usage: screen-session nest [options] [TARGET_LAYOUT]\n\n\
-Nest layout in the current region.\
+help_nest="Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
+       screen-session nl [options] [TARGET_LAYOUT]\n\n\
+Nest a layout in the current region.\
 "
 
 help_renumber="Usage: screen-session renumber [options]\n\n\
@@ -236,7 +237,7 @@ def run(argv):
         print(version_str+'\n')
         print(help_help)
     elif mode=='--version':
-        pass
+        print(version_str)
     elif mode=='regions':
         print(help_regions)
     elif mode=='kill':
@@ -261,7 +262,7 @@ def run(argv):
         print(help_manager)
     elif mode in ('manager-remote','mr'):
         print(help_manager_remote)
-    elif mode=='nest':
+    elif mode in ('nest','nest-layout','nl'):
         print(help_nest)
     elif mode=='renumber':
         print(help_renumber)

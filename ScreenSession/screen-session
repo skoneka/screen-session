@@ -5,9 +5,9 @@
 # description: screen-session tools starter
 # it is necessary to run screen_saver.py, and some other tools, embedded in other screen session, to be able to start it inside the target Screen session
 
-SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
+#SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
 # faster but less portable
-#SCRIPTPATH=$(dirname $(realpath $0))
+SCRIPTPATH=$(dirname $(realpath $0))
 
 export PYTHONPATH=$SCRIPTPATH
 
@@ -93,6 +93,10 @@ else
             session=`python $SCRIPTPATH/sessionname.py`
         fi
         exec python $SCRIPTPATH/sessionname.py $session "$@"
+    elif [ $mode = "--version" -o $mode = "-v" ]; then
+        exec python $SCRIPTPATH/help.py --version
+    elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
+        exec python $SCRIPTPATH/help.py "$@"
     else
         screen -S $session -X msgminwait 0
         if [ $mode = "manager" ]; then
@@ -101,17 +105,17 @@ else
         #    python $SCRIPTPATH/manager.py pr psession=$session "$@"
         #elif [ $mode = "grab" ]; then
         #    sh $SCRIPTPATH/screen-session-grab "$@"
-        elif [ $mode = "--version" -o $mode = "-v" ]; then
-            exec python $SCRIPTPATH/help.py --version
-        elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
-            exec python $SCRIPTPATH/help.py "$@"
         elif [ $session != "__no__session__" ]; then
             if [ $mode = "group" ]; then
                 exec sh $SCRIPTPATH/win-to-group $session "$@"
             elif [ $mode = "regions" ]; then
                 exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
-            elif [ $mode = "nest" ]; then
-                exec screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+            elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
+                if [ $# -eq 0 ]; then
+                    exec python $SCRIPTPATH/help.py $mode
+                else
+                    exec screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+                fi
             elif [ $mode = "dir" ]; then
                 exec python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
             elif [ $mode = "dump" ]; then

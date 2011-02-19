@@ -524,7 +524,7 @@ def run(psession):
         os.symlink(fifoname,fifoname_access)
         scs=ScreenSaver(session,'/dev/null','/dev/null')
         #scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
-        scs.command_at(False, 'eval \'title \"command window\"\' \'zombie cr\' \'rendition so ky\' \'caption string \"%?%F%{kr}%?%t\"\' \'bindkey ^[t focus next\' \'escape ^Gg\' \'defmousetrack on\'')
+        scs.command_at(False, 'eval \'title \"command window\"\' \'zombie cr\' \'rendition so ky\' \'caption string \"%?%F%{kr}%?%t\"\' \'hardstatus lastline \"GNU Screen session manager\"\' \'bindkey ^[t focus next\' \'escape ^Gg\' \'defmousetrack on\'')
         scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
         data=mmap.mmap(-1,100)
         

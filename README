@@ -103,6 +103,7 @@ Bugs
 -----------------------------------------------------------------------
 
 - Many of the tools do not work with detached Screen sessions.
+- slow startup if hardstatus is not lastline
 - :msgminwait is set to 0 the original value is not restored.
 
 Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
