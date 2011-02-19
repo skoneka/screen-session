@@ -277,6 +277,7 @@ class ScreenSaver(object):
                             thefile.write(line)
                     thefile.close()
                     temp.close()
+                    util.remove(ftmp)
                 else:
                     util.remove(f)
                     os.rename(ftmp,f)
@@ -575,6 +576,8 @@ class ScreenSaver(object):
         group_groups={}
         excluded_wins=[]
         excluded_groups=[]
+        scroll_wins=[]
+        scroll_groups=[]
         cwin=-1
         ctty=None
         cppids={}
@@ -615,10 +618,25 @@ class ScreenSaver(object):
                         group_groups[cgroupid]+=[cwin]
                     except:
                         group_groups[cgroupid]=[cwin]
+                if self.scroll:
+                    if cwin in self.scroll:
+                        scroll_groups.append(cwin)
+                    try:
+                        group_groups[cgroupid]+=[cwin]
+                    except:
+                        group_groups[cgroupid]=[cwin]
             else:
                 if self.excluded:
                     if cwin in self.excluded:
                         excluded_wins.append(cwin)
+                    else:
+                        try:
+                            group_wins[cgroupid]+=[cwin]
+                        except:
+                            group_wins[cgroupid]=[cwin]
+                if self.scroll:
+                    if cwin in self.scroll:
+                        scroll_wins.append(cwin)
                     else:
                         try:
                             group_wins[cgroupid]+=[cwin]
@@ -704,6 +722,37 @@ class ScreenSaver(object):
         out('')
         fmru.close()
         util.remove(os.path.join(findir,"winlist"))
+        # remove ignored scrollbacks
+        if 'all' in self.scroll:
+            for f in glob.glob(os.path.join(self.basedir, self.savedir, "hardcopy.*")):
+                open(f,'w')
+        elif self.scroll:
+            scroll_groups_tmp=[]
+            while scroll_groups:
+                sgroup=scroll_groups.pop()
+                if sgroup not in scroll_groups_tmp:
+                    scroll_groups_tmp.append(sgroup)
+                try:
+                    ngroups = group_groups[sgroup]
+                    if ngroups:
+                        for g in ngroups:
+                            scroll_groups.append(g)
+                except:
+                    pass
+            scroll_groups = scroll_groups_tmp
+            out('Scrollback excluded groups: %s'%str(scroll_groups))
+            for sgroup in scroll_groups:
+                scroll_wins.append(sgroup)
+                try:
+                    for w in group_wins[sgroup]:
+                        scroll_wins.append(w)
+                except:
+                    pass
+            out('All scrollback excluded windows: %s'%str(scroll_wins))
+            for w in scroll_wins:
+                open(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w),'w')
+                #util.remove(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w))
+        # remove ignored windows
         if self.excluded:
             excluded_groups_tmp=[]
             while excluded_groups:
@@ -727,17 +776,14 @@ class ScreenSaver(object):
                 except:
                     pass
             out('All excluded windows: %s'%str(excluded_wins))
-            bpath = os.path.join(self.basedir, self.savedir, "win_")
+            bpath1 = os.path.join(self.basedir, self.savedir, "win_")
+            bpath2 = os.path.join(self.basedir, self.savedir, "hardcopy.")
+            bpath3 = os.path.join(self.basedir, self.savedir, "vim_W")
             for win in excluded_wins:
-                util.remove(bpath+win)
-        if 'all' in self.scroll:
-            for f in glob.glob(os.path.join(self.basedir, self.savedir, "hardcopy.*")):
-                open(f,'w')
-        elif self.scroll:
-            for w in self.scroll:
-                open(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w),'w')
-                #util.remove(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w))
-
+                util.remove(bpath1+win)
+                util.remove(bpath2+win)
+                for f in glob.glob(bpath3+win+'_*'):
+                    util.remove(f)
 
         linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         if errors:
@@ -781,6 +827,7 @@ class ScreenSaver(object):
             number=ftail.split('_')[1]
             oldsavedir=fhead
             
+            # import win_* files
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
             except Exception,e:
@@ -788,6 +835,7 @@ class ScreenSaver(object):
                 target=None
                 pass
             
+            # import hardcopy.* files
             fhead,ftail=os.path.split(cmdline[3])
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             try:
@@ -798,6 +846,7 @@ class ScreenSaver(object):
                 pass
 
             if os.path.isfile(target):
+                # fhead is savefile base name
                 return (target,target2,os.path.join(self.homedir,cmdline[2],fhead))
             else:
                 return (None,None,None)
@@ -963,12 +1012,14 @@ class ScreenSaver(object):
                 if line=='-\n':
                     last_sep=i
                 elif i-last_sep==6 and line.startswith('vim_'):
-                    #copy vim
-                    for file in glob.glob(os.path.join(rollback_dir,line.strip()+'_*')):
+                    #import vim files but update the window number in filename
+                    for filename in glob.glob(os.path.join(rollback_dir,line.strip()+'_*')):
                         try:
-                            shutil.move(file,os.path.join(self.basedir,self.savedir,os.path.basename(file)))
+                            tvim="vim_W%s_%s"%(winid,os.path.basename(filename).split('_',2)[2])
+                            tvim=os.path.join(self.basedir,self.savedir,tvim)
+                            shutil.move(filename,tvim)
                         except:
-                            errors.append('Unable to rollback: %s'%file)
+                            errors.append('Unable to rollback vim: %s'%filename)
             util.remove(target)
         else:
             pids_data_len="0"

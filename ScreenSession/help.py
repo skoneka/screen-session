@@ -139,7 +139,7 @@ help_saver_modes='GNU Screen session saver.\n\
 Usage: screen-session [save|load|ls] [options]'
 
 help_saver_ls="Usage: scs save [options]\n\n\
-List saved sesssions.\n\n\
+List saved sesssions.\n\
 Options:\n\
 -i --in     <string>\n\
   \tfilter listed savefiles by <string>\n\
@@ -150,7 +150,7 @@ Options:\n\
 "
 
 help_saver_save="Usage: scs save [options]\n\n\
-Save GNU Screen and VIM sessions to a file.\n\n\
+Save GNU Screen and VIM sessions to a file.\n\
 Options:\n\
 -i --in  <sesionnname>\n\
   \tspecify target Screen session (by default current session)\n\
@@ -160,10 +160,11 @@ Options:\n\
   \tforce saving even if savefile with the same name already exists\n\
 -e --exclude  <windows>\n\
   \ta comma separated list of windows to be ignored during saving,\n\
-  \tif a window is a group all subwindows are also ignored\n\
+  \tif a window is a group all subwindows are also included\n\
 -H --no-scroll  <windows>\n\
-    a comma separeted list of windows which will not save scrollbacks,\n\
-    using keyword \"all\" affects all windows\n\
+  \ta comma separeted list of windows which scrollbacks will be ignored,\n\
+  \tif a window is a group all subwindows are also included,\n\
+  \tusing keyword \"all\" affects all windows\n\
 -y --no-layout\n\
   \tdisable layout saving\n\
 -V --no-vim\n\
@@ -174,13 +175,12 @@ Options:\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-\n\
 Example:\n\
 $ screen-session save --in SESSIONNAME --out mysavedsession\
 "
 
 help_saver_load="Usage: scs load [options]\n\n\
-Load saved session from a file.\n\n\
+Load saved session from a file.\n\
 Options:\n\
 -i --in  <savefile>\n\
   \tspecify source savefile (by default last saved file)\n\
@@ -195,9 +195,6 @@ Options:\n\
     a comma separeted list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
     without waiting for user confirmation\n\
--H --no-scroll  <windows>\n\
-    a comma separeted list of windows which will not load scrollbacks,\n\
-    using keyword \"all\" affects all windows\n\
 -r --restore\n\
   \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
@@ -208,7 +205,6 @@ Options:\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-  \n\
 Example:\n\
 $ screen-session load --exact --in mysavedsession --out SESSIONNAME\
 "
