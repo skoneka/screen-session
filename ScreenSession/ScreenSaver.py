@@ -207,7 +207,7 @@ class ScreenSaver(object):
                 primer_arg=self.primer_arg+'S'
             else:
                 primer_arg=self.primer_arg
-            if win in self.scroll or not self.__scrollfile:
+            if win in self.scroll or not self.__scrollfile or not os.path.exists(os.path.join(self.homedir,self.projectsdir,self.__scrollfile+win)):
                 scrollfile='0'
             else:
                 scrollfile=self.__scrollfile+win
@@ -750,8 +750,7 @@ class ScreenSaver(object):
                     pass
             out('All scrollback excluded windows: %s'%str(scroll_wins))
             for w in scroll_wins:
-                open(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w),'w')
-                #util.remove(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w))
+                util.remove(os.path.join(self.basedir, self.savedir, "hardcopy.%s"%w))
         # remove ignored windows
         if self.excluded:
             excluded_groups_tmp=[]
