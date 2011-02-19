@@ -18,7 +18,6 @@ Saver modes:\n\
 Other tools:\n\
     dir\t\t- start Screen window in the same working directory\n\
     dump\t- print informations about windows in session\n\
-    find-pid\t- find PIDs in windows\n\
     find-file\t- find files in windows\n\
     group\t- move windows to a group\n\
     kill\t- send signal to last process started in a window\n\
@@ -29,14 +28,18 @@ Other tools:\n\
     nest-layout\t- nest a layout in the current region\n\
     regions\t- display a number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
+    subwindows\t- print windows contained in groups\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
     "
 '''
-broken/unfinished:
+broken/unfinished tools:
     grab\t- grab a process and attach it to current tty\n\
     \t\t  (requires injcode)\n\
     sort\t- sort windows by title\n\
     manager-remote - 
+
+unpractial/useless tools:
+    find-pid\t- find PIDs in windows (greping dump is better)\n\
 '''
 
 help_regions="Usage: screen-session regions [options]\n\n\
@@ -60,9 +63,9 @@ Kill last process started in a window.\n\
 Useful for closing random emacs/vim instances.\
 "
 
-help_kill_zombie="Usage: screen-session kill-zombie [options]\n\
-       screen-session kz [options]\n\n\
-Kill all zombie windows in session.\
+help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\
+       screen-session kz [options] [groupids]\n\n\
+Kill all zombie windows in session. Optionally specify target groups.\
 "
 
 help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\
@@ -79,7 +82,7 @@ Start a new Screen window in the same working directory\n\
 on the position next to the current window.\
 "
 
-help_dump="Usage: screen-session dump [options]\n\n\
+help_dump="Usage: screen-session dump [options] [window_ids]\n\n\
 Dump informations about windows in session.\n\
 -P \t- do not show pid data\
 "
@@ -130,6 +133,11 @@ Renumber windows to fill the gaps.\
 
 help_sort="Usage: screen-session sort [options]\n\n\
 Sort windows by titles.\
+"
+
+help_subwindows="Usage: screen-session subwindows [groupids]\n\
+       screen-session sw [groupids]\n\n\
+Print windows contained in groups\
 "
 
 help_name="Usage: screen-session name [options] [new_sessionname]\n\n\Try to get the current sessionname.\
@@ -264,6 +272,8 @@ def run(argv):
         print(help_renumber)
     elif mode=='sort':
         print(help_sort)
+    elif mode in ('subwindows','sw'):
+        print(help_subwindows)
     elif mode=='name':
         print(help_name)
     elif mode=='ls':

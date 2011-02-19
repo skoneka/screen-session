@@ -299,7 +299,8 @@ class ScreenSaver(object):
         self.wrap_group_id=self.number()
 
         # move windows by shift and put them in a wrap group
-        for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
+        #for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
+        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(self.pid):
             iwin=int(cwin)
             if iwin==homewindow:
                 homewindow=iwin+shift

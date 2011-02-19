@@ -35,18 +35,30 @@ def get_regions(session):
     remove(tfile)
     return ret
 
+# often skips windows, use gen_all_windows_full
 def gen_all_windows_fast(session):
     from ScreenSaver import ScreenSaver
     from util import tmpdir,remove
+    import linecache
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-    ss.command_at(False,"at \# dumpscreen window \"%s\" -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window \"%s\""%(tfile))
+    import time
     fp=None
     while fp==None:
         try:
             fp=open(tfile,'r')
         except:
             pass
+    cline=0
+    '''
+    line=''
+    while not line:
+        linecache.checkcache(tfile)
+        line=linecache.getline(tfile,cline)
+    print "line0="+line
+    while line:
+    '''
     for line in fp:
         try:
             cwin,cgroupid,ctty=line.strip().split(' ')
@@ -62,7 +74,11 @@ def gen_all_windows_fast(session):
         else:
             ctypeid=0
         yield cwin,cgroupid,ctypeid,ctty
+        cline+=1
+        #linecache.checkcache(tfile)
+        #line=linecache.getline(tfile,cline)
     remove(tfile)
+    print cline
 
 def gen_all_windows_full(session):
     from ScreenSaver import ScreenSaver
@@ -74,8 +90,9 @@ def gen_all_windows_full(session):
     ss=ScreenSaver(session)
     tfile=os.path.join(tdir,'winlist')
     ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
-    ss.command_at(False,"at \# dumpscreen window \"%s\" -N"%(tfile))
+    ss.command_at(False,"at \# dumpscreen window \"%s\""%(tfile))
     fp=None
+    cline=0
     while fp==None:
         try:
             fp=open(tfile,'r')
@@ -102,6 +119,7 @@ def gen_all_windows_full(session):
         except:
             cgroup='none'
         yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime
+        cline+=1
     removeit(tdir)
 
 

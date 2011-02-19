@@ -137,6 +137,8 @@ else
                 fi
             elif [ $mode = "renumber" ]; then
                 exec python $SCRIPTPATH/renumber.py $session "$@"
+            elif [ $mode = "subwindows" -o $mode = "sw" ]; then
+                python $SCRIPTPATH/subwindows.py $session "$@"
             #elif [ $mode = "sort" ]; then
             #    python $SCRIPTPATH/sort.py $session "$@"
             else

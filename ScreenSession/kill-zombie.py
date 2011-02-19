@@ -8,5 +8,6 @@ import sys
 import tools
 
 session=sys.argv[1]
-tools.kill_zombie(session)
+groupids=sys.argv[2:]
+tools.kill_zombie(session,groupids)
 
