@@ -216,7 +216,6 @@ def main():
                     date_file_list.append(date_file_tuple)
                 date_file_list.sort()
                 input=os.path.split(date_file_list[-1][1])[1].rsplit('__',1)[0]
-                print(input)
             except:
                 out("No recent session to load")
                 doexit("Aborting")

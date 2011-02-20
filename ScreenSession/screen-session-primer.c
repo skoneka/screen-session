@@ -26,173 +26,10 @@
 #include <limits.h>
 #include <signal.h>
 
-#ifdef COLOR			/* if you dont want color remove '-DCOLOR' from config.mk */
-#define cyan_b  "\033[1;36m"	/* 1 -> bold ;  36 -> cyan */
-#define green_u "\033[4;32m"	/* 4 -> underline ;  32 -> green */
-#define blue_s  "\033[9;34m"	/* 9 -> strike ;  34 -> blue */
-#define blue_b  "\033[1;34m"
-#define blue_r  "\033[7;34m"
-#define green_b "\033[1;32m"
-#define green_r "\033[7;32m"
-#define red_b   "\033[1;31m"
-#define red_r   "\033[7;31m"
-#define red_s   "\033[9;31m"
-#define brown_r  "\033[7;33m"
-
-#define red   "\033[0;31m"	/* 0 -> normal ;  31 -> red */
-#define green "\033[0;32m"
-#define blue  "\033[0;34m"	/* 9 -> strike ;  34 -> blue */
-#define black  "\033[0;30m"
-#define brown  "\033[0;33m"
-#define magenta  "\033[0;35m"
-#define gray  "\033[0;37m"
-
-#define none   "\033[0m"	/* to flush the previous property */
-#else
-#define cyan_b     ""
-#define green_u    ""
-#define blue_s     ""
-#define blue_b     ""
-#define blue_r     ""
-#define green_b    ""
-#define green_r    ""
-#define red_b      ""
-#define red_r      ""
-#define red_s      ""
-
-#define red        ""
-#define green      ""
-#define blue       ""
-#define black      ""
-#define brown      ""
-#define magenta    ""
-#define gray       ""
-
-#define none       ""
-#endif
-
-#define VIM_SESSION "_session"
-#define VIM_INFO "_info"
-
-#define SEP green_r"|"none
-
-#define PRIMER green"PRIMER: "none
-#define USERINPUTMAXBUFFERSIZE   80
-#define CMDLINE_BEGIN 20
-#define BLACKLISTMAX 100
-#define BASEDATA_LINES 7
-#define PROCLINES 7
-#define QUOTEME(x) #x
-#define Q(x) QUOTEME(x)
-#define X $
-#define O \20
-
-/* defining _POSIX_SOURCE causes compilation errors on solaris  */
-int kill (int pid, int sig);
+#include "screen-session-define.h"
 
 int blacklist[BLACKLISTMAX];
 int blacklist_c = 0;
-
-#define FONTHEIGHT 7
-#define FONTWIDTH 6
-char *fonts[] = {
-  /*  */
-  " $$$$ ",
-  "$$  $$",
-  "$$  $$",
-  "$$  $$",
-  "$$  $$",
-  "$$  $$",
-  " $$$$ ",
-  /*  */
-  "   $$$",
-  "  $$$$",
-  " $$$$$",
-  "    $$",
-  "    $$",
-  "    $$",
-  "    $$",
-  /*  */
-  " $$$$ ",
-  "$$  $$",
-  "    $$",
-  "   $$ ",
-  "  $$  ",
-  " $$   ",
-  "$$$$$$",
-  /*  */
-  "$$$$$ ",
-  "    $$",
-  "   $$ ",
-  " $$$  ",
-  "   $$ ",
-  "    $$",
-  "$$$$$ ",
-  /*  */
-  "$$  $$",
-  "$$  $$",
-  "$$  $$",
-  "$$$$$$",
-  "    $$",
-  "    $$",
-  "    $$",
-  /*  */
-  "$$$$$$",
-  "$$    ",
-  "$$    ",
-  "$$$$$$",
-  "    $$",
-  "    $$",
-  "$$$$$$",
-  /*  */
-  "$$$$$$",
-  "$$    ",
-  "$$    ",
-  "$$$$$$",
-  "$$  $$",
-  "$$  $$",
-  "$$$$$$",
-  /*  */
-  "$$$$$$",
-  "    $$",
-  "    $$",
-  "    $$",
-  "    $$",
-  "    $$",
-  "    $$",
-  /*  */
-  "$$$$$$",
-  "$$  $$",
-  "$$  $$",
-  "$$$$$$",
-  "$$  $$",
-  "$$  $$",
-  "$$$$$$",
-  /*  */
-  "$$$$$$",
-  "$$  $$",
-  "$$  $$",
-  "$$$$$$",
-  "    $$",
-  "    $$",
-  "$$$$$$",
-  /*  */
-  "      ",
-  "      ",
-  "      ",
-  "      ",
-  "      ",
-  "      ",
-  "      ",
-  /*  */
-  "      ",
-  "$    $",
-  " $  $ ",
-  "  $$  ",
-  "  $$  ",
-  " $  $ ",
-  "$    $",
-};
 
 enum menu
 {
@@ -462,35 +299,6 @@ mygetch (void)
   return ch;
 }
 
-int
-getinput (int *prefix, char *mode)
-{
-  char prefix_str[10];
-  int prefix_str_c = 0;
-  char ch;
-  prefix_str[0] = '\0';
-  while (1)
-    {
-      ch = mygetch ();
-      if (ch >= '0' && ch <= '9' && prefix_str_c < 10)
-	{
-	  prefix_str[prefix_str_c] = ch;
-	  prefix_str_c++;
-	  prefix_str[prefix_str_c] = '\0';
-	}
-      else
-	{
-	  *mode = ch;
-	  break;
-	}
-
-    }
-  if (prefix_str_c > 0)
-    *prefix = atoi (prefix_str);
-  else
-    *prefix = 1;
-  return 0;
-}
 
 int
 userInput (int *menu_num, int **num, int max, int *bFilter)
@@ -933,119 +741,6 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 
 }
 
-char **
-get_font (char c)
-{
-  char **font = NULL;
-  switch (c)
-    {
-    case '0':
-      font = &fonts[0 * FONTHEIGHT];
-      break;
-    case '1':
-      font = &fonts[1 * FONTHEIGHT];
-      break;
-    case '2':
-      font = &fonts[2 * FONTHEIGHT];
-      break;
-    case '3':
-      font = &fonts[3 * FONTHEIGHT];
-      break;
-    case '4':
-      font = &fonts[4 * FONTHEIGHT];
-      break;
-    case '5':
-      font = &fonts[5 * FONTHEIGHT];
-      break;
-    case '6':
-      font = &fonts[6 * FONTHEIGHT];
-      break;
-    case '7':
-      font = &fonts[7 * FONTHEIGHT];
-      break;
-    case '8':
-      font = &fonts[8 * FONTHEIGHT];
-      break;
-    case '9':
-      font = &fonts[9 * FONTHEIGHT];
-      break;
-    case ' ':
-      font = &fonts[10 * FONTHEIGHT];
-      break;
-    default:
-      font = &fonts[11 * FONTHEIGHT];
-      break;
-    }
-  return font;
-}
-void
-print_number (char *n, char *color)
-{
-  char ***font = malloc ((strlen (n) + 1) * sizeof (char ***));
-  int letter_c = 0;
-  while (n[letter_c] != '\0')
-    {
-      font[letter_c] = get_font (n[letter_c]);
-      letter_c++;
-    }
-  int k;
-  int j;
-  printf ("%s", color);
-  for (k = 0; k < FONTHEIGHT; k++)
-    {
-      for (j = 0; j < letter_c; j++)
-	{
-	  printf ("%s ", font[j][k]);
-	}
-      printf ("\n");
-    }
-  printf ("%s", none);
-}
-
-void
-regions_helper (char *fname, char *n)
-{
-  int pid = -1;
-  char *pch = NULL;
-  pch = strrchr (fname, '-');
-  if (pch)
-    {
-      pid = atoi (pch + 1);
-//        printf("signal %d",pid);
-//        kill(pid,SIGUSR2);
-    }
-  else
-    {
-      printf ("BAD ARGUMENTS");
-      return;
-    }
-  if (n[0] == '0')
-    {
-      print_number ("0", red);
-printf ("\
-goto:\t [number]<space><g><'>\n\
-swap:\t [number]<s> \n\
-rotate left:\t [number]<l>\n\
-rotate right:\t [number]<r>\n\
-");
-    }
-  else
-    {
-      print_number (n, green);
-    }
-  int prefix;
-  char mode;
-  getinput (&prefix, &mode);
-  if (mode == '\n')
-    mode = 'e';
-  printf ("prefix: %d ; ", prefix);
-  printf ("mode: %c\n", mode);
-  FILE *f = fopen (fname, "w");
-  fprintf (f, "%c%d", mode, prefix);
-  fclose (f);
-  kill (pid, SIGUSR1);
-
-}
 int
 read_scrollback(char *fullpath, char *scrollbackfile)
 {
@@ -1086,7 +781,7 @@ main (int argc, char **argv)
   int c;
   if (argc == 1)
     {
-      printf ("screen-session %s helper program\n",VERSION);
+      printf ("screen-session %s primer program\n",VERSION);
       return 0;
     }
   if (strcmp (argv[1], "-s") == 0)
@@ -1106,13 +801,6 @@ main (int argc, char **argv)
       execvp(argv[3],&argv[3]);
       return 0;
     }
-  else if (strcmp (argv[1], "-m") == 0)
-    {
-      //marker mode for ScreenSession.__get_focus_offset()
-      //sleep(4);
-      mygetch ();
-      return 0;
-    }
   else if (strcmp (argv[1], "-r") == 0)
     {
       //requireSession
@@ -1123,18 +811,6 @@ main (int argc, char **argv)
     {
       //requireSession
       requireSession (argv[2], argv[3], 1);
-      return 0;
-    }
-  else if (strcmp (argv[1], "-n") == 0)
-    {
-      //print number
-      print_number (argv[2], none);
-      return 0;
-    }
-  else if (strcmp (argv[1], "-nh") == 0)
-    {
-      //regions helper
-      regions_helper (argv[2], argv[3]);
       return 0;
     }
   else if (strncmp (argv[1], "-p", 2) == 0) {

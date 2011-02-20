@@ -14,9 +14,8 @@ Global Options:\n\
 Saver modes:\n\
     save\t- save session to disk\n\
     load\t- load session from file\n\
-    ls\t\t- list saved sessions\n\
+    ls  \t- list saved sessions\n\
 Other tools:\n\
-    dir\t\t- start Screen window in the same working directory\n\
     dump\t- print informations about windows in session\n\
     find-file\t- find files in windows\n\
     group\t- move windows to a group\n\
@@ -26,9 +25,10 @@ Other tools:\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
     nest-layout\t- nest a layout in the current region\n\
+    new-window\t- open a Screen window with the same working directory\n\
     regions\t- display a number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill gaps\n\
-    subwindows\t- print windows contained in groups\n\
+    subwindows\t- print windows contained in a group\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
     "
 '''
@@ -77,7 +77,9 @@ If the first argument is \"all\" kill all groups in the session.\n\
 Take extra care with this command.\
 "
 
-help_dir="Usage: screen-session dir [options] [program]\n\n\
+help_new_window="Usage: screen-session new-window [options] [program]\n\
+       screen-session new [options] [program]\n\
+       screen-session dir [options] [program]\n\n\
 Start a new Screen window in the same working directory\n\
 on the position next to the current window.\
 "
@@ -137,7 +139,7 @@ Sort windows by titles.\
 
 help_subwindows="Usage: screen-session subwindows [groupids]\n\
        screen-session sw [groupids]\n\n\
-Print windows contained in groups\
+Print windows contained in groups.\
 "
 
 help_name="Usage: screen-session name [options] [new_sessionname]\n\n\Try to get the current sessionname.\
@@ -250,8 +252,8 @@ def run(argv):
         print(help_kill_zombie)
     elif mode in ('kill-group','kg'):
         print(help_kill_group)
-    elif mode=='dir':
-        print(help_dir)
+    elif mode in ('dir','new','new-window'):
+        print(help_new_window)
     elif mode=='dump':
         print(help_dump)
     elif mode in ('find-pid','fp'):

@@ -11,7 +11,7 @@ from ScreenSaver import ScreenSaver
 
 logfile="___log-regions"
 inputfile="___scs-regions-input-%d"%(os.getpid())
-subprogram='screen-session-primer'
+subprogram='screen-session-helper'
 subprogram_args='-nh'
 
 def local_copysign(x, y):

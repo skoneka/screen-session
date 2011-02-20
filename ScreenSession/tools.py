@@ -226,45 +226,12 @@ def subwindows(session,groupids):
     return excluded_groups,excluded_wins
 
 def kill_group(session,groupids):
-    #sys.stdout=open('/tmp/___log_kill_group','w')
-    #sys.stderr=sys.stdout
     ss=ScreenSaver(session)
     excluded_groups,excluded_wins=subwindows(session,groupids)
     print('Killing groups: %s'%str(excluded_groups))
     print('All killed windows: %s'%str(excluded_wins))
     for win in excluded_wins:
         ss.kill(win)
-
-def kill_current_group(ss,bKillHomeWindow=False,other_wins=[],homewindow=-1):
-    if homewindow<0:
-        cwin,ctitle=ss.get_number_and_title()
-        homewindow=int(cwin)
-    else:
-        homewindow=int(homewindow)
-    protected=tuple([(homewindow)]+other_wins)
-    print (protected)
-    cgroup=ss.get_group()[1]
-    print ('removing windows from group %s'%cgroup)
-    while True:
-        wins=sc.parse_windows(sc.get_windows(ss.pid))[0]
-        print( wins)
-        if len(wins)<=len(protected):
-            break
-        for w in wins:
-            if w not in protected:
-                print('removing %s'%w)
-                ss.kill(w)
-    for w in other_wins:
-        ss.kill(w)
-    for w in protected:
-        if w != homewindow:
-            print('removing protected %s'%w)
-            ss.kill(w)
-    if bKillHomeWindow:
-        print('removing homewindow %s'%homewindow)
-        ss.kill(homewindow)
-
-
 
     
 def kill_win_last_proc(session,win="-1",sig="TERM"):

@@ -109,15 +109,15 @@ else
             if [ $mode = "group" ]; then
                 exec sh $SCRIPTPATH/win-to-group $session "$@"
             elif [ $mode = "regions" ]; then
-                exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/screen-display-regions.py $session "$@"
+                exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then
                     exec python $SCRIPTPATH/help.py $mode
                 else
                     exec screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
                 fi
-            elif [ $mode = "dir" ]; then
-                exec python $SCRIPTPATH/screen-in-dir.py $$ $session "$@"
+            elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
+                exec python $SCRIPTPATH/new-window.py $$ $session "$@"
             elif [ $mode = "dump" ]; then
                 exec python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
