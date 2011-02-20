@@ -137,8 +137,8 @@ help_sort="Usage: screen-session sort [options]\n\n\
 Sort windows by titles.\
 "
 
-help_subwindows="Usage: screen-session subwindows [groupids]\n\
-       screen-session sw [groupids]\n\n\
+help_subwindows="Usage: screen-session subwindows [groupids or titles]\n\
+       screen-session sw [groupids or titles]\n\n\
 Print windows contained in groups.\
 "
 

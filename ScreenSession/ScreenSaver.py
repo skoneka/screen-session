@@ -585,7 +585,7 @@ class ScreenSaver(object):
         rollback=None,None,None
         ctime=self.time()
         findir=os.path.join(self.basedir,self.savedir)
-        self.command_at(False, 'at \# dumpscreen window %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
+        self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
         self.command_at(False, 'at \# dumpscreen window %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
@@ -594,33 +594,32 @@ class ScreenSaver(object):
             f=open(os.path.join(findir,"winlist"),'r')
             f.close()
         except:
-            self.command_at(False, 'at \# dumpscreen window %s -N'%os.path.join(self.basedir,self.savedir,"winlist"))
+            self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
         fmru = open(os.path.join(findir,"mru"),"w") 
         for line in open(os.path.join(findir,"winlist"),'r'):
             try:
-                id,cgroupid,ctty,= line.strip().split(' ')
+                id,cgroupid,ctty,ctitle = line.strip().split(' ',3)
             except:
-                id,cgroupid = line.strip().split(' ')
-                util.remove(os.path.join(findir,'win_'+id))
-                sys.stdout.write("%s zombie | "%(id))
-                continue;
+                id,cgroupid,ctty= line.strip().split(' ')
+                ctitle=None
             cwin=id
             fmru.write("%s "%cwin)
-
-
+            
+            if(ctty[0]=='z'): # zombie
+                continue
             if(ctty[0]=="g"): # group
                 ctype="group"
                 cpids = None
                 cpids_data=None
                 if self.excluded:
-                    if cwin in self.excluded:
+                    if cwin in self.excluded or ctitle in self.excluded:
                         excluded_groups.append(cwin)
                     try:
                         group_groups[cgroupid]+=[cwin]
                     except:
                         group_groups[cgroupid]=[cwin]
                 if self.scroll:
-                    if cwin in self.scroll:
+                    if cwin in self.scroll or ctitle in self.scroll:
                         scroll_groups.append(cwin)
                     try:
                         group_groups[cgroupid]+=[cwin]
@@ -628,7 +627,7 @@ class ScreenSaver(object):
                         group_groups[cgroupid]=[cwin]
             else:
                 if self.excluded:
-                    if cwin in self.excluded:
+                    if cwin in self.excluded or ctitle in self.excluded:
                         excluded_wins.append(cwin)
                     else:
                         try:
@@ -636,7 +635,7 @@ class ScreenSaver(object):
                         except:
                             group_wins[cgroupid]=[cwin]
                 if self.scroll:
-                    if cwin in self.scroll:
+                    if cwin in self.scroll or ctitle in self.scroll:
                         scroll_wins.append(cwin)
                     else:
                         try:

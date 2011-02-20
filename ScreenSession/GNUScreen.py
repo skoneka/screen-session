@@ -100,19 +100,18 @@ def gen_all_windows_full(session):
             pass
     for line in fp:
         try:
-            cwin,cgroupid,ctty=line.strip().split(' ')
+            cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
         except:
-            cwin,cgroupid=line.strip().split(' ')
-            ctty=None
+            cwin,cgroupid,ctty= line.strip().split(' ')
+            ctitle=None
         cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
-        if not ctty:
+        if ctty[0]=='z':    # zombie
             ctypeid=-1
-            ctype='zombie'
-        elif ctype[0]=='g':
+        elif ctype[0]=='g': # group
             ctypeid=1
-        elif ctype[0]=='t':
+        elif ctype[0]=='t': # telnet
             ctypeid=2
-        else:
+        else:               # basic
             ctypeid=0
         try:
             cgroupid,cgroup = cgroup.split(' ')

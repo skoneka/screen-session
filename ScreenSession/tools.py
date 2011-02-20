@@ -189,14 +189,14 @@ def subwindows(session,groupids):
     excluded_groups=[]
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
         if(ctype==1): # group
-            if cwin in groupids or bAll:
+            if cwin in groupids or bAll or ctitle in groupids:
                 excluded_groups.append(cwin)
             try:
                 group_groups[cgroupid]+=[cwin]
             except:
                 group_groups[cgroupid]=[cwin]
         else: # anything other than group
-            if cwin in groupids:
+            if cwin in groupids or ctitle in groupids:
                 excluded_wins.append(cwin)
             else:
                 try:

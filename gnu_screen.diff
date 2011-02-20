@@ -54,7 +54,7 @@ index 5f4af8a..d6253f0 100644
    { "unbindall",	ARGS_0 },
    { "unsetenv",		ARGS_1 },
 diff --git a/src/fileio.c b/src/fileio.c
-index 88fbf64..b84b6c7 100644
+index 88fbf64..babf0e1 100644
 --- a/src/fileio.c
 +++ b/src/fileio.c
 @@ -452,6 +452,23 @@ int dump;
@@ -81,7 +81,7 @@ index 88fbf64..b84b6c7 100644
  #ifdef COPY_PASTE
      case DUMP_EXCHANGE:
        if (fn == 0)
-@@ -550,6 +567,30 @@ int dump;
+@@ -550,6 +567,33 @@ int dump;
  		  putc('\n', f);
  		}
  	      break;
@@ -97,10 +97,13 @@ index 88fbf64..b84b6c7 100644
 +                  else if (fore->w_type == W_TYPE_GROUP)
 +                    tty=SaveStr("group");
 +                  else
-+                    tty = (dump == DUMP_SCSWINDOW) ? fore->w_tty : "basic";
++                    if (strlen(fore->w_tty)==0)
++                      tty=SaveStr("zombie");
++                    else
++                      tty = (dump == DUMP_SCSWINDOW) ? fore->w_tty : "basic";
 +                  if (dump == DUMP_SCSWINDOW)
 +                    {
-+                      sprintf(buf,"%d %d %s\n",fore->w_number,(fore->w_group) ? fore->w_group->w_number: -1, tty);
++                      sprintf(buf,"%d %d %s %s\n",fore->w_number,(fore->w_group) ? fore->w_group->w_number: -1, tty, fore->w_title);
 +                    }
 +                  else
 +                    {
@@ -112,7 +115,7 @@ index 88fbf64..b84b6c7 100644
  	    case DUMP_TERMCAP:
  	      if ((p = index(MakeTermcap(fore->w_aflag), '=')) != NULL)
  		{
-@@ -586,6 +627,10 @@ int dump;
+@@ -586,6 +630,10 @@ int dump;
  	  Msg(0, "Screen image %s to \"%s\".",
  	      (*mode == 'a') ? "appended" : "written", fn);
  	  break;
