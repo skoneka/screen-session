@@ -54,7 +54,7 @@ class ScreenSaver(object):
         self.pid=str(pid)
         self.set_session(self.pid)
         self.primer=os.path.join(os.path.dirname(sys.argv[0]),self.primer)
-        self.__scrollfile=os.path.join(self.savedir,"hardcopy.")
+        self._scrollfile=os.path.join(self.savedir,"hardcopy.")
 
     def set_session(self,sessionname):
         self.sc='%s -S %s'%(which('screen')[0],sessionname)
@@ -84,7 +84,7 @@ class ScreenSaver(object):
                 self.primer_arg+='S'
                 self.force_start=[]
         if 'all' in self.scroll:
-            self.__scrollfile=None
+            self._scrollfile=None
         out('session "%s" loading "%s"' % (self.pid,os.path.join(self.basedir,self.savedir)))
         #check if the saved session exists and get the biggest saved window number and a number of saved windows
         maxnewwindow=0
@@ -207,10 +207,10 @@ class ScreenSaver(object):
                 primer_arg=self.primer_arg+'S'
             else:
                 primer_arg=self.primer_arg
-            if win in self.scroll or not self.__scrollfile or not os.path.exists(os.path.join(self.homedir,self.projectsdir,self.__scrollfile+win)):
+            if win in self.scroll or not self._scrollfile or not os.path.exists(os.path.join(self.homedir,self.projectsdir,self._scrollfile+win)):
                 scrollfile='0'
             else:
-                scrollfile=self.__scrollfile+win
+                scrollfile=self._scrollfile+win
             self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)) )
             #self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,"0",os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':

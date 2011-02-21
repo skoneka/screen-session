@@ -142,7 +142,8 @@ help_subwindows="Usage: screen-session subwindows [groupids or titles]\n\
 Print windows contained in groups.\
 "
 
-help_name="Usage: screen-session name [options] [new_sessionname]\n\n\Try to get the current sessionname.\
+help_name="Usage: screen-session name [options] [new_sessionname]\n\n\
+Get or set sessionname.\
 "
 
 help_saver_modes='GNU Screen session saver.\n\

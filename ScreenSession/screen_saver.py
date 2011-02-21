@@ -345,7 +345,8 @@ def main():
                     print('\t'+os.path.basename(f).split('__win.tar.bz2')[0])
                 raise IOError
             elif matching_len==1:
-                scs.savedir=savedir=os.path.basename(matching[0]).split('__win.tar.bz2')[0]
+                scs.savedir=savedir=input=os.path.basename(matching[0]).split('__win.tar.bz2')[0]
+                scs._scrollfile=os.path.join(scs.savedir,"hardcopy.")
                 unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
             else:
                 print ('No savefiles match.')
