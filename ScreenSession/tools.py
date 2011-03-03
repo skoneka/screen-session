@@ -12,7 +12,7 @@ def find_pids_in_windows(session,pids):
             if pid in tpids:
                 ttys.append(tty)
     wins=[]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
         try:
             ctty = int(os.path.split(ctty)[1])
             if ctty in ttys:
@@ -80,7 +80,7 @@ def renumber(session):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
         iwin=int(cwin)
         wins.append((iwin,cgroupid,ctype))
         wins_trans[iwin]=iwin
@@ -107,7 +107,7 @@ def sort(session,key=None):
     wins_trans={}
     groups={}
     cgroup=None
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
         iwin=int(cwin)
         lastval=(groupid,iwin,ctype,ss.title('',iwin))
         try:
@@ -143,7 +143,9 @@ def kill_zombie(session,groupids=[]):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     if groupids:
         windows=subwindows(session,groupids)[1]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+        print str(ctype),ctty
+
         if ctype==-1:
             if groupids:
                 if cwin in windows:
@@ -156,7 +158,7 @@ def make_group_tabs(session,groupids,bAll=False):
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
         if(ctype==1): # group
             if cwin in groupids or bAll:
                 excluded_groups.append(cwin)
@@ -187,7 +189,8 @@ def subwindows(session,groupids):
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    #for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
         if(ctype==1): # group
             if cwin in groupids or bAll or ctitle in groupids:
                 excluded_groups.append(cwin)

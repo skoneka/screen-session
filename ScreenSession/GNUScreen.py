@@ -35,37 +35,20 @@ def get_regions(session):
     remove(tfile)
     return ret
 
-# often skips windows, use gen_all_windows_full
 def gen_all_windows_fast(session):
     from ScreenSaver import ScreenSaver
     from util import tmpdir,remove
     import linecache
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-    ss.command_at(False,"at \# dumpscreen window \"%s\""%(tfile))
-    import time
-    fp=None
-    while fp==None:
+    ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    for line in open(tfile,'r'):
         try:
-            fp=open(tfile,'r')
+            cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
         except:
-            pass
-    cline=0
-    '''
-    line=''
-    while not line:
-        linecache.checkcache(tfile)
-        line=linecache.getline(tfile,cline)
-    print "line0="+line
-    while line:
-    '''
-    for line in fp:
-        try:
-            cwin,cgroupid,ctty=line.strip().split(' ')
-        except:
-            cwin,cgroupid=line.strip().split(' ')
-            ctty=None
-        if not ctty:
+            cwin,cgroupid,ctty= line.strip().split(' ')
+            ctitle=None
+        if ctty[0]=='z':
             ctypeid=-1
         elif ctty[0]=='g':
             ctypeid=1
@@ -73,12 +56,8 @@ def gen_all_windows_fast(session):
             ctypeid=2
         else:
             ctypeid=0
-        yield cwin,cgroupid,ctypeid,ctty
-        cline+=1
-        #linecache.checkcache(tfile)
-        #line=linecache.getline(tfile,cline)
+        yield cwin,cgroupid,ctypeid,ctty,ctitle
     remove(tfile)
-    print cline
 
 def gen_all_windows_full(session):
     from ScreenSaver import ScreenSaver
