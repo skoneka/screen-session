@@ -118,7 +118,7 @@ else
                 fi
             elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
                 exec python $SCRIPTPATH/new-window.py $$ $session "$@"
-            elif [ $mode = "dump" ]; then
+            elif [ $mode = "dump" -o $mode = "d" ]; then
                 exec python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
                 exec python $SCRIPTPATH/find_pid.py $session "$@"

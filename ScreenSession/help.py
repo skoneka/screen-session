@@ -84,7 +84,8 @@ Start a new Screen window in the same working directory\n\
 on the position next to the current window.\
 "
 
-help_dump="Usage: screen-session dump [options] [window_ids]\n\n\
+help_dump="Usage: screen-session dump [options] [window_ids]\n\
+       screen-session d [options] [window_ids]\n\n\
 Dump informations about windows in session.\n\
 -P \t- do not show pid data\
 "
@@ -255,7 +256,7 @@ def run(argv):
         print(help_kill_group)
     elif mode in ('dir','new','new-window'):
         print(help_new_window)
-    elif mode=='dump':
+    elif mode in ('dump','d'):
         print(help_dump)
     elif mode in ('find-pid','fp'):
         print(help_find_pid)

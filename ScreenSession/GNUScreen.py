@@ -69,15 +69,8 @@ def gen_all_windows_full(session):
     ss=ScreenSaver(session)
     tfile=os.path.join(tdir,'winlist')
     ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
-    ss.command_at(False,"at \# dumpscreen window \"%s\""%(tfile))
-    fp=None
-    cline=0
-    while fp==None:
-        try:
-            fp=open(tfile,'r')
-        except:
-            pass
-    for line in fp:
+    ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    for line in open(tfile,'r'):
         try:
             cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
         except:
@@ -97,46 +90,7 @@ def gen_all_windows_full(session):
         except:
             cgroup='none'
         yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime
-        cline+=1
     removeit(tdir)
-
-
-    
-def gen_all_windows(minwin,maxwin,session):
-    from ScreenSaver import ScreenSaver
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    cwin=-1
-    ctty=None
-    searching=False
-    for i in range(minwin,maxwin+1):
-        id=str(i)
-        if not searching:
-            pass
-        cwin,ctitle=ss.get_number_and_title(id)
-        if (cwin==-1):
-            #no such window
-            if searching:
-                pass
-            else: 
-                searching=True
-        else:
-            if(searching):
-                searching=False
-
-            # has to follow get_number_and_title() to recognize zombie windows
-            ctty = ss.tty(id)
-            if not ctty:
-                ctype=-1
-            elif ctty=='group':
-                ctype=1
-            elif ctty=='telnet':
-                ctype=2
-            else:
-                ctype=0
-
-            yield cwin,ctype,ctitle,ctty
-
-
 
 def _get_pid_info_sun(pid):
     procdir="/proc"
