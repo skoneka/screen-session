@@ -144,8 +144,6 @@ def kill_zombie(session,groupids=[]):
     if groupids:
         windows=subwindows(session,groupids)[1]
     for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
-        print str(ctype),ctty
-
         if ctype==-1:
             if groupids:
                 if cwin in windows:
