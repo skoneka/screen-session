@@ -7,7 +7,7 @@ SRCDIR = ScreenSession
 SRCMAIN1 = ${SRCDIR}/screen-session-primer.c 
 SRCMAIN2 = ${SRCDIR}/screen-session-helper.c 
 SRCHEAD = ${SRCDIR}/screen-session-define.h 
-OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/screen-in-dir.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/help.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py
+OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/help.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py
 
 OBJ = ${SRC:.c=.o}
 pwd=`pwd`
@@ -54,13 +54,12 @@ install: all
 	@echo installing files to ${INSTFOLDER}/
 	@mkdir -p ${INSTFOLDER}
 	@cp -f ${SRCDIR}/screen-session-primer ${OTHSRC} ${INSTFOLDER}
-	@chmod 755 ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session
+	@cp -f ${SRCDIR}/screen-session-helper ${OTHSRC} ${INSTFOLDER}
+	@chmod 755 ${INSTFOLDER}/screen-session-helper ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session
 	@echo linking executables to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
-	@ln -sf ${INSTFOLDER}/screen-session-primer ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${INSTFOLDER}/screen-session-helper ${DESTDIR}${PREFIX}/bin
 	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
 installtest: all
@@ -68,13 +67,10 @@ installtest: all
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
-	@ln -sf ${pwd}/${SRCDIR}/screen-session-primer ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${pwd}/${SRCDIR}/screen-session-helper ${DESTDIR}${PREFIX}/bin
 	
 uninstall:
 	@echo removing files from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
-	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session-primer
 	@rm -f ${DESTDIR}${PREFIX}/bin/scs
 	@echo removing directory  ${INSTFOLDER}
 	@rm -r ${INSTFOLDER}
