@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file: screen-in-dir.py
+# file: new-window.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
 # description: start new GNU Screen window in the same working directory
@@ -8,7 +8,7 @@
 import os,sys,platform
 import GNUScreen as sc
 
-primer='screen-session-primer -D'
+primer=os.path.join(os.path.split(os.path.abspath(__file__))[0],'screen-session-primer -D')
 try:
     ppid=int(sys.argv[1])
 except:
