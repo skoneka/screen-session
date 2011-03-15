@@ -402,9 +402,6 @@ class ScreenSaver(object):
             return  size1x,size1y,size2x,size2y,size3,flow,encoding,number,title
         else:
             return None
-    def get_regionsize(self,win="-1"):
-        msg=self.command_at(True, 'regionsize',win)
-        return msg.split(' ')
     
     def dinfo(self):
         msg=self.command_at(True, 'dinfo')

@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..ff7bc3f 100644
+index 5f4af8a..5a01492 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
@@ -15,7 +15,7 @@ index 5f4af8a..ff7bc3f 100644
    { "digraph",		NEED_LAYER|ARGS_012 },
    { "dinfo",		NEED_DISPLAY|ARGS_0 },
    { "displays",		NEED_LAYER|ARGS_0 },
-+  { "dumpscreen",       CAN_QUERY|NEED_DISPLAY|ARGS_23 },
++  { "dumpscreen",       CAN_QUERY|ARGS_23 },
    { "dumptermcap",	NEED_FORE|ARGS_0 },
    { "echo",		CAN_QUERY|ARGS_12 },
  #ifdef ENCODINGS
