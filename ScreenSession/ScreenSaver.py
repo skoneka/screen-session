@@ -27,6 +27,7 @@ class ScreenSaver(object):
     homewindow=""
     sc=None
     wrap_group_id=None
+    none_group='none_NoSuChGrOuP'
     
     primer_base="screen-session-primer"
     primer=primer_base
@@ -148,8 +149,8 @@ class ScreenSaver(object):
         hostgroupid,hostgroup = self.get_group(homewindow)
 
         if self.exact:
-            rootgroup='none'
-            hostgroup='none'
+            rootgroup=self.none_group
+            hostgroup=self.none_group
         else:
             #create a root group and put it into host group
             rootgroup="restore_"+self.savedir
@@ -182,7 +183,7 @@ class ScreenSaver(object):
                 groupid,group=group.split(' ',1)
             except:
                 groupid="-1"
-                group=""
+                group=self.none_group
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
@@ -295,7 +296,7 @@ class ScreenSaver(object):
         homewindow=int(self.homewindow)
         # create wrap group for existing windows
         self.screen('-t \"%s\" //group' % ('%s_%s'%(group,self.__unique_ident)) )
-        self.group(False,'none')
+        self.group(False,self.none_group)
         self.wrap_group_id=self.number()
 
         # move windows by shift and put them in a wrap group
@@ -307,7 +308,7 @@ class ScreenSaver(object):
                 self.homewindow=str(homewindow)
             
             cgroupid,cgroup = self.get_group(cwin)
-            if cgroup=="none":
+            if cgroup==self.none_group:
                 self.select(self.wrap_group_id)
                 self.group(False,group,str(cwin))
             command='%s -p %s -X number +%d' % (self.sc,cwin,shift)
@@ -537,7 +538,7 @@ class ScreenSaver(object):
     def get_group(self,win="-1"):
         msg=self.command_at(True, 'group',win)
         if msg.endswith('no group'):
-            group = 'none'
+            group = self.none_group
             groupid = '-1'
         else:
             groupid,group = msg.rsplit(")",1)[0].split(" (",1)
@@ -550,7 +551,7 @@ class ScreenSaver(object):
         msg=self.command_at(output, 'group %s'%args,win)
         if output:
             if msg.endswith('no group'):
-                group = 'none'
+                group = self.none_group
                 groupid = '-1'
             else:
                 groupid,group = msg.rsplit(")",1)[0].split(" (",1)

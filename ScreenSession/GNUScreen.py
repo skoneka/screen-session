@@ -88,7 +88,7 @@ def gen_all_windows_full(session):
         try:
             cgroupid,cgroup = cgroup.split(' ')
         except:
-            cgroup='none'
+            cgroup=ss.none_group
         yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime
     removeit(tdir)
 

@@ -46,7 +46,11 @@ def dump(ss,showpid=True,groupids=[]):
             print("----------------------------------------")
             lines=[]
             lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
-            lines.append("%s GRP   %s\n"%(cwin,cgroupid+' '+cgroup))
+            if cgroupid=='-1':
+                groupstr='-1'
+            else:
+                groupstr=cgroupid+' '+cgroup
+            lines.append("%s GRP   %s\n"%(cwin,groupstr))
             lines.append("%s TITL  %s\n"%(cwin,ctitle))
             if cfilter!='-1':
                 lines.append("%s EXEC  %s\n"%(cwin,cfilter))
