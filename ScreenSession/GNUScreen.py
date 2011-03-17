@@ -59,7 +59,7 @@ def gen_all_windows_fast(session):
         yield cwin,cgroupid,ctypeid,ctty,ctitle
     remove(tfile)
 
-def gen_all_windows_full(session):
+def gen_all_windows_full(session,reverse=False,sort=False):
     from ScreenSaver import ScreenSaver
     import string
     from util import tmpdir,removeit,remove
@@ -70,7 +70,18 @@ def gen_all_windows_full(session):
     tfile=os.path.join(tdir,'winlist')
     ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
     ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
-    for line in open(tfile,'r'):
+    if sort:
+        linesource = list(open(tfile,'r').readlines())
+        if reverse:
+            linesource.sort(lambda b,a: cmp(int(a.split(' ',1)[0]),int(b.split(' ',1)[0])))
+        else:
+            linesource.sort(lambda a,b: cmp(int(a.split(' ',1)[0]),int(b.split(' ',1)[0])))
+    elif reverse:
+        linesource = reversed(open(tfile,'r').readlines())
+    else:
+        linesource = open(tfile,'r')
+
+    for line in linesource:
         try:
             cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
         except:

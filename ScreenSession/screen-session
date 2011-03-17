@@ -13,6 +13,8 @@ export PYTHONPATH=$SCRIPTPATH
 
 ret=0
 SHOWPID='1'
+REVERSE='0'
+SORT='0'
 bKill=0
 
 if [ $# -eq 0 ]; then
@@ -76,13 +78,19 @@ else
     shiftcount=0
     bSession=0
     # parse command line arguments
-    while getopts ":PS:M:U:": OPT; do
+    while getopts ":PrsS:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
             shiftcount=`expr $shiftcount + 2`
             ;;
         P)  SHOWPID="0"
+            shiftcount=`expr $shiftcount + 1`
+            ;;
+        r)  REVERSE="1"
+            shiftcount=`expr $shiftcount + 1`
+            ;;
+        s)  SORT="1"
             shiftcount=`expr $shiftcount + 1`
             ;;
         esac
@@ -119,7 +127,7 @@ else
             elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
                 exec python $SCRIPTPATH/new-window.py $$ $session "$@"
             elif [ $mode = "dump" -o $mode = "d" ]; then
-                exec python $SCRIPTPATH/dump.py $session $SHOWPID "$@"
+                exec python $SCRIPTPATH/dump.py $session $SHOWPID $REVERSE $SORT "$@"
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
                 exec python $SCRIPTPATH/find_pid.py $session "$@"
             elif [ $mode = "find-file" -o $mode = "ff" ]; then

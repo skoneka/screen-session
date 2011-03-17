@@ -85,9 +85,11 @@ on the position next to the current window.\
 "
 
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
-       screen-session d [options] [window_ids]\n\n\
-Dump informations about windows in session.\n\
--P \t- do not show pid data\
+       scs d [options] [window_ids]\n\n\
+Print informations about windows in session (most recently used first).\n\
+-P \t- do not show pid data\n\
+-r \t- reverse the output\n\
+-s \t- sort by window number\
 "
 
 help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\

@@ -30,13 +30,13 @@ def find_files_in_pids(files):
     return pids
 
 
-def dump(ss,showpid=True,groupids=[]):
+def dump(ss,showpid=True,reverse=True,sort=False,groupids=[]):
     from sys import stdout
     bShow=True
     windows=[]
     if groupids:
         windows=subwindows(ss.pid,groupids)[1]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid):
+    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid,reverse,sort):
         if groupids:
             if cwin in windows:
                 bShow=True
