@@ -17,7 +17,7 @@ dir:
     # start new window running zsh with the same working directory
     scs new-window zsh
     
-    # example binding:
+    # example binding (provided that window 0 is always present):
     :bind c at 0 exec scs new-window
 
 regions:
@@ -38,7 +38,7 @@ Saving:
     # save current session without layouts
     scs save --no-layout 
 
-    # save saving session with PID in mysavedsession folder
+    # save session with sessionname starting with PID as mysavedsession
     scs save --in PID --out mysavedsession
 
 

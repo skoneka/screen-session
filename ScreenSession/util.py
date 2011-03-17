@@ -80,6 +80,9 @@ def requireme(home,projectsdir,file_in_session,full=False):
         unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
+    #print   str((home,projectsdir,savedir,archiveend,tmpdir,full))
+    if not savedir:
+        return False
     if full:
         print('Full unpacking...')
     else:
@@ -87,8 +90,8 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     import tarfile
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))
-    if os.path.exists(os.path.join(tmpdir,savedir)):
-        removeit(os.path.join(tmpdir,savedir))
+    #print 'removing: %s'%os.path.join(home,projectsdir,savedir)
+    #print 'removing: %s'%os.path.join(tmpdir,savedir)
     if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
         raise IOError
     os.makedirs(os.path.join(tmpdir,savedir))
@@ -112,7 +115,9 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
         else:
             os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
     except:
+        return False
         pass
+    return True
 
 
 

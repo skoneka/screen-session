@@ -569,7 +569,6 @@ class ScreenSaver(object):
     def __save_screen(self):
         errors=[]
         homewindow=self.homewindow
-        # out ("Homewindow is " + homewindow)
         group_wins={}
         group_groups={}
         excluded_wins=[]
@@ -582,11 +581,13 @@ class ScreenSaver(object):
         rollback=None,None,None
         ctime=self.time()
         findir=os.path.join(self.basedir,self.savedir)
+        #sc_cwd=self.command_at(True,'hardcopydir')
+        #print(sc_cwd)
         self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
         self.command_at(False, 'at \# dumpscreen window %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
-        self.command_at(False, 'hardcopydir $CWD')
+        #self.command_at(False, 'hardcopydir $CWD') # need to get hardcopydir
         try:
             f=open(os.path.join(findir,"winlist"),'r')
             f.close()
@@ -799,8 +800,6 @@ class ScreenSaver(object):
             pass
         if self.restore_previous:
             self.select(self.homewindow)
-        #elif self.__layouts_loaded:
-        #    pass
         elif os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
             # select last selected window
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
@@ -816,14 +815,17 @@ class ScreenSaver(object):
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')
-            requireme(self.homedir,cmdline[2], cmdline[3],True)
+            if cmdline[3]=='0':
+                requireme(self.homedir,cmdline[2], cmdline[4],True)
+            else:
+                requireme(self.homedir,cmdline[2], cmdline[3],True)
             path=os.path.join(self.homedir,cmdline[2],cmdline[4])
             fhead,ftail=os.path.split(cmdline[4])
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             number=ftail.split('_')[1]
             oldsavedir=fhead
             
-            # import win_* files
+            # import win_* files from previous savefiles
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
             except Exception,e:
@@ -831,7 +833,7 @@ class ScreenSaver(object):
                 target=None
                 pass
             
-            # import hardcopy.* files
+            # import hardcopy.* files from previous savefiles
             fhead,ftail=os.path.split(cmdline[3])
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             try:
@@ -865,8 +867,8 @@ class ScreenSaver(object):
             try:
                 try:
                     filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%lc))[0]
-                    layoutname=filename.split('_',2)[2]
-                    layoutnumber=filename.split('_',2)[1]
+                    layoutname=filename.rsplit('_',2)[2]
+                    layoutnumber=filename.rsplit('_',2)[1]
                     status=self.get_layout_new(layoutname)
                     if not status:
                         out('Maximum number of layouts reached. Ignoring layout %s (%s).'%(layoutnumber,layoutname))

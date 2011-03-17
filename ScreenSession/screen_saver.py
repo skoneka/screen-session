@@ -249,7 +249,7 @@ def main():
         for arg in nargv:
             scscall+=" "+arg
         scscall+=" --in "+input
-        command='exec screen -mdc /dev/null '+scscall 
+        command='at 0 exec screen -mdc /dev/null '+scscall 
         scs.idle(idle,command)
         out(':idle %s %s'%(idle,command))
         return 0
