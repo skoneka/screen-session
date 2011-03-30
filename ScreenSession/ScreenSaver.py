@@ -138,8 +138,8 @@ class ScreenSaver(object):
             return False
 
     def __escape_bad_chars(self,str):
-        # some characters are causing problems when setting window titles
-        return str.replace('|','I').replace('\\','\\\\\\\\')# how to properly escape "|"?
+        # some characters are causing problems when setting window titles with screen -t "title"
+        return str.replace('|','I').replace('\\','\\\\\\\\').replace('"','\\"')# how to properly escape "|" in 'screen -t "part1 | part2" sh'?
 
     def __load_screen(self):
         homewindow=self.homewindow
@@ -212,6 +212,7 @@ class ScreenSaver(object):
                 scrollfile='0'
             else:
                 scrollfile=self._scrollfile+win
+            print ('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)))
             self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)) )
             #self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,"0",os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':
@@ -840,7 +841,7 @@ class ScreenSaver(object):
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[3]),target2)
             except Exception,e:
-                out(str(e))
+                #out(str(e))
                 target2=None
                 pass
 

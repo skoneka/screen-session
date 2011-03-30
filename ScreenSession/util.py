@@ -81,7 +81,8 @@ def requireme(home,projectsdir,file_in_session,full=False):
 
 def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     #print   str((home,projectsdir,savedir,archiveend,tmpdir,full))
-    if not savedir:
+    HOME=os.getenv('HOME')
+    if not savedir or not home or not projectsdir or os.path.join(home,projectsdir,savedir)==HOME or os.path.join(tmpdir,savedir)==HOME:
         return False
     if full:
         print('Full unpacking...')
@@ -134,15 +135,14 @@ def removeit(path):
 def remove(path):
     try:
         os.remove(path)
-    except:
-        try:
-            shutil.rmtree(path)
-        except:
-            pass
+    except Exception,x:
+        print(str(x))
         pass
 
 def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
     #cleanup old temporary files and directories
+    if os.path.join(home,projectsdir)==os.getenv('HOME'):
+        return False
     ctime=time.time()
     files_all=glob.glob(os.path.join(home,projectsdir,'*'))
     files_archives=glob.glob(os.path.join(home,projectsdir,'*%s'%archiveend))

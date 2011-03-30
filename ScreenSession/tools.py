@@ -178,7 +178,7 @@ def make_group_tabs(session,groupids,bAll=False):
                     group_wins[cgroupid]=[cwin]
     return group_groups,group_wins,excluded_groups,excluded_wins
 
-def subwindows(session,groupids):
+def subwindows(session,groupids,datafile=None):
     ss=ScreenSaver(session)
     bAll=False
     if groupids[0] in ('cg','current'):
@@ -192,7 +192,7 @@ def subwindows(session,groupids):
     excluded_wins=[]
     excluded_groups=[]
     #for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datafile):
         if(ctype==1): # group
             if cwin in groupids or bAll or ctitle in groupids:
                 excluded_groups.append(cwin)

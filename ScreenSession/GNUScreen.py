@@ -35,13 +35,18 @@ def get_regions(session):
     remove(tfile)
     return ret
 
-def gen_all_windows_fast(session):
+#def get_window_data(full|fast):
+
+def gen_all_windows_fast(session, datafile=None):
     from ScreenSaver import ScreenSaver
     from util import tmpdir,remove
     import linecache
     ss=ScreenSaver(session)
-    tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-    ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    if datafile:
+        tfile=datafile
+    else:
+        tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
+        ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
     for line in open(tfile,'r'):
         try:
             cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
@@ -57,7 +62,8 @@ def gen_all_windows_fast(session):
         else:
             ctypeid=0
         yield cwin,cgroupid,ctypeid,ctty,ctitle
-    remove(tfile)
+    if not datafile:
+        remove(tfile)
 
 def gen_all_windows_full(session,reverse=False,sort=False):
     from ScreenSaver import ScreenSaver

@@ -5,17 +5,13 @@
 # description: screen-session tools starter
 # it is necessary to run screen_saver.py, and some other tools, embedded in other screen session, to be able to start it inside the target Screen session
 
-#SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
 # faster but less portable
 SCRIPTPATH=$(dirname $(realpath $0))
+#SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
 
 export PYTHONPATH=$SCRIPTPATH
 
 ret=0
-SHOWPID='1'
-REVERSE='0'
-SORT='0'
-bKill=0
 
 if [ $# -eq 0 ]; then
     exec python $SCRIPTPATH/help.py
@@ -75,6 +71,9 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     done < $scsfiletmp
     /bin/rm -f $scsfiletmp
 else
+    SHOWPID='1'
+    REVERSE='0'
+    SORT='0'
     shiftcount=0
     bSession=0
     # parse command line arguments
@@ -116,7 +115,7 @@ else
         elif [ $session != "__no__session__" ]; then
             if [ $mode = "group" ]; then
                 exec sh $SCRIPTPATH/win-to-group $session "$@"
-            elif [ $mode = "regions" ]; then
+            elif [ $mode = "regions" -o $mode = "r" ]; then
                 exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then

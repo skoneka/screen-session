@@ -8,9 +8,9 @@ help_help="\
 Usage:\t screen-session [mode] [options]\n\
 \t scs [mode] -S session [options]\n\
 Help:\t scs [mode] --help\n\
+     \t scs help [mode]\n\
 Global Options:\n\
-    -S [target]\t- target Screen session\n\
-    -h --help\t- display mode help\n\
+    -S [target]\t- target Screen session name\n\
 Saver modes:\n\
     save\t- save session to disk\n\
     load\t- load session from file\n\
@@ -27,10 +27,10 @@ Other tools:\n\
     nest-layout\t- nest a layout in the current region\n\
     new-window\t- open a Screen window with the same working directory\n\
     regions\t- display a number in each region (tmux display-panes)\n\
-    renumber\t- renumber windows to fill gaps\n\
+    renumber\t- renumber windows to fill the gaps\n\
     subwindows\t- print windows contained in a group\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
-    "
+"
 '''
 broken/unfinished tools:
     grab\t- grab a process and attach it to current tty\n\
@@ -42,7 +42,8 @@ unpractial/useless tools:
     find-pid\t- find PIDs in windows (greping dump is better)\n\
 '''
 
-help_regions="Usage: screen-session regions [options]\n\n\
+help_regions="Usage: screen-session regions [options]\n\
+       scs r [options]\n\n\
 Display a number in each region.\n\
 Allows selecting, swapping and rotating. Inspired by tmux display-panes.\n\
 \n\
@@ -248,7 +249,7 @@ def run(argv):
         print(help_help)
     elif mode=='--version':
         print(version_str)
-    elif mode=='regions':
+    elif mode in ('regions','r'):
         print(help_regions)
     elif mode=='kill':
         print(help_kill)

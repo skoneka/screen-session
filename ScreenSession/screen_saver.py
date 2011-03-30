@@ -41,7 +41,7 @@ def usage():
     out(help.help_saver)
 
 def main():    
-
+    HOME=os.getenv('HOME')
     bad_arg=None
     logpipe=None
     global special_output

@@ -826,7 +826,6 @@ main (int argc, char **argv)
     strcpy (fullpath, homedir);
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
-    chdir (fullpath);
     read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
@@ -957,7 +956,6 @@ main (int argc, char **argv)
     int number;
     int *numbers;
     int numbers_c;
-    chdir(proc_cwd);
     if (force_start)
       menu=ALL;
     else
