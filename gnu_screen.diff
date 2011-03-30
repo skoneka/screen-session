@@ -127,7 +127,7 @@ index 88fbf64..babf0e1 100644
  	case DUMP_EXCHANGE:
  	  Msg(0, "Copybuffer written to \"%s\".", fn);
 diff --git a/src/layout.c b/src/layout.c
-index 196d10b..450417c 100644
+index 584abbd..19977c1 100644
 --- a/src/layout.c
 +++ b/src/layout.c
 @@ -33,6 +33,7 @@
@@ -138,16 +138,17 @@ index 196d10b..450417c 100644
  
  struct layout *layouts;
  struct layout *laytab[MAXLAY];
-@@ -166,6 +167,8 @@ struct canvas *cv;
+@@ -166,7 +167,8 @@ struct canvas *cv;
      }
    while (D_canvas.c_slperp)
      FreeCanvas(D_canvas.c_slperp);
+-  D_cvlist = 0;
 +  focusminwidth = lay->lay_focusminwidth;
-+  focusminheight = lay->lay_focusminheight;
-   D_cvlist = 0;
++  focusminheight = lay->lay_focusminheight;  D_cvlist = 0;
    D_forecv = lay->lay_forecv;
-   DupLayoutCv(&lay->lay_canvas, &D_canvas, 0);
-@@ -369,3 +372,42 @@ char *filename;
+   if (!D_forecv)
+     MakeDefaultCanvas();
+@@ -379,6 +381,46 @@ char *filename;
    return 1;
  }
  
@@ -190,8 +191,18 @@ index 196d10b..450417c 100644
 +  return 1;
 +}
 +
++
+ void RenameLayout(layout, name)
+ struct layout *layout;
+ const char *name;
+@@ -404,3 +446,5 @@ int number;
+     lay->lay_number = old;
+   return 1;
+ }
++
++
 diff --git a/src/layout.h b/src/layout.h
-index 065edb7..3b79b0c 100644
+index 1814226..61f9f80 100644
 --- a/src/layout.h
 +++ b/src/layout.h
 @@ -43,6 +43,8 @@ struct layout
@@ -204,10 +215,10 @@ index 065edb7..3b79b0c 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index cb85adc..cb807bb 100644
+index dfa7c82..f66ff38 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -1275,6 +1275,28 @@ int key;
+@@ -1269,6 +1269,28 @@ int key;
      case RC_DUMPTERMCAP:
        WriteFile(user, (char *)0, DUMP_TERMCAP);
        break;
@@ -236,7 +247,7 @@ index cb85adc..cb807bb 100644
      case RC_HARDCOPY:
        {
  	int mode = DUMP_HARDCOPY;
-@@ -1730,6 +1752,9 @@ int key;
+@@ -1724,6 +1746,9 @@ int key;
          copy_reg_fn(&ch, 0, NULL);
        break;
  #endif
@@ -246,7 +257,7 @@ index cb85adc..cb807bb 100644
      case RC_REGISTER:
  #ifdef ENCODINGS
        i = fore ? fore->w_encoding : display ? display->d_encoding : 0;
-@@ -2676,6 +2701,19 @@ int key;
+@@ -2662,6 +2687,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
@@ -266,7 +277,7 @@ index cb85adc..cb807bb 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3081,14 +3119,16 @@ int key;
+@@ -3067,14 +3105,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -291,7 +302,7 @@ index cb85adc..cb807bb 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4224,19 +4264,21 @@ int key;
+@@ -4210,19 +4250,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -326,7 +337,7 @@ index cb85adc..cb807bb 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4252,13 +4294,10 @@ int key;
+@@ -4238,13 +4280,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}
@@ -337,13 +348,13 @@ index cb85adc..cb807bb 100644
 -	  else
 -	    OutputMsg(0, "window belongs to no group");
 -	}
-+    if (fore->w_group)
-+      OutputMsg(0, "window group is %d (%s)\n", fore->w_group->w_number, fore->w_group->w_title);
-+    else
-+      OutputMsg(0, "window belongs to no group");
++        if (fore->w_group)
++          OutputMsg(0, "window group is %d (%s)\n", fore->w_group->w_number, fore->w_group->w_title);
++        else
++          OutputMsg(0, "window belongs to no group");
        break;
      case RC_LAYOUT:
-       if (!strcmp(args[0], "title"))
+       // A number of the subcommands for "layout" are ignored, or not processed correctly when there
 diff --git a/src/screen.h b/src/screen.h
 index 5c93f32..725a2cd 100644
 --- a/src/screen.h
