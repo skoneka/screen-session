@@ -27,18 +27,18 @@ load        - load session
 ls          - list saved sessions
 ----
 
-dir         - starts a new Screen window in the same working directory 
+new-window  - start a new Screen window in the same working directory 
               on the position next to the current window
 manager     - sessions manager (screenie like) but featuring session 
               preview in a split window
 name        - get or set sessionname
-nest        - nest layout in the current region
+nest-layout - copy a layout to the current region
 regions     - display number in every region (like tmux display-panes)
 dump        - dump informations about windows in session
 find-pid    - find PIDs in windows
-find-file   - find open files in windows (requires lsof)
+find-file   - find opened files in windows (requires lsof)
 group       - move windows to a group
-kill        - send signal to last process started in a window
+kill        - send SIGTERM to last process started in a window
 kill-zombie - kill all zombie windows in session
 kill-group  - recursively kill all windows in a group
 renumber    - renumber windows to fill gaps
