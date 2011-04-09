@@ -318,7 +318,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sE%s]xit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sH%s]elp ",
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sH%s]elp ",
 	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
@@ -826,6 +826,7 @@ main (int argc, char **argv)
     strcpy (fullpath, homedir);
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
+    chdir(fullpath); // fopen's currently depend on this
     read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
@@ -833,7 +834,7 @@ main (int argc, char **argv)
     fp = fopen (datafile, "r");
     if (!fp)
       {
-        fprintf (stderr,PRIMER": %s:%d Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
+        fprintf (stderr,PRIMER": %s:%d WOOT Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
         perror("Error :");
         printf ("Press any key to continue...\n");
         mygetch ();
@@ -845,6 +846,8 @@ main (int argc, char **argv)
     char *filter = malloc (filter_s * sizeof (char));
     size_t buftext_s=1;
     char *buftext = malloc(buftext_s*sizeof(char));
+    size_t type_s=1;
+    char *type = malloc(type_s*sizeof(char));
     size_t title_s=1;
     char *title = malloc(title_s*sizeof(char));
     size_t timesaved_s=1;
@@ -852,16 +855,15 @@ main (int argc, char **argv)
     getline (&buftext, &buftext_s, fp);	//win number
     getline (&buftext, &buftext_s, fp);	//EMPTY
     getline (&buftext, &buftext_s, fp);	//group
-    getline (&buftext, &buftext_s, fp);	//win type
+    getline (&type, &type_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
-
     getline (&filter, &filter_s, fp);	    //filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
     fscanf (fp, "%d\n", &procs_c);
     int bFilter=0;
     if (!force_start)
       {
-        printf ("%sTITLE:%s %s\n", green_r, none, title);
+        printf ("%sTYPE:%s %s %sTITLE:%s %s\n", green_r,none,type,green_r,none,title);
         filter = strtrim_right (filter, '\n');
         if (strcmp (filter, "-1") != 0)
           {

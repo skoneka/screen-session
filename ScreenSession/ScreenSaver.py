@@ -589,7 +589,7 @@ class ScreenSaver(object):
         self.command_at(False, 'at \# dumpscreen window %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'at \# hardcopy -h')
-        #self.command_at(False, 'hardcopydir $CWD') # need to get hardcopydir
+        self.command_at(False, 'hardcopydir \"%s\"'%self.homedir) # should be modified to properly restore hardcopydir(:dumpscreen settings)
         try:
             f=open(os.path.join(findir,"winlist"),'r')
             f.close()
@@ -676,7 +676,7 @@ class ScreenSaver(object):
                     jremove=[]
                     wprev=False
                     for j,w in enumerate(l):
-                        if w == '-c':
+                        if w == '-ic' or w == '-c':
                             wprev=True
                         elif wprev:
                             if w.startswith(self.primer):
