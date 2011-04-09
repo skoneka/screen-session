@@ -707,7 +707,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	{
 	  strcpy (proc_args[i], proc_args[i - 3]);
 	}
-      strcpy (proc_args[1], "-c");
+      strcpy (proc_args[1], "-ic");
 
       char *command =
 	malloc (((procs_n - 1) * 4 + (2 * strlen (thisprogram)) +
