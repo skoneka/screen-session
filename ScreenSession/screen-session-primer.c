@@ -826,7 +826,7 @@ main (int argc, char **argv)
     strcpy (fullpath, homedir);
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
-    chdir(fullpath); // fopen's currently depend on this
+    chdir(fullpath); // fopen's currently depends on this
     read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
