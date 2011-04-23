@@ -21,6 +21,7 @@ class ScreenSaver(object):
     exact=False
     bVim=True
     mru=True
+    bNoGroupWrap=False
     force_start=[]
     scroll=[]
     group_other='OTHER_WINDOWS'
@@ -151,9 +152,11 @@ class ScreenSaver(object):
         if self.exact:
             rootgroup=self.none_group
             hostgroup=self.none_group
+        elif self.bNoGroupWrap:
+            rootgroup=self.none_group
         else:
             #create a root group and put it into host group
-            rootgroup="restore_"+self.savedir
+            rootgroup="RESTORE_"+self.savedir
             self.screen('-t \"%s\" %s //group' % (rootgroup,0 ) )
             self.group(False,'%s' % (hostgroup) )
         
@@ -296,9 +299,10 @@ class ScreenSaver(object):
     def __move_all_windows(self,shift,group,kill=False):
         homewindow=int(self.homewindow)
         # create wrap group for existing windows
-        self.screen('-t \"%s\" //group' % ('%s_%s'%(group,self.__unique_ident)) )
-        self.group(False,self.none_group)
-        self.wrap_group_id=self.number()
+        if not self.bNoGroupWrap:
+            self.screen('-t \"%s\" //group' % ('%s_%s'%(group,self.__unique_ident)) )
+            self.group(False,self.none_group)
+            self.wrap_group_id=self.number()
 
         # move windows by shift and put them in a wrap group
         #for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
@@ -309,11 +313,11 @@ class ScreenSaver(object):
                 self.homewindow=str(homewindow)
             
             cgroupid,cgroup = self.get_group(cwin)
-            if cgroup==self.none_group:
+            if not self.bNoGroupWrap and cgroup==self.none_group:
                 self.select(self.wrap_group_id)
                 self.group(False,group,str(cwin))
             command='%s -p %s -X number +%d' % (self.sc,cwin,shift)
-            if str(cwin)==str(self.wrap_group_id):
+            if not self.bNoGroupWrap and str(cwin)==str(self.wrap_group_id):
                 out('Moving wrap group %s to %d'%(cwin,iwin+shift))
                 self.wrap_group_id=str(iwin+shift)
             else:

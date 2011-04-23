@@ -102,7 +102,7 @@ else
         exec python $SCRIPTPATH/sessionname.py $session "$@"
     elif [ $mode = "--version" -o $mode = "-v" ]; then
         exec python $SCRIPTPATH/help.py --version
-    elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" ]; then
+    elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" -o $mode = "h" ]; then
         exec python $SCRIPTPATH/help.py "$@"
     else
         screen -S $session -X msgminwait 0

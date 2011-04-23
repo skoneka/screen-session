@@ -217,6 +217,8 @@ Options:\n\
   \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout loading\n\
+-n --no-group-wrap\n\
+  \tdo not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups\n\
 -m --mru\n\
   \trestore Most Recently Used order of windows\n\
 --log  <file>\n\
@@ -247,7 +249,7 @@ def run(argv):
         mode=argv[1]
     except:
         mode='help'
-    if mode=='help':
+    if mode in ('help','h'):
         print(version_str+'\n')
         print(help_help)
     elif mode=='--version':

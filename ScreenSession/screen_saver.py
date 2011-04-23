@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -64,7 +64,7 @@ def main():
     util.archiveend='.tar.bz2'
     unpack=None
     current_session=None
-    bNest=True
+    bNoGroupWrap=False
     bVim=True
     bExact=False
     bKill=False
@@ -89,12 +89,9 @@ def main():
     for o, a in opts:
         if o == "-v":
             verbose = True
-        elif o == "-n":
-            # no-nest, do not wrap in a screen session
-            # ignore, currently handled in wrapper script
-            # bNest=False
-            pass
-        elif o in ("-t","--ls"):
+        elif o in ("-n","--no-group-wrap"):
+            bNoGroupWrap=True
+        elif o in ("-l","--ls"):
             bList=True
         elif o == "--log":
             log = a
@@ -274,6 +271,7 @@ def main():
     scs.exact=bExact
     scs.bVim=bVim
     scs.mru=mru
+    scs.bNoGroupWrap=bNoGroupWrap
     if force_start:
         scs.force_start=force_start.strip().split(',')
     if excluded:
@@ -334,7 +332,7 @@ def main():
         except IOError:
             recent=list_sessions(home,projectsdir,util.archiveend,savedir)
             if recent:
-                print('Selecting most recent file: '+recent)
+                print('Selecting the most recent file: '+recent)
                 scs.savedir=savedir=input=recent
                 scs._scrollfile=os.path.join(scs.savedir,"hardcopy.")
                 unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
