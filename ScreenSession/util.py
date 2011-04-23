@@ -208,11 +208,12 @@ def list_sessions(home,projectsdir,archiveend,match):
     date_file_list.sort()
     
     if len(date_file_list)>0:
-        out('There are saved sessions:')
+        out('There are matching sessions:')
     else:
-        out('There are no saved sessions.')
+        out('There are no matching sessions.')
     
     fileending_l=len(archiveend)+len('__win')
+    file_name=None
     for file in date_file_list:
         # extract just the filename
         file_name = os.path.split(file[1])[1]
@@ -222,7 +223,8 @@ def list_sessions(home,projectsdir,archiveend,match):
         out("  %s\t%s" % (file_date, file_name))
     
     if len(date_file_list)>0:
-        out('%s saved sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
+        out('%s matching sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
+    return file_name
 
 def find_in_path(file, path=None):
   """find_in_path(file[, path=os.environ['PATH']]) -> list

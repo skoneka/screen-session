@@ -39,7 +39,7 @@ broken/unfinished tools:
     manager-remote - 
 
 unpractial/useless tools:
-    find-pid\t- find PIDs in windows (greping dump is better)\n\
+    find-pid\t- find PIDs in windows (greping dump tool output is better)\n\
 '''
 
 help_regions="Usage: screen-session regions [options]\n\
@@ -153,7 +153,8 @@ Get or set sessionname.\
 help_saver_modes='GNU Screen session saver.\n\
 Usage: screen-session [save|load|ls] [options]'
 
-help_saver_ls="Usage: scs save [options]\n\n\
+help_saver_ls="Usage: screen-session save [options]\n\n\
+Garden of Eden Creation Kit for GNU Screen.\n\
 List saved sesssions.\n\
 Options:\n\
 -i --in     <string>\n\
@@ -164,7 +165,8 @@ Options:\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
 "
 
-help_saver_save="Usage: scs save [options]\n\n\
+help_saver_save="Usage: screen-session save [options]\n\n\
+Garden of Eden Creation Kit for GNU Screen.\n\
 Save GNU Screen and VIM sessions to a file.\n\
 Options:\n\
 -i --in  <sesionnname>\n\
@@ -194,7 +196,8 @@ Example:\n\
 $ screen-session save --in SESSIONNAME --out mysavedsession\
 "
 
-help_saver_load="Usage: scs load [options]\n\n\
+help_saver_load="Usage: screen-session load [options]\n\n\
+Garden of Eden Creation Kit for GNU Screen.\n\
 Load saved session from a file.\n\
 Options:\n\
 -i --in  <savefile>\n\

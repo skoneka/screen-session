@@ -4,10 +4,6 @@
 # website: http://adb.cba.pl
 # description: GNU Screen session saving program
 
-'''
-issues:
-    - program won't recognize telnet and serial window types
-'''
 
 import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
 from ScreenSaver import ScreenSaver
@@ -336,20 +332,13 @@ def main():
         try:
             unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
         except IOError:
-            g = glob.glob(os.path.join(home, projectsdir, '*%s*__win.tar.bz2'%savedir))
-            matching = list(g)
-            matching_len=len(matching)
-            if matching_len>1:
-                print ('%d savefiles match:'%matching_len)
-                for f in matching:
-                    print('\t'+os.path.basename(f).split('__win.tar.bz2')[0])
-                raise IOError
-            elif matching_len==1:
-                scs.savedir=savedir=input=os.path.basename(matching[0]).split('__win.tar.bz2')[0]
+            recent=list_sessions(home,projectsdir,util.archiveend,savedir)
+            if recent:
+                print('Selecting most recent file: '+recent)
+                scs.savedir=savedir=input=recent
                 scs._scrollfile=os.path.join(scs.savedir,"hardcopy.")
                 unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
             else:
-                print ('No savefiles match.')
                 raise IOError
 
         try:
@@ -372,7 +361,7 @@ def main():
             scs.Xecho("screen-session finished loading")
 
     else:
-        out('No mode specified --load or --save')
+        out('session saver: No such mode')
     doexit(ret)
 
 
