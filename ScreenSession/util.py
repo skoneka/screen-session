@@ -93,28 +93,16 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     removeit(os.path.join(tmpdir,savedir))
     #print 'removing: %s'%os.path.join(home,projectsdir,savedir)
     #print 'removing: %s'%os.path.join(tmpdir,savedir)
-    if not os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+archiveend)):
+    if not os.path.exists(os.path.join(home,projectsdir,savedir+archiveend)):
         raise IOError
     os.makedirs(os.path.join(tmpdir,savedir))
-    t1 = tarfile.open(os.path.join(home,projectsdir,savedir+'__win'+archiveend),'r')
+    t1 = tarfile.open(os.path.join(home,projectsdir,savedir+archiveend),'r')
     path=os.path.join(tmpdir,savedir)
     for m in t1.getmembers():
         t1.extract(m,path)
     t1.close()
-    if full:
-        try:
-            t2 = tarfile.open(os.path.join(home,projectsdir,savedir+'__data'+archiveend),'r')
-            for m in t2.getmembers():
-                t2.extract(m,path)
-            t2.close()
-        except:
-            out('Unable to extract __data!')
-    # taking care of old archive types
     try:
-        if os.path.split(glob.glob(os.path.join(tmpdir,savedir,'*'))[0])[1]==savedir:
-            os.symlink(os.path.join(tmpdir,savedir,savedir),os.path.join(home,projectsdir,savedir))
-        else:
-            os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
+        os.symlink(os.path.join(tmpdir,savedir),os.path.join(home,projectsdir,savedir))
     except:
         return False
         pass
@@ -168,19 +156,7 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
 def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
     import tarfile
     try:
-        t1 = tarfile.open(os.path.join(home,projectsdir,"%s__win%s"%(savedir_real,archiveend)),'w:bz2')
-        for f in glob.glob(os.path.join(home,projectsdir,savedir_real+'__tmp','win_*')):
-            t1.add(f,os.path.split(f)[1])
-            remove(f)
-        t1.add(os.path.join(home,projectsdir,savedir_real+'__tmp','last_win'),'last_win')
-        remove(os.path.join(home,projectsdir,savedir_real+'__tmp','last_win'))
-        t1.close()
-    except Exception,x:
-        print(str(x))
-        raise x
-    
-    try:
-        t2 = tarfile.open(os.path.join(home,projectsdir,"%s__data%s"%(savedir_real,archiveend)),'w:bz2')
+        t2 = tarfile.open(os.path.join(home,projectsdir,"%s%s"%(savedir_real,archiveend)),'w:bz2')
         for f in glob.glob(os.path.join(home,projectsdir,savedir_real+'__tmp','*')):
             t2.add(f,os.path.split(f)[1])
         t2.close()
@@ -192,7 +168,7 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
 def list_sessions(home,projectsdir,archiveend,match):
     if not match:
         match=''
-    files=glob.glob(os.path.join(home,projectsdir,'*%s*__win%s'%(match,archiveend)))
+    files=glob.glob(os.path.join(home,projectsdir,'*%s*%s'%(match,archiveend)))
     
     date_file_list=[]
     for file in files:
@@ -212,7 +188,7 @@ def list_sessions(home,projectsdir,archiveend,match):
     else:
         out('There are no matching sessions.')
     
-    fileending_l=len(archiveend)+len('__win')
+    fileending_l=len(archiveend)
     file_name=None
     for file in date_file_list:
         # extract just the filename

@@ -200,7 +200,7 @@ def main():
     elif mode == 2:
         if not input:
             try:
-                files=glob.glob(os.path.join(home,projectsdir,'*__win%s'%(util.archiveend)))
+                files=glob.glob(os.path.join(home,projectsdir,'*%s'%(util.archiveend)))
                 date_file_list=[]
                 for file in files:
                     stats = os.stat(file)
@@ -208,7 +208,7 @@ def main():
                     date_file_tuple = lastmod_date, file
                     date_file_list.append(date_file_tuple)
                 date_file_list.sort()
-                input=os.path.split(date_file_list[-1][1])[1].rsplit('__',1)[0]
+                input=os.path.split(date_file_list[-1][1])[1].rsplit(util.archiveend,1)[0]
             except:
                 out("No recent session to load")
                 doexit("Aborting")
@@ -289,7 +289,7 @@ def main():
         removeit(os.path.join(home,projectsdir,savedir_tmp))
         removeit(os.path.join(util.tmpdir,savedir_tmp))
         # save and archivize
-        if os.path.exists(os.path.join(home,projectsdir,savedir+'__win'+util.archiveend)):
+        if os.path.exists(os.path.join(home,projectsdir,savedir+util.archiveend)):
             if force==False:
                 scs.Xecho("screen-session saving FAILED. Savefile exists. Use --force")
                 out('Savefile exists. Use --force to overwrite.')
