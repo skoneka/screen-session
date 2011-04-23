@@ -150,9 +150,6 @@ def main():
         sys.stdout=open(log,'w')
         sys.stderr=sys.stdout
 
-
-    out('GNU Screen session saver')
-
     if bad_arg:
         out('Unhandled option: %s'%bad_arg)
         doexit(1)

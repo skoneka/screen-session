@@ -1125,11 +1125,18 @@ main (int argc, char **argv)
         copy_file(buf2,buf1);
         remove(buf2);
         free(buf0); free(buf1); free(buf2); 
-        buf0 = malloc((40+strlen(workingdir)+strlen(session))*sizeof(char));
-	sprintf (buf0, "screen-session other -f --dir %s --pack %s", workingdir, session);
-        printf("%s\n",buf0);
-        system(buf0); free(buf0);
-        reset_primer(argv,fullpath,scrollbackfile,datafile);
+        int pid = fork();
+        if (pid == 0) 
+        {
+          buf0 = malloc((40+strlen(workingdir)+strlen(session))*sizeof(char));
+          sprintf (buf0, "screen-session other --dir %s --pack %s", workingdir, session);
+          system(buf0); free(buf0);
+          exit(0);
+        }
+        else if (pid < 0) 
+          fprintf (stderr,PRIMER": %s:%d failed to fork a process\n",__FILE__,__LINE__);
+        else 
+          reset_primer(argv,fullpath,scrollbackfile,datafile);
         break;
 
       }
