@@ -39,6 +39,7 @@ enum menu
   ALL,
   ONLY,
   NUMBER,
+  EDIT,
   DEFAULT
 };
 
@@ -318,8 +319,8 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sH%s]elp ",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none );
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
+	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
 	  printf (" %s ? %s > ",green_r,none);
@@ -388,6 +389,9 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	      break;
 	    case 'e':
 	    case 'E':
+              menu_choice=EDIT;
+              valid_choice = 1;
+              break;
             case 'q':
             case 'Q':
 	      menu_choice = EXIT;
@@ -413,13 +417,17 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
               break;
             case 'h':
             case 'H':
-              printf("Help:\n\
-[A]ll     \t- try to restart all saved processes\n\
-[E]xit    \t- terminate primer\n\
-[D]efault \t- start default shell in last working directory\n\
-[R]eset   \t- reload primer\n\
-[number]  \t- try to restart saved processes up to [number]\n\
-[O]nly [numbers..] - select processes which will be restarted\n");
+              printf("This is a program which \"primes\" other processes saved by screen-session.\n\
+Description of possible actions:\n\
+Key      | Arguments | Description\n\
+----------------------------------\n\
+[A]ll    |           | try to restart all saved processes\n\
+[Q]uit   |           | terminate primer\n\
+[D]efault|           | start default shell in last working directory\n\
+[R]eset  |           | reload primer\n\
+[E]dit   |           | edit primer's source file with $EDITOR\n\
+         |[number]   | try to restart saved processes up to [number]\n\
+[O]nly   |[numbers..]| select processes which will be restarted\n");
 	      valid_choice = 0;
 	      menu_choice = NONE;
 	    default:
@@ -768,6 +776,16 @@ read_scrollback(char *fullpath, char *scrollbackfile)
   return 0;
 
 }
+void
+reset_primer(char **argv, char *fullpath, char *scrollbackfile, char *datafile)
+{
+  printf(PRIMER "Reseting...\n");
+  if ( strcmp(scrollbackfile,"0")==0)
+    requireSession (fullpath, datafile, 0);
+  else
+    requireSession (fullpath, scrollbackfile, 1);
+  execv (argv[0],argv);
+}
 #ifndef TEST
 int
 main (int argc, char **argv)
@@ -993,12 +1011,7 @@ main (int argc, char **argv)
         return 0;
         break;
       case RESET:
-        printf(PRIMER "Reseting...\n");
-        if ( strcmp(scrollbackfile,"0")==0)
-          requireSession (fullpath, datafile, 0);
-        else
-          requireSession (fullpath, scrollbackfile, 1);
-        execv (argv[0],argv);
+        reset_primer(argv,fullpath,scrollbackfile,datafile);
         break;
       case DEFAULT:
         read_scrollback(fullpath,scrollbackfile);
@@ -1063,6 +1076,16 @@ main (int argc, char **argv)
           make_arglist (argv[0], "-s", fullpath, datafile, number, args);
         execv (argv[0], arglist);
         break;
+      case EDIT:
+        requireSession (fullpath, datafile, 1);
+        char *EDITOR = getenv("EDITOR");
+        char *buf =
+	  malloc ((strlen(EDITOR) + strlen (fullpath) + strlen (datafile) + 5 ) * sizeof (char));
+        sprintf (buf, "%s %s/%s", EDITOR, fullpath, datafile);
+        printf(PRIMER "Editing source: %s\n",buf);
+        system(buf);
+        reset_primer(argv,fullpath,scrollbackfile,datafile);
+        break;
 
       }
     fprintf (stderr,PRIMER": %s:%d fatal error - unsupported action %d\n",__FILE__,__LINE__,menu);
@@ -1070,7 +1093,7 @@ main (int argc, char **argv)
     return 44;
   }
   else {
-      printf ("screen-session %s helper program\n",VERSION);
+      printf ("screen-session %s priming program\n",VERSION);
   }
 }
 
