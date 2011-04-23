@@ -55,13 +55,14 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
     
     mode = 0
     util.archiveend='.tar.bz2'
+    pack=None
     unpack=None
     current_session=None
     bNoGroupWrap=False
@@ -97,6 +98,8 @@ def main():
             log = a
         elif o == "-p":
             logpipe = a
+        elif o == "--pack":
+            pack = a
         elif o == "--unpack":
             unpack = a
         elif o in ("-S","--current-session"):
@@ -182,6 +185,10 @@ def main():
     if mode==0:
         if unpack:
             unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,bFull)
+        elif pack:
+            if not output:
+                output=pack
+            archiveme(util.tmpdir,home,projectsdir,output,util.archiveend,pack+'/*')
         else:
             usage()
         doexit(0)
@@ -315,7 +322,7 @@ def main():
             scs.Xecho("screen-session compressing...")
             removeit(os.path.join(home,projectsdir,savedir_real))
             removeit(os.path.join(util.tmpdir,savedir_real))
-            archiveme(util.tmpdir,home,projectsdir,savedir,util.archiveend,savedir_real)
+            archiveme(util.tmpdir,home,projectsdir,savedir_real,util.archiveend,savedir_real+'__tmp/*')
             removeit(os.path.join(home,projectsdir,savedir_tmp))
             removeit(os.path.join(util.tmpdir,savedir_tmp))
             scs.savedir=savedir_real

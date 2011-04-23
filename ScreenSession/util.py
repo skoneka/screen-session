@@ -70,10 +70,10 @@ def linkify(dir,dest,targ):
         except:
             pass
 
-def requireme(home,projectsdir,file_in_session,full=False):
+def requireme(home,projectsdir,file_in_session,full=False,force=False):
     global archiveend
     global tmpdir
-    if os.path.isfile(os.path.join(home,projectsdir,file_in_session)):
+    if not force and os.path.isfile(os.path.join(home,projectsdir,file_in_session)):
         return
     else:
         fhead,ftail = os.path.split(file_in_session)
@@ -153,13 +153,13 @@ def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
         if delta > timeout: # if seconds passed since last modification
             removeit(file)
 
-def archiveme(tmpdir,home,projectsdir,savedir,archiveend,savedir_real):
+def archiveme(tmpdir,home,projectsdir,savedir,archiveend,target):
     import tarfile
     try:
-        t2 = tarfile.open(os.path.join(home,projectsdir,"%s%s"%(savedir_real,archiveend)),'w:bz2')
-        for f in glob.glob(os.path.join(home,projectsdir,savedir_real+'__tmp','*')):
-            t2.add(f,os.path.split(f)[1])
-        t2.close()
+        t1 = tarfile.open(os.path.join(home,projectsdir,"%s%s"%(savedir,archiveend)),'w:bz2')
+        for f in glob.glob(os.path.join(home,projectsdir,target)):
+            t1.add(f,os.path.split(f)[1])
+        t1.close()
     except Exception,x:
         print(str(x))
         raise x

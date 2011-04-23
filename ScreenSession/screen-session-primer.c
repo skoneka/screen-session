@@ -30,7 +30,6 @@
 
 int blacklist[BLACKLISTMAX];
 int blacklist_c = 0;
-
 enum menu
 {
   NONE = 0,
@@ -43,6 +42,41 @@ enum menu
   DEFAULT
 };
 
+int copy_file(char *inputfile, char *outputfile)
+{
+  FILE * filer, * filew;
+  int numr,numw;
+  char buffer[100];
+
+
+  if((filer=fopen(inputfile,"rb"))==NULL){
+          fprintf(stderr, "open read file error.\n");
+          return 1;
+  }
+
+  if((filew=fopen(outputfile,"wb"))==NULL){
+          fprintf(stderr,"open write file error.\n");
+          return 1;
+  }
+  while(feof(filer)==0){
+  if((numr=fread(buffer,1,100,filer))!=100){
+          if(ferror(filer)!=0){
+          fprintf(stderr,"read file error.\n");
+          return 1;
+          }
+          else if(feof(filer)!=0);
+  }
+    if((numw=fwrite(buffer,1,numr,filew))!=numr){
+            fprintf(stderr,"write file error.\n");
+            return 1;
+    }
+  }
+
+  fclose(filer);
+  fclose(filew);
+  return 0;
+}
+     
 void print_ints(int *numbers,int n) 
 {
   int i;
@@ -181,7 +215,7 @@ get_session (const char *file_in_session)
 }
 
 int
-requireSession (const char *basepath, const char *file_in_session, int full)
+requireSession (const char *basepath, const char *file_in_session, int force)
 {
   char *file = malloc ((strlen (file_in_session) + 1) * sizeof (char));
   char *session = malloc ((strlen (file_in_session) + 1) * sizeof (char));
@@ -227,15 +261,15 @@ requireSession (const char *basepath, const char *file_in_session, int full)
   else
     {
       free (filepath);
-      char *fullstr = "--full";
+      char *forcestr = "--force";
       char *buf =
-	malloc ((strlen (basedir) + strlen (session) + strlen (fullstr) + 1 +
+	malloc ((strlen (basedir) + strlen (session) + strlen (forcestr) + 1 +
 		 55) * sizeof (char));
-      if (full)
-	sprintf (buf, "screen-session other -n --dir %s --unpack %s %s",
-		 basedir, session, fullstr);
+      if (force)
+	sprintf (buf, "screen-session other --dir %s --unpack %s %s",
+		 basedir, session, forcestr);
       else
-	sprintf (buf, "screen-session other -n --dir %s --unpack %s", basedir,
+	sprintf (buf, "screen-session other --dir %s --unpack %s", basedir,
 		 session);
       system (buf);
       free (file);
@@ -245,6 +279,7 @@ requireSession (const char *basepath, const char *file_in_session, int full)
       return 0;
     }
 }
+
 
 
 void
@@ -700,7 +735,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       strcat (buf, "/");
       strcat (buf, proc_vim);
       strcat (buf, VIM_SESSION);
-      requireSession (basedir, buf, 1);
+      requireSession (basedir, buf, 0);
       free (buf);
     }
 
@@ -757,7 +792,7 @@ read_scrollback(char *fullpath, char *scrollbackfile)
   FILE *fp=NULL;
   char c;
   chdir(fullpath);
-  requireSession (fullpath, scrollbackfile, 1);
+  requireSession (fullpath, scrollbackfile, 0);
   fp = fopen (scrollbackfile, "r");
   if (fp)
     {
@@ -783,7 +818,7 @@ reset_primer(char **argv, char *fullpath, char *scrollbackfile, char *datafile)
   if ( strcmp(scrollbackfile,"0")==0)
     requireSession (fullpath, datafile, 0);
   else
-    requireSession (fullpath, scrollbackfile, 1);
+    requireSession (fullpath, scrollbackfile, 0);
   execv (argv[0],argv);
 }
 #ifndef TEST
@@ -828,7 +863,7 @@ main (int argc, char **argv)
   else if (strcmp (argv[1], "-rf") == 0)
     {
       //requireSession
-      requireSession (argv[2], argv[3], 1);
+      requireSession (argv[2], argv[3], 0);
       return 0;
     }
   else if (strncmp (argv[1], "-p", 2) == 0) {
@@ -848,11 +883,11 @@ main (int argc, char **argv)
     read_scrollback(fullpath,scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
-    requireSession (fullpath, datafile, 1);
+    requireSession (fullpath, datafile, 0);
     fp = fopen (datafile, "r");
     if (!fp)
       {
-        fprintf (stderr,PRIMER": %s:%d WOOT Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
+        fprintf (stderr,PRIMER": %s:%d Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
         perror("Error :");
         printf ("Press any key to continue...\n");
         mygetch ();
@@ -1077,13 +1112,28 @@ main (int argc, char **argv)
         execv (argv[0], arglist);
         break;
       case EDIT:
-        requireSession (fullpath, datafile, 1);
+        requireSession (fullpath, datafile, 0);
         char *EDITOR = getenv("EDITOR");
-        char *buf =
-	  malloc ((strlen(EDITOR) + strlen (fullpath) + strlen (datafile) + 5 ) * sizeof (char));
-        sprintf (buf, "%s %s/%s", EDITOR, fullpath, datafile);
-        printf(PRIMER "Editing source: %s\n",buf);
-        system(buf);
+        char *session = get_session(datafile);
+        char *buf1 =
+	  malloc ((strlen (fullpath) + strlen (datafile) + 2 ) * sizeof (char));
+        sprintf (buf1, "%s/%s", fullpath, datafile);
+        char *buf2 =
+	  malloc ((strlen(EDITOR) + strlen (fullpath) + strlen (datafile) + 20 ) * sizeof (char));
+        sprintf( buf2, "/tmp/screen-session-%s/primer_edit_%s_%d",getenv("USER"),session,getpid() );
+        char *buf0 = malloc ((strlen(EDITOR) + strlen (buf2) + 5 ) * sizeof (char));
+        sprintf (buf0, "%s %s", EDITOR, buf2);
+        printf(PRIMER "Editing source: %s\n",buf1);
+        copy_file(buf1,buf2);
+        system(buf0);
+        requireSession (fullpath, datafile, 1);
+        copy_file(buf2,buf1);
+        remove(buf2);
+        free(buf0); free(buf1); free(buf2); 
+        buf0 = malloc((40+strlen(workingdir)+strlen(session))*sizeof(char));
+	sprintf (buf0, "screen-session other -f --dir %s --pack %s", workingdir, session);
+        printf("%s\n",buf0);
+        system(buf0); free(buf0);
         reset_primer(argv,fullpath,scrollbackfile,datafile);
         break;
 
