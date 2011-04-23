@@ -249,7 +249,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   strcpy (testfilepath, basedir);
   strcat (testfilepath, "/");
   strcat (testfilepath, file_in_session);
-  if (file_exists (testfilepath))
+  if (!force && file_exists (testfilepath))
     {
       free (file);
       free (filepath);
@@ -261,15 +261,10 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   else
     {
       free (filepath);
-      char *forcestr = "--force";
       char *buf =
-	malloc ((strlen (basedir) + strlen (session) + strlen (forcestr) + 1 +
+	malloc ((strlen (basedir) + strlen (session)  + 1 +
 		 55) * sizeof (char));
-      if (force)
-	sprintf (buf, "screen-session other --dir %s --unpack %s %s",
-		 basedir, session, forcestr);
-      else
-	sprintf (buf, "screen-session other --dir %s --unpack %s", basedir,
+      sprintf (buf, "screen-session other --dir %s --unpack %s", basedir,
 		 session);
       system (buf);
       free (file);
