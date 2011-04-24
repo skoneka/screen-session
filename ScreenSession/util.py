@@ -84,10 +84,6 @@ def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
     HOME=os.getenv('HOME')
     if not savedir or not home or not projectsdir or os.path.join(home,projectsdir,savedir)==HOME or os.path.join(tmpdir,savedir)==HOME:
         return False
-    if full:
-        print('Full unpacking...')
-    else:
-        print('Partial unpacking...')
     import tarfile
     removeit(os.path.join(home,projectsdir,savedir))
     removeit(os.path.join(tmpdir,savedir))

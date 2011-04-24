@@ -195,7 +195,7 @@ def main():
                 input = current_session
             else:
                 out("for saving you must specify target Screen session PID as --in")
-                doexit("Aborting")
+                doexit(1)
         pid = input
         if not output:
             savedir = pid
@@ -203,25 +203,16 @@ def main():
             savedir = output
     elif mode == 2:
         if not input:
-            try:
-                files=glob.glob(os.path.join(home,projectsdir,'*%s'%(util.archiveend)))
-                date_file_list=[]
-                for file in files:
-                    stats = os.stat(file)
-                    lastmod_date = time.localtime(stats[8])
-                    date_file_tuple = lastmod_date, file
-                    date_file_list.append(date_file_tuple)
-                date_file_list.sort()
-                input=os.path.split(date_file_list[-1][1])[1].rsplit(util.archiveend,1)[0]
-            except:
-                out("No recent session to load")
-                doexit("Aborting")
+            input=list_sessions(home,projectsdir,util.archiveend,'*')
+            if not input:
+                out("No recent session to load.")
+                doexit(1)
         if not output:
             if current_session:
                 output = current_session
             else:
                 out("for loading you must specify target Screen session PID as --out")
-                doexit("Aborting")
+                doexit(1)
         pid = output
         savedir = input
     
