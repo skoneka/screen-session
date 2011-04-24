@@ -179,7 +179,7 @@ def main():
     
     if mode==0:
         if unpack:
-            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir,bFull)
+            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir)
         elif pack:
             if not output:
                 output=pack
@@ -297,14 +297,14 @@ def main():
         cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,200)
         # unpack and load
         try:
-            unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
+            unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir)
         except IOError:
             recent=list_sessions(home,projectsdir,util.archiveend,savedir)
             if recent:
                 print('Selecting the most recent file: '+recent)
                 scs.savedir=savedir=input=recent
                 scs._scrollfile=os.path.join(scs.savedir,"hardcopy.")
-                unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir,True)
+                unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir)
             else:
                 raise IOError
 

@@ -822,9 +822,9 @@ class ScreenSaver(object):
         try:
             cmdline=cmdline.split('\0')
             if cmdline[3]=='0':
-                requireme(self.homedir,cmdline[2], cmdline[4],True)
+                requireme(self.homedir,cmdline[2], cmdline[4])
             else:
-                requireme(self.homedir,cmdline[2], cmdline[3],True)
+                requireme(self.homedir,cmdline[2], cmdline[3])
             path=os.path.join(self.homedir,cmdline[2],cmdline[4])
             fhead,ftail=os.path.split(cmdline[4])
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')

@@ -70,16 +70,16 @@ def linkify(dir,dest,targ):
         except:
             pass
 
-def requireme(home,projectsdir,file_in_session,full=False,force=False):
+def requireme(home,projectsdir,file_in_session,force=False):
     global archiveend
     global tmpdir
     if not force and os.path.isfile(os.path.join(home,projectsdir,file_in_session)):
         return
     else:
         fhead,ftail = os.path.split(file_in_session)
-        unpackme(home,projectsdir,fhead,archiveend,tmpdir,full)
+        unpackme(home,projectsdir,fhead,archiveend,tmpdir)
 
-def unpackme(home,projectsdir,savedir,archiveend,tmpdir,full=False):
+def unpackme(home,projectsdir,savedir,archiveend,tmpdir):
     #print   str((home,projectsdir,savedir,archiveend,tmpdir,full))
     HOME=os.getenv('HOME')
     if not savedir or not home or not projectsdir or os.path.join(home,projectsdir,savedir)==HOME or os.path.join(tmpdir,savedir)==HOME:
