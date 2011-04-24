@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -87,6 +87,11 @@ def main():
     maxwin = -1
     input=None
     output=None
+    try:
+        savefile=args[0]
+    except:
+        savefile=None
+
     for o, a in opts:
         if o == "-v":
             verbose = True
@@ -102,6 +107,8 @@ def main():
             pack = a
         elif o == "--unpack":
             unpack = a
+        elif o in ("-s","--savefile"):
+            savefile = a
         elif o in ("-S","--current-session"):
             current_session = a
         elif o == "--special-output":
@@ -156,11 +163,14 @@ def main():
 
     if sys.argv[1] in ('save','s'):
         mode=1
+        output = savefile
     elif sys.argv[1] in ('load','l'):
         mode=2
+        input = savefile
     elif sys.argv[1] in ('list','ls'):
         mode=0
         bList=True
+        input = savefile
     elif sys.argv[1] in ('--help','-h'):
         bHelp=True
     elif sys.argv[1] == 'other':
@@ -194,7 +204,7 @@ def main():
             if current_session:
                 input = current_session
             else:
-                out("for saving you must specify target Screen session PID as --in")
+                out("for saving you must specify target Screen session -S <sessionname> ")
                 doexit(1)
         pid = input
         if not output:

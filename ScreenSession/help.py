@@ -151,28 +151,22 @@ Get or set sessionname.\
 "
 
 help_saver_modes='GNU Screen session saver.\n\
-Usage: screen-session [save|load|ls] [options]'
+Usage: screen-session [save|load|ls] [-S sessionname] [options] [savefile]'
 
-help_saver_ls="Usage: screen-session save [options]\n\n\
+help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_filter]\n\n\
 Garden of Eden Creation Kit for GNU Screen.\n\
 List saved sesssions.\n\
 Options:\n\
--i --in     <string>\n\
-  \tfilter listed savefiles by <string>\n\
 --log       <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
 "
 
-help_saver_save="Usage: screen-session save [options]\n\n\
+help_saver_save="Usage: screen-session save [-S sessionname] [options] [target_savefile]\n\n\
 Garden of Eden Creation Kit for GNU Screen.\n\
 Save GNU Screen and VIM sessions to a file.\n\
 Options:\n\
--i --in  <sesionnname>\n\
-  \tspecify target Screen session (by default current session)\n\
--o --out  <savefile>\n\
-  \tspecify target filename (by default Screen's session name)\n\
 -f --force\n\
   \tforce saving even if savefile with the same name already exists\n\
 -e --exclude  <windows>\n\
@@ -193,17 +187,13 @@ Options:\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 Example:\n\
-$ screen-session save --in SESSIONNAME --out mysavedsession\
+$ screen-session save -S SESSIONNAME -s mysavedsession\
 "
 
-help_saver_load="Usage: screen-session load [options]\n\n\
+help_saver_load="Usage: screen-session load [-S sessionname] [options] [source_savefile]\n\n\
 Garden of Eden Creation Kit for GNU Screen.\n\
 Load saved session from a file.\n\
 Options:\n\
--i --in  <savefile>\n\
-  \tspecify source savefile (by default last saved file)\n\
--o --out  <sessionname>\n\
-  \tspecify target Screen session (by default current session\n\
 -x --exact\n\
   \tload session with the same window numbers, move existing windows\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
@@ -226,7 +216,7 @@ Options:\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 Example:\n\
-$ screen-session load --exact --in mysavedsession --out SESSIONNAME\
+$ screen-session load -S SESSIONNAME -s mysavedsession --exact\
 "
 
 def run(argv):
