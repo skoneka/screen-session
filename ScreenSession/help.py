@@ -157,7 +157,7 @@ help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_f
 Garden of Eden Creation Kit for GNU Screen.\n\
 List saved sesssions.\n\
 Options:\n\
---log       <file>\n\
+-l --log  <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
@@ -180,12 +180,12 @@ Options:\n\
   \tdisable layout saving\n\
 -V --no-vim\n\
   \tdisable vim session saving\n\
---log <file>\n\
+-l --log <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 Example:\n\
-$ screen-session save -S SESSIONNAME -s mysavedsession\
+$ screen-session save -S SESSIONNAME mysavedsession\
 "
 
 help_saver_load="Usage: screen-session load [-S sessionname] [options] [source_savefile]\n\n\
@@ -209,12 +209,12 @@ Options:\n\
   \tdo not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups\n\
 -m --mru\n\
   \trestore Most Recently Used order of windows\n\
---log  <file>\n\
+-l --log  <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
 Example:\n\
-$ screen-session load -S SESSIONNAME -s mysavedsession --exact\
+$ screen-session load -S SESSIONNAME --exact mysavedsession\
 "
 
 def run(argv):

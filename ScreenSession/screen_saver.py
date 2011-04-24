@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryi:c:fF:i:o:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -109,8 +109,6 @@ def main():
             current_session = a
         elif o == "--special-output":
             special_output = open(a,'w')
-        elif o == "--full":
-            bFull = True
         elif o in ("-V","--no-vim"):
             bVim = False
         elif o in ("-H","--no-scroll"):
@@ -136,10 +134,6 @@ def main():
             mru=True
         elif o in ("-d","--dir"):
             projectsdir = a
-        elif o in ("-i","--in"):
-            input = a
-        elif o in ("-o","--out"):
-            output = a
         else:
             out('Error parsing: '+o)
             raise SystemExit
