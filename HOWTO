@@ -17,14 +17,16 @@ dir:
     # start new window running zsh with the same working directory
     scs new-window zsh
     
-    # example binding (provided that window 0 is always present):
+    # example binding 
+    # works with any window type, provided that window 0 is always present:
     :bind c at 0 exec scs new-window
 
 regions:
     # example binding:
     :bind x exec scs regions
 
-    # example binding (provided that window 0 is always present):
+    # example binding 
+    # works with any window type, provided that window 0 is always present:
     :bind x at 0 exec scs regions
 
 
@@ -32,19 +34,19 @@ regions:
 session saver
 -----------------------------------------------------------------------
 Saving:
-    # save current session 
+    # save current session, force overwrite of old savefiles 
     scs save --force
     
     # save current session without layouts
     scs save --no-layout 
 
     # save session with sessionname starting with PID as mysavedsession
-    scs save --in PID --out mysavedsession
+    scs save -S PID mysavedsession
 
 
 Automated saving:
     # save session after 3 minutes of inactivity.
-    scs save --force --idle 180
+    :idle 180 exec scs save --force --log /dev/null
 
 
 Loading:
@@ -57,14 +59,14 @@ Loading:
     # load last saved session inside current session without layouts
     scs load --no-layout
 
-    # load session from savefile loaded to Screen with SESSIONNAME
-    scs load --in mysavedsession --out SESSIONNAME
+    # load my_saved_session to Screen with SESSIONNAME
+    scs load -S SESSIONNAME my_saved_session
 
-    # load saved session into a new Screen session
+    # load last saved session into a new Screen session
     screen -m scs load --exact-kill
 
 
 Example bindings:
     # press S to save the current session
-    bind S exec screen -mdc /dev/null screen-session save -fi $PID.$STY
+    bind S exec screen -mdc /dev/null screen-session save -S $PID.$STY --force
 
