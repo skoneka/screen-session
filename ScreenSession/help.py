@@ -153,6 +153,21 @@ Get or set sessionname.\
 help_saver_modes='GNU Screen session saver.\n\
 Usage: screen-session [save|load|ls] [-S sessionname] [options] [savefile]'
 
+
+help_saver_other="Usage: screen-session other [options] \n\n\
+Garden of Eden Creation Kit for GNU Screen.\n\
+Auxiliary mode, used mainly by screen-session-primer.\n\
+Options:\n\
+--pack <target>\n\
+  \tarchive unpacked savefile ( which must be accessible from --dir )\n\
+--unpack <savefile>\n\
+  \tunpack savefile to /tmp/screen-session-$USER\n\
+-l --log  <file>\n\
+  \toutput to a file instead of stdout\n\
+-d --dir  <directory>\n\
+  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
+"
+
 help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_filter]\n\n\
 Garden of Eden Creation Kit for GNU Screen.\n\
 List saved sesssions.\n\
@@ -282,6 +297,8 @@ def run(argv):
         print(help_saver_save)
     elif mode=='load':
         print(help_saver_load)
+    elif mode=='other':
+        print(help_saver_other)
     else:
         print('No help for mode: %s'%mode)
         return 1
