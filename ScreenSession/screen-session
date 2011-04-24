@@ -48,7 +48,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     scsfiletmp="$scsfiledir/___scstmp-$$"
 
     argument0="logpipe=$scsfile"
-    argument1="--current-session $session"
+    argument1="--session $session"
     argument2="--special-output $scsfiletmp"
     
     if [ -d "$scsfile" ]; then

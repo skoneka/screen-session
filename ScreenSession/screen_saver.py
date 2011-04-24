@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:I:mntxXryi:c:fF:i:o:d:hvp:VH:", ["exclude=","idle=","exact","exact-kill","ls","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","current-session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryi:c:fF:i:o:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","full","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","in=", "out=", "dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -75,7 +75,6 @@ def main():
     mru=False
     force_start=[]
     scroll=[]
-    idle=None
     excluded=None
     restore = False
     verbose = False
@@ -91,15 +90,12 @@ def main():
         savefile=args[0]
     except:
         savefile=None
-
     for o, a in opts:
         if o == "-v":
             verbose = True
         elif o in ("-n","--no-group-wrap"):
             bNoGroupWrap=True
-        elif o in ("-l","--ls"):
-            bList=True
-        elif o == "--log":
+        elif o in ("-l","--log"):
             log = a
         elif o == "-p":
             logpipe = a
@@ -109,14 +105,12 @@ def main():
             unpack = a
         elif o in ("-s","--savefile"):
             savefile = a
-        elif o in ("-S","--current-session"):
+        elif o in ("-S","--session"):
             current_session = a
         elif o == "--special-output":
             special_output = open(a,'w')
         elif o == "--full":
             bFull = True
-        elif o in ("-I","--idle"):
-            idle = a
         elif o in ("-V","--no-vim"):
             bVim = False
         elif o in ("-H","--no-scroll"):
@@ -221,37 +215,13 @@ def main():
             if current_session:
                 output = current_session
             else:
-                out("for loading you must specify target Screen session PID as --out")
+                out("for loading you must specify target Screen session -S <sessionname>")
                 doexit(1)
         pid = output
         savedir = input
     
     scs=ScreenSaver(pid,projectsdir,savedir)
     scs.command_at(False,"msgminwait 0")
-
-    if idle:
-        d_args_d=('-I','-i','--current-session','--idle','--in','--special-output')
-        nargv=[]
-        bSkipNext=False
-        for arg in sys.argv:
-            if arg in d_args_d:
-                bSkipNext=True
-            elif bSkipNext:
-                bSkipNext=False
-            else:
-                if not arg.startswith('logpipe'):
-                    nargv.append(arg)
-        nargv[0]=util.which('screen-session')[0]
-        scscall=nargv.pop(0)
-        scscall+=' '+nargv.pop(0)
-        for arg in nargv:
-            scscall+=" "+arg
-        scscall+=" --in "+input
-        command='at 0 exec screen -mdc /dev/null '+scscall 
-        scs.idle(idle,command)
-        out(':idle %s %s'%(idle,command))
-        return 0
-
 
     if not scs.exists():
         out('No such session: %s'%pid)

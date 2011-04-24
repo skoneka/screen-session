@@ -180,8 +180,6 @@ Options:\n\
   \tdisable layout saving\n\
 -V --no-vim\n\
   \tdisable vim session saving\n\
---idle  <seconds>\n\
-  \tstart command after <seconds> of inactivity\n\
 --log <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
