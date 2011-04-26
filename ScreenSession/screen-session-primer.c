@@ -36,6 +36,7 @@ enum menu
 {
   NONE = 0,
   RESET,
+  ZOMBIE,
   EXIT,
   ALL,
   ONLY,
@@ -351,11 +352,11 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sZ%s]ombie "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
+	     green, none, red_b, none, red_b, none,red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
-	  printf (" %s ? %s > ",green_r,none);
+	  printf ("%s?>%s ",green_r,none);
 	  ch = getchar ();
 	  char_count = 0;
           char menu=ch;
@@ -389,6 +390,12 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	  buffer[char_count] = 0x00;	/* null terminate buffer */
 	  switch (menu)
 	    {
+            case 'z':
+            case 'Z':
+	      number = -1;
+	      valid_choice = 1;
+	      menu_choice = ZOMBIE;
+              break;
 	    case 'r':
 	    case 'R':
 	      number = -1;
@@ -843,7 +850,6 @@ main (int argc, char **argv)
   strcpy(scs_exe,scs_path);
   free(scs_path);
   strcat(scs_exe,"/screen-session");
-  printf("%s\n",scs_exe);
   if (strcmp (argv[1], "-s") == 0)
     {
       int *procs;
@@ -904,6 +910,8 @@ main (int argc, char **argv)
     int procs_c = 0;
     size_t filter_s = 1;
     char *filter = malloc (filter_s * sizeof (char));
+    size_t cmdargs_s= 1;
+    char *cmdargs = malloc (cmdargs_s * sizeof (char));
     size_t buftext_s=1;
     char *buftext = malloc(buftext_s*sizeof(char));
     size_t type_s=1;
@@ -913,26 +921,44 @@ main (int argc, char **argv)
     size_t timesaved_s=1;
     char *timesaved = malloc(timesaved_s*sizeof(char));
     getline (&buftext, &buftext_s, fp);	//win number
-    getline (&buftext, &buftext_s, fp);	//EMPTY
+    getline (&buftext, &buftext_s, fp);	//EMPTY (used to be scrollback length)
     getline (&buftext, &buftext_s, fp);	//group
     getline (&type, &type_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
     getline (&filter, &filter_s, fp);	    //filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
+    getline (&cmdargs, &cmdargs_s, fp);	//cmdargs (badly read since cmdargs contains \0)
     fscanf (fp, "%d\n", &procs_c);
     int bFilter=0;
     if (!force_start)
       {
         printf ("%sTYPE:%s %s %sTITLE:%s %s\n", green_r,none,type,green_r,none,title);
-        filter = strtrim_right (filter, '\n');
-        if (strcmp (filter, "-1") != 0)
+        printf ("%sZOMBIE CMD:%s ", green_r,none);
+        i=0;
+        while(i<cmdargs_s) {
+            if (cmdargs[i]=='\0') {
+              if ( cmdargs[i+1]=='\0')
+                break;
+              else
+                fputc(',',stdout);
+            }
+            else
+              fputc(cmdargs[i],stdout);
+            i++;
+        }
+        fputc('\n',stdout);
+        if (type[0]!='z')
           {
-            bFilter=1;
-            printf ("%sFILTER:%s %s\n",green_r, none, filter);
-          }
-        printf ("%s", none);
+          filter = strtrim_right (filter, '\n');
+          if (strcmp (filter, "-1") != 0)
+            {
+              bFilter=1;
+              printf ("%sFILTER:%s %s\n",green_r, none, filter);
+            }
+          printf ("%s", none);
 
-        printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+          printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+          }
       }
 
     size_t proc_cwd_s = 1;
@@ -1005,7 +1031,7 @@ main (int argc, char **argv)
           }
       }
     getline (&buftext, &buftext_s, fp);	//last line - timesaved
-    if (!force_start)
+    if (!force_start && type[0]!='z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
     free(proc_vim);
@@ -1063,12 +1089,14 @@ main (int argc, char **argv)
         arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
         arglist[1] = NULL;
         strcpy (arglist[0], shell);
-        printf (PRIMER "Starting default shell(%s) in last cwd(%s)...\n", shell,
+        printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
         execvp (shell, arglist);
         break;
-
+      case ZOMBIE:
+        printf(PRIMER "ZOMBIE not implemented, yet\n");
+        break;
       case ONLY:
         read_scrollback(fullpath,scrollbackfile);
         printf (PRIMER "Starting processes ");

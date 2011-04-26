@@ -19,7 +19,7 @@ Other tools:\n\
     dump\t- print informations about windows in session\n\
     find-file\t- find files in windows\n\
     group\t- move windows to a group\n\
-    kill\t- send signal to last process started in a window\n\
+    kill\t- send a signal to the last process started in a window\n\
     kill-group\t- kill a group and all windows inside\n\
     kill-zombie\t- kill all zombie windows in session\n\
     manager\t- sessions manager with split screen preview\n\
@@ -59,9 +59,11 @@ rotate left  and select -> number and <L>\n\
 rotate right and select -> number and <R>\
 "
 
-help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n\n\
+help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n\
+       scs K [options] [signal=TERM] [window=current]\n\n\
 Kill last process started in a window.\n\
-Useful for closing random emacs/vim instances.\
+Useful for closing random emacs/vim instances and hung up ssh clients.\n\
+For a list of signal names run: $ pydoc signal\
 "
 
 help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\
@@ -260,7 +262,7 @@ def run(argv):
         print(version_str)
     elif mode in ('regions','r'):
         print(help_regions)
-    elif mode=='kill':
+    elif mode in ('kill','K'):
         print(help_kill)
     elif mode in ('kill-zombie','kz'):
         print(help_kill_zombie)

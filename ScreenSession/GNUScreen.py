@@ -93,7 +93,7 @@ def gen_all_windows_full(session,reverse=False,sort=False):
         except:
             cwin,cgroupid,ctty= line.strip().split(' ')
             ctitle=None
-        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
+        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll,cmdargs=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
         if ctty[0]=='z':    # zombie
             ctypeid=-1
         elif ctype[0]=='g': # group
@@ -106,7 +106,7 @@ def gen_all_windows_full(session,reverse=False,sort=False):
             cgroupid,cgroup = cgroup.split(' ')
         except:
             cgroup=ss.none_group
-        yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime
+        yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime,cmdargs
     removeit(tdir)
 
 def _get_pid_info_sun(pid):

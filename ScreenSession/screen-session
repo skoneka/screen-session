@@ -131,7 +131,7 @@ else
                 exec python $SCRIPTPATH/find_pid.py $session "$@"
             elif [ $mode = "find-file" -o $mode = "ff" ]; then
                 exec python $SCRIPTPATH/find_file.py $session "$@"
-            elif [ $mode = "kill" ]; then
+            elif [ $mode = "kill" -o $mode = "K" ]; then
                 # screen-session kill [signal=TERM] [win=current]
                 exec python $SCRIPTPATH/kill.py $session "$@"
             elif [ $mode = "kill-zombie" -o $mode = "kz" ]; then
