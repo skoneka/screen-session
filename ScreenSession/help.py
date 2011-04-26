@@ -94,13 +94,13 @@ Print informations about windows in session (most recently used first).\n\
 "
 
 help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\
-       screen-session fp [options] [PIDs]\n\n\
+       scs fp [options] [PIDs]\n\n\
 Example: screen-session find-pid $(pgrep vim)\n\n\
 Find PIDs in windows.\
 "
 
 help_find_file="Usage: screen-session find-file [options] [files]\n\
-       screen-session ff [options] [files]\n\n\
+       scs ff [options] [files]\n\n\
 Find files in windows. Requires lsof.\
 "
 
@@ -113,7 +113,8 @@ and on the previous shell type:\n\
 $ disown\n\
 It works more reliably if commands from the script are typed manually."
 
-help_group="Usage: screen-session group [options] [GROUP] [windows]\n\n\
+help_group="Usage: screen-session group [options] [GROUP] [windows]\n\
+       scs g [options] [GROUP] [windows]\n\n\
 Move windows to a group.\n\
 If no windows given, move the current window.\
 "
@@ -275,7 +276,7 @@ def run(argv):
         print(help_find_file)
     elif mode=='grab':
         print(help_grab)
-    elif mode=='group':
+    elif mode in ('group','g'):
         print(help_group)
     elif mode=='manager':
         print(help_manager)

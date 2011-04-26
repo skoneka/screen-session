@@ -113,7 +113,7 @@ else
         #elif [ $mode = "grab" ]; then
         #    sh $SCRIPTPATH/screen-session-grab "$@"
         elif [ $session != "__no__session__" ]; then
-            if [ $mode = "group" ]; then
+            if [ $mode = "group" -o $mode = "g" ]; then
                 exec sh $SCRIPTPATH/win-to-group $session "$@"
             elif [ $mode = "regions" -o $mode = "r" ]; then
                 exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
