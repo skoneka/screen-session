@@ -30,6 +30,8 @@
 
 int blacklist[BLACKLISTMAX];
 int blacklist_c = 0;
+char *scs_exe=NULL;
+
 enum menu
 {
   NONE = 0,
@@ -262,9 +264,9 @@ requireSession (const char *basepath, const char *file_in_session, int force)
     {
       free (filepath);
       char *buf =
-	malloc ((strlen (basedir) + strlen (session)  + 1 +
-		 55) * sizeof (char));
-      sprintf (buf, "screen-session other --dir %s --unpack %s", basedir,
+	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
+		 23) * sizeof (char));
+      sprintf (buf, "%s other --dir %s --unpack %s", scs_exe, basedir,
 		 session);
       system (buf);
       free (file);
@@ -829,9 +831,19 @@ main (int argc, char **argv)
   int c;
   if (argc == 1)
     {
-      printf ("screen-session %s primer program\n",VERSION);
+      printf ("screen-session %s priming program\n",VERSION);
       return 0;
     }
+  char *scs_path=malloc( (strlen(argv[0])+1)*sizeof(char) );
+  char *pch=NULL;
+  strcpy(scs_path,argv[0]);
+  pch=strrchr(scs_path,'/');
+  *pch='\0';
+  scs_exe=malloc( (strlen(scs_path)+strlen("/screen-session")+1)*sizeof(char) );
+  strcpy(scs_exe,scs_path);
+  free(scs_path);
+  strcat(scs_exe,"/screen-session");
+  printf("%s\n",scs_exe);
   if (strcmp (argv[1], "-s") == 0)
     {
       int *procs;
@@ -1018,7 +1030,8 @@ main (int argc, char **argv)
     if (bFilter && (strncmp (filter, "-1", 2) != 0))
       {
         printf ("Setting up filter...\n");
-        char command0[] = "screen -S $(scs name) -X stuff \"exec ";
+        char *command0 = malloc((1+35+strlen(scs_exe))*sizeof(char));
+        sprintf(command0,"screen -S $(%s name) -X stuff \"exec ",scs_exe);
         char command1[] = "\"^M";
         char *command =
           malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
@@ -1028,7 +1041,7 @@ main (int argc, char **argv)
         strcat (command, command1);
         system ("screen -X colon");
         system (command);
-        free(command);
+        free(command); free(command0);
       }
     free(filter);
 
@@ -1128,8 +1141,8 @@ main (int argc, char **argv)
         int pid = fork();
         if (pid == 0) 
         {
-          buf0 = malloc((40+strlen(workingdir)+strlen(session))*sizeof(char));
-          sprintf (buf0, "screen-session other --dir %s --pack %s", workingdir, session);
+          buf0 = malloc((1+21+strlen(scs_exe)+strlen(workingdir)+strlen(session))*sizeof(char));
+          sprintf (buf0, "%s other --dir %s --pack %s", scs_exe, workingdir, session);
           system(buf0); free(buf0);
           exit(0);
         }
@@ -1145,7 +1158,7 @@ main (int argc, char **argv)
     return 44;
   }
   else {
-      printf ("screen-session %s priming program\n",VERSION);
+      printf ("screen-session %s priming program: No such mode\n",VERSION);
   }
 }
 
