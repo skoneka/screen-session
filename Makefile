@@ -67,7 +67,7 @@ installtest: all
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
-	
+
 uninstall:
 	@echo removing files from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
