@@ -21,7 +21,7 @@ gnu_screen.diff changes:
 Installation
 -----------------------------------------------------------------------
 Edit config.mk to match your local setup (screen-session is installed 
-into the /usr/ namespace by default), you can also disable colors 
+into the /usr/local/ namespace by default), you can also disable colors 
 by removing "-DCOLOR".
 
 
@@ -34,13 +34,16 @@ screen-session (if necessary as root):
 Make sure you have a recent version of Screen and apply the necessary 
 patch (gnu_screen.diff):
 
-    git clone git://git.sv.gnu.org/screen.git screen; cd screen
+    git clone git://git.sv.gnu.org/screen.git screen
+    cd screen
     
-    git-apply ../screen-session-${VERSION}/gnu_screen.diff
-
-    cd src; autoreconf; autoheader; 
+    git apply --whitespace=nowarn ../screen-session/gnu_screen.diff
     
-    ./configure && make
+    cd src
+    autoreconf
+    autoheader
+    
+    ./configure --prefix=/usr/local
+    make
 
     sudo make install
-
