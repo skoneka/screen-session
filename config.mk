@@ -4,9 +4,9 @@ VERSION = 0.63-dev
 # Customize below to fit your system
 
 # paths
-INSTFOLDER = /usr/share/screen-session
+INSTFOLDER = /usr/local/share/screen-session
 
-PREFIX = /usr
+PREFIX = /usr/local
 
 # includes and libs
 INCS =
