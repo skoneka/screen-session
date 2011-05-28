@@ -19,6 +19,5 @@ except:
     win="-1"
 
 
-tools.kill_win_last_proc(session,win,mode)
-
-
+ret = tools.kill_win_last_proc(session,win,mode)
+exit(0 if ret else 1)

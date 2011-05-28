@@ -240,14 +240,33 @@ def kill_group(session,groupids):
 
     
 def kill_win_last_proc(session,win="-1",sig="TERM"):
+    from sys import stderr
     import signal,os,platform
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     ctty=ss.tty(win)
+    if (ctty is None) or (ctty == -1):
+        stderr.write("Window does not exist (%s)\n" % win)
+        return False
     if platform.system() == 'FreeBSD':
         pids=sc.get_tty_pids(ctty)
     else:
         pids=sc._get_tty_pids_pgrep(ctty)
-    pid = pids[-1]
-
-    sig=eval('signal.SIG'+sig)
-    os.kill(int(pid),sig)
+    if len(pids) > 0:
+        pid = pids[-1]
+        snum = 'SIG' + sig.upper()
+        if hasattr(signal, snum):
+            siggy = getattr(signal, snum)
+            try:
+                os.kill(int(pid), siggy)
+            except OSError:
+                stderr.write("Invalid process\n")
+                return False
+            else:
+                return True
+        else:
+            stderr.write("Not a valid signal (%s)\n" % sig)
+            return False
+    else:
+        ## No processes for this window.
+        ## Do nothing
+        return True

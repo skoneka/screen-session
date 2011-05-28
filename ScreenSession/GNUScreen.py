@@ -266,13 +266,17 @@ def _get_tty_pids_ps_with_cache_find(ctty):
     global tty_and_pids
     return tty_and_pids[int(ctty.rsplit('/',1)[1])]
 
-def _get_tty_pids_pgrep(ctty):
-    ctty=ctty.split('/dev/')[1]
-    f = os.popen('pgrep -t %s' % ctty)
-    pids=f.read().strip().split('\n')
-    f.close()
-    pids=sort_by_ppid(pids)
-    return pids
+def _get_tty_pids_pgrep(_ctty):
+    cttys = _ctty.split('/dev/')
+    if len(cttys) > 0:
+        ctty = cttys[1]
+        f = os.popen('pgrep -t %s' % ctty)
+        pids=f.read().strip().split('\n')
+        f.close()
+        pids=sort_by_ppid(pids)
+        return pids
+    else:
+        return []
 
 
 def get_session_list():
