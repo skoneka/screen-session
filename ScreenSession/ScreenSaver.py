@@ -72,7 +72,6 @@ class ScreenSaver(object):
             out("\nSaving layouts:")
             self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
-            out("")
 
         out("\nSaving windows:")
         self.__save_screen()
@@ -170,18 +169,24 @@ class ScreenSaver(object):
                 filename=os.path.join(self.basedir,self.savedir,"win_"+str(id))
                 if os.path.exists(filename):
                     f=open(filename)
-                    win=list(f)[0:8]
+                    win=list(f)[0:9]
                     f.close()
                     win=self.__striplist(win)
                     out (str(win))
-                    wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7]))
-            except:
+                    try:
+                        nproc=win[8]
+                    except:
+                        nproc='0'
+                    wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
+            except Exception,e:
+                out(str(e))
+                print win
                 out('%s Unable to load window'%id)
 
-        for win,time,group,type,title,filter,scrollback_len,processes in wins:
-            self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes)
+        for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
+            self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes)
         
-        for win,time,group,type,title,filter,scrollback_len,processes in wins:
+        for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             try:
                 groupid,group=group.split(' ',1)
             except:
@@ -200,13 +205,13 @@ class ScreenSaver(object):
         return([x.strip() for x in l])
 
 
-    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,processes):
+    def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes):
         if keep_numbering:
             winarg=win
         else:
             winarg=""
         
-        if type[0]=='b':
+        if type[0]=='b' or type[0]=='z':
             if win in self.force_start:
                 primer_arg=self.primer_arg+'S'
             else:
@@ -306,7 +311,7 @@ class ScreenSaver(object):
 
         # move windows by shift and put them in a wrap group
         #for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
-        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(self.pid):
+        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(self.pid):
             iwin=int(cwin)
             if iwin==homewindow:
                 homewindow=iwin+shift
@@ -534,7 +539,7 @@ class ScreenSaver(object):
         return currentlayout,currentlayoutname
     
     def get_layout_new(self,name=''):
-        msg=self.command_at(True, 'layout new %s'%name)
+        msg=self.command_at(True, 'layout new \'%s\''%name)
         if msg.startswith('No more'):
             return False
         else:
@@ -609,12 +614,13 @@ class ScreenSaver(object):
             cwin=id
             fmru.write("%s "%cwin)
             
+            cpids = None
+            cpids_data=None
+
             if(ctty[0]=='z'): # zombie
-                continue
-            if(ctty[0]=="g"): # group
+                ctype="zombie"
+            elif(ctty[0]=="g"): # group
                 ctype="group"
-                cpids = None
-                cpids_data=None
                 if self.excluded:
                     if cwin in self.excluded or ctitle in self.excluded:
                         excluded_groups.append(cwin)
@@ -648,8 +654,6 @@ class ScreenSaver(object):
                             group_wins[cgroupid]=[cwin]
                 if(ctty[0]=="t"): # telnet
                     ctype="telnet"
-                    cpids = None
-                    cpids_data=None
                 else:
                     ctype="basic"
                     # get sorted pids in window
@@ -983,7 +987,7 @@ class ScreenSaver(object):
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
-        
+        out("")
         return True
 
     def __save_vim(self,winid):
@@ -996,6 +1000,7 @@ class ScreenSaver(object):
         return name
            
     def __save_win(self,winid,ctype,pids_data,ctime,rollback):
+        # print (self,winid,ctype,pids_data,ctime,rollback)
         errors=[]
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
@@ -1003,8 +1008,10 @@ class ScreenSaver(object):
             #copy scrollback
             shutil.move(rollback[1],os.path.join(self.basedir,self.savedir,"hardcopy."+winid))
 
-        basedata_len=7
-
+        basedata_len=8
+        zombie_vector_pos=8
+        zombie_vector=linecache.getline(fname,zombie_vector_pos)
+            
         f=open(fname,"a")
         if rollback[0]:
             rollback_dir=rollback[2]
@@ -1026,10 +1033,17 @@ class ScreenSaver(object):
                             errors.append('Unable to rollback vim: %s'%filename)
             util.remove(target)
         else:
-            pids_data_len="0"
+            pids_data_len="1"
             if(pids_data):
-                pids_data_len=str(len(pids_data))
+                pids_data_len=str(len(pids_data)+1)
             f.write(pids_data_len+'\n')
+            f.write("-\n")
+            f.write("-1\n")
+            f.write(zombie_vector)
+            f.write("%d\n"%(len(zombie_vector.split('\0'))-1))
+            f.write(zombie_vector)
+            f.write("-1\n")
+            f.write("-1\n")
             if(pids_data):
                 for pid in pids_data:
                     f.write("-\n")
@@ -1041,7 +1055,7 @@ class ScreenSaver(object):
                             f.write(str(data)+'\n')
                         else:
                             f.write(str(data)+'\n')
-                f.write(ctime)
+            f.write(ctime)
         f.close()
         return errors
 

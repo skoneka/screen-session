@@ -53,7 +53,7 @@
 #define USERINPUTMAXBUFFERSIZE   80
 #define CMDLINE_BEGIN 20
 #define BLACKLISTMAX 100
-#define BASEDATA_LINES 7
+#define BASEDATA_LINES 8
 #define PROCLINES 7
 #define QUOTEME(x) #x
 #define Q(x) QUOTEME(x)

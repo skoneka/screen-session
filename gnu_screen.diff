@@ -1,5 +1,5 @@
 diff --git a/src/comm.c b/src/comm.c
-index 5f4af8a..5a01492 100644
+index 5f4af8a..3c202b7 100644
 --- a/src/comm.c
 +++ b/src/comm.c
 @@ -58,7 +58,7 @@ struct comm comms[RC_LAST + 1] =
@@ -15,7 +15,7 @@ index 5f4af8a..5a01492 100644
    { "digraph",		NEED_LAYER|ARGS_012 },
    { "dinfo",		NEED_DISPLAY|ARGS_0 },
    { "displays",		NEED_LAYER|ARGS_0 },
-+  { "dumpscreen",       CAN_QUERY|ARGS_23 },
++  { "dumpscreen",       CAN_QUERY|ARGS_0123 },
    { "dumptermcap",	NEED_FORE|ARGS_0 },
    { "echo",		CAN_QUERY|ARGS_12 },
  #ifdef ENCODINGS
@@ -53,8 +53,20 @@ index 5f4af8a..5a01492 100644
    { "umask",		ARGS_1|ARGS_ORMORE },
    { "unbindall",	ARGS_0 },
    { "unsetenv",		ARGS_1 },
+diff --git a/src/extern.h b/src/extern.h
+index 2b9722e..07422e2 100644
+--- a/src/extern.h
++++ b/src/extern.h
+@@ -128,6 +128,7 @@ extern void  ISearch __P((int));
+ /* input.c */
+ extern void  inp_setprompt __P((char *, char *));
+ extern void  Input __P((char *, int, int, void (*)(char *, int, char *), char *, int));
++extern int   dump_history __P((char *));
+ extern int   InInput __P((void));
+ 
+ /* help.c */
 diff --git a/src/fileio.c b/src/fileio.c
-index 88fbf64..babf0e1 100644
+index 88fbf64..e93a878 100644
 --- a/src/fileio.c
 +++ b/src/fileio.c
 @@ -452,6 +452,23 @@ int dump;
@@ -81,14 +93,13 @@ index 88fbf64..babf0e1 100644
  #ifdef COPY_PASTE
      case DUMP_EXCHANGE:
        if (fn == 0)
-@@ -550,6 +567,33 @@ int dump;
+@@ -550,6 +567,38 @@ int dump;
  		  putc('\n', f);
  		}
  	      break;
 +            case DUMP_SCSWINDOW:
 +            case DUMP_SCSWINDOWFULL:
 +                {
-+                  char buf[1024];
 +                  char *tty=NULL;
 +                  if (!fore)
 +                    break;
@@ -103,19 +114,25 @@ index 88fbf64..babf0e1 100644
 +                      tty = (dump == DUMP_SCSWINDOW) ? fore->w_tty : "basic";
 +                  if (dump == DUMP_SCSWINDOW)
 +                    {
-+                      sprintf(buf,"%d %d %s %s\n",fore->w_number,(fore->w_group) ? fore->w_group->w_number: -1, tty, fore->w_title);
++                      fprintf(f,"%d %d %s %s\n",fore->w_number,(fore->w_group) ? fore->w_group->w_number: -1, tty, fore->w_title);
 +                    }
 +                  else
 +                    {
-+                      sprintf(buf,"%d\n%s\n%d %s\n%s\n%s\n%s\n%d\n",fore->w_number,"\0", (fore->w_group) ? fore->w_group->w_number: -1, (fore->w_group) ? fore->w_group->w_title : "", tty ,fore->w_title,  fore->w_pwin ? fore->w_pwin->p_cmd : "-1", fore->w_histheight);
++                      fprintf(f,"%d\n%s\n%d %s\n%s\n%s\n%s\n%d\n",fore->w_number,"\0", (fore->w_group) ? fore->w_group->w_number: -1, (fore->w_group) ? fore->w_group->w_title : "", tty ,fore->w_title,  fore->w_pwin ? fore->w_pwin->p_cmd : "-1", fore->w_histheight);
++                      int i=0;
++                      while(fore->w_cmdargs[i])
++                        {
++                          fprintf(f,"%s",fore->w_cmdargs[i++]);
++                          fputc('\0',f);
++                        }
++                      fprintf(f,"\n");
 +                    }
-+                  fprintf(f, buf);
 +                }
 +              break;
  	    case DUMP_TERMCAP:
  	      if ((p = index(MakeTermcap(fore->w_aflag), '=')) != NULL)
  		{
-@@ -586,6 +630,10 @@ int dump;
+@@ -586,6 +635,10 @@ int dump;
  	  Msg(0, "Screen image %s to \"%s\".",
  	      (*mode == 'a') ? "appended" : "written", fn);
  	  break;
@@ -126,6 +143,43 @@ index 88fbf64..babf0e1 100644
  #ifdef COPY_PASTE
  	case DUMP_EXCHANGE:
  	  Msg(0, "Copybuffer written to \"%s\".", fn);
+diff --git a/src/input.c b/src/input.c
+index f0f9982..fc02de7 100644
+--- a/src/input.c
++++ b/src/input.c
+@@ -167,6 +167,32 @@ int data;
+     inp_setprompt(istr, (char *)NULL);
+ }
+ 
++int
++dump_history(char *filename)
++{
++  struct inpline *inp;
++  inp = inphist.prev;
++  char *b=NULL;
++  FILE *f = NULL;
++  if( f = secfopen(filename,"w") )
++    {
++      if (inp->prev)
++        {
++          inp = inp->prev;
++          while(inp)
++            {
++              b=SaveStr((char *)inp);
++              fprintf(f,"%s\n",b);
++              inp = inp->prev;
++            }
++        }
++      fclose(f);
++      return 1;
++    }
++  else
++    return 0;
++}
++
+ static void
+ erase_chars(inpdata, from, to, x, mv)
+ struct inpdata *inpdata;
 diff --git a/src/layout.c b/src/layout.c
 index 584abbd..19977c1 100644
 --- a/src/layout.c
@@ -160,13 +214,13 @@ index 584abbd..19977c1 100644
 +  struct canvas *c;
 +  struct win *p;
 +  int count=0;
-+  
++
 +  for (c = cv->c_slperp; c; c = c->c_slnext)
 +    {
 +      if (c->c_slperp)
 +        count+=dump_canvas_scs(c, file);
-+      else 
-+        { 
++      else
++        {
 +          count++;
 +          p = Layer2Window(c->c_layer);
 +          fprintf(file, "%s%d %d %d\n", (D_forecv==c) ? "f ":"",(p) ? p->w_number : -1, c->c_xe-c->c_xs+1,c->c_ye-c->c_ys+1);
@@ -215,15 +269,36 @@ index 1814226..61f9f80 100644
  
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
-index dfa7c82..f66ff38 100644
+index dfa7c82..b2e1233 100644
 --- a/src/process.c
 +++ b/src/process.c
-@@ -1269,6 +1269,28 @@ int key;
+@@ -908,12 +908,19 @@ int ilen;
+ 	  if (slen)
+ 	    DoProcess(fore, &ibuf, &slen, 0);
+ 	  if (--ilen == 0)
++	  {
+ 	    D_ESCseen = ktab;
++	    WindowChanged(fore, 'E');
++	  }
+ 	}
+       if (ilen <= 0)
+         return;
+       ktabp = D_ESCseen ? D_ESCseen : ktab;
+-      D_ESCseen = 0;
++      if (D_ESCseen)
++        {
++          D_ESCseen = 0;
++          WindowChanged(fore, 'E');
++        }
+       ch = (unsigned char)*s;
+ 
+       /* 
+@@ -1269,6 +1276,35 @@ int key;
      case RC_DUMPTERMCAP:
        WriteFile(user, (char *)0, DUMP_TERMCAP);
        break;
 +    case RC_DUMPSCREEN:
-+      if (!strcmp(args[0], "window"))
++      if (args[0] && args[1] && !strcmp(args[0], "window"))
 +        {
 +          int mode;
 +          if (args[2] && !strcmp(args[2],"-F"))
@@ -232,22 +307,29 @@ index dfa7c82..f66ff38 100644
 +            mode = DUMP_SCSWINDOW;
 +          WriteFile(user, args[1], mode);
 +        }
-+      else if (!strcmp(args[0], "layout"))
++      else if (args[0] && args[1] && !strcmp(args[0], "layout"))
 +	{
 +	  if (!display || !D_layout)
 +	    OutputMsg(0, "Must have a display and a layout for 'dumpscreen layout'.");
 +	  else if (!LayoutDumpCanvasScs(&D_canvas, args[1] ? args[1] : "layout-dump-size"))
-+	    OutputMsg(errno, "Error dumping layout size.");
++	    OutputMsg(errno, "Error dumping layout size ");
 +	  else
 +	    OutputMsg(0, "Layout dumped to \"%s\"", args[1] ? args[1] : "layout-dump-size");
 +	}
++      else if (args[0] && args[1] && !strcmp(args[0], "history"))
++        {
++          if (!dump_history(args[1]))
++            OutputMsg(errno, "Error dumping history ");
++          else
++	    OutputMsg(0, "history dumped to \"%s\"", args[1]);
++        }
 +      else
-+        OutputMsg(0, "Usage: dumpscreen [window|layout] filename [-F]");
++        OutputMsg(0, "Usage: dumpscreen [window|layout|history] filename [-F]");
 +      break;
      case RC_HARDCOPY:
        {
  	int mode = DUMP_HARDCOPY;
-@@ -1724,6 +1746,9 @@ int key;
+@@ -1724,6 +1760,9 @@ int key;
          copy_reg_fn(&ch, 0, NULL);
        break;
  #endif
@@ -257,7 +339,28 @@ index dfa7c82..f66ff38 100644
      case RC_REGISTER:
  #ifdef ENCODINGS
        i = fore ? fore->w_encoding : display ? display->d_encoding : 0;
-@@ -2662,6 +2687,19 @@ int key;
+@@ -1864,10 +1903,18 @@ int key;
+ 	    }
+ 	  if (D_ESCseen != ktab || ktabp != ktab)
+ 	    {
+-	      D_ESCseen = ktabp;
++	      if (D_ESCseen != ktabp)
++	        {
++	          D_ESCseen = ktabp;
++	          WindowChanged(fore, 'E');
++	        }
+ 	      break;
+ 	    }
+-	  D_ESCseen = 0;
++	  if (D_ESCseen)
++	    {
++	      D_ESCseen = 0;
++	      WindowChanged(fore, 'E');
++	    }
+ 	}
+       /* FALLTHROUGH */
+     case RC_OTHER:
+@@ -2662,6 +2709,19 @@ int key;
        MakeTermcap((display == 0));
        debug("new termcap made\n");
        break;
@@ -277,7 +380,7 @@ index dfa7c82..f66ff38 100644
      case RC_ECHO:
        if (!msgok && (!rc_name || strcmp(rc_name, "-X")))
  	break;
-@@ -3067,14 +3105,16 @@ int key;
+@@ -3067,14 +3127,16 @@ int key;
        (void)ParseNum(act, &nwin_default.histheight);
        break;
      case RC_SCROLLBACK:
@@ -302,7 +405,7 @@ index dfa7c82..f66ff38 100644
  	OutputMsg(0, "scrollback set to %d", fore->w_histheight);
        break;
  #endif
-@@ -4210,19 +4250,21 @@ int key;
+@@ -4210,19 +4272,21 @@ int key;
  	  else
              focusminheight = n;
  	}
@@ -337,7 +440,7 @@ index dfa7c82..f66ff38 100644
        break;
      case RC_GROUP:
        if (*args)
-@@ -4238,13 +4280,10 @@ int key;
+@@ -4238,13 +4302,10 @@ int key;
  	  WindowChanged((struct win *)0, 'W');
  	  WindowChanged((struct win *)0, 0);
  	}
@@ -355,6 +458,45 @@ index dfa7c82..f66ff38 100644
        break;
      case RC_LAYOUT:
        // A number of the subcommands for "layout" are ignored, or not processed correctly when there
+@@ -6471,6 +6532,7 @@ int i;
+       if (act->nr != RC_ILLEGAL)
+ 	{
+ 	  D_ESCseen = 0;
++	  WindowChanged(fore, 'E');
+           DoAction(act, i + 256);
+ 	  return 0;
+ 	}
+@@ -6496,7 +6558,11 @@ int i;
+ 
+   if (discard && (!act || act->nr != RC_COMMAND))
+     {
+-      D_ESCseen = 0;
++      if (D_ESCseen)
++        {
++          D_ESCseen = 0;
++          WindowChanged(fore, 'E');
++        }
+       return 0;
+     }
+   D_mapdefault = 0;
+diff --git a/src/screen.c b/src/screen.c
+index 3dde3b4..44c522c 100644
+--- a/src/screen.c
++++ b/src/screen.c
+@@ -2835,6 +2835,13 @@ int rec;
+             p += strlen(p) - 1;
+           }
+           break;
++    case 'E':
++      p--;
++      if (display && D_ESCseen)
++      {
++        qmflag = 1;
++      }
++      break;
+ 	case 'F':
+ 	  p--;
+ 	  /* small hack */
 diff --git a/src/screen.h b/src/screen.h
 index 5c93f32..725a2cd 100644
 --- a/src/screen.h

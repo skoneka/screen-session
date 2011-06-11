@@ -36,6 +36,7 @@ enum menu
 {
   NONE = 0,
   RESET,
+  ZOMBIE,
   EXIT,
   ALL,
   ONLY,
@@ -78,7 +79,23 @@ int copy_file(char *inputfile, char *outputfile)
   fclose(filew);
   return 0;
 }
-     
+    
+void print_cmd(int cmdargs_s,char *cmdargs)
+{
+  int i=0;
+  while(i<cmdargs_s) {
+      if (cmdargs[i]=='\0') {
+        if ( cmdargs[i+1]=='\0')
+          break;
+        else
+          fputc(',',stdout);
+      }
+      else
+        fputc(cmdargs[i],stdout);
+      i++;
+  }
+  fputc('\n',stdout);
+}
 void print_ints(int *numbers,int n) 
 {
   int i;
@@ -351,15 +368,15 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       while (valid_choice == 0)
 	{
 	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
-	     green, none, red_b, none, red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
+	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sZ%s]ombie "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
+	     green, none, red_b, none, red_b, none,red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
           if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
 
-	  printf (" %s ? %s > ",green_r,none);
+	  printf ("%s?>%s ",green_r,none);
 	  ch = getchar ();
 	  char_count = 0;
           char menu=ch;
-          if(menu >= '0' && menu <= '9')
+          if(menu >= '1' && menu <= '9')
             {
               ungetc(menu,stdin);
               menu='N';
@@ -389,6 +406,15 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	  buffer[char_count] = 0x00;	/* null terminate buffer */
 	  switch (menu)
 	    {
+            case '0':
+            case 'z':
+            case 'Z':
+	      number = 0;
+	      valid_choice = 1;
+	      menu_choice = ZOMBIE;
+              args[0]=0;
+              args_index=0;
+              break;
 	    case 'r':
 	    case 'R':
 	      number = -1;
@@ -454,6 +480,7 @@ Description of possible actions:\n\
 Key      | Arguments | Description\n\
 ----------------------------------\n\
 [A]ll    |           | try to restart all saved processes\n\
+[Z]ombie |           | run zombie command vector (used by Screen for resurecting a window)\n\
 [Q]uit   |           | terminate primer\n\
 [D]efault|           | start default shell in last working directory\n\
 [R]eset  |           | reload primer\n\
@@ -701,7 +728,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   getline (&proc_vim, &proc_vim_s, fp);
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
-  if (strcmp (proc_vim, "None") != 0)
+  if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0)
     {
       proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
       proc_args[proc_args_n+2] = malloc ((strlen ("-i") + 1) * sizeof (char));
@@ -843,7 +870,6 @@ main (int argc, char **argv)
   strcpy(scs_exe,scs_path);
   free(scs_path);
   strcat(scs_exe,"/screen-session");
-  printf("%s\n",scs_exe);
   if (strcmp (argv[1], "-s") == 0)
     {
       int *procs;
@@ -904,6 +930,8 @@ main (int argc, char **argv)
     int procs_c = 0;
     size_t filter_s = 1;
     char *filter = malloc (filter_s * sizeof (char));
+    size_t cmdargs_s= 1;
+    char *cmdargs = malloc (cmdargs_s * sizeof (char));
     size_t buftext_s=1;
     char *buftext = malloc(buftext_s*sizeof(char));
     size_t type_s=1;
@@ -913,26 +941,30 @@ main (int argc, char **argv)
     size_t timesaved_s=1;
     char *timesaved = malloc(timesaved_s*sizeof(char));
     getline (&buftext, &buftext_s, fp);	//win number
-    getline (&buftext, &buftext_s, fp);	//EMPTY
+    getline (&buftext, &buftext_s, fp);	//CURRENTLY UNUSED
     getline (&buftext, &buftext_s, fp);	//group
     getline (&type, &type_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
     getline (&filter, &filter_s, fp);	    //filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
+    getline (&cmdargs, &cmdargs_s, fp);	//This pool is not used by primer. Screen dumps on this position zombie command vector. screen-session processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
     fscanf (fp, "%d\n", &procs_c);
     int bFilter=0;
     if (!force_start)
       {
-        printf ("%sTYPE:%s %s %sTITLE:%s %s\n", green_r,none,type,green_r,none,title);
-        filter = strtrim_right (filter, '\n');
-        if (strcmp (filter, "-1") != 0)
+        printf ("%sTITLE:%s %s\n",green_r,none,title);
+        if (type[0]!='z')
           {
-            bFilter=1;
-            printf ("%sFILTER:%s %s\n",green_r, none, filter);
-          }
-        printf ("%s", none);
+          filter = strtrim_right (filter, '\n');
+          if (strcmp (filter, "-1") != 0)
+            {
+              bFilter=1;
+              printf ("%sFILTER:%s %s\n",green_r, none, filter);
+            }
+          printf ("%s", none);
 
-        printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+          printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+          }
       }
 
     size_t proc_cwd_s = 1;
@@ -946,10 +978,15 @@ main (int argc, char **argv)
     int cmdline_begin_c = 0;
     char proc_blacklisted[7];
     char buf[5];
+    int b_zombie;
+    if (type[0]=='z')
+      b_zombie=1;
+    else
+      b_zombie=0;
     for (i = 0; i < procs_c; i++)
       {
         fscanf (fp, "%s\n", buf);	//read --
-        if (!force_start)
+        if (!force_start && i!=0)
           printf ("%s%s %d%s: ", blue_b, buf, i, none);
         //cwd exe args
         getline (&proc_cwd, &proc_cwd_s, fp);
@@ -959,6 +996,8 @@ main (int argc, char **argv)
         fscanf (fp, "%d\n", &proc_args_n);
         int null_c = 0;
         cmdline_begin_c = 0;
+        if (b_zombie)
+          printf("%sZOMBIE:%s ",red,none);
         while ((c = fgetc (fp)) != EOF)
           {
             if (cmdline_begin_c < CMDLINE_BEGIN)
@@ -967,6 +1006,8 @@ main (int argc, char **argv)
                 cmdline_begin[cmdline_begin_c + 1] = '\0';
                 cmdline_begin_c++;
               }
+            if (i!=0 || b_zombie)
+              {
             if (!force_start)
               {
                 if (c == '\0')
@@ -985,19 +1026,31 @@ main (int argc, char **argv)
                 else
                   fputc (c, stdout);
               }
+              }
+            else
+              {
+                if (c == '\n')
+                  {
+                    break;
+                  }
+              }
             if (null_c > proc_args_n)
               break;
           }
-
+        if (b_zombie)
+          { 
+            printf ("\n");
+            b_zombie=0;
+          }
         fscanf (fp, "%s\n", proc_blacklisted);
         getline (&proc_vim, &proc_vim_s, fp);
         proc_vim = strtrim_right (proc_vim, '\n');
-        if (!force_start)
+        if (!force_start && i!=0)
           {
             printf ("\n");
             printf ("\tCWD: %s\n", proc_cwd);
             printf ("\tEXE: %s\n", proc_exe);
-            if (strcmp ("None", proc_vim) != 0)
+            if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0)
               printf ("\tVIMSESSION: %s\n", proc_vim);
             if (strncmp (proc_blacklisted, "True", 4) == 0
                 || is_blacklisted (fullpath, cmdline_begin, i))
@@ -1005,7 +1058,7 @@ main (int argc, char **argv)
           }
       }
     getline (&buftext, &buftext_s, fp);	//last line - timesaved
-    if (!force_start)
+    if (!force_start && type[0]!='z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
     free(proc_vim);
@@ -1063,38 +1116,35 @@ main (int argc, char **argv)
         arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
         arglist[1] = NULL;
         strcpy (arglist[0], shell);
-        printf (PRIMER "Starting default shell(%s) in last cwd(%s)...\n", shell,
+        printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
         execvp (shell, arglist);
         break;
-
+      case ZOMBIE:
+        printf(PRIMER "ZOMBIE\n");
+      /* FALLTHROUGH */
       case ONLY:
         read_scrollback(fullpath,scrollbackfile);
         printf (PRIMER "Starting processes ");
         print_ints(numbers,numbers_c);
         printf("...\n");
-        args[0] = numbers[0];
-        //sort ints?
         arglist = make_arglist (argv[0], "-s", fullpath, datafile,numbers_c, numbers);
-        //arglist = make_arglist (argv[0], "-s", fullpath, datafile,1, args);
-
-        /* i=0;
-        while(arglist[i]!=NULL)
-          printf("%s\n",arglist[i++]); */
         execv (argv[0], arglist);
         break;
 
       case ALL:
         if (!force_start)
           read_scrollback(fullpath,scrollbackfile);
-        printf (PRIMER "Starting all programs...\n");
-        for (i = 0; i < procs_c; i++)
+        printf (PRIMER "Starting all programs... ");
+        for (i = 1; i <= procs_c-1; i++)
           {
-            args[i] = i;
+            args[i-1] = i;
           }
+        print_ints(args,procs_c-1);
+        printf("\n");
         arglist =
-          make_arglist (argv[0], "-s", fullpath, datafile, procs_c, args);
+          make_arglist (argv[0], "-s", fullpath, datafile, procs_c-1, args);
         execv (argv[0], arglist);
 
         break;
@@ -1109,12 +1159,13 @@ main (int argc, char **argv)
             printf (PRIMER "No such window. Starting programs up to %d...\n",
                     number - 1);
           }
-        else
-          number++;
-        for (i = 0; i < number; i++)
+        for (i = 1; i <= number; i++)
           {
-            args[i] = i;
+            args[i-1] = i;
           }
+        printf("number: %d\n",number);
+        print_ints(args,number);
+        printf("\n");
         arglist =
           make_arglist (argv[0], "-s", fullpath, datafile, number, args);
         execv (argv[0], arglist);
@@ -1158,7 +1209,7 @@ main (int argc, char **argv)
     return 44;
   }
   else {
-      printf ("screen-session %s priming program: No such mode\n",VERSION);
+      printf ("screen-session %s priming program: No such mode \"%s\"\n",VERSION,argv[1]);
   }
 }
 

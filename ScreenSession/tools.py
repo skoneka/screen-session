@@ -36,7 +36,7 @@ def dump(ss,showpid=True,reverse=True,sort=False,groupids=[]):
     windows=[]
     if groupids:
         windows=subwindows(ss.pid,groupids)[1]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(ss.pid,reverse,sort):
+    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,reverse,sort):
         if groupids:
             if cwin in windows:
                 bShow=True
@@ -52,6 +52,7 @@ def dump(ss,showpid=True,reverse=True,sort=False,groupids=[]):
                 groupstr=cgroupid+' '+cgroup
             lines.append("%s GRP   %s\n"%(cwin,groupstr))
             lines.append("%s TITL  %s\n"%(cwin,ctitle))
+            lines.append("%s CARG  %s\n"%(cwin,cmdargs.split('\0')))
             if cfilter!='-1':
                 lines.append("%s EXEC  %s\n"%(cwin,cfilter))
             if ctype==0:
@@ -181,9 +182,9 @@ def make_group_tabs(session,groupids,bAll=False):
 def subwindows(session,groupids,datafile=None):
     ss=ScreenSaver(session)
     bAll=False
-    if groupids[0] in ('cg','current'):
+    if groupids[0] in ('cg','current','..'):
         groupids[0]=ss.get_group()[0]
-    elif groupids[0] in ('cw','current-window'):
+    elif groupids[0] in ('cw','current-window','.'):
         groupids[0]=ss.get_number_and_title()[0]
     elif groupids[0]=='all':
         bAll=True
@@ -191,7 +192,6 @@ def subwindows(session,groupids,datafile=None):
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    #for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime in sc.gen_all_windows_full(session):
     for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datafile):
         if(ctype==1): # group
             if cwin in groupids or bAll or ctitle in groupids:
