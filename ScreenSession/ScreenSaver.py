@@ -72,7 +72,6 @@ class ScreenSaver(object):
             out("\nSaving layouts:")
             self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
-            out("")
 
         out("\nSaving windows:")
         self.__save_screen()
@@ -615,12 +614,13 @@ class ScreenSaver(object):
             cwin=id
             fmru.write("%s "%cwin)
             
+            cpids = None
+            cpids_data=None
+
             if(ctty[0]=='z'): # zombie
-                continue
-            if(ctty[0]=="g"): # group
+                ctype="zombie"
+            elif(ctty[0]=="g"): # group
                 ctype="group"
-                cpids = None
-                cpids_data=None
                 if self.excluded:
                     if cwin in self.excluded or ctitle in self.excluded:
                         excluded_groups.append(cwin)
@@ -654,8 +654,6 @@ class ScreenSaver(object):
                             group_wins[cgroupid]=[cwin]
                 if(ctty[0]=="t"): # telnet
                     ctype="telnet"
-                    cpids = None
-                    cpids_data=None
                 else:
                     ctype="basic"
                     # get sorted pids in window
@@ -989,7 +987,7 @@ class ScreenSaver(object):
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(os.path.join(self.basedir,self.savedir),"layout_"+homelayout+"_"+homelayoutname,"last_layout")
-        
+        out("")
         return True
 
     def __save_vim(self,winid):
@@ -1002,6 +1000,7 @@ class ScreenSaver(object):
         return name
            
     def __save_win(self,winid,ctype,pids_data,ctime,rollback):
+        # print (self,winid,ctype,pids_data,ctime,rollback)
         errors=[]
         fname=os.path.join(self.basedir,self.savedir,"win_"+winid)
         if rollback[1]:
@@ -1010,7 +1009,9 @@ class ScreenSaver(object):
             shutil.move(rollback[1],os.path.join(self.basedir,self.savedir,"hardcopy."+winid))
 
         basedata_len=8
-
+        zombie_vector_pos=8
+        zombie_vector=linecache.getline(fname,zombie_vector_pos)
+            
         f=open(fname,"a")
         if rollback[0]:
             rollback_dir=rollback[2]
@@ -1032,10 +1033,17 @@ class ScreenSaver(object):
                             errors.append('Unable to rollback vim: %s'%filename)
             util.remove(target)
         else:
-            pids_data_len="0"
+            pids_data_len="1"
             if(pids_data):
-                pids_data_len=str(len(pids_data))
+                pids_data_len=str(len(pids_data)+1)
             f.write(pids_data_len+'\n')
+            f.write("-\n")
+            f.write("-1\n")
+            f.write(zombie_vector)
+            f.write("%d\n"%(len(zombie_vector.split('\0'))-1))
+            f.write(zombie_vector)
+            f.write("-1\n")
+            f.write("-1\n")
             if(pids_data):
                 for pid in pids_data:
                     f.write("-\n")
