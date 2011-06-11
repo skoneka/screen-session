@@ -90,6 +90,7 @@ on the position next to the current window.\
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
        scs d [options] [window_ids]\n\n\
 Print informations about windows in session (most recently used first).\n\
+A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
 -P \t- do not show pid data\n\
 -r \t- reverse the output\n\
 -s \t- sort by window number\
@@ -103,7 +104,7 @@ Find PIDs in windows.\
 
 help_find_file="Usage: screen-session find-file [options] [files]\n\
        scs ff [options] [files]\n\n\
-Find files in windows. Requires lsof.\
+Find open files in windows. Requires lsof.\
 "
 
 help_grab="Grab a process and attach to the current tty.\n\
@@ -146,7 +147,8 @@ Sort windows by titles.\
 
 help_subwindows="Usage: screen-session subwindows [groupids or titles]\n\
        screen-session sw [groupids or titles]\n\n\
-Print windows contained in groups.\
+Print windows contained in groups.\n\
+A dot \".\" selects current window, 2 dots \"..\"  select current group.\
 "
 
 help_name="Usage: screen-session name [options] [new_sessionname]\n\n\

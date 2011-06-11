@@ -15,6 +15,22 @@
  *
  * =====================================================================================
  */
+
+char help_str[]="\
+This is a program which \"primes\" other processes saved by screen-session.\n\
+Description of possible actions:\n\
+Key      | Arguments | Description\n\
+----------------------------------\n\
+[A]ll    |           | try to restart all saved processes\n\
+[Z]ombie |           | run zombie command vector (used by Screen for resurrecting a window)\n\
+[Q]uit   |           | terminate primer\n\
+[D]efault|           | start default shell in last working directory\n\
+[R]eset  |           | reload primer\n\
+[E]dit   |           | edit primer's source file with $EDITOR\n\
+         |[number]   | try to restart saved processes up to [number]\n\
+[O]nly   |[numbers..]| select processes which will be restarted\n\
+";
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -475,18 +491,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
               break;
             case 'h':
             case 'H':
-              printf("This is a program which \"primes\" other processes saved by screen-session.\n\
-Description of possible actions:\n\
-Key      | Arguments | Description\n\
-----------------------------------\n\
-[A]ll    |           | try to restart all saved processes\n\
-[Z]ombie |           | run zombie command vector (used by Screen for resurecting a window)\n\
-[Q]uit   |           | terminate primer\n\
-[D]efault|           | start default shell in last working directory\n\
-[R]eset  |           | reload primer\n\
-[E]dit   |           | edit primer's source file with $EDITOR\n\
-         |[number]   | try to restart saved processes up to [number]\n\
-[O]nly   |[numbers..]| select processes which will be restarted\n");
+              printf(help_str);
 	      valid_choice = 0;
 	      menu_choice = NONE;
 	    default:
@@ -963,7 +968,7 @@ main (int argc, char **argv)
             }
           printf ("%s", none);
 
-          printf ("%s %d %s in %s %s %s\n", red_r, procs_c, blue_r, red_r, datafile, none);
+          printf ("%s %d %s in %s %s %s\n", red_r, procs_c-1, blue_r, red_r, datafile, none);
           }
       }
 
