@@ -380,7 +380,6 @@ def eval_command(scs,command,last_session,psession,fifoname2):
     if mode.startswith('a'): # attach
         return tui_attach_session(scs,args[0],psession)
     if mode.startswith('d'): # deselect
-        print2ui('LOGIC: deselecting' )
         scs.focus('bottom')
         scs.select('-')
         scs.focus('top')
@@ -442,7 +441,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         else:
             arg_out='%s'%last_session
         print2ui('LOGIC: saving session as %s'%arg_out)
-        os.system('screen-session save --force --log \"%s\" --in \"%s\" --out \"%s\" 1>&- 2>&-'%(fifoname2,last_session,arg_out))
+        os.system('screen-session save -S \"%s\" --force --log \"%s\" \"%s\" 1>&- 2>&-'%(last_session,fifoname2,arg_out))
     elif mode.startswith('s'): # screen
         if args and len(args[0])>0:
             arg=" ".join(["%s"%v for v in args])
@@ -524,7 +523,7 @@ def run(psession):
         os.symlink(fifoname,fifoname_access)
         scs=ScreenSaver(session,'/dev/null','/dev/null')
         #scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
-        scs.command_at(False, 'eval \'title \"command window\"\' \'zombie cr\' \'rendition so ky\' \'caption string \"%?%F%{kr}%?%t\"\' \'hardstatus lastline \"GNU Screen session manager\"\' \'bindkey ^[t focus next\' \'escape ^Gg\' \'defmousetrack on\'')
+        scs.command_at(False, 'eval \'title \"command window\"\' \'zombie cr\' \'rendition so ky\' \'caption string \"%?%F%{kr}%?%t\"\' \'hardstatus lastline \"%{Yk}%=GNU SCREEN SESSIONS MANAGER%=\"\' \'bindkey ^[t focus next\' \'escape ^Gg\' \'defmousetrack on\'')
         scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
         data=mmap.mmap(-1,100)
         
