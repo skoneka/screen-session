@@ -177,7 +177,8 @@ Print windows contained in groups.\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\
 "
 
-help_name="Usage: screen-session name [options] [new_sessionname]\n\n\
+help_name="Usage: screen-session name [options] [new_sessionname]\n\
+       scs n [options] [new_sessionname]\n\n\
 Get or set sessionname.\
 "
 
@@ -320,7 +321,7 @@ def run(argv):
         print(help_sort)
     elif mode in ('subwindows','sw'):
         print(help_subwindows)
-    elif mode=='name':
+    elif mode in ('name','n'):
         print(help_name)
     elif mode=='ls':
         print(help_saver_ls)

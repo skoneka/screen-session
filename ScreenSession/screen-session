@@ -99,7 +99,7 @@ else
         esac
     done
     shift $shiftcount "$@"
-    if [ $mode = "name" ]; then
+    if [ $mode = "name" -o $mode = "n" ]; then
         if [ $bSession -eq 0 ]; then
             session=`python $SCRIPTPATH/sessionname.py`
         fi
