@@ -55,7 +55,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","restore", "mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","restore", "no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -72,7 +72,7 @@ def main():
     bHelp=False
     bList=False
     bFull=False
-    mru=False
+    mru=True
     force_start=[]
     scroll=[]
     excluded=None
@@ -130,8 +130,8 @@ def main():
             enable_layout = False
         elif o in ("-h","--help"):
             bHelp=True
-        elif o in ("-m","mru"):
-            mru=True
+        elif o in ("-m","--no-mru"):
+            mru=False
         elif o in ("-d","--dir"):
             projectsdir = a
         else:

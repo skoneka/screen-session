@@ -125,7 +125,7 @@ class ScreenSaver(object):
             self.__load_layouts()
         if self.mru:
             out("\nRestoring Most Recently Used windows order.")
-            self.__restore_mru()
+            self.source(os.path.join(self.basedir,self.savedir,"mru"))
         return 0
 
     def exists(self):
@@ -605,7 +605,7 @@ class ScreenSaver(object):
             f.close()
         except:
             self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
-        fmru = open(os.path.join(findir,"mru"),"w") 
+        mru_w=[]
         for line in open(os.path.join(findir,"winlist"),'r'):
             try:
                 id,cgroupid,ctty,ctitle = line.strip().split(' ',3)
@@ -613,7 +613,7 @@ class ScreenSaver(object):
                 id,cgroupid,ctty= line.strip().split(' ')
                 ctitle=None
             cwin=id
-            fmru.write("%s "%cwin)
+            mru_w.append("select %s\n"%cwin)
             
             cpids = None
             cpids_data=None
@@ -729,6 +729,9 @@ class ScreenSaver(object):
             errors+=self.__save_win(id,ctype,cpids_data,ctime,rollback)
             rollback=None,None,None
         out('')
+        fmru = open(os.path.join(findir,"mru"),"w")
+        mru_w.reverse()
+        fmru.writelines(mru_w)
         fmru.close()
         util.remove(os.path.join(findir,"winlist"))
         # remove ignored scrollbacks
@@ -800,29 +803,6 @@ class ScreenSaver(object):
                 out(error)
         out('\nSaved: '+str(ctime))
         
-    def __restore_mru(self):
-        try:
-            mru=open(os.path.join(self.basedir,self.savedir,"mru"),'r').read().strip().split(' ')
-            mru.reverse()
-            for win in mru:
-                self.select("%s"%self.__wins_trans[win])
-        except:
-            out('Unable to restore MRU!')
-            pass
-        if self.restore_previous:
-            self.select(self.homewindow)
-        elif os.path.exists(os.path.join(self.basedir,self.savedir,"last_win")):
-            # select last selected window
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-            (lasthead,lasttail)=os.path.split(last)
-            lastid=lasttail.split("_",1)[1]
-            try:
-                self.select(self.__wins_trans[lastid])
-            except:
-                self.select('-')
-        else:
-            self.select('-')
-
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')

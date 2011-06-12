@@ -128,17 +128,19 @@ If no windows given, move the current window.\
 help_manager="Usage: screen-session manager\n\
        scs m\n\n\
 Sessions manager for GNU Screen with preview in a split window.\n\
+Reads custom Screen configuration from $HOME/.screenrc_MANAGER.\n\
 Requires python 2.5+\n\
 \n\
 KEYS:\n\
 CTRL + g  - default escape key\n\
 ALT + t   - toggle between regions\n\
+ALT + e   - step into a selected session\n\
 ALT + q   - quit\n\
 Alt + w   - wipe\n\
 \n\
 COMMANDS:\n\
 q[uit]    - exit session manager\n\
-e[nter]   - enter into session\n\
+e[nter]   - enter into a session\n\
 a[ttach] <name> - attach and select\n\
 d[etach] <name> - detach and deselect\n\
 n[ame] <name>   - rename\n\
@@ -251,13 +253,13 @@ Options:\n\
   \tdisable layout loading\n\
 -n --no-group-wrap\n\
   \tdo not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups\n\
--m --mru\n\
-  \trestore Most Recently Used order of windows\n\
+-m --no-mru\n\
+  \tdisable restoring of the Most Recently Used order of windows\n\
 -l --log  <file>\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-Example:\n\
+Example [restore mysavedsession inside Screen named SESSIONNAME]:\n\
 $ screen-session load -S SESSIONNAME --exact mysavedsession\
 "
 
