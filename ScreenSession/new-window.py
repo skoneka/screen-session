@@ -7,6 +7,7 @@
 # screen-in-dir sessionname [program] [args..]
 import os,sys,platform
 import GNUScreen as sc
+from GNUScreen import SCREEN
 
 primer=os.path.join(os.path.split(os.path.abspath(__file__))[0],'screen-session-primer -D')
 try:
@@ -18,7 +19,7 @@ session_arg="-S %s"%session
 cwin = sc.get_current_window(session)
 windows_old = sc.parse_windows(sc.get_windows(session))[0]
 
-f = os.popen('screen %s -Q @tty'%session_arg)
+f = os.popen(SCREEN+' %s -Q @tty'%session_arg)
 ctty=f.readline()
 f.close()
 if ctty.startswith('/dev'):
@@ -45,7 +46,7 @@ if ctty.startswith('/dev'):
 else:
     thedir = os.getcwd()
 
-command='screen %s -X screen' % (session_arg)
+command=SCREEN+' %s -X screen' % (session_arg)
 
 if len(sys.argv)>3:
     command+=' -t "%s"'%(" ".join(["%s"%v for v in sys.argv[3:]]))

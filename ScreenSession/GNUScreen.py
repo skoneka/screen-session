@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os,subprocess,re,sys,platform
 
+SCREEN=os.getenv('SCREENPATH')
+
 def get_regions(session):
     from ScreenSaver import ScreenSaver
     from util import tmpdir,remove
@@ -280,7 +282,7 @@ def _get_tty_pids_pgrep(_ctty):
 
 
 def get_session_list():
-    screen="screen"
+    screen=SCREEN
     w=subprocess.Popen('%s -ls' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0]
     if w.startswith('No Sockets'):
         return []
@@ -352,9 +354,9 @@ def parse_windows(windows):
 
 def get_windows(session=None):
     if session:
-        screen="screen -S %s "%session
+        screen=SCREEN+' -S %s '%session
     else:
-        screen="screen "
+        screen=SCREEN+" "
 
     return subprocess.Popen('%s -Q @windows' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0]
 
@@ -370,9 +372,9 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
     windownumber=int(windownumber)
     nextwindownumber=int(nextwindownumber)
     if session:
-        screen="screen -S %s "%session
+        screen=SCREEN+" -S %s "%session
     else:
-        screen="screen "
+        screen=SCREEN+" "
     
     delta=nextwindownumber-windownumber
     
@@ -395,9 +397,9 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
 
 def get_current_window(session=None):
     if session:
-        screen="screen -S %s "%session
+        screen=SCREEN+" -S %s "%session
     else:
-        screen="screen "
+        screen=SCREEN+" "
     return int(subprocess.Popen('%s -Q @number' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
 
 def order_windows(win_history):
@@ -408,14 +410,14 @@ def order_windows(win_history):
         except:
             break
         #print('window: %s'%w)
-        os.system('screen -S %s -X select %s'%(session,w))
-        os.system('screen -S %s -X focus' %(session))
+        os.system(SCREEN+' -S %s -X select %s'%(session,w))
+        os.system(SCREEN+' -S %s -X focus' %(session))
 
 def select_window(number,session=None):
     if session:
-        screen="screen -S %s "%session
+        screen=SCREEN+" -S %s "%session
     else:
-        screen="screen "
+        screen=SCREEN+" "
     #select region
     if(number!=0 and number<regions_c):
         command='%s %s -X eval'%(screen,session)

@@ -11,6 +11,8 @@ Help:\t scs [mode] --help\n\
      \t scs help [mode]\n\
 Global Options:\n\
     -S [target]\t- target Screen session name\n\
+Environment variables:\n\
+    SCREENPATH\t - set GNU Screen executable path\n\
 Saver modes:\n\
     save\t- save session to disk\n\
     load\t- load session from file\n\

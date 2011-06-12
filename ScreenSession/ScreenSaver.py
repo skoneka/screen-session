@@ -4,6 +4,7 @@ import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 from util import out,requireme,linkify,which,timeout_command
 import util
 import GNUScreen as sc
+from GNUScreen import SCREEN
 
 class ScreenSaver(object):
     """class storing GNU screen sessions"""
@@ -59,7 +60,7 @@ class ScreenSaver(object):
         self._scrollfile=os.path.join(self.savedir,"hardcopy.")
 
     def set_session(self,sessionname):
-        self.sc='%s -S %s'%(which('screen')[0],sessionname)
+        self.sc='%s -S %s'%(SCREEN,sessionname)
         self.__unique_ident="S%s_%s"%(sessionname.split('.',1)[0],time.strftime("%d%b%y_%H-%M-%S"))
 
     def save(self):
@@ -524,7 +525,7 @@ class ScreenSaver(object):
         return msg
 
     def wipe(self,args=''):
-        os.popen('screen -wipe %s'%args)
+        os.popen(SCREEN+' -wipe %s'%args)
 
     def backtick(self,id,lifespan='',autorefresh='',args=''):
         self.command_at(False , 'backtick %s %s %s %s'%(id,lifespan,autorefresh,args))

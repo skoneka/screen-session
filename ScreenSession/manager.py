@@ -6,6 +6,7 @@
 
 import commands, os, re, sys,time,tempfile,pwd,mmap,string
 import GNUScreen as sc
+from GNUScreen import SCREEN
 import util
 from util import tmpdir
 from ScreenSaver import ScreenSaver
@@ -90,7 +91,7 @@ def menu_tmp(preselect=None):
     sessions = []
     text = []
     i = 0
-    output = commands.getoutput('screen -ls ')
+    output = commands.getoutput(SCREEN+' -ls ')
     if output:
         for s in output.split("\n"):
             s = re.sub(r'\s+', ' ', s)
@@ -160,7 +161,7 @@ def menu_tmp(preselect=None):
 
 def prime(fifoname):
     l1=sc.get_session_list()
-    cmd='screen -S "MANAGER_NOATTACH" -m -d -c /dev/null python %s %s %s'%(sys.argv[0],'ui',fifoname)
+    cmd=SCREEN+' -S "MANAGER_NOATTACH" -m -d -c /dev/null python %s %s %s'%(sys.argv[0],'ui',fifoname)
     sys.stderr.write(cmd+'\n')
     os.popen(cmd)
     l2=sc.get_session_list()
@@ -262,7 +263,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     sys.stderr.flush()
     ret=None
     global ui2pipe
-    #os.system('screen -X split -v')
+    #os.system(SCREEN+' -X split -v')
     print ('run opening [%s]'%fifoname)
     pipein = open(fifoname, 'r')
     print ('run printing')
@@ -335,7 +336,7 @@ def tui_attach_session(scs,arg,psession):
         print2ui('LOGIC: parent session is [%s]'%psession)
         print2ui('LOGIC: Unable to attach loop detected')
     else:
-        scs.screen('screen -x \"%s\"'%arg)
+        scs.screen(SCREEN+' -x \"%s\"'%arg)
         scs.title(arg)
     if int(cnum)>2:
         #print2ui('LOGIC: killing window \"%s\"'%cnum)
@@ -434,7 +435,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         else:
             arg=' '
 
-        cmd='screen -d -m %s'%arg
+        cmd=SCREEN+' -d -m %s'%arg
         print2ui('LOGIC: creating new session: [%s]'%(cmd.strip()))
         l1=sc.get_session_list()
         os.popen(cmd)
@@ -460,7 +461,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             elif nsessionname==scs.sessionname():
                 print2ui('LOGIC: THIS is session [%s]'%nsessionname)
             else:
-                scs.screen('screen -x \"%s\"'%nsessionname)
+                scs.screen(SCREEN+' -x \"%s\"'%nsessionname)
                 scs.title(nsessionname)
             if int(cnum)>1:
                 #print2ui('LOGIC: killing window \"%s\"'%cnum)
@@ -487,7 +488,7 @@ def ui1(fifoname):
        
 def attach_session(session):
     sys.stderr.write('attaching %s'%session)
-    os.system('screen -x \"%s\"'%(session))
+    os.system(SCREEN+' -x \"%s\"'%(session))
 
 def run(psession):
     if not os.path.exists(tmpdir):
@@ -537,13 +538,13 @@ def run(psession):
             if command[0]=='enter':
                 print ("entering \"%s\""%(command[1]))
                 #os.execvp('screen',['-x',command[1]])
-                #os.system('screen -x \"%s\"'%(command[1]))
+                #os.system(SCREEN+' -x \"%s\"'%(command[1]))
                 attach_session(command[1])
             elif command[0]=='restart':
                 print('restarting...')
                 pass
             elif command[0]=='new':
-                cmd='screen -m %s'%command[1]
+                cmd=SCREEN+' -m %s'%command[1]
                 print ("creating session: [%s]"%(cmd))
                 os.popen(cmd)
             else:

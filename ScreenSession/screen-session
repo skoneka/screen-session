@@ -5,6 +5,10 @@
 # description: screen-session tools starter
 # it is necessary to run screen_saver.py, and some other tools, embedded in other screen session, to be able to start it inside the target Screen session
 
+if [ -z "$SCREENPATH" ]; then
+    export SCREENPATH=`which screen`
+fi
+
 # faster but less portable
 SCRIPTPATH=$(dirname $(realpath $0))
 #SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
@@ -55,7 +59,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
         /bin/rm -f $scsfile
     fi
     mkfifo $scsfile
-    screen -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
+    $SCREENPATH -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
     cat $scsfile
     /bin/rm -f $scsfile
 
@@ -105,7 +109,7 @@ else
     elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" -o $mode = "h" ]; then
         exec python $SCRIPTPATH/help.py "$@"
     else
-        screen -S $session -X msgminwait 0
+        $SCREENPATH -S $session -X msgminwait 0
         if [ $mode = "manager" -o $mode = "m" ]; then
             exec python $SCRIPTPATH/manager.py pn psession=$session "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
@@ -116,12 +120,12 @@ else
             if [ $mode = "group" -o $mode = "g" ]; then
                 exec sh $SCRIPTPATH/win-to-group $session "$@"
             elif [ $mode = "regions" -o $mode = "r" ]; then
-                exec screen -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
+                exec $SCREENPATH -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then
                     exec python $SCRIPTPATH/help.py $mode
                 else
-                    exec screen -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+                    exec $SCREENPATH -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
                 fi
             elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
                 exec python $SCRIPTPATH/new-window.py $$ $session "$@"
@@ -140,7 +144,7 @@ else
                 if [ $# -eq 0 ]; then
                     exec python $SCRIPTPATH/help.py $mode
                 else
-                    exec screen -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+                    exec $SCREENPATH -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
                 fi
             elif [ $mode = "renumber" ]; then
                 exec python $SCRIPTPATH/renumber.py $session "$@"
