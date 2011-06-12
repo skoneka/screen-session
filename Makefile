@@ -3,16 +3,17 @@
 include config.mk
 
 SRCDIR = ScreenSession
-#SRC = ${SRCDIR}/screen-session-primer.c 
 SRCMAIN1 = ${SRCDIR}/screen-session-primer.c 
-SRCMAIN2 = ${SRCDIR}/screen-session-helper.c 
+SRCMAIN2 = ${SRCDIR}/screen-session-helper.c
+EXE1 = ${SRCMAIN1:.c=}
+EXE2 = ${SRCMAIN2:.c=}
 SRCHEAD = ${SRCDIR}/screen-session-define.h 
 OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/help.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py ${SRCDIR}/subwindows.py ${SRCDIR}/screenrc_MANAGER
 
-OBJ = ${SRC:.c=.o}
+OBJ = ${SRCMAIN1:.c=.o} ${SRCMAIN2:.c=.o}
 pwd=`pwd`
 
-all: screen-session-primer screen-session-helper
+all: ${EXE1} ${EXE2}
 
 options:
 	@echo screen-session build options:
@@ -25,18 +26,17 @@ options:
 
 ${OBJ}: config.mk
 
-#screen-session-primer: ${OBJ}
-#	${CC} -o ${SRCDIR}/$@ ${OBJ} ${LDFLAGS}
+${EXE1}: ${SRCMAIN1}  ${SRCHEAD} config.mk
+	${CC} -o $@.o -c $@.c ${CFLAGS}
+	${CC} -o $@ $@.o ${LDFLAGS} 
 
-screen-session-primer: ${SRCMAIN1}  ${SRCHEAD} config.mk
-	${CC} -o ${SRCDIR}/$@ ${SRCDIR}/$@.c ${LDFLAGS} ${CFLAGS}
-
-screen-session-helper: ${SRCMAIN2}  ${SRCHEAD} config.mk
-	${CC} -o ${SRCDIR}/$@ ${SRCDIR}/$@.c ${LDFLAGS} ${CFLAGS}
+${EXE2}: ${SRCMAIN2}  ${SRCHEAD} config.mk
+	${CC} -o $@.o -c $@.c ${CFLAGS}
+	${CC} -o $@ $@.o ${LDFLAGS} 
 
 clean:
 	@echo cleaning
-	@rm -f ${SRCDIR}/screen-session-helper ${SRCDIR}/screen-session-primer ${OBJ}
+	@rm -f ${EXE1} ${EXE2} ${OBJ}
 
 dist:
 	@echo creating dist tarball
@@ -53,8 +53,7 @@ dist:
 install: all
 	@echo installing files to ${INSTFOLDER}/
 	@mkdir -p ${INSTFOLDER}
-	@cp -f ${SRCDIR}/screen-session-primer ${OTHSRC} ${INSTFOLDER}
-	@cp -f ${SRCDIR}/screen-session-helper ${OTHSRC} ${INSTFOLDER}
+	@cp -f ${EXE1} ${EXE2} ${OTHSRC} ${INSTFOLDER}
 	@chmod 755 ${INSTFOLDER}/screen-session-helper ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session
 	@echo linking executables to ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
