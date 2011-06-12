@@ -122,9 +122,31 @@ Move windows to a group.\n\
 If no windows given, move the current window.\
 "
 
-help_manager="Usage: screen-session manager [account@host]\n\n\
+#help_manager="Usage: screen-session manager [account@host]\n\
+help_manager="Usage: screen-session manager\n\
+       scs m\n\n\
 Sessions manager for GNU Screen with preview in a split window.\n\
-Requires python 2.5+\
+Requires python 2.5+\n\
+\n\
+KEYS:\n\
+CTRL + g  - default escape key\n\
+ALT + t   - toggle between regions\n\
+ALT + q   - quit\n\
+Alt + w   - wipe\n\
+\n\
+COMMANDS:\n\
+q[uit]    - exit session manager\n\
+e[nter]   - enter into session\n\
+a[ttach] <name> - attach and select\n\
+d[etach] <name> - detach and deselect\n\
+n[ame] <name>   - rename\n\
+s[creen] <args> - create session\n\
+save <output>   - save session\n\
+w[ipe]    - wipe dead sessions\n\
+restart   - restart session manager\n\
+r[efresh] - refresh session list\n\
+l[ayout]  - toggle layout\n\
+kill K    - kill selected session\n\
 "
 
 help_manager_remote="Usage: screen-session manager-remote\n\n\
@@ -133,7 +155,7 @@ Requires python 2.5+\
 "
 
 help_nest="Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
-       screen-session nl [options] [TARGET_LAYOUT]\n\n\
+       scs nl [options] [TARGET_LAYOUT]\n\n\
 Nest a layout in the current region.\
 "
 
@@ -282,7 +304,7 @@ def run(argv):
         print(help_grab)
     elif mode in ('group','g'):
         print(help_group)
-    elif mode=='manager':
+    elif mode in ('manager','m'):
         print(help_manager)
     elif mode in ('manager-remote','mr'):
         print(help_manager_remote)

@@ -1,0 +1,17 @@
+# OPTIONS
+rendition so by
+title "command window"
+zombie cr
+rendition so By
+caption string "%?%E%{+b}%?%?%F%{kr}%?%t"
+hardstatus lastline "%{+b}%?%E%{+B}%?%{Yk}ALT-T toggle %=GNU SCREEN SESSIONS MANAGER%= ALT-E enter"
+escape ^Gg
+defmousetrack on
+
+# BINDKEYS
+bindkey ^[T focus next
+bindkey ^[t at 0 exec sh -c "echo \"focus\" >> ${SCS_FIFO_ACCESS}"
+bindkey ^[e at 0 exec sh -c "echo \"enter\" >> ${SCS_FIFO_ACCESS}"
+bindkey ^[1 at 0 exec sh -c "echo \"1\" >> ${SCS_FIFO_ACCESS}"
+bindkey ^[w at 0 exec sh -c "echo \"wipe\" >> ${SCS_FIFO_ACCESS}"
+bindkey ^[q at 0 exec sh -c "echo \"quit\" >> ${SCS_FIFO_ACCESS}"

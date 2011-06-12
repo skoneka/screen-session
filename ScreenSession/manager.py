@@ -9,23 +9,8 @@ import GNUScreen as sc
 import util
 from util import tmpdir
 from ScreenSaver import ScreenSaver
+from help import VERSION
 
-usagestr='\n===HELP===\n\
-q[uit]    - exit session manager\n\
-e[nter]   - enter into session\n\
-a[ttach] <name> - attach and select\n\
-d[etach] <name> - detach and deselect\n\
-n[ame] <name>   - rename\n\
-s[creen] <args> - create session\n\
-save <output>   - save session\n\
-w[ipe]    - wipe dead sessions\n\
-restart   - restart session manager\n\
-r[efresh] - refresh session list\n\
-l[ayout]  - toggle layout\n\
-kill K    - kill selected session\n\
-ALT + T   - toggle between regions\n\
-CTRL + G  - default escape key\n\
-'
 tui = 1
 tui_focus = 0
 maxtui = 3
@@ -33,6 +18,7 @@ HOME=os.getenv('HOME')
 USER=os.getenv('USER')
 HOSTNAME=commands.getoutput('hostname')
 configdir=os.path.join(HOME,'.screen-session')
+# accountsfile was supposed to hold accounts for unfinished manager-remote
 accountsfile=os.path.join(configdir,'accounts')
 
 def menu_account(accounts,last_selection):
@@ -144,9 +130,6 @@ def menu_tmp(preselect=None):
                     os.system('clear')
                 except:
                     command=inputstring
-                    if command.startswith('h'):
-                        print(usagestr)
-                        raw_input("Press Return to continue" )
                     break
             else:
                 return "enter"
@@ -207,10 +190,6 @@ def print2ui(line):
     global ui2pipe
     os.write(ui2pipe,'%s\n'%line)
     pass
-
-
-def usage():
-    print2ui(usagestr)
 
 def reset_tui(scs):
     global tui
@@ -290,6 +269,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
     sys.stdout.flush()
     scs.screen("-t \"diagnostic window\" python %s %s %s"%(sys.argv[0],'ui2',fifoname2))
+    scs.screen("-t \"help window\" sh -c \"screen-session help manager | %s\""%(os.getenv("PAGER")))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
@@ -297,7 +277,6 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     if last_session:
         mode,last_session=tui_attach_session(scs,last_session,psession)
         
-    #usage()
     mode=None
     try:
         while 1:
@@ -358,7 +337,7 @@ def tui_attach_session(scs,arg,psession):
     else:
         scs.screen('screen -x \"%s\"'%arg)
         scs.title(arg)
-    if int(cnum)>1:
+    if int(cnum)>2:
         #print2ui('LOGIC: killing window \"%s\"'%cnum)
         scs.kill(cnum)
     scs.focus('top')
@@ -397,7 +376,14 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         print2ui('LOGIC: quiting...' )
         return 'quit','\0'
     elif mode.startswith('h'): # help
-        usage()
+        scs.focus('bottom')
+        cnum=scs.get_number_and_title()[0]
+        if int(cnum)>2:
+            #print2ui('LOGIC: killing window \"%s\"'%cnum)
+            scs.kill(cnum)
+        scs.select('2')
+        #scs.screen('sh -c "screen-session help manager | less"')
+        scs.focus('top')
     elif mode.startswith('e'): # enter
         return 'enter',None
     elif mode=='restart': # restart
@@ -435,7 +421,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         print2ui('LOGIC: wiping out dead sessions')
         menu_tmp_last_selection=-1
         scs.wipe()
-    elif mode.startswith('save'): # save 
+    elif mode.startswith('save') or mode=='S': # save 
         if args[0]:
             arg_out='%s'%args[0]
         else:
@@ -522,8 +508,8 @@ def run(psession):
         fifoname_access=os.path.join(tmpdir,'__manager_'+session_pid)
         os.symlink(fifoname,fifoname_access)
         scs=ScreenSaver(session,'/dev/null','/dev/null')
-        #scs.command_at(False , 'bindkey ^[T exec sh -c "echo \'focus\' >> %s"'%fifoname_access)
-        scs.command_at(False, 'eval \'title \"command window\"\' \'zombie cr\' \'rendition so ky\' \'caption string \"%?%F%{kr}%?%t\"\' \'hardstatus lastline \"%{Yk}%=GNU SCREEN SESSIONS MANAGER%=\"\' \'bindkey ^[t focus next\' \'escape ^Gg\' \'defmousetrack on\'')
+        scs.command_at(False,'setenv SCS_FIFO_ACCESS \"%s\"'%fifoname_access)
+        scs.source(os.path.join(os.path.split(os.path.abspath(__file__))[0],'screenrc_MANAGER'))
         scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
         data=mmap.mmap(-1,100)
         
@@ -551,6 +537,7 @@ def run(psession):
             if command[0]=='enter':
                 print ("entering \"%s\""%(command[1]))
                 #os.execvp('screen',['-x',command[1]])
+                #os.system('screen -x \"%s\"'%(command[1]))
                 attach_session(command[1])
             elif command[0]=='restart':
                 print('restarting...')

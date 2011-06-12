@@ -106,7 +106,7 @@ else
         exec python $SCRIPTPATH/help.py "$@"
     else
         screen -S $session -X msgminwait 0
-        if [ $mode = "manager" ]; then
+        if [ $mode = "manager" -o $mode = "m" ]; then
             exec python $SCRIPTPATH/manager.py pn psession=$session "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
         #    python $SCRIPTPATH/manager.py pr psession=$session "$@"
