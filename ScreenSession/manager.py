@@ -275,6 +275,10 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
     reset_tui(scs)
+    scs.focus('bottom')
+    scs.select('2')
+    scs.focus('top')
+
     if last_session:
         mode,last_session=tui_attach_session(scs,last_session,psession)
         
