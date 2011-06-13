@@ -796,7 +796,7 @@ class ScreenSaver(object):
                 for f in glob.glob(bpath3+win+'_*'):
                     util.remove(f)
 
-        linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        #linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
         if errors:
             out('Errors:')
             for error in errors:

@@ -7,6 +7,7 @@
 import sys,os,time,signal,tempfile,pwd,copy
 from util import tmpdir
 import GNUScreen as sc
+from GNUScreen import SCREEN
 from ScreenSaver import ScreenSaver
 
 logfile="___log-regions"

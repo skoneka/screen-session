@@ -12,10 +12,10 @@ Help:\t scs [mode] --help\n\
 Global Options:\n\
     -S [target]\t- target Screen session name\n\
 Environment variables:\n\
-    SCREENPATH\t - set GNU Screen executable path\n\
+    SCREENPATH\t- determines GNU Screen executable path\n\
 Saver modes:\n\
-    save\t- save session to disk\n\
-    load\t- load session from file\n\
+    save\t- save session\n\
+    load\t- load session\n\
     ls  \t- list saved sessions\n\
 Other tools:\n\
     dump\t- print informations about windows in session\n\
@@ -231,7 +231,7 @@ Options:\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-Example:\n\
+Example [ save Screen named SESSIONNAME as mysavedsession ]:\n\
 $ screen-session save -S SESSIONNAME mysavedsession\
 "
 
@@ -260,7 +260,7 @@ Options:\n\
   \toutput to a file instead of stdout\n\
 -d --dir  <directory>\n\
   \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
-Example [restore mysavedsession inside Screen named SESSIONNAME]:\n\
+Example [ restore mysavedsession inside Screen named SESSIONNAME ]:\n\
 $ screen-session load -S SESSIONNAME --exact mysavedsession\
 "
 
