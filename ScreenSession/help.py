@@ -65,7 +65,8 @@ help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n
        scs K [options] [signal=TERM] [window=current]\n\n\
 Kill last process started in a window.\n\
 Useful for closing random emacs/vim instances and hung up ssh clients.\n\
-For a list of signal names run: $ pydoc signal\
+For a list of signal names run: $ pydoc signal\n\
+WARNING: sending SIGKILL to the current window may crash Screen\
 "
 
 help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\

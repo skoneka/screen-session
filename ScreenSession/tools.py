@@ -247,6 +247,9 @@ def kill_win_last_proc(session,win="-1",sig="TERM"):
     if (ctty is None) or (ctty == -1):
         stderr.write("Window does not exist (%s)\n" % win)
         return False
+    elif (win=="-1") and (sig == "KILL"):
+        stderr.write("Sending SIGKILL to the selected window may crash Screen.")
+        return False
     if platform.system() == 'FreeBSD':
         pids=sc.get_tty_pids(ctty)
     else:
