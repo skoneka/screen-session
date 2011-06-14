@@ -18,7 +18,8 @@ export PYTHONPATH=$SCRIPTPATH
 ret=0
 
 if [ $# -eq 0 ]; then
-    exec python $SCRIPTPATH/help.py
+    python $SCRIPTPATH/help.py
+    exit 0;
 fi
 
 mode=$1
@@ -27,7 +28,8 @@ shift 1 "$@"
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
-        exec python $SCRIPTPATH/help.py $mode
+        python $SCRIPTPATH/help.py $mode
+        exit $?;
     fi
 fi
 
@@ -103,53 +105,68 @@ else
         if [ $bSession -eq 0 ]; then
             session=`python $SCRIPTPATH/sessionname.py`
         fi
-        exec python $SCRIPTPATH/sessionname.py $session "$@"
+        python $SCRIPTPATH/sessionname.py $session "$@"
+        ret=$?
     elif [ $mode = "--version" -o $mode = "-v" ]; then
-        exec python $SCRIPTPATH/help.py --version
+        python $SCRIPTPATH/help.py --version
+        ret=$?
     elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" -o $mode = "h" ]; then
-        exec python $SCRIPTPATH/help.py "$@"
+        python $SCRIPTPATH/help.py "$@"
+        ret=$?
     else
         $SCREENPATH -S $session -X msgminwait 0
         if [ $mode = "manager" -o $mode = "m" ]; then
-            exec python $SCRIPTPATH/manager.py pn psession=$session "$@"
+            python $SCRIPTPATH/manager.py pn psession=$session "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
         #    python $SCRIPTPATH/manager.py pr psession=$session "$@"
         #elif [ $mode = "grab" ]; then
         #    sh $SCRIPTPATH/screen-session-grab "$@"
         elif [ $session != "__no__session__" ]; then
             if [ $mode = "group" -o $mode = "g" ]; then
-                exec sh $SCRIPTPATH/win-to-group $session "$@"
+                sh $SCRIPTPATH/win-to-group $session "$@"
+                ret=$?
             elif [ $mode = "regions" -o $mode = "r" ]; then
-                exec $SCREENPATH -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
+                $SCREENPATH -S SCREEN-SESSION_REGIONS -mdc /dev/null python $SCRIPTPATH/regions.py $session "$@"
+                ret=$?
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then
-                    exec python $SCRIPTPATH/help.py $mode
+                    python $SCRIPTPATH/help.py $mode
                 else
-                    exec $SCREENPATH -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
+                    $SCREENPATH -S SCREEN-SESSION_NEST -mdc /dev/null python $SCRIPTPATH/nest_layout.py $session "$@"
                 fi
+                ret=$?
             elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
-                exec python $SCRIPTPATH/new-window.py $$ $session "$@"
+                python $SCRIPTPATH/new-window.py $$ $session "$@"
+                ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
-                exec python $SCRIPTPATH/dump.py $session $SHOWPID $REVERSE $SORT "$@"
+                python $SCRIPTPATH/dump.py $session $SHOWPID $REVERSE $SORT "$@"
+                ret=$?
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
-                exec python $SCRIPTPATH/find_pid.py $session "$@"
+                python $SCRIPTPATH/find_pid.py $session "$@"
+                ret=$?
             elif [ $mode = "find-file" -o $mode = "ff" ]; then
-                exec python $SCRIPTPATH/find_file.py $session "$@"
+                python $SCRIPTPATH/find_file.py $session "$@"
+                ret=$?
             elif [ $mode = "kill" -o $mode = "K" ]; then
                 # screen-session kill [signal=TERM] [win=current]
-                exec python $SCRIPTPATH/kill.py $session "$@"
+                python $SCRIPTPATH/kill.py $session "$@"
+                ret=$?
             elif [ $mode = "kill-zombie" -o $mode = "kz" ]; then
-                exec python $SCRIPTPATH/kill-zombie.py $session "$@"
+                python $SCRIPTPATH/kill-zombie.py $session "$@"
+                ret=$?
             elif [ $mode = "kill-group" -o $mode = "kg" ]; then
                 if [ $# -eq 0 ]; then
-                    exec python $SCRIPTPATH/help.py $mode
+                    python $SCRIPTPATH/help.py $mode
                 else
-                    exec $SCREENPATH -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
+                    $SCREENPATH -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
                 fi
+                ret=$?
             elif [ $mode = "renumber" ]; then
-                exec python $SCRIPTPATH/renumber.py $session "$@"
+                python $SCRIPTPATH/renumber.py $session "$@"
+                ret=$?
             elif [ $mode = "subwindows" -o $mode = "sw" ]; then
                 python $SCRIPTPATH/subwindows.py $session "$@"
+                ret=$?
             #elif [ $mode = "sort" ]; then
             #    python $SCRIPTPATH/sort.py $session "$@"
             else
@@ -162,7 +179,4 @@ else
     fi
 fi
 
-if [ $ret -eq 0 ]; then
-    ret=$?
-fi
 exit $ret

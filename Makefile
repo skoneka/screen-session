@@ -40,6 +40,7 @@ clean:
 
 dist:
 	@echo creating dist tarball
+	@rm -rf screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
 	@cp -R Makefile config.mk LICENSE README INSTALL HOWTO TODO gnu_screen.diff  screen-session-${VERSION}
@@ -49,6 +50,8 @@ dist:
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
 	@rm -rf screen-session-${VERSION}
+	@ls screen-session-${VERSION}.tar.gz
+
 
 install: all
 	@echo installing files to ${INSTFOLDER}/
