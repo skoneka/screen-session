@@ -77,6 +77,7 @@ def main():
         scs.focus()
     scs.select_region(foff+tfoff)
     scs.focusminsize(focusminsize)
+    os.remove(dumpfile)
 
 if __name__=='__main__':
     main()

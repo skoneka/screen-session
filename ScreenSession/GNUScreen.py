@@ -282,8 +282,7 @@ def _get_tty_pids_pgrep(_ctty):
 
 
 def get_session_list():
-    screen=SCREEN
-    w=subprocess.Popen('%s -ls' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0]
+    w=subprocess.Popen('%s -ls' % SCREEN, shell=True, stdout=subprocess.PIPE).communicate()[0]
     if w.startswith('No Sockets'):
         return []
     

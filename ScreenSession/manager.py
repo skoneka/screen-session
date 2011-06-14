@@ -275,9 +275,10 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     ui2pipe=pipeout
     sys.stdout=os.fdopen(pipeout,'w')
     reset_tui(scs)
-    scs.focus('bottom')
-    scs.select('2')
-    scs.focus('top')
+    scs.command_at(False,'eval "focus bottom" "select 2" "focus top"')
+    #scs.focus('bottom')
+    #scs.select('2')
+    #scs.focus('top')
 
     if last_session:
         mode,last_session=tui_attach_session(scs,last_session,psession)
@@ -386,6 +387,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         if int(cnum)>2:
             #print2ui('LOGIC: killing window \"%s\"'%cnum)
             scs.kill(cnum)
+        #scs.command_at(False,'eval "select 2" "focus top"')
         scs.select('2')
         #scs.screen('sh -c "screen-session help manager | less"')
         scs.focus('top')
@@ -417,6 +419,21 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             tui+=1
         else:
             tui=1
+        reset_tui(scs)
+        if int(cnum)>1:
+            scs.focus('bottom')
+            scs.select(cnum)
+            scs.focus('top')
+    elif mode.startswith('L'): # layout
+        global tui
+        print2ui('LOGIC: toggling layout')
+        scs.focus('bottom')
+        cnum=scs.get_number_and_title()[0]
+        scs.focus('top')
+        if tui!=1:
+            tui-=1
+        else:
+            tui=maxtui
         reset_tui(scs)
         if int(cnum)>1:
             scs.focus('bottom')
