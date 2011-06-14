@@ -9,5 +9,5 @@ import tools
 
 session=sys.argv[1]
 groupids=sys.argv[2:]
-tools.kill_zombie(session,groupids)
+tools.kill_zombie(session,tools.require_dumpscreen_window(session,False),groupids)
 

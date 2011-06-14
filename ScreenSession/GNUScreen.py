@@ -1,11 +1,50 @@
 #!/usr/bin/env python
 import os,subprocess,re,sys,platform
+from util import tmpdir,removeit,remove
 
 SCREEN=os.getenv('SCREENPATH')
 
+datadir=None
+dumpscreen_window_dirs={}
+
+def cleanup():
+    for tdir in dumpscreen_window_dirs.values():
+        removeit(tdir)
+
+def dumpscreen_window(session,full=False):
+    from ScreenSaver import ScreenSaver
+    global dumpscreen_window_dirs
+    global datadir
+    tdir=os.path.join(tmpdir,'___dumpscreen-S%s-%d'%(session,os.getpid()))
+    dumpscreen_window_dirs[session]=tdir
+    datadir=tdir
+    dumpscreen_window_dirs[session]=tdir
+    ss=ScreenSaver(session)
+    if os.path.exists(tdir):
+        removeit(tdir)
+    os.mkdir(tdir)
+    if full:
+        ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
+        f=open(os.path.join(tdir,'full'),'w')
+        f.close()
+    tfile=os.path.join(tdir,'winlist')
+    ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    return tdir
+
+def require_dumpscreen_window(session,full=False):
+    global datadir
+    tdir=os.path.join(tmpdir,'___dumpscreen-S%s-%d'%(session,os.getpid()))
+    try:
+        if not os.path.exists(os.path.join(tdir,'winlist')):
+            raise Exception
+        if full and not os.path.exists(os.path.join(tdir,'full')):
+            raise Exception
+    except:
+        dumpscreen_window(session,full)
+    return datadir
+
 def get_regions(session):
     from ScreenSaver import ScreenSaver
-    from util import tmpdir,remove
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___regions-%d'%os.getpid())
     ss.command_at(False,'dumpscreen layout \"%s\"'%tfile)
@@ -37,18 +76,11 @@ def get_regions(session):
     remove(tfile)
     return ret
 
-#def get_window_data(full|fast):
-
-def gen_all_windows_fast(session, datafile=None):
+def gen_all_windows_fast(session, datadir):
     from ScreenSaver import ScreenSaver
-    from util import tmpdir,remove
     import linecache
     ss=ScreenSaver(session)
-    if datafile:
-        tfile=datafile
-    else:
-        tfile=os.path.join(tmpdir,'___dump-%d-winlist'%os.getpid())
-        ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    tfile=os.path.join(datadir,'winlist')
     for line in open(tfile,'r'):
         try:
             cwin,cgroupid,ctty,ctitle = line.strip().split(' ',3)
@@ -64,20 +96,12 @@ def gen_all_windows_fast(session, datafile=None):
         else:
             ctypeid=0
         yield cwin,cgroupid,ctypeid,ctty,ctitle
-    if not datafile:
-        remove(tfile)
 
-def gen_all_windows_full(session,reverse=False,sort=False):
+def gen_all_windows_full(session,datadir,reverse=False,sort=False):
     from ScreenSaver import ScreenSaver
     import string
-    from util import tmpdir,removeit,remove
-    tdir=os.path.join(tmpdir,'___dump-%d'%os.getpid())
-    if not os.path.exists(tdir):
-        os.mkdir(tdir)
     ss=ScreenSaver(session)
-    tfile=os.path.join(tdir,'winlist')
-    ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
-    ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
+    tfile=os.path.join(datadir,'winlist')
     if sort:
         linesource = list(open(tfile,'r').readlines())
         if reverse:
@@ -95,7 +119,7 @@ def gen_all_windows_full(session,reverse=False,sort=False):
         except:
             cwin,cgroupid,ctty= line.strip().split(' ')
             ctitle=None
-        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll,cmdargs=map(string.strip,open(os.path.join(tdir,'win_'+cwin),'r').readlines())
+        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll,cmdargs=map(string.strip,open(os.path.join(datadir,'win_'+cwin),'r').readlines())
         if ctty[0]=='z':    # zombie
             ctypeid=-1
         elif ctype[0]=='g': # group
@@ -109,7 +133,6 @@ def gen_all_windows_full(session,reverse=False,sort=False):
         except:
             cgroup=ss.none_group
         yield cwin,cgroupid,cgroup,ctty,ctypeid,ctype,ctitle,cfilter,cscroll,ctime,cmdargs
-    removeit(tdir)
 
 def _get_pid_info_sun(pid):
     procdir="/proc"

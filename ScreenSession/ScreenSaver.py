@@ -312,7 +312,8 @@ class ScreenSaver(object):
 
         # move windows by shift and put them in a wrap group
         #for cwin,cgroupid,ctype,ctty in sc.gen_all_windows_fast(self.pid):
-        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(self.pid):
+        import tools
+        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(self.pid,tools.require_dumpscreen_window(self.pid,True)):
             iwin=int(cwin)
             if iwin==homewindow:
                 homewindow=iwin+shift

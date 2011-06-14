@@ -29,5 +29,6 @@ if __name__=='__main__':
     else:
         sort=True
     ss=ScreenSaver(session)
-    tools.dump(ss,showpid,reverse,sort,groupids)
+    tools.dump(ss,tools.require_dumpscreen_window(session,True),showpid,reverse,sort,groupids)
+    tools.cleanup()
 

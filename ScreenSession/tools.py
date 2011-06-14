@@ -1,7 +1,14 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
+import os
 
-def find_pids_in_windows(session,pids):
+dumpscreen_window=sc.dumpscreen_window
+require_dumpscreen_window=sc.require_dumpscreen_window
+
+def cleanup():
+    sc.cleanup()
+
+def find_pids_in_windows(session,datadir,pids):
     import getpass,os
     tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
     #print(tty_and_pids)
@@ -12,7 +19,7 @@ def find_pids_in_windows(session,pids):
             if pid in tpids:
                 ttys.append(tty)
     wins=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
         try:
             ctty = int(os.path.split(ctty)[1])
             if ctty in ttys:
@@ -30,13 +37,13 @@ def find_files_in_pids(files):
     return pids
 
 
-def dump(ss,showpid=True,reverse=True,sort=False,groupids=[]):
+def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
     from sys import stdout
     bShow=True
     windows=[]
     if groupids:
-        windows=subwindows(ss.pid,groupids)[1]
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,reverse,sort):
+        windows=subwindows(ss.pid,datadir,groupids)[1]
+    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
         if groupids:
             if cwin in windows:
                 bShow=True
@@ -79,19 +86,23 @@ def dump(ss,showpid=True,reverse=True,sort=False,groupids=[]):
                                 pass
                         except:
                             lines.append ("%s PID > %s < No permission\n"%(cwin,pid))
-            map(stdout.write,lines)
+            try:
+                map(stdout.write,lines)
+            except:
+                break;
+                pass
 
-def renumber(session):
+def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
         iwin=int(cwin)
         wins.append((iwin,cgroupid,ctype))
         wins_trans[iwin]=iwin
 
     wins.sort(key=lambda wins:wins[0])
-    print wins_trans
+    print (wins_trans)
     i=0
     for win,groupid,ctype in wins:
         if wins_trans[win]!=i:
@@ -104,15 +115,15 @@ def renumber(session):
                 wins_trans[win]=-1
             wins_trans[i]=tmp
         i+=1
-    print wins_trans
+    print (wins_trans)
 
-def sort(session,key=None):
+def sort(session,datadir,key=None):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     wins=[]
     wins_trans={}
     groups={}
     cgroup=None
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
         iwin=int(cwin)
         lastval=(groupid,iwin,ctype,ss.title('',iwin))
         try:
@@ -144,11 +155,11 @@ def sort(session,key=None):
     return
 
 
-def kill_zombie(session,groupids=[]):
+def kill_zombie(session,datadir,groupids=[]):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     if groupids:
-        windows=subwindows(session,groupids)[1]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+        windows=subwindows(session,datadir,groupids)[1]
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
         if ctype==-1:
             if groupids:
                 if cwin in windows:
@@ -156,12 +167,12 @@ def kill_zombie(session,groupids=[]):
             else:
                 ss.kill(cwin)
 
-def make_group_tabs(session,groupids,bAll=False):
+def make_group_tabs(session,datadir,groupids,bAll=False):
     group_wins={}
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir,datadir):
         if(ctype==1): # group
             if cwin in groupids or bAll:
                 excluded_groups.append(cwin)
@@ -179,7 +190,7 @@ def make_group_tabs(session,groupids,bAll=False):
                     group_wins[cgroupid]=[cwin]
     return group_groups,group_wins,excluded_groups,excluded_wins
 
-def subwindows(session,groupids,datafile=None):
+def subwindows(session,datadir,groupids):
     ss=ScreenSaver(session)
     bAll=False
     if groupids[0] in ('cg','current','..'):
@@ -192,7 +203,7 @@ def subwindows(session,groupids,datafile=None):
     group_groups={}
     excluded_wins=[]
     excluded_groups=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datafile):
+    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
         if(ctype==1): # group
             if cwin in groupids or bAll or ctitle in groupids:
                 excluded_groups.append(cwin)
@@ -230,9 +241,9 @@ def subwindows(session,groupids,datafile=None):
             pass
     return excluded_groups,excluded_wins
 
-def kill_group(session,groupids):
+def kill_group(session,datadir,groupids):
     ss=ScreenSaver(session)
-    excluded_groups,excluded_wins=subwindows(session,groupids)
+    excluded_groups,excluded_wins=subwindows(session,datadir,groupids)
     print('Killing groups: %s'%str(excluded_groups))
     print('All killed windows: %s'%str(excluded_wins))
     for win in excluded_wins:

@@ -13,6 +13,6 @@ try:
     groupids=sys.argv[2:]
 except:
     groupids=['all']
-groups,windows=tools.subwindows(session,groupids)
+groups,windows=tools.subwindows(session,tools.require_dumpscreen_window(session,False), groupids)
 print ('groups:  %s'%(" ".join(["%s"%v for v in groups])))
 print ('windows: %s'%(" ".join(["%s"%v for v in windows])))

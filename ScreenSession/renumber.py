@@ -8,4 +8,4 @@ import os,sys
 import tools
 session=sys.argv[1]
 
-tools.renumber(session)
+tools.renumber(session,tools.require_dumpscreen_window(session,False))
