@@ -129,12 +129,11 @@ class ScreenSaver(object):
             ofmru=open(os.path.join(self.basedir,self.savedir,"mru_tmp"),'w')
             for line in ifmru:
                 ofmru.write('select %s\n'%self.__wins_trans[line.strip()])
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win")).rsplit('_')[1]
+            ofmru.write('select %s\n'%self.__wins_trans[last.strip()])
             ifmru.close()
             ofmru.close()
             self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
-        last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-        self.select(last)
-        if self.mru:
             os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
         return 0
 

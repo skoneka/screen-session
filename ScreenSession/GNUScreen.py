@@ -12,7 +12,6 @@ def cleanup():
         removeit(tdir)
 
 def dumpscreen_window(session,full=False):
-    print('dumpscreen_window()')
     from ScreenSaver import ScreenSaver
     global dumpscreen_window_dirs
     global datadir
