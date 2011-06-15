@@ -7,7 +7,7 @@ import GNUScreen as sc
 from GNUScreen import SCREEN
 
 class ScreenSaver(object):
-    """class storing GNU screen sessions"""
+    """class for storing GNU screen sessions"""
     timeout=3
     pid="" # actually it is sessionname
     basedir=""
@@ -331,6 +331,7 @@ class ScreenSaver(object):
                 out('Moving window %s to %d'%(cwin,iwin+shift))
             os.system(command)
         self.select('%d'%(homewindow))
+        tools.cleanup()
 
     def lastmsg(self):
         return util.timeout_command('%s -Q @lastmsg' % (self.sc),self.timeout)[0]
