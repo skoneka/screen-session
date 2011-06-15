@@ -127,7 +127,7 @@ class ScreenSaver(object):
         if self.mru:
             out("\nRestoring Most Recently Used windows order.")
             self.source(os.path.join(self.basedir,self.savedir,"mru"))
-            last=os.readlink(os.path.join(self.basedir,Self.savedir,"last_win"))
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             self.select(last)
         return 0
 
@@ -321,7 +321,6 @@ class ScreenSaver(object):
                 homewindow=iwin+shift
                 self.homewindow=str(homewindow)
             
-            cgroupid,cgroup = self.get_group(cwin)
             if not self.bNoGroupWrap and cgroup==self.none_group:
                 self.select(self.wrap_group_id)
                 self.group(False,group,str(cwin))
@@ -596,76 +595,25 @@ class ScreenSaver(object):
         cppids={}
         rollback=None,None,None
         ctime=self.time()
-        #findir=os.path.join(self.basedir,self.savedir)
         findir=sc.datadir
+        print sc.datadir
         print (os.path.join(self.basedir,self.savedir))
         os.symlink(os.path.join(findir),os.path.join(self.basedir,self.savedir))
         #sc_cwd=self.command_at(True,'hardcopydir')
         #print(sc_cwd)
-        #self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
-        #self.command_at(False, 'at \# dumpscreen window %s -F'%os.path.join(self.basedir,self.savedir))
         self.command_at(False, 'hardcopydir %s'%findir)
         self.command_at(False, 'at \# hardcopy -h')
         self.command_at(False, 'hardcopydir \"%s\"'%self.homedir) # should be modified to properly restore hardcopydir(:dumpscreen settings)
-        #try:
-        #    f=open(os.path.join(findir,"winlist"),'r')
-        #    f.close()
-        #except:
-        #    self.command_at(False, 'at \# dumpscreen window %s'%os.path.join(self.basedir,self.savedir,"winlist"))
         mru_w=[]
-        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
-        #for line in open(os.path.join(findir,"winlist"),'r'):
-        #    try:
-        #        id,cgroupid,ctty,ctitle = line.strip().split(' ',3)
-        #    except:
-        #        id,cgroupid,ctty= line.strip().split(' ')
-        #        ctitle=None
-        #    cwin=id
+        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,badctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
             mru_w.append("select %s\n"%cwin)
             
             cpids = None
             cpids_data=None
 
-            #if(ctty[0]=='z'): # zombie
-            #    ctype="zombie"
-            #elif(ctty[0]=="g"): # group
-            #    ctype="group"
             if ctypestr[0]=='g':
-                if self.excluded:
-                    if cwin in self.excluded or ctitle in self.excluded:
-                        excluded_groups.append(cwin)
-                    try:
-                        group_groups[cgroupid]+=[cwin]
-                    except:
-                        group_groups[cgroupid]=[cwin]
-                if self.scroll:
-                    if cwin in self.scroll or ctitle in self.scroll:
-                        scroll_groups.append(cwin)
-                    try:
-                        group_groups[cgroupid]+=[cwin]
-                    except:
-                        group_groups[cgroupid]=[cwin]
+                pass
             else:
-                if self.excluded:
-                    if cwin in self.excluded or ctitle in self.excluded:
-                        excluded_wins.append(cwin)
-                    else:
-                        try:
-                            group_wins[cgroupid]+=[cwin]
-                        except:
-                            group_wins[cgroupid]=[cwin]
-                if self.scroll:
-                    if cwin in self.scroll or ctitle in self.scroll:
-                        scroll_wins.append(cwin)
-                    else:
-                        try:
-                            group_wins[cgroupid]+=[cwin]
-                        except:
-                            group_wins[cgroupid]=[cwin]
-                #if(ctty[0]=="t"): # telnet
-                #    ctype="telnet"
-                #else:
-                #    ctype="basic"
                 if ctypestr[0]=='b':
                     # get sorted pids in window
                     cpids=sc.get_tty_pids(ctty)
@@ -736,68 +684,29 @@ class ScreenSaver(object):
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(findir,"hardcopy."+cwin)
             sys.stdout.write("%s %s | "%(cwin,ctypestr))
-            errors+=self.__save_win(cwin,ctype,cpids_data,ctime,rollback)
+            errors+=self.__save_win(cwin,ctypestr,cpids_data,ctime,rollback)
             rollback=None,None,None
         out('')
-        print mru_w
         mru_w.reverse()
-        print mru_w
         fmru = open(os.path.join(findir,"mru"),"w")
         fmru.writelines(mru_w)
         fmru.close()
-        util.remove(os.path.join(findir,"winlist"))
         # remove ignored scrollbacks
         if 'all' in self.scroll:
             for f in glob.glob(os.path.join(findir, "hardcopy.*")):
                 open(f,'w')
         elif self.scroll:
-            scroll_groups_tmp=[]
-            while scroll_groups:
-                sgroup=scroll_groups.pop()
-                if sgroup not in scroll_groups_tmp:
-                    scroll_groups_tmp.append(sgroup)
-                try:
-                    ngroups = group_groups[sgroup]
-                    if ngroups:
-                        for g in ngroups:
-                            scroll_groups.append(g)
-                except:
-                    pass
-            scroll_groups = scroll_groups_tmp
+            import tools
+            scroll_groups,scroll_wins=tools.subwindows(self.pid,sc.datadir,self.scroll)
             out('Scrollback excluded groups: %s'%str(scroll_groups))
-            for sgroup in scroll_groups:
-                scroll_wins.append(sgroup)
-                try:
-                    for w in group_wins[sgroup]:
-                        scroll_wins.append(w)
-                except:
-                    pass
             out('All scrollback excluded windows: %s'%str(scroll_wins))
             for w in scroll_wins:
                 util.remove(os.path.join(findir,"hardcopy.%s"%w))
         # remove ignored windows
         if self.excluded:
-            excluded_groups_tmp=[]
-            while excluded_groups:
-                egroup=excluded_groups.pop()
-                if egroup not in excluded_groups_tmp:
-                    excluded_groups_tmp.append(egroup)
-                try:
-                    ngroups = group_groups[egroup]
-                    if ngroups:
-                        for g in ngroups:
-                            excluded_groups.append(g)
-                except:
-                    pass
-            excluded_groups = excluded_groups_tmp
+            import tools
+            excluded_groups,excluded_wins=tools.subwindows(self.pid,sc.datadir,self.excluded)
             out('Excluded groups: %s'%str(excluded_groups))
-            for egroup in excluded_groups:
-                excluded_wins.append(egroup)
-                try:
-                    for w in group_wins[egroup]:
-                        excluded_wins.append(w)
-                except:
-                    pass
             out('All excluded windows: %s'%str(excluded_wins))
             bpath1 = os.path.join(findir, "win_")
             bpath2 = os.path.join(findir, "hardcopy.")
@@ -1061,20 +970,3 @@ class ScreenSaver(object):
             f=open(os.path.join(basedir,self.blacklistfile),'w')
             f.close()
         return True
-#        if os.path.exists(os.path.join(basedir,savedir)):
-#            out("Directory \"%s\" in \"%s\" already exists. Use --force to overwrite." % (savedir, basedir))
-#            if self.force:
-#                out('forcing..')
-#                out('cleaning up \"%s\"' % savedir)
-#                map(os.remove,glob.glob(os.path.join(basedir,savedir,'win_*')))
-#                map(os.remove,glob.glob(os.path.join(basedir,savedir,'hardcopy.*')))
-#                map(os.remove,glob.glob(os.path.join(basedir,savedir,'layout_*')))
-#                map(os.remove,glob.glob(os.path.join(basedir,savedir,'winlayout_*')))
-#                return True
-#            else:
-#                out('Aborting.')
-#                return False
-#        else:
-#            #os.makedirs(os.path.join(basedir,savedir))
-#            return True
-
