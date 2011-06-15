@@ -10,6 +10,7 @@ from ScreenSaver import ScreenSaver
 from util import *
 from util import tmpdir
 import util
+import GNUScreen as sc
 
 
 logpipeh=None
@@ -289,6 +290,7 @@ def main():
             removeit(os.path.join(util.tmpdir,savedir_tmp))
             scs.savedir=savedir_real
             savedir=savedir_real
+            sc.cleanup()
             out('session "%s"'%scs.pid) 
             out('saved as "%s"'%(scs.savedir))
             scs.Xecho("screen-session finished saving as \"%s\""%(savedir))
