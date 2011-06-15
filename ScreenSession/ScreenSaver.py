@@ -133,8 +133,9 @@ class ScreenSaver(object):
             ifmru.close()
             ofmru.close()
             self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
-            self.select(last)
+        last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
+        self.select(last)
+        if self.mru:
             os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
         return 0
 
@@ -173,7 +174,6 @@ class ScreenSaver(object):
         rootwindow=self.number()
         out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
-        out('NUMBER; TIME; GROUP; TYPE; TITLE; FILTER; SCROLLBACK; PROCESSES;')
         wins=[]
         for id in range(0,int(self.MAXWIN_REAL)):
             try:
@@ -183,7 +183,6 @@ class ScreenSaver(object):
                     win=list(f)[0:9]
                     f.close()
                     win=self.__striplist(win)
-                    out (str(win))
                     try:
                         nproc=win[8]
                     except:
@@ -191,7 +190,6 @@ class ScreenSaver(object):
                     wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
             except Exception,e:
                 out(str(e))
-                print win
                 out('%s Unable to load window'%id)
 
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
@@ -603,8 +601,8 @@ class ScreenSaver(object):
         rollback=None,None,None
         ctime=self.time()
         findir=sc.datadir
-        print sc.datadir
-        print (os.path.join(self.basedir,self.savedir))
+        #print sc.datadir
+        #print (os.path.join(self.basedir,self.savedir))
         os.symlink(os.path.join(findir),os.path.join(self.basedir,self.savedir))
         #sc_cwd=self.command_at(True,'hardcopydir')
         #print(sc_cwd)

@@ -202,7 +202,7 @@ def main():
             savedir = output
     elif mode == 2:
         if not input:
-            input=list_sessions(home,projectsdir,util.archiveend,'*')
+            input=list_sessions(home,projectsdir,util.archiveend,'*',False)
             if not input:
                 out("No recent session to load.")
                 doexit(1)
@@ -301,7 +301,7 @@ def main():
         try:
             unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir)
         except IOError:
-            recent=list_sessions(home,projectsdir,util.archiveend,savedir)
+            recent=list_sessions(home,projectsdir,util.archiveend,savedir,True)
             if recent:
                 print('Selecting the most recent file: '+recent)
                 scs.savedir=savedir=input=recent

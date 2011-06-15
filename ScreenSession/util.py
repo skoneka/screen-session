@@ -161,7 +161,7 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,target):
         raise x
 
 
-def list_sessions(home,projectsdir,archiveend,match):
+def list_sessions(home,projectsdir,archiveend,match,verbose=True):
     if not match:
         match=''
     files=glob.glob(os.path.join(home,projectsdir,'*%s*%s'%(match,archiveend)))
@@ -194,9 +194,12 @@ def list_sessions(home,projectsdir,archiveend,match):
         # convert date tuple to MM/DD/YYYY HH:MM:SS format
         file_date = time.strftime("%d/%m/%Y\t%H:%M:%S", file[0])
         file_size = file[2]
+        if verbose:
+            out("%s%s\t%s" % (file_size, file_date, file_name))
+    if not verbose:
         out("%s%s\t%s" % (file_size, file_date, file_name))
     
-    if len(date_file_list)>0:
+    if verbose and len(date_file_list)>0:
         out('%s matching sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
     return file_name
 
