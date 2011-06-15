@@ -126,9 +126,16 @@ class ScreenSaver(object):
             self.__load_layouts()
         if self.mru:
             out("\nRestoring Most Recently Used windows order.")
-            self.source(os.path.join(self.basedir,self.savedir,"mru"))
+            ifmru=open(os.path.join(self.basedir,self.savedir,"mru"),'r')
+            ofmru=open(os.path.join(self.basedir,self.savedir,"mru_tmp"),'w')
+            for line in ifmru:
+                ofmru.write('select %s\n'%self.__wins_trans[line.strip()])
+            ifmru.close()
+            ofmru.close()
+            self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
             last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win"))
             self.select(last)
+            os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
         return 0
 
     def exists(self):
@@ -606,7 +613,7 @@ class ScreenSaver(object):
         self.command_at(False, 'hardcopydir \"%s\"'%self.homedir) # should be modified to properly restore hardcopydir(:dumpscreen settings)
         mru_w=[]
         for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,badctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
-            mru_w.append("select %s\n"%cwin)
+            mru_w.append("%s\n"%cwin)
             
             cpids = None
             cpids_data=None
