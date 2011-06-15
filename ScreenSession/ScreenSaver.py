@@ -18,7 +18,6 @@ class ScreenSaver(object):
     MINWIN_REAL=0
     force=False
     enable_layout = False
-    restore_previous = False
     exact=False
     bVim=True
     mru=True
@@ -862,15 +861,14 @@ class ScreenSaver(object):
         else:
             out('No homelayout - unable to return.')
         
-        if not self.restore_previous:
-            if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
-                last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
-                (lasthead,lasttail)=os.path.split(last)
-                last=lasttail.split("_",2)
-                lastname=last[2]
-                lastid_l=last[1]
-                self.layout('select %s'%layout_trans[lastid_l],False)
-                # ^^ layout numbering may change, use layout_trans={}
+        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
+            (lasthead,lasttail)=os.path.split(last)
+            last=lasttail.split("_",2)
+            lastname=last[2]
+            lastid_l=last[1]
+            self.layout('select %s'%layout_trans[lastid_l],False)
+            # ^^ layout numbering may change, use layout_trans={}
             
     def select_region(self,region):
         self.focus('top')

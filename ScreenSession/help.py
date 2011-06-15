@@ -249,8 +249,6 @@ Options:\n\
     a comma separeted list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
     without waiting for user confirmation\n\
--r --restore\n\
-  \treturn to previous window and layout after session loading\n\
 -y --no-layout\n\
   \tdisable layout loading\n\
 -n --no-group-wrap\n\

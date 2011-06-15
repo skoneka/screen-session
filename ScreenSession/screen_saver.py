@@ -56,7 +56,7 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXryc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","restore", "no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXyc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -77,7 +77,6 @@ def main():
     force_start=[]
     scroll=[]
     excluded=None
-    restore = False
     verbose = False
     log=None
     force = False
@@ -121,8 +120,6 @@ def main():
             bKill=True
         elif o in ("-e","--exclude"):
             excluded = a
-        elif o in ("-r","--restore"):
-            restore = True
         elif o in ("-f","--force"):
             force = True
         elif o in ("-F","--force-start"):
@@ -237,7 +234,6 @@ def main():
     scs.MAXWIN_REAL = maxwin_real
     scs.force = force
     scs.enable_layout=enable_layout
-    scs.restore_previous = restore
     scs.exact=bExact
     scs.bVim=bVim
     scs.mru=mru
