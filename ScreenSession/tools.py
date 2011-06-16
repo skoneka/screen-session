@@ -61,7 +61,11 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
                 groupstr=cgroupid+' '+cgroup
             lines.append("%s GRP   %s\n"%(cwin,groupstr))
             lines.append("%s TITL  %s\n"%(cwin,ctitle))
-            lines.append("%s CARG  %s\n"%(cwin,cmdargs.split('\0')))
+            cmdargs=cmdargs.split('\0')
+            pcmdargs=cmdargs[0]
+            if cmdargs[1]!='':
+                pcmdargs+=" "+" ".join(["\"%s\""%v for v in cmdargs[1:-1]])
+            lines.append("%s CARG  %s\n"%(cwin,pcmdargs))
             if cfilter!='-1':
                 lines.append("%s EXEC  %s\n"%(cwin,cfilter))
             if ctype==0:
@@ -77,8 +81,11 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
                             cwd,exe,cmd=sc.get_pid_info(pid)
                             lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
                             lines.append ("%s PID   %s EXE %s\n"%(cwin,pid,exe))
-                            cmd=cmd.split('\0')[:-1]
-                            lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,cmd))
+                            cmd=cmd.split('\0')
+                            pcmd=cmd[0]
+                            if cmd[1]!='':
+                                pcmd+=" "+" ".join(["\"%s\""%v for v in cmd[1:-1]])
+                            lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,pcmd))
                             try:
                                 if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
                                     lines[0]=lines[0][:-1]+" / primer\n"
@@ -93,7 +100,15 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
             except:
                 break;
                 pass
-    print('SUMMARY: %d windows in %d groups'%(len(windows),len(groups)))
+    l_windows=len(windows)
+    l_groups=len(groups)
+    s_w='s'
+    s_g='s'
+    if l_windows==1:
+        s_w=''
+    if l_groups==1:
+        s_g=''
+    print('SUMMARY: %d window%s and %d group%s'%(l_windows,s_w,l_groups,s_g))
 
 def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
