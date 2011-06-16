@@ -3,6 +3,17 @@
 VERSION='git'
 version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
 
+'''
+broken/unfinished tools:
+    grab\t- grab a process and attach it to current tty\n\
+    \t\t  (requires injcode)\n\
+    sort\t- sort windows by title\n\
+    manager-remote - 
+
+unpractial/useless tools:
+    find-pid\t- find PIDs in windows (greping dump tool output is better)\n\
+'''
+
 
 help_help="\
 Usage:\t screen-session [mode] [options]\n\
@@ -33,16 +44,6 @@ Other tools:\n\
     subwindows\t- print windows contained in a group\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
 "
-'''
-broken/unfinished tools:
-    grab\t- grab a process and attach it to current tty\n\
-    \t\t  (requires injcode)\n\
-    sort\t- sort windows by title\n\
-    manager-remote - 
-
-unpractial/useless tools:
-    find-pid\t- find PIDs in windows (greping dump tool output is better)\n\
-'''
 
 help_regions="Usage: screen-session regions [options]\n\
        scs r [options]\n\n\
@@ -70,12 +71,12 @@ WARNING: sending SIGKILL to the current window may crash Screen\
 "
 
 help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\
-       screen-session kz [options] [groupids]\n\n\
+       scs kz [options] [groupids]\n\n\
 Kill all zombie windows in session. Optionally specify target groups.\
 "
 
 help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\
-       screen-session kg [options] [groupNum0] [groupNum..]\n\n\
+       scs kg [options] [groupNum0] [groupNum..]\n\n\
 Recursively kill groups and windows inside.\n\
 Accepts group window numbers as arguments.\n\
 If the first argument is \"current\" kill the current group.\n\
@@ -84,8 +85,8 @@ Take extra care with this command.\
 "
 
 help_new_window="Usage: screen-session new-window [options] [program]\n\
-       screen-session new [options] [program]\n\
-       screen-session dir [options] [program]\n\n\
+       scs new [options] [program]\n\
+       scs dir [options] [program]\n\n\
 Start a new Screen window in the same working directory\n\
 on the position next to the current window.\
 "
@@ -173,7 +174,7 @@ Sort windows by titles.\
 "
 
 help_subwindows="Usage: screen-session subwindows [groupids or titles]\n\
-       screen-session sw [groupids or titles]\n\n\
+       scs sw [groupids or titles]\n\n\
 Print windows contained in groups.\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\
 "

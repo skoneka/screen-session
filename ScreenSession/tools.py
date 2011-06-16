@@ -42,7 +42,9 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
     bShow=True
     windows=[]
     if groupids:
-        windows=subwindows(ss.pid,datadir,groupids)[1]
+        groups,windows=subwindows(ss.pid,datadir,groupids)
+    else:
+        groups,windows=subwindows(ss.pid,datadir,['all'])
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
         if groupids:
             if cwin in windows:
@@ -91,6 +93,7 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
             except:
                 break;
                 pass
+    print('SUMMARY: %d windows in %d groups'%(len(windows),len(groups)))
 
 def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
@@ -195,6 +198,8 @@ def subwindows(session,datadir,groupids):
     bAll=False
     if groupids[0] in ('cg','current','..'):
         groupids[0]=ss.get_group()[0]
+        if groupids[0]=='-1':
+            bAll=True
     elif groupids[0] in ('cw','current-window','.'):
         groupids[0]=ss.get_number_and_title()[0]
     elif groupids[0]=='all':
@@ -212,7 +217,7 @@ def subwindows(session,datadir,groupids):
             except:
                 group_groups[cgroupid]=[cwin]
         else: # anything other than group
-            if cwin in groupids or ctitle in groupids:
+            if cwin in groupids or bAll or ctitle in groupids:
                 excluded_wins.append(cwin)
             else:
                 try:

@@ -135,6 +135,9 @@ class ScreenSaver(object):
             ofmru.close()
             self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
             os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
+        elif not self.enable_layout:
+            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win")).rsplit('_')[1]
+            self.select(last)
         return 0
 
     def exists(self):

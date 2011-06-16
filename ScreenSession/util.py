@@ -181,9 +181,9 @@ def list_sessions(home,projectsdir,archiveend,match,verbose=True):
     date_file_list.sort()
     
     if len(date_file_list)>0:
-        out('There are matching sessions:')
+        out('There are matching saved sessions:')
     else:
-        out('There are no matching sessions.')
+        out('There are no matching saved sessions.')
     
     fileending_l=len(archiveend)
     file_name=None
