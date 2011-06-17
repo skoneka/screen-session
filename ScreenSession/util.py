@@ -153,8 +153,15 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,target):
     import tarfile
     try:
         t1 = tarfile.open(os.path.join(home,projectsdir,"%s%s"%(savedir,archiveend)),'w:bz2')
+        g = list(glob.glob(os.path.join(home,projectsdir,target)))
         for f in glob.glob(os.path.join(home,projectsdir,target)):
-            t1.add(f,os.path.split(f)[1])
+            bInclude=True
+            for frm in ['winlist','full']: # do not archive files created by gen_all_windows_full() but not needed by saver
+                if f.endswith(frm):
+                    bInclude=False
+                    break
+            if bInclude:
+                t1.add(f,os.path.split(f)[1])
         t1.close()
     except Exception,x:
         print(str(x))
