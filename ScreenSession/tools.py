@@ -185,29 +185,6 @@ def kill_zombie(session,datadir,groupids=[]):
             else:
                 ss.kill(cwin)
 
-def make_group_tabs(session,datadir,groupids,bAll=False):
-    group_wins={}
-    group_groups={}
-    excluded_wins=[]
-    excluded_groups=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir,datadir):
-        if(ctype==1): # group
-            if cwin in groupids or bAll:
-                excluded_groups.append(cwin)
-            try:
-                group_groups[cgroupid]+=[cwin]
-            except:
-                group_groups[cgroupid]=[cwin]
-        else: # anything other than group
-            if cwin in groupids:
-                excluded_wins.append(cwin)
-            else:
-                try:
-                    group_wins[cgroupid]+=[cwin]
-                except:
-                    group_wins[cgroupid]=[cwin]
-    return group_groups,group_wins,excluded_groups,excluded_wins
-
 def subwindows(session,datadir,groupids):
     ss=ScreenSaver(session)
     bAll=False
