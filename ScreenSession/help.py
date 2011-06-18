@@ -30,7 +30,7 @@ Saver modes:\n\
     ls  \t- list saved sessions\n\
 Other tools:\n\
     dump\t- print informations about windows in session\n\
-    find-file\t- find files in windows\n\
+    find-file\t- find open files in windows\n\
     group\t- move windows to a group\n\
     kill\t- send a signal to the last process started in a window\n\
     kill-group\t- kill a group and all windows inside\n\

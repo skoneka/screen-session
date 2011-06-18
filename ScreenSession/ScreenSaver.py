@@ -123,27 +123,8 @@ class ScreenSaver(object):
         if self.enable_layout:
             out("\nLoading layouts:")
             self.__load_layouts()
-        if self.mru:
-            out("\nRestoring Most Recently Used windows order.")
-            ifmru=open(os.path.join(self.basedir,self.savedir,"mru"),'r')
-            ofmru=open(os.path.join(self.basedir,self.savedir,"mru_tmp"),'w')
-            for line in ifmru:
-                try:
-                    ofmru.write('select %s\n'%self.__wins_trans[line.strip()])
-                except:
-                    pass
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win")).rsplit('_')[1]
-            try:
-                ofmru.write('select %s\n'%self.__wins_trans[last.strip()])
-            except:
-                pass
-            ifmru.close()
-            ofmru.close()
-            self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
-            os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
-        elif not self.enable_layout:
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_win")).rsplit('_')[1]
-            self.select(last)
+        self.__restore_mru()
+
         return 0
 
     def exists(self):
@@ -159,6 +140,43 @@ class ScreenSaver(object):
     def __escape_bad_chars(self,str):
         # some characters are causing problems when setting window titles with screen -t "title"
         return str.replace('|','I').replace('\\','\\\\\\\\').replace('"','\\"')# how to properly escape "|" in 'screen -t "part1 | part2" sh'?
+
+    def __restore_mru(self):
+        if self.enable_layout and not self.mru:
+            pass
+        else:
+            try:
+                if self.mru:
+                    sys.stdout.write("\nRestoring MRU windows order:")
+                else:
+                    sys.stdout.write("\nSelecting last window:")
+
+                mru_w=[]
+                ifmru=open(os.path.join(self.basedir,self.savedir,"mru"),'r')
+                for line in ifmru:
+                    n = line.strip()
+                    try:
+                        nw = self.__wins_trans[n]
+                        mru_w.append('select '+nw+'\n')
+                        sys.stdout.write(' %s'%nw)
+                        if not self.mru:
+                            break
+                    except:
+                        if self.enable_layout:
+                            mru_w.append('select -\n')
+                        else:
+                            pass
+                ifmru.close()
+                mru_w.reverse()
+                ofmru=open(os.path.join(self.basedir,self.savedir,"mru_tmp"),'w')
+                ofmru.writelines(mru_w)
+                ofmru.close()
+                self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
+                os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
+            except:
+                sys.stderr.write(' Failed to load MRU.')    
+            out("")
+
 
     def __load_screen(self):
         homewindow=self.homewindow
@@ -197,8 +215,8 @@ class ScreenSaver(object):
                     wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
             except Exception,e:
                 out(str(e))
-                out('%s Unable to load window'%id)
-
+                out('%d Unable to load window'%id)
+        
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes)
         
@@ -616,7 +634,7 @@ class ScreenSaver(object):
         self.command_at(False, 'hardcopydir %s'%findir)
         self.command_at(False, 'at \# hardcopy -h')
         self.command_at(False, 'hardcopydir \"%s\"'%self.homedir) # should be modified to properly restore hardcopydir(:dumpscreen settings)
-        mru_w=[]
+        mru_w=[homewindow+'\n']
         for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,badctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
             mru_w.append("%s\n"%cwin)
             
@@ -699,10 +717,6 @@ class ScreenSaver(object):
             errors+=self.__save_win(cwin,ctypestr,cpids_data,ctime,rollback)
             rollback=None,None,None
         out('')
-        mru_w.reverse()
-        fmru = open(os.path.join(findir,"mru"),"w")
-        fmru.writelines(mru_w)
-        fmru.close()
         # remove ignored scrollbacks
         if 'all' in self.scroll:
             for f in glob.glob(os.path.join(findir, "hardcopy.*")):
@@ -729,7 +743,13 @@ class ScreenSaver(object):
                 for f in glob.glob(bpath3+win+'_*'):
                     util.remove(f)
 
-        linkify(os.path.join(self.basedir,self.savedir),"win_"+homewindow,"last_win")
+        #if mru_w[0] in excluded_wins or mru_w[0] in excluded_groups:
+        #    mru_w[0]='-'
+        #mru_w.reverse()
+        fmru = open(os.path.join(findir,"mru"),"w")
+        fmru.writelines(mru_w)
+        fmru.close()
+
         if errors:
             out('Errors:')
             for error in errors:
@@ -858,25 +878,27 @@ class ScreenSaver(object):
                     layout_c+=1
             finally:
                 lc+=1
+        if not lc==0:
+            # select last layout
+            lastname=None
+            lastid_l=None
 
-        # select last layout
-        lastname=None
-        lastid_l=None
-
-        if homelayout!=-1:
-            out("Returning homelayout %s"%homelayout)
-            self.layout('select %s'%homelayout,False)
+            if homelayout!=-1:
+                out("Returning homelayout %s"%homelayout)
+                self.layout('select %s'%homelayout,False)
+            else:
+                out('No homelayout - unable to return.')
+            
+            if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
+                last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
+                (lasthead,lasttail)=os.path.split(last)
+                last=lasttail.split("_",2)
+                lastname=last[2]
+                lastid_l=last[1]
+                self.layout('select %s'%layout_trans[lastid_l],False)
+                # ^^ layout numbering may change, use layout_trans={}
         else:
-            out('No homelayout - unable to return.')
-        
-        if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
-            last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
-            (lasthead,lasttail)=os.path.split(last)
-            last=lasttail.split("_",2)
-            lastname=last[2]
-            lastid_l=last[1]
-            self.layout('select %s'%layout_trans[lastid_l],False)
-            # ^^ layout numbering may change, use layout_trans={}
+            self.enable_layout=False
             
     def select_region(self,region):
         self.focus('top')

@@ -9,7 +9,7 @@ if [ -z "$SCREENPATH" ]; then
     export SCREENPATH=`which screen`
 fi
 
-# faster but less portable
+# faster, but less portable
 SCRIPTPATH=$(dirname $(realpath $0))
 #SCRIPTPATH=$(python -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
 
@@ -24,7 +24,6 @@ fi
 
 mode=$1
 shift 1 "$@"
-
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
