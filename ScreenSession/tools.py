@@ -43,7 +43,6 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
     bShow=True
     windows=[]
     sum_process_total=0
-    sum_process_fore=0
     sum_win=0
     sum_zombie=0
     sum_basic=0
@@ -93,11 +92,7 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
                     except:
                         lines.append ("%s No access\n"%cwin)
                         pass
-                    set_process_fore=False
                     for pid in pids:
-                        if not set_process_fore:
-                            set_process_fore=True
-                            sum_process_fore+=1
                         sum_process_total+=1
                         try:
                             cwd,exe,cmd=sc.get_pid_info(pid)
@@ -124,8 +119,8 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
             except:
                 break;
                 pass
-    print('WINDOWS: %d [ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
-    print('PROCESS: %d [ %d fore ] [ %d primer | %d vim ]'%(sum_process_total,sum_process_fore,sum_primer,sum_vim))
+    print('WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
+    print('PROCESS: %d\t[ %d primer | %d vim ]'%(sum_process_total,sum_primer,sum_vim))
 
 def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
