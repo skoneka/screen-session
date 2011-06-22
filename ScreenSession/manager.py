@@ -351,6 +351,7 @@ def tui_attach_session(scs,arg,psession):
 
 def eval_command(scs,command,last_session,psession,fifoname2):
     global menu_tmp_last_selection
+    global tui
     command=command.split(' ',1)
     mode=command[0]
     if len(command)>1:
@@ -410,7 +411,6 @@ def eval_command(scs,command,last_session,psession,fifoname2):
     elif mode.startswith('r'): # refresh 
         print2ui('LOGIC: refreshing')
     elif mode.startswith('l'): # layout
-        global tui
         print2ui('LOGIC: toggling layout')
         scs.focus('bottom')
         cnum=scs.get_number_and_title()[0]
@@ -425,7 +425,6 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             scs.select(cnum)
             scs.focus('top')
     elif mode.startswith('L'): # layout
-        global tui
         print2ui('LOGIC: toggling layout')
         scs.focus('bottom')
         cnum=scs.get_number_and_title()[0]
