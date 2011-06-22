@@ -42,10 +42,17 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
     from sys import stdout
     bShow=True
     windows=[]
+    sum_process_total=0
+    sum_process_fore=0
+    sum_win=0
+    sum_zombie=0
+    sum_basic=0
+    sum_group=0
+    sum_telnet=0
+    sum_primer=0
+    sum_vim=0
     if groupids:
         groups,windows=subwindows(ss.pid,datadir,groupids)
-    else:
-        groups,windows=subwindows(ss.pid,datadir,['all'])
     for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
         if groupids:
             if cwin in windows:
@@ -53,6 +60,15 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
             else:
                 bShow=False
         if bShow:
+            sum_win+=1
+            if ctype==-1:
+                sum_zombie+=1
+            elif ctype==0:
+                sum_basic+=1
+            elif ctype==1:
+                sum_group+=1
+            elif ctype==2:
+                sum_telnet+=1
             print("----------------------------------------")
             lines=[]
             lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
@@ -77,7 +93,12 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
                     except:
                         lines.append ("%s No access\n"%cwin)
                         pass
+                    set_process_fore=False
                     for pid in pids:
+                        if not set_process_fore:
+                            set_process_fore=True
+                            sum_process_fore+=1
+                        sum_process_total+=1
                         try:
                             cwd,exe,cmd=sc.get_pid_info(pid)
                             lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
@@ -89,8 +110,10 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
                             lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,pcmd))
                             try:
                                 if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
+                                    sum_primer+=1
                                     lines[0]=lines[0][:-1]+" / primer\n"
-                                elif cmd[0] in ('vi','vim','viless','vimdiff'): 
+                                elif cmd[0] in ('vi','vim','viless','vimdiff'):
+                                    sum_vim+=1
                                     lines[0]=lines[0][:-1]+" / VIM\n"
                             except:
                                 pass
@@ -101,15 +124,8 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
             except:
                 break;
                 pass
-    l_windows=len(windows)
-    l_groups=len(groups)
-    s_w='s'
-    s_g='s'
-    if l_windows==1:
-        s_w=''
-    if l_groups==1:
-        s_g=''
-    print('SUMMARY: %d window%s and %d group%s'%(l_windows,s_w,l_groups,s_g))
+    print('WINDOWS: %d [ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
+    print('PROCESS: %d [ %d fore ] [ %d primer | %d vim ]'%(sum_process_total,sum_process_fore,sum_primer,sum_vim))
 
 def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')
