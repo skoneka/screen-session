@@ -11,6 +11,10 @@ session=sys.argv[1]
 files=sys.argv[2:]
 
 pids=tools.find_files_in_pids(files)
-pids=map(int,pids)
-for win,title in tools.find_pids_in_windows(session,pids):
-    print("%s %s"%(win,title))
+try:
+    pids=map(int,pids)
+    for win,title in tools.find_pids_in_windows(session,tools.require_dumpscreen_window(session,False),pids):
+        print("%s %s"%(win,title))
+except:
+    #print('File not found.')
+    pass
