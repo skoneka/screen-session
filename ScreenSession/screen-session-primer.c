@@ -1079,7 +1079,7 @@ main (int argc, char **argv)
     if (force_start)
       menu=ALL;
     else
-      numbers_c=userInput (&menu, &numbers, procs_c, &bFilter);
+      numbers_c=userInput (&menu, &numbers, procs_c-1, &bFilter);
     char *shell = NULL;
     char **arglist = NULL;
     int *args;
@@ -1157,20 +1157,19 @@ main (int argc, char **argv)
       case NUMBER:
         read_scrollback(fullpath,scrollbackfile);
         number=numbers[0];
-        printf (PRIMER "Starting programs up to %d...\n", number);
+        printf (PRIMER "Starting programs up to %d ( ", number);
         if (number > procs_c)
           {
             number = procs_c;
-            printf (PRIMER "No such window. Starting programs up to %d...\n",
+            printf (PRIMER "No such window. Starting programs up to %d ( ",
                     number - 1);
           }
         for (i = 1; i <= number; i++)
           {
             args[i-1] = i;
           }
-        printf("number: %d\n",number);
         print_ints(args,number);
-        printf("\n");
+        printf(")\n");
         arglist =
           make_arglist (argv[0], "-s", fullpath, datafile, number, args);
         execv (argv[0], arglist);
