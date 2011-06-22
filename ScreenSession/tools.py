@@ -1,6 +1,7 @@
 ﻿from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 import os
+from sys import stderr
 
 dumpscreen_window=sc.dumpscreen_window
 require_dumpscreen_window=sc.require_dumpscreen_window
@@ -246,24 +247,27 @@ def kill_group(session,datadir,groupids):
     for win in excluded_wins:
         ss.kill(win)
 
-    
-def kill_win_last_proc(session,win="-1",sig="TERM"):
-    from sys import stderr
-    import signal,os,platform
+def get_win_last_proc(session,win="-1"):
+    import platform
     ss=ScreenSaver(session,'/dev/null','/dev/null')
     ctty=ss.tty(win)
     if (ctty is None) or (ctty == -1):
         stderr.write("Window does not exist (%s)\n" % win)
-        return False
-    elif (win=="-1") and (sig == "KILL"):
-        stderr.write("Sending SIGKILL to the selected window may crash Screen.")
         return False
     if platform.system() == 'FreeBSD':
         pids=sc.get_tty_pids(ctty)
     else:
         pids=sc._get_tty_pids_pgrep(ctty)
     if len(pids) > 0:
-        pid = pids[-1]
+        return pids[-1]
+    else:
+        ## No processes for this window.
+        return None
+    
+def kill_win_last_proc(session,win="-1",sig="TERM"):
+    import signal
+    pid = get_win_last_proc(session,win)
+    if pid:
         snum = 'SIG' + sig.upper()
         if hasattr(signal, snum):
             siggy = getattr(signal, snum)
