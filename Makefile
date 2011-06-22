@@ -43,7 +43,7 @@ dist:
 	@rm -rf screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION}/${SRCDIR}
-	@cp -R Makefile config.mk LICENSE README INSTALL HOWTO TODO gnu_screen.diff  screen-session-${VERSION}
+	@cp -R Makefile config.mk LICENSE README INSTALL TODO gnu_screen.diff  screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRCMAIN2} ${SRCMAIN1} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
 	@rm -f screen-session-${VERSION}.tar.gz

@@ -101,7 +101,7 @@ on the position next to the current window.\
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
        scs d [options] [window_ids]\n\
 \n\
-Print informations about windows in session (most recently used first).\n\
+Print informations about windows in session (MRU order by default).\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
 \n\
 Options:\n\
@@ -180,11 +180,12 @@ Sessions manager for GNU Screen with preview in a split window and support for m
 Requires python 2.5+\
 "
 
-help_nest="Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
+help_nest='Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
        scs nl [options] [TARGET_LAYOUT]\n\
+       :bind N eval "colon" "stuff \\"at 0 exec scs nest-layout \\""\n\
 \n\
 Nest a layout in the current region.\
-"
+'
 
 help_renumber="Usage: screen-session renumber [options]\n\
 \n\
