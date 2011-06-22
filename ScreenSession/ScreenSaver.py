@@ -168,11 +168,12 @@ class ScreenSaver(object):
                             pass
                 ifmru.close()
                 mru_w.reverse()
-                ofmru=open(os.path.join(self.basedir,self.savedir,"mru_tmp"),'w')
+                path_mru_tmp=os.path.join(self.basedir,self.savedir,"mru_tmp")
+                ofmru=open(path_mru_tmp,'w')
                 ofmru.writelines(mru_w)
                 ofmru.close()
-                self.source(os.path.join(self.basedir,self.savedir,"mru_tmp"))
-                os.remove(os.path.join(self.basedir,self.savedir,"mru_tmp"))
+                self.source(path_mru_tmp)
+                util.remove(path_mru_tmp)
             except:
                 sys.stderr.write(' Failed to load MRU.')    
             out("")
