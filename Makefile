@@ -65,7 +65,7 @@ install: all
 	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
 installtest: all
-	@echo linking executables in \"${pwd}/${SRCDIR}\" to \"${DESTDIR}${PREFIX}/bin\"
+	@echo linking \"${pwd}/${SRCDIR}/screen-session\" to \"${DESTDIR}${PREFIX}/bin/screen-session\"
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
