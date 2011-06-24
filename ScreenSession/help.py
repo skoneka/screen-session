@@ -1,7 +1,7 @@
 ﻿#!/usr/bin/env python
 
 VERSION='git'
-version_str="SCREEN-SESSION (%s) - a collection of tools for GNU Screen."%VERSION
+version_str="screen-session (%s) - a collection of tools for GNU Screen."%VERSION
 
 '''
 broken/unfinished tools:
@@ -17,17 +17,22 @@ unpractial/useless tools:
 
 help_help="\
 Usage:\t screen-session [mode] [options]\n\
-\t scs [mode] -S session [options]\n\
+A collection of utilities for GNU Screen.\n\
+\n\
 Help:\t scs [mode] --help\n\
      \t scs help [mode]\n\
-Global Options:\n\
+\n\
+Options supported by all tools:\n\
     -S [target]\t- target Screen session name\n\
+\n\
 Environment variables:\n\
     SCREENPATH\t- determines GNU Screen executable path\n\
-Saver modes:\n\
+\n\
+Session saver modes:\n\
     save\t- save session\n\
     load\t- load session\n\
     ls  \t- list saved sessions\n\
+\n\
 Other tools:\n\
     dump\t- print informations about windows in session\n\
     find-file\t- find open files in windows\n\
@@ -42,6 +47,7 @@ Other tools:\n\
     regions\t- display a number in each region (tmux display-panes)\n\
     renumber\t- renumber windows to fill the gaps\n\
     subwindows\t- print windows contained in a group\n\
+\n\
 Report bugs to http://github.com/skoneka/screen-session/issues\
 "
 
@@ -83,9 +89,8 @@ help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNu
        scs kg [options] [groupNum0] [groupNum..]\n\
 \n\
 Recursively kill groups and windows inside.\n\
-Accepts group window numbers as arguments.\n\
-If the first argument is \"current\" kill the current group.\n\
-If the first argument is \"all\" kill all groups in the session.\n\
+Accepts group titles and window numbers as arguments.\n\
+A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
 Take extra care with this command.\
 "
 
@@ -338,7 +343,7 @@ def run(argv):
     except:
         mode='help'
     if mode in ('help','h'):
-        print(version_str+'\n')
+        #print(version_str+'\n')
         print(help_help)
     elif mode=='--version':
         print(version_str)
