@@ -3,7 +3,7 @@
  *
  *       Filename:  screen-session-primer.c
  *
- *    Description:  primes windows during screen session loading
+ *    Description:  regions tool helper application 
  *
  *        Version:  1.0
  *        Created:  02.08.2010 18:21:25
@@ -131,18 +131,6 @@ char *fonts[] = {
   " $  $ ",
   "$    $",
 };
-
-enum menu
-{
-  NONE = 0,
-  RESET,
-  EXIT,
-  ALL,
-  ONLY,
-  NUMBER,
-  DEFAULT
-};
-
 
 int
 mygetch (void)
