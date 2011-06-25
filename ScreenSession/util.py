@@ -120,7 +120,7 @@ def remove(path):
     try:
         os.remove(path)
     except Exception,x:
-        print(str(x))
+        #print(str(x))
         pass
 
 def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):

@@ -40,6 +40,7 @@ Other tools:\n\
     kill\t- send a signal to the last process started in a window\n\
     kill-group\t- kill a group and all windows inside\n\
     kill-zombie\t- kill all zombie windows in session\n\
+    layoutlist\t- display a list of layouts in session\n\
     manager\t- sessions manager with split screen preview\n\
     name\t- get or set sessionname\n\
     nest-layout\t- nest a layout in the current region\n\
@@ -190,6 +191,20 @@ help_nest='Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
        :bind N eval "colon" "stuff \\"at 0 exec scs nest-layout \\""\n\
 \n\
 Nest a layout in the current region.\
+'
+
+help_layoutlist='Usage: screen-session layoutlist [options]\n\
+       scs ll [options]\n\
+\n\
+Display a list of layouts.\n\
+\n\
+Keys:\n\
+ENTER and SPACE - select\n\
+ARROWS and hjkl - movement\n\
+q - quit\n\
+\n\
+Options:\n\
+-L \t- create a temporary layout for layoutlist\
 '
 
 help_renumber="Usage: screen-session renumber [options]\n\
@@ -373,6 +388,8 @@ def run(argv):
         print(help_manager_remote)
     elif mode in ('nest','nest-layout','nl'):
         print(help_nest)
+    elif mode in ('layoutlist','ll'):
+        print(help_layoutlist)
     elif mode=='renumber':
         print(help_renumber)
     elif mode=='sort':

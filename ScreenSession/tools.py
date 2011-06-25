@@ -1,4 +1,4 @@
-﻿from ScreenSaver import ScreenSaver
+from ScreenSaver import ScreenSaver
 import GNUScreen as sc
 import os
 from sys import stderr

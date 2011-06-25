@@ -1,4 +1,3 @@
-
 import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
 
 from util import out,requireme,linkify,which,timeout_command
@@ -97,7 +96,7 @@ class ScreenSaver(object):
             out('%d new windows'%newwindows)
         except Exception,e:
             out('Unable to open.')
-            out(str(e))
+            #out(str(e))
             return 1
 
         # keep original numbering, move existing windows
@@ -215,7 +214,7 @@ class ScreenSaver(object):
                         nproc='0'
                     wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
             except Exception,e:
-                out(str(e))
+                #out(str(e))
                 out('%d Unable to load window'%id)
         
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
@@ -774,7 +773,7 @@ class ScreenSaver(object):
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
             except Exception,e:
-                out(str(e))
+                #out(str(e))
                 target=None
                 pass
             

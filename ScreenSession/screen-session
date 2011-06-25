@@ -76,13 +76,14 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     done < $scsfiletmp
     /bin/rm -f $scsfiletmp
 else
+    LOPT='0'
     SHOWPID='1'
     REVERSE='0'
     SORT='0'
     shiftcount=0
     bSession=0
     # parse command line arguments
-    while getopts ":PrsS:": OPT; do
+    while getopts ":PrsLS:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -97,9 +98,13 @@ else
         s)  SORT="1"
             shiftcount=`expr $shiftcount + 1`
             ;;
+        L)  LOPT="1"
+            shiftcount=`expr $shiftcount + 1`
+            ;;
         esac
     done
     shift $shiftcount "$@"
+
     if [ $mode = "name" -o $mode = "n" ]; then
         if [ $bSession -eq 0 ]; then
             session=`python $SCRIPTPATH/sessionname.py`
@@ -159,6 +164,9 @@ else
                 else
                     $SCREENPATH -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null python $SCRIPTPATH/kill-group.py $session "$@"
                 fi
+                ret=$?
+            elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
+                python $SCRIPTPATH/layoutlist.py $session $LOPT "$@"
                 ret=$?
             elif [ $mode = "renumber" ]; then
                 python $SCRIPTPATH/renumber.py $session "$@"

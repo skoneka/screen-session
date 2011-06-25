@@ -268,7 +268,7 @@ def main():
             ret = scs.save()
         except:
             ret=0
-            traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stderr)
             out('session saving totally failed')
             scs.Xecho("screen-session saving totally FAILED")
             doexit(1)
@@ -314,7 +314,7 @@ def main():
                 special_output.write("%s\n"%(str(scs.wrap_group_id)))
         except:
             ret=0
-            traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stderr)
             out('session loading totally failed')
             scs.Xecho("screen-session loading TOTALLY FAILED")
             doexit(1)

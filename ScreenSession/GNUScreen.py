@@ -3,6 +3,9 @@ import os,subprocess,re,sys,platform
 from util import tmpdir,removeit,remove
 
 SCREEN=os.getenv('SCREENPATH')
+if not SCREEN:
+    from util import which
+    SCREEN=which('screen')[0]
 
 datadir=None
 dumpscreen_window_dirs={}
@@ -11,18 +14,21 @@ def cleanup():
     for tdir in dumpscreen_window_dirs.values():
         removeit(tdir)
 
-def dumpscreen_window(session,full=False):
-    from ScreenSaver import ScreenSaver
+def make_dumpscreen_dirs(session):
     global dumpscreen_window_dirs
     global datadir
     tdir=os.path.join(tmpdir,'___dumpscreen-S%s-%d'%(session,os.getpid()))
     dumpscreen_window_dirs[session]=tdir
     datadir=tdir
-    dumpscreen_window_dirs[session]=tdir
-    ss=ScreenSaver(session)
     if os.path.exists(tdir):
         removeit(tdir)
     os.mkdir(tdir)
+    return tdir
+
+def dumpscreen_window(session,full=False):
+    from ScreenSaver import ScreenSaver
+    tdir = make_dumpscreen_dirs(session)
+    ss=ScreenSaver(session)
     if full:
         ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
         f=open(os.path.join(tdir,'full'),'w')
@@ -30,6 +36,16 @@ def dumpscreen_window(session,full=False):
     tfile=os.path.join(tdir,'winlist')
     ss.query_at("at \# dumpscreen window \"%s\""%(tfile))
     return tdir
+
+def dumpscreen_layout_info(ss):
+    tdir = make_dumpscreen_dirs(ss.pid)
+    tfile=os.path.join(tdir,'layout-info')
+    ss.query_at("dumpscreen layout-info \"%s\""%(tfile))
+    return tfile
+
+def gen_layout_info(ss, tfile):
+    for line in open(tfile,'r'):
+        yield line.strip().split(' ',1)
 
 def require_dumpscreen_window(session,full=False):
     global datadir
@@ -78,7 +94,6 @@ def get_regions(session):
 
 def gen_all_windows_fast(session, datadir):
     from ScreenSaver import ScreenSaver
-    import linecache
     ss=ScreenSaver(session)
     tfile=os.path.join(datadir,'winlist')
     for line in open(tfile,'r'):
