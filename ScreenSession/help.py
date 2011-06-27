@@ -182,8 +182,8 @@ kill K    - kill selected session\n\
 
 help_manager_remote="Usage: screen-session manager-remote\n\
 \n\
-Sessions manager for GNU Screen with preview in a split window and support for multiple hosts.\n\
-Requires python 2.5+\
+Sessions manager for GNU Screen with preview in a split window and\n\
+support for multiple hosts. Requires python 2.5+\
 "
 
 help_nest='Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
@@ -193,10 +193,12 @@ help_nest='Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
 Nest a layout in the current region.\
 '
 
-help_layoutlist='Usage: screen-session layoutlist [options]\n\
-       scs ll [options]\n\
+help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
+       scs ll\n\
+       :bind l at 0 exec scs layoutlist -L\n\
 \n\
 Display a list of layouts.\n\
+This tool comes handy after raising MAXLAY in GNU Screen.\n\
 \n\
 Keys:\n\
 ENTER and SPACE - select\n\

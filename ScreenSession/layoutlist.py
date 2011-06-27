@@ -23,6 +23,8 @@ if __name__=='__main__':
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay and ss.get_layout_new('LAYOUT_LIST'):
         ss.screen('-t layoutlist %s %s %s 1 %s'%(helper,session,currentlayout,height))
+        #ss.command_at(False,'eval \"layout new\" \"screen -t layoutlist %s %s %s 1 %s\"'%(helper,session,currentlayout,height))
+
     else:
         import layoutlist_agent
         sys.exit(layoutlist_agent.run(session,False,currentlayout,height))
