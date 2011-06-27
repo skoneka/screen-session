@@ -53,7 +53,7 @@ Report bugs to http://github.com/skoneka/screen-session/issues\
 "
 
 help_regions="Usage: screen-session regions [options]\n\
-       scs r [options]\n\
+       scs r\n\
        :bind X at 0 exec scs regions\n\
 \n\
 Display a number in each region.\n\
@@ -72,7 +72,7 @@ rotate right and select -> number and <R>\
 "
 
 help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n\
-       scs K [options] [signal=TERM] [window=current]\n\
+       scs K\n\
 \n\
 Kill last process started in a window.\n\
 Useful for closing random emacs/vim instances and hung up ssh clients.\n\
@@ -81,13 +81,13 @@ WARNING: sending SIGKILL to the current window may crash Screen\
 "
 
 help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\
-       scs kz [options] [groupids]\n\
+       scs kz\n\
 \n\
 Kill all zombie windows in session. Optionally specify target groups.\
 "
 
 help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNum..]\n\
-       scs kg [options] [groupNum0] [groupNum..]\n\
+       scs kg\n\
 \n\
 Recursively kill groups and windows inside.\n\
 Accepts group titles and window numbers as arguments.\n\
@@ -96,8 +96,8 @@ Take extra care with this command.\
 "
 
 help_new_window='Usage: screen-session new-window [options] [program]\n\
-       scs new [options] [program]\n\
-       scs dir [options] [program]\n\
+       scs new\n\
+       scs dir\n\
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""\n\
 \n\
 Start a new Screen window in the same working directory\n\
@@ -105,7 +105,7 @@ on the position next to the current window.\
 '
 
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
-       scs d [options] [window_ids]\n\
+       scs d\n\
 \n\
 Print informations about windows in session (MRU order by default).\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
@@ -117,14 +117,14 @@ Options:\n\
 "
 
 help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\
-       scs fp [options] [PIDs]\n\
+       scs fp\n\
 \n\
 Find PIDs in windows.\n\
 Example: screen-session find-pid $(pgrep vim)\
 "
 
 help_find_file="Usage: screen-session find-file [options] [files]\n\
-       scs ff [options] [files]\n\
+       scs ff\n\
 \n\
 Find open files in windows. Requires lsof.\n\
 \n\
@@ -143,7 +143,7 @@ $ disown\n\
 It works more reliably if commands from the script are typed manually."
 
 help_group='Usage: screen-session group [options] [GROUP] [windows]\n\
-       scs g [options] [GROUP] [windows]\n\
+       scs g\n\
        :bind G eval "colon" "stuff \\"at 0 exec scs group \\""\n\
 \n\
 Move windows to a group.\n\
@@ -187,7 +187,7 @@ support for multiple hosts. Requires python 2.5+\
 "
 
 help_nest='Usage: screen-session nest-layout [options] [TARGET_LAYOUT]\n\
-       scs nl [options] [TARGET_LAYOUT]\n\
+       scs nl\n\
        :bind N eval "colon" "stuff \\"at 0 exec scs nest-layout \\""\n\
 \n\
 Nest a layout in the current region.\
@@ -220,14 +220,14 @@ Sort windows by titles.\
 "
 
 help_subwindows="Usage: screen-session subwindows [groupids or titles]\n\
-       scs sw [groupids or titles]\n\
+       scs sw\n\
 \n\
 Print windows contained in groups.\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\
 "
 
 help_name="Usage: screen-session name [options] [new_sessionname]\n\
-       scs n [options] [new_sessionname]\n\
+       scs n\n\
 \n\
 Get or set sessionname.\
 "
