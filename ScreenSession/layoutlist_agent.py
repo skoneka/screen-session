@@ -25,7 +25,37 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
     c_curlay_n = curses.color_pair(2)
     row_len=None
     col_len=None
-    while x!= ord('\n'):
+    laytable_len = len(laytable)
+    search_num=None
+    search_title=None
+    while True:
+        if search_title:
+            for i,row in enumerate(laytable):
+                for j,cell in enumerate(row):
+                    num,title=cell
+                    if search_title:
+                        if title.startswith(search_title):
+                            pos_x=j
+                            pos_y=i
+                            search_title=None
+                            break
+                if not search_title:
+                    break
+            if search_title:
+                search_num = search_title
+        if search_num:
+            for i,row in enumerate(laytable):
+                for j,cell in enumerate(row):
+                    num,title=cell
+                    if search_num:
+                        if search_num==num:
+                            pos_x=j
+                            pos_y=i
+                            search_num=None
+                            break
+                if not search_num:
+                    break
+
         for i,row in enumerate(laytable):
             for j,cell in enumerate(row):
                 num,title=cell
@@ -37,14 +67,42 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                     color=c_curlay_n
                 else:
                     color=c_n
-                screen.addstr(i,j*(MAXTITLELEN+5),"%-4s%s"%(num,title),color)
-        screen.addstr(len(laytable),0,"> ")
+                try:
+                    screen.addstr(i,j*(MAXTITLELEN+5),"%-4s%s"%(num,title),color)
+                except:
+                    pass
+        search_num=None
+        search_title=None
+        try:
+            screen.addstr(laytable_len,0,"> %-*s"%(MAXTITLELEN,''))
+            screen.addstr(laytable_len,0,"> ")
+        except:
+            pass
         screen.refresh()
         x = screen.getch()
         if x==ord('\n') or x == ord(' '):
-            return sel_num
+            if not sel_num:
+                curses.flash()
+            else:
+                return sel_num
         elif x in (ord('q'),ord('Q')):
             return curlay
+        elif x in range(ord('0'),ord('9')) :
+            search = chr(x)
+            while x in range(ord('0'),ord('9')):
+                x = screen.getch()
+                search += chr(x)
+            if x==ord('\n') or x == ord(' '):
+                search_num = search[:-1]
+        elif x == ord('/'):
+            search = ''
+            while x != ord('\n'):
+                x = screen.getch()
+                try:
+                    search += chr(x)
+                except:
+                    pass
+            search_title = search[:-1]
         else:
             for i,row in enumerate(laytable):
                 try:
@@ -84,16 +142,32 @@ def run(session,requirecleanup,curlay,height):
     layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
     laytable=[[] for i in range(0,height)]
     pos_start=(0,0)
+    prev_inum=0
     for i,lay in enumerate(layinfo):
-        num=lay[0]
-        title=lay[1]
-        col = i%height
-        laytable[col].append((num,title[:MAXTITLELEN]))
+        num,title=lay
+        inum = int(num)
+        #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
+        for j in range(prev_inum+1,inum):
+            col = j%height
+            laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
+        col = inum%height
+        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
         if curlay==num:
             row = len(laytable[col])-1
             pos_start=(row,col)
+        prev_inum=inum
+    #sys.stderr.write(str(laytable))
+    #for i,lay in enumerate(layinfo):
+    #    num,title=lay
+    #    col = int(num)%height
+    #    laytable[col].append((num,title[:MAXTITLELEN]))
+    #    if curlay==num:
+    #        row = len(laytable[col])-1
+    #        pos_start=(row,col)
     screen = curses.initscr()
     curses.start_color()
+    #curses.init_pair(3,curses.COLOR_RED, curses.COLOR_WHITE)
+    #screen.bkgd(' ',curses.color_pair(3))
     try:
         choice = menu_table(screen,curlay,laytable,pos_start[0],pos_start[1])
     except Exception,x:

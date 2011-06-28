@@ -198,12 +198,14 @@ help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
        :bind l at 0 exec scs layoutlist -L\n\
 \n\
 Display a list of layouts.\n\
-This tool comes handy after raising MAXLAY in GNU Screen.\n\
+This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
 \n\
 Keys:\n\
 ENTER and SPACE - select\n\
 ARROWS and hjkl - movement\n\
-q - quit\n\
+/searchstring   - first search titles, then layout numbers\n\
+NUMBER[ENTER]   - move to a layout\n\
+q               - quit\n\
 \n\
 Options:\n\
 -L \t- create a temporary layout for layoutlist\
