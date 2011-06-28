@@ -30,6 +30,7 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
     search_title=None
     searching_num=False
     searching_title=False
+    status_len=1
     while True:
         bfind=False
         if search_title:
@@ -78,8 +79,25 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
         if not searching_title:
             search_title=None
         try:
-            screen.addstr(laytable_len,0,"> %-*s"%(MAXTITLELEN,''))
-            screen.addstr(laytable_len,0,"> ")
+            if searching_title or searching_num:
+                if searching_title:
+                    prompt='> Search: '
+                else:
+                    prompt='> Number: '
+                if search_title:
+                    search = search_title
+                elif search_num:
+                    search = search_num
+                else:
+                    search = ''
+                s = "%s%s"%(prompt,search)
+                status_len=len(s)
+                screen.addstr(laytable_len,0,s)
+            else:
+                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''))
+                status_len=1
+                screen.addstr(laytable_len,0,"> ")
+
         except:
             pass
         screen.refresh()
@@ -87,7 +105,7 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
         if (searching_num or searching_title) and x == ord('\n'):
             searching_num=False
             searching_title=False
-        elif x in range(ord('0'),ord('9')):
+        elif x in range(ord('0'),ord('9')+1):
             searching_num=True
             if not search_num:
                 search_num = chr(x)
