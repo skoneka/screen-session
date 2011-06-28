@@ -6,14 +6,6 @@ import curses
 
 MAXTITLELEN = 11
 
-def menu_dumb(curlay,laytable):
-    for row in laytable:
-        print row
-    print ('layout list..(current %s)'%curlay)
-    inp = raw_input('\nInput: ')
-    choice = int(inp)
-    return choice
-
 def menu_table(screen,curlay,laytable,pos_x,pos_y):
     curses.init_pair(1,curses.COLOR_RED, curses.COLOR_WHITE)
     curses.init_pair(2,curses.COLOR_RED, curses.COLOR_GREEN)
@@ -30,7 +22,8 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
     search_title=None
     searching_num=False
     searching_title=False
-    status_len=1
+    status_len = 0
+    errormsg=''
     while True:
         bfind=False
         if search_title:
@@ -90,13 +83,15 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                     search = search_num
                 else:
                     search = ''
+                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''))
                 s = "%s%s"%(prompt,search)
                 status_len=len(s)
                 screen.addstr(laytable_len,0,s)
             else:
-                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''))
-                status_len=1
-                screen.addstr(laytable_len,0,"> ")
+                s="> %s%-*s"%(errormsg,status_len,'')
+                screen.addstr(laytable_len,0,s)
+                status_len=len(s)
+                errormsg=''
 
         except:
             pass
@@ -105,6 +100,21 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
         if (searching_num or searching_title) and x == ord('\n'):
             searching_num=False
             searching_title=False
+        elif x == 27: # Escape key
+            searching_num=False
+            searching_title=False
+            search_num=None
+            search_title=None
+            errormsg='Canceled'
+        elif x == curses.KEY_BACKSPACE:
+            try:
+                search_num = search_num[:-1]
+            except:
+                pass
+            try:
+                search_title = search_title[:-1]
+            except:
+                pass
         elif x in range(ord('0'),ord('9')+1):
             searching_num=True
             if not search_num:
@@ -130,6 +140,12 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 return sel_num
         elif x in (ord('q'),ord('Q')):
             return curlay
+        elif x == curses.KEY_HOME:
+            pos_x = 0
+        elif x == curses.KEY_END:
+            pos_x = len(laytable[pos_y])-1
+        elif x == curses.KEY_PPAGE:
+            pos_y = 0
         else:
             for i,row in enumerate(laytable):
                 try:
@@ -138,7 +154,9 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 except:
                     break
             #sys.stderr.write("KEY(%d) POS(%d,%d) RLEN(%d) CLEN(%d)\n"%(x,pos_x,pos_y,row_len,col_len))
-            if x in (ord('j'), curses.KEY_DOWN):
+            if x == curses.KEY_NPAGE:
+                pos_y = col_len
+            elif x in (ord('j'), curses.KEY_DOWN):
                 if pos_y < col_len:
                     pos_y += 1
                 else:
@@ -159,13 +177,18 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 else:
                     pos_x = 0
             else:
+                try:
+                    c=chr(x)
+                except:
+                    c='UNKNOWN'
+                errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
                 curses.flash()
 
 def run(session,requirecleanup,curlay,height):
     ret = 0
     ss = ScreenSaver(session)
     if requirecleanup:
-        num = ss.get_number_and_title()[0]
+        num = os.getenv('WINDOW')
     layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
     laytable=[[] for i in range(0,height)]
     pos_start=(0,0)
@@ -183,6 +206,7 @@ def run(session,requirecleanup,curlay,height):
             row = len(laytable[col])-1
             pos_start=(row,col)
         prev_inum=inum
+    sc.cleanup()
     #sys.stderr.write(str(laytable))
     #for i,lay in enumerate(layinfo):
     #    num,title=lay
@@ -193,6 +217,8 @@ def run(session,requirecleanup,curlay,height):
     #        pos_start=(row,col)
     screen = curses.initscr()
     curses.start_color()
+    curses.noecho()
+    #screen.notimeout(1)
     #curses.init_pair(3,curses.COLOR_RED, curses.COLOR_WHITE)
     #screen.bkgd(' ',curses.color_pair(3))
     try:
@@ -203,14 +229,10 @@ def run(session,requirecleanup,curlay,height):
         choice = curlay
         ret = 1
     curses.endwin()
-    #print ('select: %s'%choice)
     if requirecleanup:
-        ss.layout('remove',False)
-
-    ss.layout('select %s'%choice)
-
-    if requirecleanup:
-        ss.kill(num)
+        ss.command_at(False,'eval "layout remove" "layout select %s" "at %s kill"'%(choice,num))
+    else:
+        ss.layout('select %s'%choice)
     return ret
 
 if __name__=='__main__':

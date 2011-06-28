@@ -21,8 +21,10 @@ if __name__=='__main__':
 
     ss=ScreenSaver(session)
     currentlayout,currentlayoutname=ss.get_layout_number()
-    if newlay and ss.get_layout_new('LAYOUT_LIST'):
+    if newlay and ss.get_layout_new('layout_list'):
         ss.screen('-t layoutlist %s %s %s 1 %s'%(helper,session,currentlayout,height))
+    ## This is a bit faster but it does not check whether there are free layouts, so it may end removing the current layout during cleanup
+    #if newlay:
         #ss.command_at(False,'eval \"layout new\" \"screen -t layoutlist %s %s %s 1 %s\"'%(helper,session,currentlayout,height))
 
     else:
