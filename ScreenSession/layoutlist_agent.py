@@ -28,7 +28,10 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
     laytable_len = len(laytable)
     search_num=None
     search_title=None
+    searching_num=False
+    searching_title=False
     while True:
+        bfind=False
         if search_title:
             for i,row in enumerate(laytable):
                 for j,cell in enumerate(row):
@@ -37,13 +40,11 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                         if title.startswith(search_title):
                             pos_x=j
                             pos_y=i
-                            search_title=None
+                            bfind=True
                             break
-                if not search_title:
-                    break
-            if search_title:
-                search_num = search_title
-        if search_num:
+                    if bfind:
+                        break
+        if search_num or ( search_title and not bfind ):
             for i,row in enumerate(laytable):
                 for j,cell in enumerate(row):
                     num,title=cell
@@ -51,10 +52,11 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                         if search_num==num:
                             pos_x=j
                             pos_y=i
-                            search_num=None
+                            bfind=True
                             break
-                if not search_num:
-                    break
+                    if bfind:
+                        break
+
 
         for i,row in enumerate(laytable):
             for j,cell in enumerate(row):
@@ -71,8 +73,10 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                     screen.addstr(i,j*(MAXTITLELEN+5),"%-4s%s"%(num,title),color)
                 except:
                     pass
-        search_num=None
-        search_title=None
+        if not searching_num:
+            search_num=None
+        if not searching_title:
+            search_title=None
         try:
             screen.addstr(laytable_len,0,"> %-*s"%(MAXTITLELEN,''))
             screen.addstr(laytable_len,0,"> ")
@@ -80,29 +84,34 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
             pass
         screen.refresh()
         x = screen.getch()
-        if x==ord('\n') or x == ord(' '):
+        if (searching_num or searching_title) and x == ord('\n'):
+            searching_num=False
+            searching_title=False
+        elif x in range(ord('0'),ord('9')):
+            searching_num=True
+            if not search_num:
+                search_num = chr(x)
+            else:
+                try:
+                    search_num += chr(x)
+                except:
+                    pass
+        elif searching_title or x == ord('/'):
+            searching_title = True
+            if search_title == None:
+                search_title = '' 
+            else:
+                try:
+                    search_title += chr(x)
+                except:
+                    pass
+        elif x==ord('\n') or x == ord(' '):
             if not sel_num:
                 curses.flash()
             else:
                 return sel_num
         elif x in (ord('q'),ord('Q')):
             return curlay
-        elif x in range(ord('0'),ord('9')) :
-            search = chr(x)
-            while x in range(ord('0'),ord('9')):
-                x = screen.getch()
-                search += chr(x)
-            if x==ord('\n') or x == ord(' '):
-                search_num = search[:-1]
-        elif x == ord('/'):
-            search = ''
-            while x != ord('\n'):
-                x = screen.getch()
-                try:
-                    search += chr(x)
-                except:
-                    pass
-            search_title = search[:-1]
         else:
             for i,row in enumerate(laytable):
                 try:
