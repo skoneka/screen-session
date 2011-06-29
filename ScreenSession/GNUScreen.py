@@ -8,25 +8,28 @@ if not SCREEN:
     SCREEN=which('screen')[0]
 
 datadir=None
-dumpscreen_window_dirs={}
+dumpscreen_window_dirs=[]
 
 def cleanup():
-    for tdir in dumpscreen_window_dirs.values():
+    for tdir in dumpscreen_window_dirs:
         removeit(tdir)
 
 def make_dumpscreen_dirs(session):
     global dumpscreen_window_dirs
     global datadir
     tdir=os.path.join(tmpdir,'___dumpscreen-S%s-%d'%(session,os.getpid()))
-    dumpscreen_window_dirs[session]=tdir
+    if tdir not in dumpscreen_window_dirs:
+        dumpscreen_window_dirs.append(tdir)
     datadir=tdir
-    if os.path.exists(tdir):
-        removeit(tdir)
-    os.mkdir(tdir)
+    #if os.path.exists(tdir):
+    #    removeit(tdir)
+    if not os.path.exists(tdir):
+        os.mkdir(tdir)
     return tdir
 
 def dumpscreen_window(session,full=False):
     from ScreenSaver import ScreenSaver
+    #print('dumpscreen_window()')
     tdir = make_dumpscreen_dirs(session)
     ss=ScreenSaver(session)
     if full:

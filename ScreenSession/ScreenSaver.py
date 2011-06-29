@@ -823,7 +823,11 @@ class ScreenSaver(object):
                         break
                     else:
                         focus_offset=0
-                        currentlayout,currentlayoutname=self.get_layout_number()
+                        if self.exact:
+                            self.layout('number %s'%layoutnumber,False)
+                            currentlayout = layoutnumber
+                        else:
+                            currentlayout = self.get_layout_number()[0]
                         layout_trans[layoutnumber]=currentlayout
 
                         self.source(filename)
@@ -895,7 +899,6 @@ class ScreenSaver(object):
                 last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
                 (lasthead,lasttail)=os.path.split(last)
                 last=lasttail.split("_",2)
-                lastname=last[2]
                 lastid_l=last[1]
                 self.layout('select %s'%layout_trans[lastid_l],False)
                 # ^^ layout numbering may change, use layout_trans={}
@@ -909,22 +912,16 @@ class ScreenSaver(object):
 
     def __save_layouts(self):
         homelayout,homelayoutname=self.get_layout_number()
-        layoutname=homelayoutname
         findir=sc.datadir
-        
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
             return False
-        currentlayout=homelayout
-
-        loop_exit_allowed=False
-        while currentlayout!=homelayout or not loop_exit_allowed:
-            loop_exit_allowed=True
-            sys.stdout.write("%s(%s); "%(currentlayout,layoutname))
-            self.command_at(False,'eval \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\' \'layout next\''%(os.path.join(findir,"layout_"+currentlayout),os.path.join(findir,"winlayout_"+currentlayout)))
-            currentlayout,layoutname=self.get_layout_number()
+        for num,title in sc.gen_layout_info(self,sc.dumpscreen_layout_info(self)):
+            sys.stdout.write("%s(%s); "%(num,title))
+            self.command_at(False,'eval \'layout select %s\' \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\''%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
         
-        linkify(findir,"layout_"+homelayout+"_"+homelayoutname,"last_layout")
+        self.command_at(False,'layout select %s'%homelayout)
+        linkify(findir,"layout_"+homelayout,"last_layout")
         out("")
         return True
 
