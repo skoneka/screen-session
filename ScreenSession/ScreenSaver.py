@@ -916,11 +916,16 @@ class ScreenSaver(object):
         if homelayout==-1:
             out("No layouts to save. Create layouts with \":layout new\"")
             return False
+        path_layout=os.path.join(findir,"load_layout")
+        oflayout=open(path_layout,'w')
         for num,title in sc.gen_layout_info(self,sc.dumpscreen_layout_info(self)):
             sys.stdout.write("%s(%s); "%(num,title))
-            self.command_at(False,'eval \'layout select %s\' \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\''%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
+            oflayout.write('layout select %s\nlayout dump \"%s\"\ndumpscreen layout \"%s\"\n'%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
         
-        self.command_at(False,'layout select %s'%homelayout)
+        oflayout.write('layout select %s\n'%homelayout)
+        oflayout.close()
+        self.source(path_layout)
+        util.remove(path_layout)
         linkify(findir,"layout_"+homelayout,"last_layout")
         out("")
         return True
