@@ -134,14 +134,14 @@ def cleanup():
 def prepare_windows(scs):
     print('prepare_windows()')
     global focusminsize
-    regions=[]
+    regions=None
     while True:
         regions=sc.get_regions(scs.pid)
         try:
-            focusminsize="%s %s"%(regions[3][0], regions[3][1])
-            regions_c=regions[0]
-            focus_offset=regions[1]
-            if regions[4][0]:
+            focusminsize="%s %s"%(regions.focusminsize_x, regions.focusminsize_x)
+            regions_c=regions.number_of_regions
+            focus_offset=regions.focus_offset
+            if regions.regions:
                 break
         except:
             pass
@@ -154,24 +154,18 @@ def prepare_windows(scs):
     os.system(cmd)
     
     regions_n=[]
-    while True:
-        regions_n=sc.get_regions(scs.pid)
-        try:
-            if regions_n[2+i][0]:
-                break
-        except:
-            pass
+    regions_n=sc.get_regions(scs.pid)
     print("regions_n = "+str(regions_n))
 
-    for r in regions[4+focus_offset:]:
+    for r in regions.regions[focus_offset:]:
         this_win_history.append(r[0])
-    for r in regions[4:4+focus_offset]:
+    for r in regions.regions[:focus_offset]:
         this_win_history.append(r[0])
 
     new_windows=[]
-    for r in regions_n[4+focus_offset:]:
+    for r in regions_n.regions[focus_offset:]:
         new_windows.append(r[0])
-    for r in regions_n[4:4+focus_offset]:
+    for r in regions_n.regions[:focus_offset]:
         new_windows.append(r[0])
         
     return this_win_history,new_windows,regions_c

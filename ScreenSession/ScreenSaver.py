@@ -567,9 +567,9 @@ class ScreenSaver(object):
         msg=self.command_at(True, 'layout number')
         if not msg.startswith('This is layout'):
             return -1,-1
-        currentlayout,currentlayoutname = msg.split('layout',1)[1].rsplit('(')
+        currentlayout,currentlayoutname = msg.split('layout',1)[1].split('(',1)
         currentlayout = currentlayout.strip()
-        currentlayoutname = currentlayoutname.rsplit(')')[0]
+        currentlayoutname = currentlayoutname.rsplit(')',1)[0]
         return currentlayout,currentlayoutname
     
     def get_layout_new(self,name=''):
@@ -810,24 +810,23 @@ class ScreenSaver(object):
             filename=None
             try:
                 try:
-                    filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d_*'%lc))[0]
-                    layoutname=filename.rsplit('_',2)[2]
-                    layoutnumber=filename.rsplit('_',2)[1]
+                    filename=glob.glob(os.path.join(self.basedir,self.savedir,'layout_%d'%lc))[0]
+                    layoutnumber=filename.split('_',1)[1]
+                    head,tail = os.path.split(filename)
+                    filename2=os.path.join(head,"win"+tail) #read winlayout
+                    f=open(filename2,'r')
+                    layoutname=f.readline().strip()
                     status=self.get_layout_new(layoutname)
                     if not status:
                         out('Maximum number of layouts reached. Ignoring layout %s (%s).'%(layoutnumber,layoutname))
+                        f.close()
                         break
                     else:
+                        focus_offset=0
                         currentlayout,currentlayoutname=self.get_layout_number()
-                        
                         layout_trans[layoutnumber]=currentlayout
 
                         self.source(filename)
-                        (head,tail)=os.path.split(filename)
-                        
-                        filename2=os.path.join(head,"win"+tail) #read winlayout
-                        focus_offset=0
-                        f=open(filename2,'r')
                         dinfo=map(int,f.readline().split(" "))
                         focusminsize=f.readline()
                         regions_size=[]
@@ -876,6 +875,9 @@ class ScreenSaver(object):
                         self.focusminsize(focusminsize)
                 except:
                     layout_c+=1
+                    if layout_c > 1000:
+                        raise
+
             finally:
                 lc+=1
         if not lc==0:
@@ -919,7 +921,7 @@ class ScreenSaver(object):
         while currentlayout!=homelayout or not loop_exit_allowed:
             loop_exit_allowed=True
             sys.stdout.write("%s(%s); "%(currentlayout,layoutname))
-            self.command_at(False,'eval \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\' \'layout next\''%(os.path.join(findir,"layout_"+currentlayout+"_"+layoutname),os.path.join(findir,"winlayout_"+currentlayout+"_"+layoutname)))
+            self.command_at(False,'eval \'layout dump \"%s\"\' \'dumpscreen layout \"%s\"\' \'layout next\''%(os.path.join(findir,"layout_"+currentlayout),os.path.join(findir,"winlayout_"+currentlayout)))
             currentlayout,layoutname=self.get_layout_number()
         
         linkify(findir,"layout_"+homelayout+"_"+homelayoutname,"last_layout")

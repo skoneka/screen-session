@@ -61,6 +61,8 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     fi
     mkfifo $scsfile
     $SCREENPATH -S SCREEN-SESSION_SAVER -mdc /dev/null python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
+    #argument0="logpipe="
+    #python $SCRIPTPATH/screen_saver.py $mode $argument0  $argument1 $argument2 "$@"
     cat $scsfile
     /bin/rm -f $scsfile
 

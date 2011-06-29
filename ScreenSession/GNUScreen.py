@@ -59,38 +59,55 @@ def require_dumpscreen_window(session,full=False):
         dumpscreen_window(session,full)
     return datadir
 
+class Regions:
+    title=None
+    number_of_regions=None
+    focus_offset=None
+    term_size_x=None
+    term_size_y=None
+    focusminsize_x=None
+    focusminsize_y=None
+    regions=[]
+
 def get_regions(session):
+## old list
+#[NUMBER_OF_REGIONS,
+# FOCUS_OFFSET,
+# ('TERM_SIZE_X', 'TERM_SIZE_Y'),
+# ('FOCUSMINSIZE_X', 'FOCUS_MINSIZE_Y'),
+# ('WINDOW_ID', 'REGION_SIZE_X', 'REGION_SIZE_Y'),
+# ('0', '105', '29'),
+# ('1', '105', '29')]
+
     from ScreenSaver import ScreenSaver
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___regions-%d'%os.getpid())
-    ss.command_at(False,'dumpscreen layout \"%s\"'%tfile)
-    while True:
-        tfiled=None
-        while tfiled==None:
-            try:
-                tfiled=open(tfile,'r')
-            except:
-                pass
-        ret=[0,tuple(tfiled.readline().strip().split(' ')),tuple(tfiled.readline().strip().split(' '))]
-        i=0
-        for i,line in enumerate(tfiled):
-            if line[0]=='f':
-                line=line.split(' ',1)[1].strip().split(' ')
-                ret[0]=i
-            else:
-                line=line.strip().split(' ')
-            ret.append(tuple(line))
-        tfiled.close()
-        if len(ret[-1])==1:
-            try:
-                region_c=int(ret.pop()[0])
-                if region_c==i:
-                    ret.insert(0,region_c)
-                    break
-            except:
-                pass
+    ss.query_at('dumpscreen layout \"%s\"'%tfile)
+    tfiled = None
+    while tfiled == None:
+        try:
+            tfiled = open(tfile,'r')
+        except:
+            pass
+    regions=Regions()
+    regions.regions=[]
+    regions.title = tfiled.readline().strip()
+    regions.term_size_x,regions.term_size_y = tuple(tfiled.readline().strip().split(' '))
+    regions.focusminsize_x,regions.focusminsize_y = tuple(tfiled.readline().strip().split(' '))
+    i=0
+    for i,line in enumerate(tfiled):
+        if line[0]=='f':
+            line=line.split(' ',1)[1].strip().split(' ')
+            regions.focus_offset=i
+        else:
+            line=line.strip().split(' ')
+        regions.regions.append(tuple(line))
+    tfiled.close()
+    if len(regions[:-1])==1: # remove it later after patching screen
+        regions.regions=regions.regions[:-1] 
+    regions.number_of_regions=len(regions.regions)
     remove(tfile)
-    return ret
+    return regions
 
 def gen_all_windows_fast(session, datadir):
     from ScreenSaver import ScreenSaver

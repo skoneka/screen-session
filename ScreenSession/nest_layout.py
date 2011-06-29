@@ -22,12 +22,12 @@ def main():
     while True:
         regions=sc.get_regions(scs.pid)
         try:
-            focusminsize="%s %s"%(regions[3][0], regions[3][1])
-            regions_c=regions[0]
-            foff=regions[1]
-            rsize=tuple([int(regions[4+foff][1]),int(regions[4+foff][2])])
-            hsize=int(regions[2][0]),int(regions[2][1])
-            if regions[4][0]:
+            focusminsize="%s %s"%(regions.focusminsize_x, regions.focusminsize_y)
+            regions_c=regions.number_of_regions
+            foff=regions.focus_offset
+            rsize=tuple([int(regions.regions[foff][1]),int(regions.regions[foff][2])])
+            hsize=int(regions.term_size_x),int(regions.term_size_y)
+            if regions.regions:
                 break
         except Exception,x:
             print(x)
@@ -43,11 +43,11 @@ def main():
     while True:
         regions=sc.get_regions(scs.pid)
         try:
-            tfocusminsize="%s %s"%(regions[3][0], regions[3][1])
-            regions_c=regions[0]
-            tfoff=regions[1]
-            hsize=int(regions[2][0]),int(regions[2][1])
-            if regions[4][0]:
+            tfocusminsize="%s %s"%(regions.focusminsize_x, regions.focusminsize_y)
+            regions_c=regions.number_of_regions
+            tfoff=regions.focus_offset
+            hsize=int(regions.term_size_x),int(regions.term_size_y)
+            if regions.regions:
                 break
         except:
             pass
@@ -64,7 +64,7 @@ def main():
     scs.layout('select %s'%homelayout)
     scs.source(dumpfile)
     scs.select_region(foff)
-    for r in regions[4:]:
+    for r in regions.regions:
         if r[0][0]=='-':
             scs.select('-')
         else:
