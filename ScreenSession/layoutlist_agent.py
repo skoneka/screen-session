@@ -232,7 +232,7 @@ def run(session,requirecleanup,curlay,height):
     if requirecleanup:
         ss.command_at(False,'eval "layout remove" "layout select %s" "at %s kill"'%(choice,num))
     else:
-        ss.layout('select %s'%choice)
+        ss.layout('select %s'%choice,False)
     return ret
 
 if __name__=='__main__':

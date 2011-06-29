@@ -37,9 +37,9 @@ def main():
     scs.focusminsize('0 0')
     rsize=rsize[0],rsize[1]+2 # +1 for caption +1 for hardstatus
 
-    scs.layout('select %s'%tlayout)
+    scs.layout('select %s'%tlayout,False)
     print ("tlayout : %s"%scs.get_layout_number()[0])
-    scs.layout('dump %s'%dumpfile)
+    scs.layout('dump %s'%dumpfile,False)
     while True:
         regions=sc.get_regions(scs.pid)
         try:
@@ -61,7 +61,7 @@ def main():
     print('rsize %s'%str(rsize))
     print('dinfo: %s'%str(hsize))
 
-    scs.layout('select %s'%homelayout)
+    scs.layout('select %s'%homelayout,False)
     scs.source(dumpfile)
     scs.select_region(foff)
     for r in regions.regions:
