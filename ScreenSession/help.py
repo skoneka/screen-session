@@ -195,7 +195,7 @@ Nest a layout in the current region.\
 
 help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
        scs ll\n\
-       :bind l at 0 exec scs layoutlist -L\n\
+       :bind l at 0 exec scs layoutlist -l\n\
 \n\
 Display a list of layouts.\n\
 This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
@@ -208,7 +208,8 @@ NUMBER[ENTER]   - move to a layout\n\
 q               - quit\n\
 \n\
 Options:\n\
--L \t- create a temporary layout for layoutlist\
+-l \t- create a temporary layout and window for layoutlist\n\
+-w \t- create a temporary window for layoutlist\
 '
 
 help_renumber="Usage: screen-session renumber [options]\n\
@@ -309,10 +310,10 @@ Load saved session from a file.\n\
 \n\
 Options:\n\
 -x --exact\n\
-  \tload session with the same window numbers, move existing windows\n\
+  \tload session with the same window numbers, move existing windows,\n\
   \tto OTHER_WINDOWS group and delete existing layouts\n\
 -X --exact-kill\n\
-  \tsame as exact, but kill all existing windows\n\
+  \tsame as exact, but also kill all existing windows\n\
 -F --force-start  <windows>\n\
     a comma separeted list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\

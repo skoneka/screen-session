@@ -184,10 +184,10 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
                 curses.flash()
 
-def run(session,requirecleanup,curlay,height):
+def run(session,requirecleanup_win,requirecleanup_lay,curlay,height):
     ret = 0
     ss = ScreenSaver(session)
-    if requirecleanup:
+    if requirecleanup_win:
         num = os.getenv('WINDOW')
     layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
     laytable=[[] for i in range(0,height)]
@@ -229,8 +229,10 @@ def run(session,requirecleanup,curlay,height):
         choice = curlay
         ret = 1
     curses.endwin()
-    if requirecleanup:
+    if requirecleanup_lay:
         ss.command_at(False,'eval "layout remove" "layout select %s" "at %s kill"'%(choice,num))
+    elif requirecleanup_win:
+        ss.command_at(False,'eval "layout select %s" "at %s kill"'%(choice,num))
     else:
         ss.layout('select %s'%choice,False)
     return ret
@@ -244,14 +246,24 @@ if __name__=='__main__':
 
     try:
         if sys.argv[3]=='1':
-            requirecleanup=True
+            requirecleanup_win=True
         else:
-            requirecleanup=False
+            requirecleanup_win=False
     except:
-        requirecleanup=False
+        requirecleanup_win=False
+
     try:
-        height=int(sys.argv[4])
+        if sys.argv[4]=='1':
+            requirecleanup_lay=True
+        else:
+            requirecleanup_lay=False
+    except:
+        requirecleanup_lay=False
+
+    try:
+        height=int(sys.argv[5])
     except:
         height=20
-    run(session,requirecleanup,curlay,height)
+
+    run(session, requirecleanup_win, requirecleanup_lay, curlay, height)
 

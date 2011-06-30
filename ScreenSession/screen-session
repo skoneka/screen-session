@@ -78,14 +78,15 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     done < $scsfiletmp
     /bin/rm -f $scsfiletmp
 else
-    LOPT='0'
+    lOPT='0'
+    wOPT='0'
     SHOWPID='1'
     REVERSE='0'
     SORT='0'
     shiftcount=0
     bSession=0
     # parse command line arguments
-    while getopts ":PrsLS:": OPT; do
+    while getopts ":PrslwS:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -100,7 +101,10 @@ else
         s)  SORT="1"
             shiftcount=`expr $shiftcount + 1`
             ;;
-        L)  LOPT="1"
+        l)  lOPT="1"
+            shiftcount=`expr $shiftcount + 1`
+            ;;
+        w)  wOPT="1"
             shiftcount=`expr $shiftcount + 1`
             ;;
         esac
@@ -168,7 +172,7 @@ else
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
-                python $SCRIPTPATH/layoutlist.py $session $LOPT "$@"
+                python $SCRIPTPATH/layoutlist.py $session $lOPT $wOPT "$@"
                 ret=$?
             elif [ $mode = "renumber" ]; then
                 python $SCRIPTPATH/renumber.py $session "$@"

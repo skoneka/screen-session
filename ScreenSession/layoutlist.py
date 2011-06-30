@@ -14,22 +14,32 @@ if __name__=='__main__':
     except:
         newlay=False
 
+    if not newlay:
+        try:
+            if sys.argv[3]=='1':
+                newwin=True
+            else:
+                newwin=False
+        except:
+            newwin=False
+
     try:
-        height=int(sys.argv[3])
+        height=int(sys.argv[4])
     except:
         height=20
 
     ss=ScreenSaver(session)
     currentlayout,currentlayoutname=ss.get_layout_number()
-    if newlay and ss.get_layout_new('layout_list'):
-        ss.screen('-t layoutlist %s %s %s 1 %s'%(helper,session,currentlayout,height))
-    ## This is a bit faster but it does not check whether there are free layouts, so it may end removing the current layout during cleanup
-    #if newlay:
-        #ss.command_at(False,'eval \"layout new\" \"screen -t layoutlist %s %s %s 1 %s\"'%(helper,session,currentlayout,height))
-
+    if newlay:
+        if ss.get_layout_new('*LAYOUTLIST'):
+            ss.screen('-t layoutlist %s %s %s 1 1 %s'%(helper,session,currentlayout,height))
+        else:
+            ss.screen('-t layoutlist %s %s %s 1 0 %s'%(helper,session,currentlayout,height))
+    elif newwin:
+        ss.screen('-t layoutlist %s %s %s 1 0 %s'%(helper,session,currentlayout,height))
     else:
         import layoutlist_agent
-        sys.exit(layoutlist_agent.run(session,False,currentlayout,height))
+        sys.exit(layoutlist_agent.run(session,False,False,currentlayout,height))
 
 
 
