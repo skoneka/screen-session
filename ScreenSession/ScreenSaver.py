@@ -626,14 +626,10 @@ class ScreenSaver(object):
         rollback=None,None,None
         ctime=self.time()
         findir=sc.datadir
-        #print sc.datadir
-        #print (os.path.join(self.basedir,self.savedir))
         os.symlink(os.path.join(findir),os.path.join(self.basedir,self.savedir))
-        #sc_cwd=self.command_at(True,'hardcopydir')
-        #print(sc_cwd)
-        self.command_at(False, 'hardcopydir %s'%findir)
-        self.command_at(False, 'at \# hardcopy -h')
-        self.command_at(False, 'hardcopydir \"%s\"'%self.homedir) # should be modified to properly restore hardcopydir(:dumpscreen settings)
+        #sc_cwd=self.command_at(True,'hardcopydir') # it only works interactively
+        # should be modified to properly restore hardcopydir(:dumpscreen settings)
+        self.command_at(False, 'eval \'hardcopydir \"%s\"\' \'at \"\#\" hardcopy -h\' \'hardcopydir \"%s\"\''%(findir,self.homedir))
         mru_w=[homewindow+'\n']
         for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,badctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
             mru_w.append("%s\n"%cwin)
@@ -645,7 +641,7 @@ class ScreenSaver(object):
                 pass
             else:
                 if ctypestr[0]=='b':
-                    # get sorted pids in window
+                    # get sorted pids associated with the window
                     cpids=sc.get_tty_pids(ctty)
                     cpids_data=[]
                     ncpids=[]
