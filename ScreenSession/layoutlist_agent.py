@@ -184,45 +184,54 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
                 curses.flash()
 
-def run(session,crequirecleanup_win,requirecleanup_lay,curwin,curlay,height):
+def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     ret = 0
     ss = ScreenSaver(session)
     if requirecleanup_win:
         wnum = os.getenv('WINDOW')
     if requirecleanup_lay:
         lnum=ss.get_layout_number()[0]
-    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
-    laytable=[[] for i in range(0,height)]
-    pos_start=(0,0)
-    prev_inum=0
-    for i,lay in enumerate(layinfo):
-        num,title=lay
-        inum = int(num)
-        #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
-        for j in range(prev_inum+1,inum):
-            col = j%height
-            laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
-        col = inum%height
-        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
-        if curlay==num:
-            row = len(laytable[col])-1
-            pos_start=(row,col)
-        prev_inum=inum
-    sc.cleanup()
-    #sys.stderr.write(str(laytable))
-    #for i,lay in enumerate(layinfo):
-    #    num,title=lay
-    #    col = int(num)%height
-    #    laytable[col].append((num,title[:MAXTITLELEN]))
-    #    if curlay==num:
-    #        row = len(laytable[col])-1
-    #        pos_start=(row,col)
+
     screen = curses.initscr()
+
+    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+    pos_start=(0,0)
+    if height:
+        laytable=[[] for i in range(0,height)]
+        prev_inum=0
+        for i,lay in enumerate(layinfo):
+            num,title=lay
+            inum = int(num)
+            #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
+            for j in range(prev_inum+1,inum):
+                col = j%height
+                laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
+            col = inum%height
+            laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
+            if curlay==num:
+                row = len(laytable[col])-1
+                pos_start=(row,col)
+            prev_inum=inum
+    else:
+        y,x = screen.getmaxyx()
+        maxrows = y-1
+        laytable=[[] for i in range(0,maxrows)]
+        prev_inum=0
+        for i,lay in enumerate(layinfo):
+            num,title=lay
+            col = i%maxrows
+            laytable[col].append((num,title[:MAXTITLELEN]))
+            if curlay==num:
+                row = len(laytable[col])-1
+                pos_start=(row,col)
+    sc.cleanup()
+
     curses.start_color()
     curses.noecho()
     #screen.notimeout(1)
     #curses.init_pair(3,curses.COLOR_RED, curses.COLOR_WHITE)
     #screen.bkgd(' ',curses.color_pair(3))
+
     try:
         choice = menu_table(screen,curlay,laytable,pos_start[0],pos_start[1])
     except Exception,x:

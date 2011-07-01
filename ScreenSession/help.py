@@ -151,7 +151,7 @@ If no windows given, move the current window.\
 '
 
 #help_manager="Usage: screen-session manager [account@host]\n\
-help_manager="Usage: screen-session manager\n\
+help_manager="Usage: screen-session manager [options]\n\
        scs m\n\
 \n\
 Sessions manager for GNU Screen with preview in a split window.\n\
@@ -195,21 +195,23 @@ Nest a layout in the current region.\
 
 help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
        scs ll\n\
-       :bind l at 0 exec scs layoutlist -l\n\
+       :bind l at 0 exec scs layoutlist -l 20\n\
 \n\
-Display a list of layouts.\n\
+Display a list of layouts. There are two list creation algorithms.\n\
+If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers\n\
+are modulo divided by HEIGHT and the reminder determines their Y position.\n\
 This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
-\n\
-Keys:\n\
-ENTER and SPACE - select\n\
-ARROWS and hjkl - movement\n\
-/searchstring   - first search titles, then layout numbers\n\
-NUMBER[ENTER]   - move to a layout\n\
-q               - quit\n\
 \n\
 Options:\n\
 -l \t- create a temporary layout and window for layoutlist\n\
--w \t- create a temporary window for layoutlist\
+-w \t- create a temporary window for layoutlist\n\
+\n\
+Keys:\n\
+ENTER and SPACE - confirm / select\n\
+ARROWS and hjkl - movement\n\
+/searchstring   - first search titles, then layout numbers\n\
+NUMBER          - move to a layout\n\
+q               - quit\
 '
 
 help_renumber="Usage: screen-session renumber [options]\n\

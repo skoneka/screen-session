@@ -26,7 +26,7 @@ if __name__=='__main__':
     try:
         height=int(sys.argv[4])
     except:
-        height=20
+        height=0
 
     ss=ScreenSaver(session)
     currentlayout,currentlayoutname=ss.get_layout_number()
