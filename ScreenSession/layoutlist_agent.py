@@ -184,11 +184,13 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
                 curses.flash()
 
-def run(session,requirecleanup_win,requirecleanup_lay,curlay,height):
+def run(session,crequirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     ret = 0
     ss = ScreenSaver(session)
     if requirecleanup_win:
-        num = os.getenv('WINDOW')
+        wnum = os.getenv('WINDOW')
+    if requirecleanup_lay:
+        lnum=ss.get_layout_number()[0]
     layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
     laytable=[[] for i in range(0,height)]
     pos_start=(0,0)
@@ -230,22 +232,28 @@ def run(session,requirecleanup_win,requirecleanup_lay,curlay,height):
         ret = 1
     curses.endwin()
     if requirecleanup_lay:
-        ss.command_at(False,'eval "layout remove" "layout select %s" "at %s kill"'%(choice,num))
+        ss.command_at(False,'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill"'%(choice,lnum,wnum))
     elif requirecleanup_win:
-        ss.command_at(False,'eval "layout select %s" "at %s kill"'%(choice,num))
+        ss.command_at(False,'eval "select %s" "layout select %s" "at \"%s\#\" kill"'%(curwin,choice,wnum))
     else:
         ss.layout('select %s'%choice,False)
     return ret
 
 if __name__=='__main__':
     session=sys.argv[1]
+
     try:
-        curlay=sys.argv[2]
+        curwin=sys.argv[2]
+    except:
+        curwin=None
+
+    try:
+        curlay=sys.argv[3]
     except:
         curlay,currentlayoutname=ss.get_layout_number()
 
     try:
-        if sys.argv[3]=='1':
+        if sys.argv[4]=='1':
             requirecleanup_win=True
         else:
             requirecleanup_win=False
@@ -253,17 +261,18 @@ if __name__=='__main__':
         requirecleanup_win=False
 
     try:
-        if sys.argv[4]=='1':
+        if sys.argv[5]=='1':
             requirecleanup_lay=True
         else:
             requirecleanup_lay=False
     except:
         requirecleanup_lay=False
 
+
     try:
-        height=int(sys.argv[5])
+        height=int(sys.argv[6])
     except:
         height=20
 
-    run(session, requirecleanup_win, requirecleanup_lay, curlay, height)
+    run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay, height)
 

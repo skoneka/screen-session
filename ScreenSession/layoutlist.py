@@ -32,14 +32,16 @@ if __name__=='__main__':
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay:
         if ss.get_layout_new('*LAYOUTLIST'):
-            ss.screen('-t layoutlist %s %s %s 1 1 %s'%(helper,session,currentlayout,height))
+            ss.screen('-t layoutlist %s %s %s %s 1 1 %s'%(helper,session,None,currentlayout,height))
         else:
-            ss.screen('-t layoutlist %s %s %s 1 0 %s'%(helper,session,currentlayout,height))
+            curwin = ss.get_number_and_title()[0]
+            ss.screen('-t layoutlist %s %s %s %s 1 0 %s'%(helper,session,curwin,currentlayout,height))
     elif newwin:
-        ss.screen('-t layoutlist %s %s %s 1 0 %s'%(helper,session,currentlayout,height))
+        curwin = ss.get_number_and_title()[0]
+        ss.screen('-t layoutlist %s %s %s %s 1 0 %s'%(helper,session,curwin,currentlayout,height))
     else:
         import layoutlist_agent
-        sys.exit(layoutlist_agent.run(session,False,False,currentlayout,height))
+        sys.exit(layoutlist_agent.run(session,False,False,None,currentlayout,height))
 
 
 
