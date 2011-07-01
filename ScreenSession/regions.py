@@ -135,16 +135,10 @@ def prepare_windows(scs):
     print('prepare_windows()')
     global focusminsize
     regions=None
-    while True:
-        regions=sc.get_regions(scs.pid)
-        try:
-            focusminsize="%s %s"%(regions.focusminsize_x, regions.focusminsize_x)
-            regions_c=regions.number_of_regions
-            focus_offset=regions.focus_offset
-            if regions.regions:
-                break
-        except:
-            pass
+    regions=sc.get_regions(scs.pid)
+    focusminsize="%s %s"%(regions.focusminsize_x, regions.focusminsize_x)
+    regions_c=regions.number_of_regions
+    focus_offset=regions.focus_offset
     print("regions = "+str(regions))
     scs.focusminsize('0 0')
     this_win_history=[]

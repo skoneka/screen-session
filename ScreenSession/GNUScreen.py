@@ -83,15 +83,19 @@ def get_regions(session):
 # ('1', '105', '29')]
 
     from ScreenSaver import ScreenSaver
+    import datetime
     ss=ScreenSaver(session)
     tfile=os.path.join(tmpdir,'___regions-%d'%os.getpid())
     ss.query_at('dumpscreen layout \"%s\"'%tfile)
     tfiled = None
+    start = datetime.datetime.now()
     while tfiled == None:
         try:
             tfiled = open(tfile,'r')
         except:
-            pass
+            now = datetime.datetime.now()
+            if (now - start).seconds > 2:
+                raise IOError
     regions=Regions()
     regions.regions=[]
     regions.title = tfiled.readline().strip()
@@ -106,7 +110,7 @@ def get_regions(session):
             line=line.strip().split(' ')
         regions.regions.append(tuple(line))
     tfiled.close()
-    if len(regions[:-1])==1: # remove it later after patching screen
+    if len(regions.regions[-1])==1: # remove it later after patching screen
         regions.regions=regions.regions[:-1] 
     regions.number_of_regions=len(regions.regions)
     remove(tfile)
