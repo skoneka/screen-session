@@ -6,39 +6,45 @@ import curses
 
 MAXTITLELEN = 11
 
-def menu_table(screen,curlay,laytable,pos_x,pos_y):
-    curses.init_pair(1,curses.COLOR_RED, curses.COLOR_WHITE)
-    curses.init_pair(2,curses.COLOR_RED, curses.COLOR_GREEN)
+def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
+    curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
+    curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
     screen.keypad(1)
     x=None
     sel_num=curlay
+    last_sel_num=sel_num
     c_h = curses.color_pair(1)
     c_n = curses.A_NORMAL
     c_curlay_n = curses.color_pair(2)
+    c_find = curses.color_pair(3)
     row_len=None
     col_len=None
     laytable_len = len(laytable)
     search_num=None
-    search_title=None
+    search_title=''
+    n_search_title=''
     searching_num=False
     searching_title=False
     status_len = 0
     errormsg=''
+    findNext=0
     while True:
-        bfind=False
-        if search_title:
-            for i,row in enumerate(laytable):
-                for j,cell in enumerate(row):
-                    num,title=cell
-                    if search_title:
-                        if title.startswith(search_title):
-                            pos_x=j
-                            pos_y=i
-                            bfind=True
-                            break
-                    if bfind:
-                        break
-        if search_num or ( search_title and not bfind ):
+        if findNext and n_search_title:
+            i_sel_num=int(sel_num)
+            layinfo_tmp = layinfo[i_sel_num+1:]+layinfo[:i_sel_num]
+            if findNext == -1:
+                layinfo_tmp.reverse()
+            for i,entry in enumerate(layinfo_tmp):
+                num,title=entry
+                try:
+                    tfi = title.lower().strip().index(n_search_title.lower())
+                    sel_num = num
+                    break
+                except:
+                    continue
+        elif search_num:
+            bfind=False
             for i,row in enumerate(laytable):
                 for j,cell in enumerate(row):
                     num,title=cell
@@ -51,22 +57,37 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                     if bfind:
                         break
 
-
         for i,row in enumerate(laytable):
             for j,cell in enumerate(row):
                 num,title=cell
-                if j==pos_x and i==pos_y:
+                if sel_num == last_sel_num and j==pos_x and i==pos_y:
                     color=c_h
                     sel_num = num
+                    last_sel_num = sel_num
+                    row_len = len(row)-1
+                elif not sel_num == last_sel_num and sel_num == num:
+                    pos_x=j
+                    pos_y=i
+                    color=c_h
+                    last_sel_num = sel_num
                     row_len = len(row)-1
                 elif num==curlay:
                     color=c_curlay_n
                 else:
                     color=c_n
                 try:
-                    screen.addstr(i,j*(MAXTITLELEN+5),"%-4s%s"%(num,title),color)
+                    screen.addstr(i,j*(MAXTITLELEN+5)," %-4s%s"%(num,title),color)
+                    if findNext:
+                        s = n_search_title
+                    else:
+                        s = search_title
+                    tfi = title.lower().strip().index(s.lower())
+                    screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]),c_find)
                 except:
                     pass
+        
+        if findNext:
+            findNext=0
         if not searching_num:
             search_num=None
         if not searching_title:
@@ -84,7 +105,7 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 else:
                     search = ''
                 screen.addstr(laytable_len,0,"> %-*s"%(status_len,''))
-                s = "%s%s"%(prompt,search)
+                s = "%s%sI"%(prompt,search)
                 status_len=len(s)
                 screen.addstr(laytable_len,0,s)
             else:
@@ -97,9 +118,12 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
             pass
         screen.refresh()
         x = screen.getch()
-        if (searching_num or searching_title) and x == ord('\n'):
+        if  searching_num and x == ord('\n'):
             searching_num=False
+        elif searching_title and x == ord('\n'):
             searching_title=False
+            n_search_title = search_title
+            findNext=True
         elif x == 27: # Escape key
             searching_num=False
             searching_title=False
@@ -115,6 +139,36 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                 search_title = search_title[:-1]
             except:
                 pass
+        elif searching_title:
+            if x == curses.KEY_UP:
+                search_title = n_search_title
+            elif x == curses.KEY_DOWN:
+                search_title = ''
+            else:
+                try:
+                    search_title += chr(x)
+                except:
+                    pass
+        elif x==ord('/'):
+            searching_title = True
+            search_title = '' 
+        elif x==ord('\n') or x == ord(' '):
+            if not sel_num:
+                curses.flash()
+            else:
+                return sel_num
+        elif x in (ord('q'),ord('Q')):
+            return curlay
+        elif x in (ord('n'),ord('N')):
+            findNext = 1
+        elif x in (ord('p'),ord('P')):
+            findNext = -1
+        elif x == curses.KEY_HOME:
+            pos_x = 0
+        elif x == curses.KEY_END:
+            pos_x = len(laytable[pos_y])-1
+        elif x == curses.KEY_PPAGE:
+            pos_y = 0
         elif x in range(ord('0'),ord('9')+1):
             searching_num=True
             if not search_num:
@@ -124,28 +178,6 @@ def menu_table(screen,curlay,laytable,pos_x,pos_y):
                     search_num += chr(x)
                 except:
                     pass
-        elif searching_title or x == ord('/'):
-            searching_title = True
-            if search_title == None:
-                search_title = '' 
-            else:
-                try:
-                    search_title += chr(x)
-                except:
-                    pass
-        elif x==ord('\n') or x == ord(' '):
-            if not sel_num:
-                curses.flash()
-            else:
-                return sel_num
-        elif x in (ord('q'),ord('Q')):
-            return curlay
-        elif x == curses.KEY_HOME:
-            pos_x = 0
-        elif x == curses.KEY_END:
-            pos_x = len(laytable[pos_y])-1
-        elif x == curses.KEY_PPAGE:
-            pos_y = 0
         else:
             for i,row in enumerate(laytable):
                 try:
@@ -233,7 +265,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     #screen.bkgd(' ',curses.color_pair(3))
 
     try:
-        choice = menu_table(screen,curlay,laytable,pos_start[0],pos_start[1])
+        choice = menu_table(screen,curlay,layinfo,laytable,pos_start[0],pos_start[1])
     except Exception,x:
         import traceback
         traceback.print_exc(file=sys.stderr)

@@ -209,7 +209,7 @@ Options:\n\
 Keys:\n\
 ENTER and SPACE - confirm / select\n\
 ARROWS and hjkl - movement\n\
-/searchstring   - first search titles, then layout numbers\n\
+/searchstring   - search layout titles\n\
 NUMBER          - move to a layout\n\
 q               - quit\
 '

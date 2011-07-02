@@ -43,5 +43,3 @@ if __name__=='__main__':
         import layoutlist_agent
         sys.exit(layoutlist_agent.run(session,False,False,None,currentlayout,height))
 
-
-
