@@ -266,7 +266,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
 
     try:
         choice = menu_table(screen,curlay,layinfo,laytable,pos_start[0],pos_start[1])
-        if choice == lnum:
+        if requirecleanup_lay and choice == lnum:
             choice = curlay
     except Exception,x:
         import traceback
@@ -275,11 +275,11 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         ret = 1
     curses.endwin()
     if requirecleanup_lay:
-        ss.command_at(False,'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill"'%(choice,lnum,wnum))
+        ss.command_at(False,'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill" "layout title"'%(choice,lnum,wnum))
     elif requirecleanup_win:
-        ss.command_at(False,'eval "select %s" "layout select %s" "at \"%s\#\" kill"'%(curwin,choice,wnum))
+        ss.command_at(False,'eval "select %s" "layout select %s" "at \"%s\#\" kill" "layout title"'%(curwin,choice,wnum))
     else:
-        ss.layout('select %s'%choice,False)
+        ss.command_at(False,'eval "layout select %s" "layout title"'%(choice))
     return ret
 
 if __name__=='__main__':
