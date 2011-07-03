@@ -163,9 +163,9 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
             findNext = 1
         elif x in (ord('p'),ord('P')):
             findNext = -1
-        elif x == curses.KEY_HOME:
+        elif x in (curses.KEY_HOME, ord('^')):
             pos_x = 0
-        elif x == curses.KEY_END:
+        elif x in (curses.KEY_END, ord('$')):
             pos_x = len(laytable[pos_y])-1
         elif x == curses.KEY_PPAGE:
             pos_y = 0
@@ -266,6 +266,8 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
 
     try:
         choice = menu_table(screen,curlay,layinfo,laytable,pos_start[0],pos_start[1])
+        if choice == lnum:
+            choice = curlay
     except Exception,x:
         import traceback
         traceback.print_exc(file=sys.stderr)
