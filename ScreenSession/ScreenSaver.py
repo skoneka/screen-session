@@ -1,4 +1,4 @@
-import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache
+import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,linecache,datetime
 
 from util import out,requireme,linkify,which,timeout_command
 import util
@@ -522,7 +522,18 @@ class ScreenSaver(object):
         return msg.rsplit(' ',1)[1].strip()
 
     def source(self,args=''):
-        self.command_at(False , 'source "%s"'%args)
+        f = None
+        start = datetime.datetime.now()
+        while f == None:
+            try:
+                f = open(args,'r')
+            except:
+                now = datetime.datetime.now()
+                if (now - start).seconds > 2:
+                    raise IOError
+        f.close()
+        self.command_at(False , "source \"%s\""%(args))
+        self.command_at(False , "echo \"sourcing %s\""%args) # this line seems to force Screen to read entire sourced file, so it can be deleted afterwards
 
     def select(self,args='',win="-1"):
         msg=self.query_at('select %s'%args,win)
@@ -919,7 +930,12 @@ class ScreenSaver(object):
             return False
         path_layout=os.path.join(findir,"load_layout")
         oflayout=open(path_layout,'w')
-        for num,title in sc.gen_layout_info(self,sc.dumpscreen_layout_info(self)):
+        for lay in sc.gen_layout_info(self,sc.dumpscreen_layout_info(self)):
+            try:
+                num = lay[0]
+                title = lay[1]
+            except:
+                title = ""
             sys.stdout.write("%s(%s); "%(num,title))
             oflayout.write('layout select %s\nlayout dump \"%s\"\ndumpscreen layout \"%s\"\n'%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
         
@@ -937,7 +953,7 @@ class ScreenSaver(object):
         fname=os.path.join(findir,name)
         cmd = '^[^[:silent call histdel(\':\',-1) | mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
         self.stuff(cmd, winid)
-        # undo files are useless if the target file changes even a single bit
+        # undo files become useless if the target file changes even by a single byte
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
            
