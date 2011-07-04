@@ -58,6 +58,7 @@ help_regions="Usage: screen-session regions [options]\n\
 \n\
 Display a number in each region.\n\
 Allows selecting, swapping and rotating. Inspired by tmux display-panes.\n\
+Requires an active layout.\n\
 \n\
 Keys:\n\
 goto region  -> number and <g> or <'> or <space>\n\

@@ -5,13 +5,14 @@
 # description: script for GNU Screen reassembling functionality of tmux display-panes + swap regions + rotate regions
 
 import sys,os,time,signal,tempfile,pwd,copy
-from util import tmpdir
+from util import tmpdir,remove
 import GNUScreen as sc
 from GNUScreen import SCREEN
 from ScreenSaver import ScreenSaver
 
 logfile="___log-regions"
 inputfile="___scs-regions-input-%d"%(os.getpid())
+sourcefile=os.path.join(tmpdir,"___scs-regions-source-%d"%(os.getpid()))
 subprogram='screen-session-helper'
 subprogram_args='-nh'
 
@@ -118,11 +119,14 @@ def handler(signum,frame):
 def cleanup():
     print('restoring windows '+str(win_history))
     cmd=''
+    f = open(sourcefile,'w')
     for i,w in enumerate(win_history):
         if w == "-1":
             w = "-"
-        cmd+=SCREEN+' -S %s -X eval \'select %s\' \'at %s kill\' \'focus\'; '%(scs.pid,w,wins[i])
-    os.system(cmd)
+        f.write("select %s\nat \"%s\#\" kill\nfocus\n"%(w,wins[i]))
+    f.flush()
+    f.close()
+    scs.source(sourcefile)
     print (focusminsize)
     scs.focusminsize(focusminsize)
     try:
@@ -143,9 +147,13 @@ def prepare_windows(scs):
     scs.focusminsize('0 0')
     this_win_history=[]
     cmd=''
+    f = open(sourcefile,'w')
     for i in range(0,regions_c):
-        cmd+=SCREEN+' -S %s -X eval \'screen -t scs-regions-helper %s %s %s %d\' \'focus\'; '%(scs.pid,subprogram,subprogram_args,inputfile,i)
-    os.system(cmd)
+        f.write("screen -t scs-regions-helper %s %s %s %d\nfocus\n"%(subprogram,subprogram_args,inputfile,i))
+    f.flush()
+    f.close()
+    scs.source(sourcefile)
+    remove(sourcefile)
     
     regions_n=[]
     regions_n=sc.get_regions(scs.pid)
