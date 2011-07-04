@@ -31,7 +31,7 @@ if __name__=='__main__':
     ss=ScreenSaver(session)
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay:
-        if ss.get_layout_new('*LAYOUTLIST'):
+        if ss.get_layout_new('LAYOUTLIST'):
             ss.screen('-t layoutlist %s %s %s %s 1 1 %s'%(helper,session,None,currentlayout,height))
         else:
             curwin = ss.get_number_and_title()[0]

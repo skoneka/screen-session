@@ -6,18 +6,22 @@ import curses
 
 MAXTITLELEN = 11
 
-def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
+def menu_table(screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y):
     curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
     curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
+    curses.init_pair(4,curses.COLOR_RED, curses.A_NORMAL)
+    norm = curses.A_NORMAL
+    bold = curses.A_BOLD
+    dim  = curses.A_DIM
     screen.keypad(1)
     x=None
-    sel_num=curlay
-    last_sel_num=sel_num
-    c_h = curses.color_pair(1)
-    c_n = curses.A_NORMAL
+    last_sel_num = sel_num_before_search = sel_num = curlay
+    c_h = curses.color_pair(1) | bold
+    c_n = norm
     c_curlay_n = curses.color_pair(2)
     c_find = curses.color_pair(3)
+    c_error = curses.color_pair(4)
     row_len=None
     col_len=None
     laytable_len = len(laytable)
@@ -30,26 +34,36 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
     errormsg=''
     findNext=0
     while True:
+        keyboard_int = False
         if findNext and n_search_title:
             i_sel_num=int(sel_num)
             layinfo_tmp = layinfo[i_sel_num+1:]+layinfo[:i_sel_num]
             if findNext == -1:
                 layinfo_tmp.reverse()
             for i,entry in enumerate(layinfo_tmp):
-                num,title=entry
+                try:
+                    num = entry[0]
+                    title = entry[1]
+                except:
+                    title = ""
                 try:
                     tfi = title.lower().strip().index(n_search_title.lower())
                     sel_num = num
                     break
                 except:
                     continue
-        elif search_num:
+        elif searching_num:
             bfind=False
+            if not search_num:
+                sn = sel_num_before_search
+                searching_num = False
+            else:
+                sn = search_num
             for i,row in enumerate(laytable):
                 for j,cell in enumerate(row):
                     num,title=cell
-                    if search_num:
-                        if search_num==num:
+                    if sn:
+                        if sn == num:
                             pos_x=j
                             pos_y=i
                             bfind=True
@@ -61,7 +75,7 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
             for j,cell in enumerate(row):
                 num,title=cell
                 if sel_num == last_sel_num and j==pos_x and i==pos_y:
-                    color=c_h
+                    color = c_h
                     sel_num = num
                     last_sel_num = sel_num
                     row_len = len(row)-1
@@ -82,7 +96,7 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
                     else:
                         s = search_title
                     tfi = title.lower().strip().index(s.lower())
-                    screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]),c_find)
+                    screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]), c_find)
                 except:
                     pass
         
@@ -104,13 +118,14 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
                     search = search_num
                 else:
                     search = ''
-                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''))
+                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''),c_n)
                 s = "%s%sI"%(prompt,search)
                 status_len=len(s)
-                screen.addstr(laytable_len,0,s)
+                screen.addstr(laytable_len,0,s,c_n)
             else:
-                s="> %s%-*s"%(errormsg,status_len,'')
-                screen.addstr(laytable_len,0,s)
+                screen.addstr(laytable_len,0,"> %-*s"%(status_len,''),c_n)
+                s="%s"%(errormsg)
+                screen.addstr(laytable_len, 2, s, c_error|bold)
                 status_len=len(s)
                 errormsg=''
 
@@ -118,6 +133,7 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
             pass
         screen.refresh()
         x = screen.getch()
+
         if  searching_num and x == ord('\n'):
             searching_num=False
         elif searching_title and x == ord('\n'):
@@ -132,12 +148,18 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
             errormsg='Canceled'
         elif x == curses.KEY_BACKSPACE:
             try:
+                if len(search_num) == 0:
+                    raise Exception
                 search_num = search_num[:-1]
             except:
+                searching_num = False
                 pass
             try:
+                if len(search_title) == 0:
+                    raise Exception
                 search_title = search_title[:-1]
             except:
+                searching_title = False
                 pass
         elif searching_title:
             if x == curses.KEY_UP:
@@ -155,6 +177,10 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
         elif x==ord('\n') or x == ord(' '):
             if not sel_num:
                 curses.flash()
+                errormsg = "No layout selected."
+            elif sel_num == tmplay:
+                curses.flash()
+                errormsg = "This IS layout %s."%sel_num
             else:
                 return sel_num
         elif x in (ord('q'),ord('Q')):
@@ -170,7 +196,9 @@ def menu_table(screen,curlay,layinfo,laytable,pos_x,pos_y):
         elif x == curses.KEY_PPAGE:
             pos_y = 0
         elif x in range(ord('0'),ord('9')+1):
-            searching_num=True
+            if not searching_num:
+                searching_num = True
+                sel_num_before_search = sel_num
             if not search_num:
                 search_num = chr(x)
             else:
@@ -223,6 +251,8 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         wnum = os.getenv('WINDOW')
     if requirecleanup_lay:
         lnum=ss.get_layout_number()[0]
+    else:
+        lnum=None
 
     screen = curses.initscr()
 
@@ -232,13 +262,19 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         laytable=[[] for i in range(0,height)]
         prev_inum=0
         for i,lay in enumerate(layinfo):
-            num,title=lay
+            try:
+                num = lay[0]
+                title = lay[1]
+            except:
+                title = ""
             inum = int(num)
             #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
             for j in range(prev_inum+1,inum):
                 col = j%height
                 laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
             col = inum%height
+            if requirecleanup_lay and num == lnum:
+                title = '*'+title
             laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
             if curlay==num:
                 row = len(laytable[col])-1
@@ -250,7 +286,11 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         laytable=[[] for i in range(0,maxrows)]
         prev_inum=0
         for i,lay in enumerate(layinfo):
-            num,title=lay
+            try:
+                num = lay[0]
+                title = lay[1]
+            except:
+                title = ""
             col = i%maxrows
             laytable[col].append((num,title[:MAXTITLELEN]))
             if curlay==num:
@@ -265,7 +305,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     #screen.bkgd(' ',curses.color_pair(3))
 
     try:
-        choice = menu_table(screen,curlay,layinfo,laytable,pos_start[0],pos_start[1])
+        choice = menu_table(screen,lnum,curlay,layinfo,laytable,pos_start[0],pos_start[1])
         if requirecleanup_lay and choice == lnum:
             choice = curlay
     except Exception,x:
