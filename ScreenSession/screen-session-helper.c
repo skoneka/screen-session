@@ -285,12 +285,15 @@ rotate right:\t [number]<r>\n\
   getinput (&prefix, &mode);
   if (mode == '\n')
     mode = 'e';
+  /*
   printf ("prefix: %d ; ", prefix);
   printf ("mode: %c\n", mode);
+  */
   FILE *f = fopen (fname, "w");
   fprintf (f, "%c%d", mode, prefix);
   fclose (f);
   kill (pid, SIGUSR1);
+  mygetch();
 
 }
 #ifndef TEST
