@@ -46,6 +46,7 @@ class ScreenSaver(object):
     __wins_trans = {}
     __scrollbacks=[]
     __layouts_loaded=False
+    __vim_files = [] # a list of vim savefiles, wait for them a few seconds, otherwise continue
 
     def __init__(self,pid,projectsdir='/dev/null',savedir='/dev/null'):
         self.homedir=os.path.expanduser('~')
@@ -76,8 +77,10 @@ class ScreenSaver(object):
         out("\nSaving windows:")
         self.__save_screen()
         
-        out("\nCleaning up:")
+        out("\nCleaning up scrollbacks.")
         self.__scrollback_clean()
+        if self.__vim_files:
+            self.__wait_vim()
         return 0
 
     def load(self):
@@ -947,12 +950,35 @@ class ScreenSaver(object):
         out("")
         return True
 
+    def __wait_vim(self):
+        sys.stdout.write('Waiting for vim savefiles... ')
+        sys.stdout.flush()
+        start = datetime.datetime.now()
+        try:
+            for fname in self.__vim_files:
+                f = None
+                while f == None:
+                    try:
+                        f = open(fname,'r')
+                        f.close()
+                    except:
+                        now = datetime.datetime.now()
+                        if (now - start).seconds > 10: # timeout
+                            raise IOError
+                        time.sleep(0.05)
+            sys.stdout.write('done\n')
+        except:
+            sys.stdout.write('incomplete!\n')
+            pass
+        
     def __save_vim(self,winid):
         findir=sc.datadir
         name="vim_W%s_%s"%(winid,self.__unique_ident)
         fname=os.path.join(findir,name)
         cmd = '^[^[:silent call histdel(\':\',-1) | mksession %s | wviminfo %s\n'%(fname+'_session',fname+'_info')
         self.stuff(cmd, winid)
+        self.__vim_files.append(fname+'_session')
+        self.__vim_files.append(fname+'_info')
         # undo files become useless if the target file changes even by a single byte
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
