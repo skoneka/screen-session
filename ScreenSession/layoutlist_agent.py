@@ -353,9 +353,14 @@ if __name__=='__main__':
 
 
     try:
-        height=int(sys.argv[6])
+        MAXTITLELEN = int(sys.argv[6])
     except:
-        height=20
+        MAXTITLELEN = 11
+
+    try:
+        height = int(sys.argv[7])
+    except:
+        height = 20
 
     run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay, height)
 

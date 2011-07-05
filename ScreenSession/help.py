@@ -204,8 +204,9 @@ are modulo divided by HEIGHT and the reminder determines their Y position.\n\
 This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
 \n\
 Options:\n\
--l \t- create a temporary layout and window for layoutlist\n\
--w \t- create a temporary window for layoutlist\n\
+-l \t\t- create a temporary layout and window for layoutlist\n\
+-w \t\t- create a temporary window for layoutlist\n\
+-t <width>\t- set title width ( default = 11 )\n\
 \n\
 Keys:\n\
 ENTER and SPACE - confirm / select\n\

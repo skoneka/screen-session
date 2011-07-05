@@ -22,9 +22,13 @@ if __name__=='__main__':
                 newwin=False
         except:
             newwin=False
+    try:
+        title_width=int(sys.argv[4])
+    except:
+        title_width = 11
 
     try:
-        height=int(sys.argv[4])
+        height=int(sys.argv[5])
     except:
         height=0
 
@@ -32,14 +36,15 @@ if __name__=='__main__':
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay:
         if ss.get_layout_new('LAYOUTLIST'):
-            ss.screen('-t layoutlist %s %s %s %s 1 1 %s'%(helper,session,None,currentlayout,height))
+            ss.screen('-t layoutlist %s %s %s %s 1 1 %s %s'%(helper,session,None,currentlayout,title_width,height))
         else:
             curwin = ss.get_number_and_title()[0]
-            ss.screen('-t layoutlist %s %s %s %s 1 0 %s'%(helper,session,curwin,currentlayout,height))
+            ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s'%(helper,session,curwin,currentlayout,title_width,height))
     elif newwin:
         curwin = ss.get_number_and_title()[0]
-        ss.screen('-t layoutlist %s %s %s %s 1 0 %s'%(helper,session,curwin,currentlayout,height))
+        ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s'%(helper,session,curwin,currentlayout,title_width,height))
     else:
         import layoutlist_agent
+        layoutlist_agent.MAXTITLELEN = title_width
         sys.exit(layoutlist_agent.run(session,False,False,None,currentlayout,height))
 
