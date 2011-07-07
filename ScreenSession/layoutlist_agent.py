@@ -6,7 +6,7 @@ import curses
 
 MAXTITLELEN = 11
 
-def menu_table(screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y):
+def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
     curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
     curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
@@ -243,6 +243,57 @@ def menu_table(screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y):
                     c='UNKNOWN'
                 errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
                 curses.flash()
+def create_table_std(ss, screen, curlay, layinfo, lnum):
+    pos_start=(0,0)
+    y,x = screen.getmaxyx()
+    maxrows = y-1
+    laytable=[[] for i in range(0,maxrows)]
+    prev_inum=0
+    for i,lay in enumerate(layinfo):
+        try:
+            num = lay[0]
+            title = lay[1]
+        except:
+            title = ""
+        col = i%maxrows
+        laytable[col].append((num,title[:MAXTITLELEN]))
+        if curlay==num:
+            row = len(laytable[col])-1
+            pos_start=(row,col)
+    return laytable, pos_start
+
+def create_table_mod(ss, screen, curlay, layinfo, lnum, height):
+    pos_start=(0,0)
+    laytable=[[] for i in range(0,height)]
+    prev_inum=0
+    for i,lay in enumerate(layinfo):
+        try:
+            num = lay[0]
+            title = lay[1]
+        except:
+            title = ""
+        inum = int(num)
+        #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
+        for j in range(prev_inum+1,inum):
+            col = j%height
+            laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
+        col = inum%height
+        if num == lnum:
+            title = '*'+title
+        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
+        if curlay==num:
+            row = len(laytable[col])-1
+            pos_start=(row,col)
+        prev_inum=inum
+    return laytable,pos_start
+
+def create_table(ss, screen, curlay, layinfo, lnum, height):
+    if height:
+        return create_table_mod(ss, screen, curlay, layinfo, lnum, height)
+    else:
+        return create_table_std(ss, screen, curlay, layinfo, lnum)
+
+
 
 def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     ret = 0
@@ -254,48 +305,13 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     else:
         lnum=None
 
+    try:
+        layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+    except:
+        sys.stderr.write('Layouts dumping error.\n')
+        return 1
     screen = curses.initscr()
-
-    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
-    pos_start=(0,0)
-    if height:
-        laytable=[[] for i in range(0,height)]
-        prev_inum=0
-        for i,lay in enumerate(layinfo):
-            try:
-                num = lay[0]
-                title = lay[1]
-            except:
-                title = ""
-            inum = int(num)
-            #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
-            for j in range(prev_inum+1,inum):
-                col = j%height
-                laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
-            col = inum%height
-            if requirecleanup_lay and num == lnum:
-                title = '*'+title
-            laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
-            if curlay==num:
-                row = len(laytable[col])-1
-                pos_start=(row,col)
-            prev_inum=inum
-    else:
-        y,x = screen.getmaxyx()
-        maxrows = y-1
-        laytable=[[] for i in range(0,maxrows)]
-        prev_inum=0
-        for i,lay in enumerate(layinfo):
-            try:
-                num = lay[0]
-                title = lay[1]
-            except:
-                title = ""
-            col = i%maxrows
-            laytable[col].append((num,title[:MAXTITLELEN]))
-            if curlay==num:
-                row = len(laytable[col])-1
-                pos_start=(row,col)
+    laytable,pos_start = create_table(ss, screen, curlay, layinfo, lnum, height)
     sc.cleanup()
 
     curses.start_color()
@@ -305,7 +321,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     #screen.bkgd(' ',curses.color_pair(3))
 
     try:
-        choice = menu_table(screen,lnum,curlay,layinfo,laytable,pos_start[0],pos_start[1])
+        choice = menu_table(ss,screen,lnum,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
         if requirecleanup_lay and choice == lnum:
             choice = curlay
     except Exception,x:
