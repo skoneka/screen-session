@@ -5,6 +5,7 @@ from ScreenSaver import ScreenSaver
 import curses
 
 MAXTITLELEN = 11
+NO_END = False
 
 def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
     curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
@@ -182,13 +183,26 @@ def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
                 curses.flash()
                 errormsg = "This IS layout %s."%sel_num
             else:
-                return sel_num
+                if NO_END:
+                    ss.command_at(False,'eval "layout select %s" "layout title"'%(sel_num))
+                else:
+                    return sel_num
         elif x in (ord('q'),ord('Q')):
             return curlay
         elif x in (ord('n'),ord('N')):
             findNext = 1
         elif x in (ord('p'),ord('P')):
             findNext = -1
+        elif x in (ord('r'),ord('R')):
+            try:
+                try:
+                    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+                    laytable,pos_start = create_table(ss, screen, curlay, layinfo, tmplay, height)
+                    errormsg = 'Refreshed'
+                finally:
+                    sc.cleanup()
+            except:
+                errormsg = 'Layouts dumping error.'
         elif x in (curses.KEY_HOME, ord('^')):
             pos_x = 0
         elif x in (curses.KEY_END, ord('$')):
@@ -306,13 +320,15 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         lnum=None
 
     try:
-        layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+        try:
+            layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+        finally:
+            sc.cleanup()
     except:
         sys.stderr.write('Layouts dumping error.\n')
         return 1
     screen = curses.initscr()
     laytable,pos_start = create_table(ss, screen, curlay, layinfo, lnum, height)
-    sc.cleanup()
 
     curses.start_color()
     curses.noecho()
@@ -367,14 +383,22 @@ if __name__=='__main__':
     except:
         requirecleanup_lay=False
 
+    try:
+        if sys.argv[6]=='1':
+            NO_END = True
+        else:
+            NO_END = False
+    except:
+        NO_END = False
+
 
     try:
-        MAXTITLELEN = int(sys.argv[6])
+        MAXTITLELEN = int(sys.argv[7])
     except:
         MAXTITLELEN = 11
 
     try:
-        height = int(sys.argv[7])
+        height = int(sys.argv[8])
     except:
         height = 20
 

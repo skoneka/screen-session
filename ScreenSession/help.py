@@ -207,12 +207,14 @@ Options:\n\
 -l \t\t- create a temporary layout and window for layoutlist\n\
 -w \t\t- create a temporary window for layoutlist\n\
 -t <width>\t- set title width ( default = 11 )\n\
+-c \t\t- do not terminate layoutlist after selecting a layout\n\
 \n\
 Keys:\n\
 ENTER and SPACE - confirm / select\n\
 ARROWS and hjkl - movement\n\
 /searchstring   - search layout titles\n\
 NUMBER          - move to a layout\n\
+r               - refresh the layout list\n\
 q               - quit\
 '
 
