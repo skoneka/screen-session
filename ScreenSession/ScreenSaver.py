@@ -210,7 +210,7 @@ class ScreenSaver(object):
                     f=open(filename)
                     win=list(f)[0:9]
                     f.close()
-                    win=self.__striplist(win)
+                    win = [x.strip() for x in win]
                     try:
                         nproc=win[8]
                     except:
@@ -240,12 +240,6 @@ class ScreenSaver(object):
         if self.wrap_group_id:
             out ("Wrap group is "+self.wrap_group_id)
         self.select(rootwindow)
-        
-    # Take a list of string objects and return the same list
-    # stripped of extra whitespace.
-    def __striplist(self,l):
-        return([x.strip() for x in l])
-
 
     def __create_win(self,keep_numbering,wins_trans,pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes):
         if keep_numbering:
@@ -263,7 +257,7 @@ class ScreenSaver(object):
             else:
                 scrollfile=self._scrollfile+win
             #print ('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)))
-            self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)) )
+            self.screen('-h %s -t \"%s\" %s "%s" "%s" "%s" "%s" "%s"' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir, scrollfile,os.path.join(self.savedir,"win_"+win)) )
             #self.screen('-h %s -t \"%s\" %s %s %s %s %s %s' % (scrollback_len,title,winarg,self.primer,primer_arg,self.projectsdir,"0",os.path.join(self.savedir,"win_"+win)) )
         elif type[0]=='g':
             self.screen('-t \"%s\" %s //group' % (title,winarg ) )
@@ -1007,7 +1001,7 @@ class ScreenSaver(object):
                 if line=='-\n':
                     last_sep=i
                 elif i-last_sep==6 and line.startswith('vim_'):
-                    #import vim files but update the window number in filename
+                    #import vim files but also update the window number in a filename
                     for filename in glob.glob(os.path.join(rollback_dir,line.strip()+'_*')):
                         try:
                             tvim="vim_W%s_%s"%(winid,os.path.basename(filename).split('_',2)[2])
@@ -1044,7 +1038,7 @@ class ScreenSaver(object):
         return errors
 
     def __setup_savedir(self,basedir,savedir):
-        out ("Setting up session directory %s" % savedir)
+        out ("Setting up session directory \"%s\"" % savedir)
         if not os.path.exists(basedir):
             os.makedirs(basedir)
             f=open(os.path.join(basedir,self.blacklistfile),'w')

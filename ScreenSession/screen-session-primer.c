@@ -299,7 +299,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
       char *buf =
 	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
 		 23) * sizeof (char));
-      sprintf (buf, "%s other --dir %s --unpack %s", scs_exe, basedir,
+      sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
 		 session);
       system (buf);
       free (file);
@@ -1089,7 +1089,7 @@ main (int argc, char **argv)
       {
         printf ("Setting up filter...\n");
         char *command0 = malloc((1+35+strlen(scs_exe))*sizeof(char));
-        sprintf(command0,"screen -S $(%s name) -X stuff \"exec ",scs_exe);
+        sprintf(command0,"screen -S \"$(%s name)\" -X stuff \"exec ",scs_exe);
         char command1[] = "\"^M";
         char *command =
           malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
@@ -1197,7 +1197,7 @@ main (int argc, char **argv)
         if (pid == 0) 
         {
           buf0 = malloc((1+21+strlen(scs_exe)+strlen(workingdir)+strlen(session))*sizeof(char));
-          sprintf (buf0, "%s other --dir %s --pack %s", scs_exe, workingdir, session);
+          sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe, workingdir, session);
           system(buf0); free(buf0);
           exit(0);
         }
