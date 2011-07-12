@@ -1,13 +1,20 @@
 ﻿#!/usr/bin/env python
-import os,sys
+import os,sys,signal
 import GNUScreen as sc
+from util import tmpdir
 from ScreenSaver import ScreenSaver
 import curses
+
 
 MAXTITLELEN = 11
 NO_END = False
 
-def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
+
+def handler(signum,frame):
+    pass
+
+def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,height):
+    global MAXTITLELEN
     curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
     curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
@@ -134,9 +141,34 @@ def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
             pass
         screen.refresh()
         x = screen.getch()
-
-        if  searching_num and x == ord('\n'):
-            searching_num=False
+        
+        if x == -1 or ( x in (ord('r'),ord('R')) and not searching_title and not searching_num):
+            searching_title = False
+            searching_num = False
+            try:
+                try:
+                    try:
+                        if NO_END:
+                            f = open( lock_and_com_file, 'r' )
+                            from string import strip as str_strip
+                            #pid,cwin,clay,MAXTITLELEN,height = map( str_strip,f.readlines() )
+                            nd = map( str_strip,f.readlines() )
+                            curwin = nd[3]
+                            curlay = nd[4]
+                            MAXTITLELEN = int(nd[5])
+                            height = int(nd[6])
+                            f.close()
+                            screen.erase()
+                    except:
+                        pass
+                    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+                    laytable,pos_start = create_table(ss, screen, curlay, layinfo, tmplay, height)
+                    laytable_len = len(laytable)
+                    errormsg = 'Refreshed'
+                finally:
+                    sc.cleanup()
+            except:
+                errormsg = 'Layouts dumping error.'
         elif searching_title and x == ord('\n'):
             searching_title=False
             n_search_title = search_title
@@ -176,6 +208,7 @@ def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
             searching_title = True
             search_title = '' 
         elif x==ord('\n') or x == ord(' '):
+            searching_num=False
             if not sel_num:
                 curses.flash()
                 errormsg = "No layout selected."
@@ -184,31 +217,34 @@ def menu_table(ss,screen,tmplay,curlay,layinfo,laytable,pos_x,pos_y,height):
                 errormsg = "This IS layout %s."%sel_num
             else:
                 if NO_END:
-                    ss.command_at(False,'eval "layout select %s" "layout title"'%(sel_num))
+                    if curwin != '-1':
+                        ss.command_at(False,'eval "select %s" "layout select %s" "layout title"'%(curwin,sel_num))
+                    else:
+                        ss.command_at(False,'eval "layout select %s" "layout title"'%(sel_num))
                 else:
                     return sel_num
         elif x in (ord('q'),ord('Q')):
-            return curlay
+            if NO_END and x == ord('q'):
+                ss.command_at(False,'eval "layout select %s" "layout title"'%(sel_num))
+            else:
+                return curlay
         elif x in (ord('n'),ord('N')):
             findNext = 1
         elif x in (ord('p'),ord('P')):
             findNext = -1
-        elif x in (ord('r'),ord('R')):
-            try:
-                try:
-                    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
-                    laytable,pos_start = create_table(ss, screen, curlay, layinfo, tmplay, height)
-                    errormsg = 'Refreshed'
-                finally:
-                    sc.cleanup()
-            except:
-                errormsg = 'Layouts dumping error.'
         elif x in (curses.KEY_HOME, ord('^')):
             pos_x = 0
         elif x in (curses.KEY_END, ord('$')):
             pos_x = len(laytable[pos_y])-1
         elif x == curses.KEY_PPAGE:
             pos_y = 0
+        elif x == ord('?'):
+            from help import help_layoutlist
+            screen.erase()
+            for i,line in enumerate(help_layoutlist.split('\n')):
+                screen.addstr(i,0," %s"%(line),c_n)
+            screen.refresh()
+            x = screen.getch()
         elif x in range(ord('0'),ord('9')+1):
             if not searching_num:
                 searching_num = True
@@ -270,6 +306,8 @@ def create_table_std(ss, screen, curlay, layinfo, lnum):
         except:
             title = ""
         col = i%maxrows
+        if num == lnum:
+            title = '*'+title
         laytable[col].append((num,title[:MAXTITLELEN]))
         if curlay==num:
             row = len(laytable[col])-1
@@ -310,6 +348,9 @@ def create_table(ss, screen, curlay, layinfo, lnum, height):
 
 
 def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
+    global lock_and_com_file
+    signal.signal(signal.SIGINT,handler)
+
     ret = 0
     ss = ScreenSaver(session)
     if requirecleanup_win:
@@ -318,6 +359,20 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         lnum=ss.get_layout_number()[0]
     else:
         lnum=None
+
+    if NO_END:
+        lock_and_com_file = os.path.join(tmpdir,'___layoutlist_%s'%session)
+        f = open( lock_and_com_file, 'w')
+        f.write(str(os.getpid())+'\n')
+        if requirecleanup_win and not requirecleanup_lay:
+            f.write(wnum+'\n')
+        else:
+            f.write('-1\n')
+        if requirecleanup_lay:
+            f.write(lnum+'\n')
+        else:
+            f.write('-1\n')
+        f.close()
 
     try:
         try:
@@ -337,7 +392,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     #screen.bkgd(' ',curses.color_pair(3))
 
     try:
-        choice = menu_table(ss,screen,lnum,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
+        choice = menu_table(ss,screen,lnum,curwin,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
         if requirecleanup_lay and choice == lnum:
             choice = curlay
     except Exception,x:
@@ -346,6 +401,8 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         choice = curlay
         ret = 1
     curses.endwin()
+    from util import remove
+    remove(lock_and_com_file)
     if requirecleanup_lay:
         ss.command_at(False,'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill" "layout title"'%(choice,lnum,wnum))
     elif requirecleanup_win:

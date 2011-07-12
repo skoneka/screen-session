@@ -151,12 +151,11 @@ Move windows to a group.\n\
 If no windows given, move the current window.\
 '
 
-#help_manager="Usage: screen-session manager [account@host]\n\
-help_manager="Usage: screen-session manager [options]\n\
+#help_manager="Usage: screen-session manager [options]\n\
+help_manager="Usage: screen-session manager [account@host]\n\
        scs m\n\
 \n\
 Sessions manager for GNU Screen with preview in a split window.\n\
-Reads custom Screen configuration from $HOME/.screenrc_MANAGER.\n\
 Requires python 2.5+\n\
 \n\
 KEYS:\n\
@@ -167,6 +166,7 @@ ALT + q   - quit\n\
 Alt + w   - wipe\n\
 \n\
 COMMANDS:\n\
+? or h    - display help\n\
 q[uit]    - exit session manager\n\
 e[nter]   - enter into a session\n\
 a[ttach] <name> - attach and select\n\
@@ -196,7 +196,7 @@ Nest a layout in the current region.\
 
 help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
        scs ll\n\
-       :bind l at 0 exec scs layoutlist -l 20\n\
+       :bind l at 0 exec scs layoutlist -l -c 20\n\
 \n\
 Display a list of layouts. There are two list creation algorithms.\n\
 If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers\n\
@@ -204,18 +204,24 @@ are modulo divided by HEIGHT and the reminder determines their Y position.\n\
 This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
 \n\
 Options:\n\
--l \t\t- create a temporary layout and window for layoutlist\n\
--w \t\t- create a temporary window for layoutlist\n\
--t <width>\t- set title width ( default = 11 )\n\
--c \t\t- do not terminate layoutlist after selecting a layout\n\
+-l              - create a temporary layout and window for layoutlist\n\
+-w              - create a temporary window for layoutlist\n\
+-t <width>      - set title width ( default = 11 )\n\
+-c              - do not terminate layoutlist after selecting a layout\n\
+                  or reselect a running layoutlist, best used with -l option,\n\
+                  there may be running only one layoutlist started with -c per\n\
+                  session\n\
 \n\
 Keys:\n\
+?               - display help\n\
 ENTER and SPACE - confirm / select\n\
 ARROWS and hjkl - movement\n\
 /searchstring   - search layout titles\n\
+n and p         - next / previous search result\n\
 NUMBER          - move to a layout\n\
-r               - refresh the layout list\n\
-q               - quit\
+r or C-c        - refresh the layout list\n\
+q               - quit / select previous layout\n\
+Q               - force quit if -c option was used\
 '
 
 help_renumber="Usage: screen-session renumber [options]\n\

@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/env python
 import os,sys
+from util import tmpdir
 from ScreenSaver import ScreenSaver
 
 if __name__=='__main__':
@@ -10,24 +11,24 @@ if __name__=='__main__':
         if sys.argv[2]=='1':
             newlay=True
         else:
-            newlay=False
+            raise Exception
     except:
         newlay=False
 
-    if not newlay:
-        try:
-            if sys.argv[3]=='1':
-                newwin=True
-            else:
-                newwin=False
-        except:
-            newwin=False
+    try:
+        if sys.argv[3]=='1':
+            newwin=True
+        else:
+            raise Exception
+    except:
+        newwin=False
+
     try:
         s_no_end = sys.argv[4]
         if sys.argv[4]=='1':
             no_end = True
         else:
-            no_end = False
+            raise Exception
     except:
         s_no_end = '0'
         no_end = False
@@ -44,6 +45,39 @@ if __name__=='__main__':
         height=0
 
     ss=ScreenSaver(session)
+
+    if no_end: 
+        lock_and_com_file = os.path.join(tmpdir,'___layoutlist_%s'%session)
+        if os.path.exists(lock_and_com_file):
+            try:
+                f = open( lock_and_com_file, 'r' )
+                pid = f.readline().strip()
+                tmpwin = f.readline().strip()
+                tmplay = f.readline().strip()
+                cwin = f.readline().strip()
+                if tmpwin != '-1':
+                    cwin = ss.get_number_and_title()[0]
+                else:
+                    cwin = '-1'
+                clay = f.readline().strip()
+                clay = ss.get_layout_number()[0]
+                f.close()
+                f = open( lock_and_com_file, 'w' )
+                f.write(pid+'\n'+tmpwin+'\n'+tmplay+'\n'+cwin+'\n'+clay+'\n'+str(title_width)+'\n'+str(height))
+                f.close()
+                from signal import SIGINT
+                os.kill(int(pid),SIGINT)
+                if tmplay!= '-1':
+                    ss.command_at(False,'layout select %s'%(tmplay))
+                elif tmpwin != '-1':
+                    ss.command_at(False,'select %s'%(tmpwin))
+            except:
+                import traceback
+                traceback.print_exc(file=sys.stderr)
+                pass
+            else:
+                sys.exit(0)
+
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay:
         if ss.get_layout_new('LAYOUTLIST'):
