@@ -120,7 +120,7 @@ def menu_tmp(preselect=None):
             if preselect:
                 inputstring = preselect
             else:
-                inputstring = raw_input("\nChoose 1-%d or help: " % (i-1))
+                inputstring = raw_input("\nChoose 1-%d or ?: " % (i-1))
             if inputstring:
                 try:
                     choice=int(inputstring)
@@ -382,7 +382,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
     elif mode.startswith('q'): # quit
         print2ui('LOGIC: quiting...' )
         return 'quit','\0'
-    elif mode.startswith('h'): # help
+    elif mode.startswith('h') or mode == '?': # help
         scs.focus('bottom')
         cnum=scs.get_number_and_title()[0]
         if int(cnum)>2:
@@ -456,7 +456,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             arg=' '
 
         cmd=SCREEN+' -d -m %s'%arg
-        print2ui('LOGIC: creating new session: [%s]'%(cmd.strip()))
+        print2ui('LOGIC: creating a new session: [%s]'%(cmd.strip()))
         l1=sc.get_session_list()
         os.popen(cmd)
         l2=sc.get_session_list()
@@ -531,7 +531,7 @@ def run(psession):
         scs=ScreenSaver(session,'/dev/null','/dev/null')
         scs.command_at(False,'setenv SCS_FIFO_ACCESS \"%s\"'%fifoname_access)
         scs.source(os.path.join(os.path.split(os.path.abspath(__file__))[0],'screenrc_MANAGER'))
-        scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
+        #scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
         data=mmap.mmap(-1,100)
         
         pid=os.fork()
