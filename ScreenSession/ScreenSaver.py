@@ -221,18 +221,13 @@ class ScreenSaver(object):
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes)
         
-        path_set_groups=os.path.join(self.basedir,self.savedir,"set_groups")
-        f_set_groups = open(path_set_groups,'w')
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             try:
                 groupid,group=group.split(' ',1)
             except:
                 groupid="-1"
                 group=self.none_group
-            self.__order_group(f_set_groups,self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
-        f_set_groups.close()
-        self.source(path_set_groups)
-        util.remove(path_set_groups)
+            self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
         
         out ("Rootwindow is "+rootwindow)
         if self.wrap_group_id:
@@ -266,19 +261,19 @@ class ScreenSaver(object):
         newwin = self.number()
         return newwin
     
-    def __order_group(self,f_set_groups,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
+    def __order_group(self,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
         if groupid=="-1":
             # this select is necessary in case of a group name conflict
-            f_set_groups.write("select %s\n"%rootwindow)
-            f_set_groups.write("at \"%s\#\" group %s\n"%(newwin,rootgroup))
+            self.select(rootwindow)
+            self.group(False,rootgroup,newwin)
         else:
             try:
                 groupid=self.__wins_trans[groupid]
             except:
                 pass
             # this select is necessary in case of a group name conflict
-            f_set_groups.write("select %s\n"%groupid)
-            f_set_groups.write("at \"%s\#\" group %s\n"%(newwin,group))
+            self.select(groupid)
+            self.group(False,group,newwin)
     
     def __scrollback_clean(self):
         '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
