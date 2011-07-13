@@ -87,37 +87,29 @@ else
     SORT='0'
     shiftcount=0
     bSession=0
-    # parse command line arguments
+
     while getopts ":Prslcwt:S:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
-            shiftcount=`expr $shiftcount + 2`
             ;;
         t)  tOPT="$OPTARG"
-            shiftcount=`expr $shiftcount + 2`
             ;;
         P)  SHOWPID="0"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         r)  REVERSE="1"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         s)  SORT="1"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         l)  lOPT="1"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         w)  wOPT="1"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         c)  cOPT="1"
-            shiftcount=`expr $shiftcount + 1`
             ;;
         esac
     done
-    shift $shiftcount "$@"
+    shift $(($OPTIND - 1))
 
     if [ $mode = "name" -o $mode = "n" ]; then
         if [ $bSession -eq 0 ]; then
