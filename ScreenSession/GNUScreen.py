@@ -158,7 +158,7 @@ def gen_all_windows_full(session,datadir,reverse=False,sort=False):
         except:
             cwin,cgroupid,ctty= line.strip().split(' ')
             ctitle=None
-        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll,cmdargs=map(string.strip,open(os.path.join(datadir,'win_'+cwin),'r').readlines())
+        cwin,ctime,cgroup,ctype,ctitle,cfilter,cscroll,cmdargs=list(map(string.strip,open(os.path.join(datadir,'win_'+cwin),'r').readlines()))
         if ctty[0]=='z':    # zombie
             ctypeid=-1
         elif ctype[0]=='g': # group
@@ -415,7 +415,7 @@ def parse_windows(windows):
 
 def get_windows(session=None):
     if session:
-        screen=SCREEN+' -S %s '%session
+        screen=SCREEN+' -S "%s" '%session
     else:
         screen=SCREEN+" "
 
@@ -433,7 +433,7 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
     windownumber=int(windownumber)
     nextwindownumber=int(nextwindownumber)
     if session:
-        screen=SCREEN+" -S %s "%session
+        screen=SCREEN+" -S '%s' "%session
     else:
         screen=SCREEN+" "
     
@@ -458,7 +458,7 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
 
 def get_current_window(session=None):
     if session:
-        screen=SCREEN+" -S %s "%session
+        screen=SCREEN+" -S '%s' "%session
     else:
         screen=SCREEN+" "
     return int(subprocess.Popen('%s -Q @number' % screen, shell=True, stdout=subprocess.PIPE).communicate()[0].split(" ",1)[0])
@@ -471,12 +471,12 @@ def order_windows(win_history):
         except:
             break
         #print('window: %s'%w)
-        os.system(SCREEN+' -S %s -X select %s'%(session,w))
-        os.system(SCREEN+' -S %s -X focus' %(session))
+        os.system(SCREEN+' -S "%s" -X select %s'%(session,w))
+        os.system(SCREEN+' -S "%s" -X focus' %(session))
 
 def select_window(number,session=None):
     if session:
-        screen=SCREEN+" -S %s "%session
+        screen=SCREEN+" -S '%s' "%session
     else:
         screen=SCREEN+" "
     #select region

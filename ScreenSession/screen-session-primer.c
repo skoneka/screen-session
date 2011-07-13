@@ -489,6 +489,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	      menu_choice = NONE;
 	      valid_choice = 0;
               break;
+            case '?':
             case 'h':
             case 'H':
               printf(help_str);
@@ -1088,7 +1089,7 @@ main (int argc, char **argv)
     if (bFilter && (strncmp (filter, "-1", 2) != 0))
       {
         printf ("Setting up filter...\n");
-        char *command0 = malloc((1+35+strlen(scs_exe))*sizeof(char));
+        char *command0 = malloc((51+strlen(scs_exe))*sizeof(char));
         sprintf(command0,"screen -S \"$(%s name)\" -X stuff \"exec ",scs_exe);
         char command1[] = "\"^M";
         char *command =

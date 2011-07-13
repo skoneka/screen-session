@@ -4,20 +4,35 @@
 # website: http://adb.cba.pl
 # description: sessions manager with preview in a split window
 
-import commands, os, re, sys,time,tempfile,pwd,mmap,string
+import os, re, sys,time,tempfile,pwd,mmap,string
 import GNUScreen as sc
 from GNUScreen import SCREEN
 import util
 from util import tmpdir
 from ScreenSaver import ScreenSaver
 from help import VERSION
+try:
+    from commands import getoutput
+except ImportError:
+    from subprocess import getoutput
+
+try:
+    raw_input
+except NameError:
+    import builtins
+
+    original_input = builtins.input
+    del builtins.input
+    def raw_input(*args, **kwargs):
+        return original_input(*args, **kwargs)
+    builtins.raw_input = raw_input
 
 tui = 1
 tui_focus = 0
 maxtui = 3
 HOME=os.getenv('HOME')
 USER=os.getenv('USER')
-HOSTNAME=commands.getoutput('hostname')
+HOSTNAME=getoutput('hostname')
 configdir=os.path.join(HOME,'.screen-session')
 # accountsfile was supposed to hold accounts for unfinished manager-remote
 accountsfile=os.path.join(configdir,'accounts')
@@ -91,7 +106,7 @@ def menu_tmp(preselect=None):
     sessions = []
     text = []
     i = 0
-    output = commands.getoutput(SCREEN+' -ls ')
+    output = getoutput(SCREEN+' -ls ')
     if output:
         for s in output.split("\n"):
             s = re.sub(r'\s+', ' ', s)
@@ -161,7 +176,7 @@ def menu_tmp(preselect=None):
 
 def prime(fifoname):
     l1=sc.get_session_list()
-    cmd=SCREEN+' -S "MANAGER_NOATTACH" -m -d -c /dev/null python %s %s %s'%(sys.argv[0],'ui',fifoname)
+    cmd=SCREEN+' -S "MANAGER_NOATTACH" -m -d -c /dev/null "%s" "%s" "%s" "%s"'%(os.getenv('PYTHONBIN'),sys.argv[0],'ui',fifoname)
     sys.stderr.write(cmd+'\n')
     os.popen(cmd)
     l2=sc.get_session_list()
@@ -269,7 +284,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
     print ('run printing')
     sys.stderr.write("%s %s %s\n"%(sys.argv[0],'ui2',fifoname2))
     sys.stdout.flush()
-    scs.screen("-t \"diagnostic window\" python %s %s %s"%(sys.argv[0],'ui2',fifoname2))
+    scs.screen("-t \"diagnostic window\" '%s' '%s' '%s' '%s'"%(os.getenv('PYTHONBIN'),sys.argv[0],'ui2',fifoname2))
     scs.screen("-t \"help window\" sh -c \"screen-session help manager | %s\""%(os.getenv("PAGER")))
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe=pipeout

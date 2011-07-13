@@ -25,7 +25,7 @@ def find_pids_in_windows(session,datadir,pids):
             ctty = int(os.path.split(ctty)[1])
             if ctty in ttys:
                 wins.append(tuple([cwin,ctitle]))
-        except Exception,x:
+        except Exception:
             pass
     return wins
 
@@ -52,75 +52,78 @@ def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
     sum_vim=0
     if groupids:
         groups,windows=subwindows(ss.pid,datadir,groupids)
-    for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
-        if groupids:
-            if cwin in windows:
-                bShow=True
-            else:
-                bShow=False
-        if bShow:
-            sum_win+=1
-            if ctype==-1:
-                sum_zombie+=1
-            elif ctype==0:
-                sum_basic+=1
-            elif ctype==1:
-                sum_group+=1
-            elif ctype==2:
-                sum_telnet+=1
-            print("----------------------------------------")
-            lines=[]
-            lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
-            if cgroupid=='-1':
-                groupstr='-1'
-            else:
-                groupstr=cgroupid+' '+cgroup
-            lines.append("%s GRP   %s\n"%(cwin,groupstr))
-            lines.append("%s TITL  %s\n"%(cwin,ctitle))
-            cmdargs=cmdargs.split('\0')
-            pcmdargs=cmdargs[0]
-            if cmdargs[1]!='':
-                pcmdargs+=" "+" ".join(["\"%s\""%v for v in cmdargs[1:-1]])
-            lines.append("%s CARG  %s\n"%(cwin,pcmdargs))
-            if cfilter!='-1':
-                lines.append("%s EXEC  %s\n"%(cwin,cfilter))
-            if ctype==0:
-                lines.append("%s TTY   %s\n"%(cwin,ctty))
-                if showpid:
-                    try:
-                        pids=sc.get_tty_pids(ctty)
-                    except:
-                        lines.append ("%s No access\n"%cwin)
-                        pass
-                    for pid in pids:
-                        sum_process_total+=1
+    try:
+        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
+            if groupids:
+                if cwin in windows:
+                    bShow=True
+                else:
+                    bShow=False
+            if bShow:
+                sum_win+=1
+                if ctype==-1:
+                    sum_zombie+=1
+                elif ctype==0:
+                    sum_basic+=1
+                elif ctype==1:
+                    sum_group+=1
+                elif ctype==2:
+                    sum_telnet+=1
+                print("----------------------------------------")
+                lines=[]
+                lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
+                if cgroupid=='-1':
+                    groupstr='-1'
+                else:
+                    groupstr=cgroupid+' '+cgroup
+                lines.append("%s GRP   %s\n"%(cwin,groupstr))
+                lines.append("%s TITL  %s\n"%(cwin,ctitle))
+                cmdargs=cmdargs.split('\0')
+                pcmdargs=cmdargs[0]
+                if cmdargs[1]!='':
+                    pcmdargs+=" "+" ".join(["\"%s\""%v for v in cmdargs[1:-1]])
+                lines.append("%s CARG  %s\n"%(cwin,pcmdargs))
+                if cfilter!='-1':
+                    lines.append("%s EXEC  %s\n"%(cwin,cfilter))
+                if ctype==0:
+                    lines.append("%s TTY   %s\n"%(cwin,ctty))
+                    if showpid:
                         try:
-                            cwd,exe,cmd=sc.get_pid_info(pid)
-                            lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
-                            lines.append ("%s PID   %s EXE %s\n"%(cwin,pid,exe))
-                            cmd=cmd.split('\0')
-                            pcmd=cmd[0]
-                            if cmd[1]!='':
-                                pcmd+=" "+" ".join(["\"%s\""%v for v in cmd[1:-1]])
-                            lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,pcmd))
-                            try:
-                                if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
-                                    sum_primer+=1
-                                    lines[0]=lines[0][:-1]+" / primer\n"
-                                elif cmd[0] in ('vi','vim','viless','vimdiff'):
-                                    sum_vim+=1
-                                    lines[0]=lines[0][:-1]+" / VIM\n"
-                            except:
-                                pass
+                            pids=sc.get_tty_pids(ctty)
                         except:
-                            lines.append ("%s PID > %s < No permission\n"%(cwin,pid))
-            try:
-                map(stdout.write,lines)
-            except:
-                break;
-                pass
-    print('WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
-    print('PROCESS: %d\t[ %d primer | %d vim ]'%(sum_process_total,sum_primer,sum_vim))
+                            lines.append ("%s No access\n"%cwin)
+                            pass
+                        for pid in pids:
+                            sum_process_total+=1
+                            try:
+                                cwd,exe,cmd=sc.get_pid_info(pid)
+                                lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
+                                lines.append ("%s PID   %s EXE %s\n"%(cwin,pid,exe))
+                                cmd=cmd.split('\0')
+                                pcmd=cmd[0]
+                                if cmd[1]!='':
+                                    pcmd+=" "+" ".join(["\"%s\""%v for v in cmd[1:-1]])
+                                lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,pcmd))
+                                try:
+                                    if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
+                                        sum_primer+=1
+                                        lines[0]=lines[0][:-1]+" / primer\n"
+                                    elif cmd[0] in ('vi','vim','viless','vimdiff'):
+                                        sum_vim+=1
+                                        lines[0]=lines[0][:-1]+" / VIM\n"
+                                except:
+                                    pass
+                            except:
+                                lines.append ("%s PID > %s < No permission\n"%(cwin,pid))
+                try:
+                    map(stdout.write,lines)
+                except:
+                    break;
+                    pass
+        print('WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
+        print('PROCESS: %d\t[ %d primer | %d vim ]'%(sum_process_total,sum_primer,sum_vim))
+    except IOError:
+        pass
 
 def renumber(session,datadir):
     ss=ScreenSaver(session,'/dev/null','/dev/null')

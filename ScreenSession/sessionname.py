@@ -9,7 +9,7 @@ from GNUScreen import SCREEN
 
 def get_sessionname(session=None):
     if session:
-        session_arg='-S '+session
+        session_arg='-S \"%s\"'%session
     else:
         session_arg=''
     p=os.popen(SCREEN+' %s -X sessionname'%session_arg).close()
@@ -45,7 +45,7 @@ if s:
     try:
         if session and s.find(session)>-1:
             newname=sys.argv[2]
-            os.popen(SCREEN+' -S %s -X sessionname %s'%(s,newname)).close()
+            os.popen(SCREEN+' -S \"%s\" -X sessionname \"%s\"'%(s,newname)).close()
         else:
             raise Exception
     except:

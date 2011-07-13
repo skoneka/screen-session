@@ -59,7 +59,7 @@ class ScreenSaver(object):
         self._scrollfile=os.path.join(self.savedir,"hardcopy.")
 
     def set_session(self,sessionname):
-        self.sc='%s -S %s'%(SCREEN,sessionname)
+        self.sc='%s -S \"%s\"'%(SCREEN,sessionname)
         self.__unique_ident="S%s_%s"%(sessionname.split('.',1)[0],time.strftime("%d%b%y_%H-%M-%S"))
 
     def save(self):
@@ -97,9 +97,8 @@ class ScreenSaver(object):
             winlist=list(glob.glob(os.path.join(self.basedir,self.savedir,'win_*')))
             newwindows=len(winlist)
             out('%d new windows'%newwindows)
-        except Exception,e:
+        except Exception:
             out('Unable to open.')
-            #out(str(e))
             return 1
 
         # keep original numbering, move existing windows
@@ -216,8 +215,7 @@ class ScreenSaver(object):
                     except:
                         nproc='0'
                     wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
-            except Exception,e:
-                #out(str(e))
+            except Exception:
                 out('%d Unable to load window'%id)
         
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
@@ -781,8 +779,7 @@ class ScreenSaver(object):
             # import win_* files from previous savefiles
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
-            except Exception,e:
-                #out(str(e))
+            except Exception:
                 target=None
                 pass
             
@@ -791,8 +788,7 @@ class ScreenSaver(object):
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[3]),target2)
-            except Exception,e:
-                #out(str(e))
+            except Exception:
                 target2=None
                 pass
 
