@@ -1,4 +1,4 @@
 screen-session-helper
 screen-session-primer
-screen-session-helper.o
-screen-session-primer.o
+*.o
+*.pyc
