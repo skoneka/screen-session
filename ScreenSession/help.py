@@ -27,6 +27,7 @@ Options supported by all tools:\n\
 \n\
 Environment variables:\n\
     SCREENPATH\t- determines GNU Screen executable path\n\
+    PYTHONBIN\t- Python interpreter path\n\
 \n\
 Session saver modes:\n\
     save\t- save session\n\
@@ -49,7 +50,7 @@ Other tools:\n\
     renumber\t- renumber windows to fill the gaps\n\
     subwindows\t- print windows contained in a group\n\
 \n\
-Report bugs to http://github.com/skoneka/screen-session/issues\
+Please report bugs to http://github.com/skoneka/screen-session/issues\
 "
 
 help_regions="Usage: screen-session regions [options]\n\
@@ -209,7 +210,7 @@ Options:\n\
 -t <width>      - set title width ( default = 11 )\n\
 -c              - do not terminate layoutlist after selecting a layout\n\
                   or reselect a running layoutlist, best used with -l option,\n\
-                  there may be running only one layoutlist started with -c per\n\
+                  there may be running only one layoutlist started with "-c" per\n\
                   session\n\
 \n\
 Keys:\n\
@@ -219,9 +220,10 @@ ARROWS and hjkl - movement\n\
 /searchstring   - search layout titles\n\
 n and p         - next / previous search result\n\
 NUMBER          - move to a layout\n\
-r or C-c        - refresh the layout list\n\
+r or C-c or C-l - refresh the layout list\n\
+m               - toggle MRU view, usable only if running with "-c" option\n\
 q               - quit / select previous layout\n\
-Q               - force quit if -c option was used\
+Q               - force quit if "-c" option was used\
 '
 
 help_renumber="Usage: screen-session renumber [options]\n\
@@ -374,58 +376,61 @@ def run(argv):
         mode=argv[1]
     except:
         mode='help'
-    if mode in ('help','h'):
-        #print(version_str+'\n')
-        print(help_help)
-    elif mode=='--version':
-        print(version_str)
-    elif mode in ('regions','r'):
-        print(help_regions)
-    elif mode in ('kill','K'):
-        print(help_kill)
-    elif mode in ('kill-zombie','kz'):
-        print(help_kill_zombie)
-    elif mode in ('kill-group','kg'):
-        print(help_kill_group)
-    elif mode in ('dir','new','new-window'):
-        print(help_new_window)
-    elif mode in ('dump','d'):
-        print(help_dump)
-    elif mode in ('find-pid','fp'):
-        print(help_find_pid)
-    elif mode in ('find-file','ff'):
-        print(help_find_file)
-    elif mode=='grab':
-        print(help_grab)
-    elif mode in ('group','g'):
-        print(help_group)
-    elif mode in ('manager','m'):
-        print(help_manager)
-    elif mode in ('manager-remote','mr'):
-        print(help_manager_remote)
-    elif mode in ('nest','nest-layout','nl'):
-        print(help_nest)
-    elif mode in ('layoutlist','ll'):
-        print(help_layoutlist)
-    elif mode=='renumber':
-        print(help_renumber)
-    elif mode=='sort':
-        print(help_sort)
-    elif mode in ('subwindows','sw'):
-        print(help_subwindows)
-    elif mode in ('name','n'):
-        print(help_name)
-    elif mode=='ls':
-        print(help_saver_ls)
-    elif mode=='save':
-        print(help_saver_save)
-    elif mode=='load':
-        print(help_saver_load)
-    elif mode=='other':
-        print(help_saver_other)
-    else:
-        print('No help for mode: %s'%mode)
-        return 1
+    try:
+        if mode in ('help','h'):
+            #print(version_str+'\n')
+            print(help_help)
+        elif mode=='--version':
+            print(version_str)
+        elif mode in ('regions','r'):
+            print(help_regions)
+        elif mode in ('kill','K'):
+            print(help_kill)
+        elif mode in ('kill-zombie','kz'):
+            print(help_kill_zombie)
+        elif mode in ('kill-group','kg'):
+            print(help_kill_group)
+        elif mode in ('dir','new','new-window'):
+            print(help_new_window)
+        elif mode in ('dump','d'):
+            print(help_dump)
+        elif mode in ('find-pid','fp'):
+            print(help_find_pid)
+        elif mode in ('find-file','ff'):
+            print(help_find_file)
+        elif mode=='grab':
+            print(help_grab)
+        elif mode in ('group','g'):
+            print(help_group)
+        elif mode in ('manager','m'):
+            print(help_manager)
+        elif mode in ('manager-remote','mr'):
+            print(help_manager_remote)
+        elif mode in ('nest','nest-layout','nl'):
+            print(help_nest)
+        elif mode in ('layoutlist','ll'):
+            print(help_layoutlist)
+        elif mode=='renumber':
+            print(help_renumber)
+        elif mode=='sort':
+            print(help_sort)
+        elif mode in ('subwindows','sw'):
+            print(help_subwindows)
+        elif mode in ('name','n'):
+            print(help_name)
+        elif mode=='ls':
+            print(help_saver_ls)
+        elif mode=='save':
+            print(help_saver_save)
+        elif mode=='load':
+            print(help_saver_load)
+        elif mode=='other':
+            print(help_saver_other)
+        else:
+            print('No help for mode: %s'%mode)
+            return 1
+    except IOError:
+        pass
     return 0
 
 if __name__=='__main__':

@@ -4,7 +4,7 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 
 if __name__=='__main__':
-    helper = 'python '+os.path.join(os.path.split(os.path.abspath(__file__))[0],'layoutlist_agent.py')
+    helper = os.getenv('PYTHONBIN')+' '+os.path.join(os.path.split(os.path.abspath(__file__))[0],'layoutlist_agent.py')
 
     session=sys.argv[1]
     try:
