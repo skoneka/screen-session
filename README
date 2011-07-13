@@ -83,10 +83,6 @@ Can be restored completly:
 Only up to 1:
 0 zsh -> 1 man hello -> 2 less
 
-
-There is also a blacklist for programs which may not be started
-(file $HOME/.screen-sessions/BLACKLIST).
- 
 screen-session-primer uses linux color escapes. If you dont want color
 remove "-DCOLOR" from config.mk
 

@@ -47,3 +47,6 @@ patch (gnu_screen.diff):
     make
 
     sudo make install
+
+Alternatively, download and compile prepatched Screen from:
+https://github.com/skoneka/escreen/downloads
