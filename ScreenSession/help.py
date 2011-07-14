@@ -99,11 +99,14 @@ Take extra care with this command.\
 
 help_new_window='Usage: screen-session new-window [options] [program]\n\
        scs new\n\
-       scs dir\n\
+       scs nw\n\
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""\n\
 \n\
 Start a new Screen window in the same working directory\n\
-on the position next to the current window.\
+on the position next to the current window.\n\
+\n\
+Options:\n\
+-d <directory> - specify the new window\'s directory\
 '
 
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
@@ -390,7 +393,7 @@ def run(argv):
             print(help_kill_zombie)
         elif mode in ('kill-group','kg'):
             print(help_kill_group)
-        elif mode in ('dir','new','new-window'):
+        elif mode in ('dir','new','new-window','nw'):
             print(help_new_window)
         elif mode in ('dump','d'):
             print(help_dump)

@@ -78,6 +78,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     done < $scsfiletmp
     /bin/rm -f $scsfiletmp
 else
+    DIR=''
     tOPT='none'
     cOPT='0'
     lOPT='0'
@@ -88,7 +89,7 @@ else
     shiftcount=0
     bSession=0
 
-    while getopts ":Prslcwt:S:": OPT; do
+    while getopts ":Prslcwt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -106,6 +107,8 @@ else
         w)  wOPT="1"
             ;;
         c)  cOPT="1"
+            ;;
+        d)  DIR="$OPTARG"
             ;;
         esac
     done
@@ -145,8 +148,8 @@ else
                     $SCREENPATH -S SCREEN-SESSION_NEST -mdc /dev/null $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
                 fi
                 ret=$?
-            elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" ]; then
-                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" "$@"
+            elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" -o $mode = "nw" ]; then
+                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" "$DIR" "$@"
                 ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
                 $PYTHONBIN $SCRIPTPATH/dump.py "$session" $SHOWPID $REVERSE $SORT "$@"
