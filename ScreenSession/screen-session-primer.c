@@ -841,6 +841,30 @@ read_scrollback(char *fullpath, char *scrollbackfile)
   return 0;
 
 }
+
+void
+execute_filter(int bFilter, char *scs_exe, char *filter)
+{
+  // execute filter
+  if (bFilter && (strncmp (filter, "-1", 2) != 0))
+    {
+      printf ("Setting up filter...\n");
+      char *command0 = malloc((51+strlen(scs_exe))*sizeof(char));
+      sprintf(command0,"screen -S \"$(%s name)\" -X stuff \"exec ",scs_exe);
+      char command1[] = "\"^M";
+      char *command =
+        malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
+                 1) * sizeof (char));
+      strcpy (command, command0);
+      strcat (command, filter);
+      strcat (command, command1);
+      system ("screen -X colon");
+      system (command);
+      free(command); free(command0);
+    }
+  free(filter);
+}
+
 void
 reset_primer(char **argv, char *fullpath, char *scrollbackfile, char *datafile)
 {
@@ -1085,24 +1109,6 @@ main (int argc, char **argv)
     char **arglist = NULL;
     int *args;
 
-    // execute filter
-    if (bFilter && (strncmp (filter, "-1", 2) != 0))
-      {
-        printf ("Setting up filter...\n");
-        char *command0 = malloc((51+strlen(scs_exe))*sizeof(char));
-        sprintf(command0,"screen -S \"$(%s name)\" -X stuff \"exec ",scs_exe);
-        char command1[] = "\"^M";
-        char *command =
-          malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
-                   1) * sizeof (char));
-        strcpy (command, command0);
-        strcat (command, filter);
-        strcat (command, command1);
-        system ("screen -X colon");
-        system (command);
-        free(command); free(command0);
-      }
-    free(filter);
 
     args = malloc (procs_c * sizeof (int));
     switch (menu)
@@ -1125,6 +1131,7 @@ main (int argc, char **argv)
         printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
         chdir (proc_cwd);
+        execute_filter(bFilter,scs_exe,filter);
         execvp (shell, arglist);
         break;
       case ZOMBIE:
@@ -1136,6 +1143,7 @@ main (int argc, char **argv)
         print_ints(numbers,numbers_c);
         printf("...\n");
         arglist = make_arglist (argv[0], "-s", fullpath, datafile,numbers_c, numbers);
+        execute_filter(bFilter,scs_exe,filter);
         execv (argv[0], arglist);
         break;
 
@@ -1151,6 +1159,7 @@ main (int argc, char **argv)
         printf("\n");
         arglist =
           make_arglist (argv[0], "-s", fullpath, datafile, procs_c-1, args);
+        execute_filter(bFilter,scs_exe,filter);
         execv (argv[0], arglist);
 
         break;
@@ -1173,6 +1182,7 @@ main (int argc, char **argv)
         printf(")\n");
         arglist =
           make_arglist (argv[0], "-s", fullpath, datafile, number, args);
+        execute_filter(bFilter,scs_exe,filter);
         execv (argv[0], arglist);
         break;
       case EDIT:
