@@ -862,7 +862,6 @@ execute_filter(int bFilter, char *scs_exe, char *filter)
       system (command);
       free(command); free(command0);
     }
-  free(filter);
 }
 
 void
@@ -1093,7 +1092,6 @@ main (int argc, char **argv)
     fclose (fp);
     free(proc_vim);
     //free(proc_cwd);
-    free(proc_exe);
     free(title);
     free(timesaved);
     free(buftext);
