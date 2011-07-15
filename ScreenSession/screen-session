@@ -55,12 +55,12 @@ fi
 if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     scsfile="$scsfiledir/___scspipe-$$"
     scsfiletmp="$scsfiledir/___scstmp-$$"
-
     
     if [ -d "$scsfile" ]; then
         /bin/rm -f $scsfile
     fi
     mkfifo $scsfile
+
     $SCREENPATH -S SCREEN-SESSION_SAVER -mdc /dev/null $PYTHONBIN $SCRIPTPATH/screen_saver.py $mode "logpipe=$scsfile" --special-output "$scsfiletmp" --session "$session" "$@"
     #$PYTHONBIN $SCRIPTPATH/screen_saver.py $mode logpipe=  --special-output "$scsfiletmp" --session "$session" "$@"
     cat $scsfile
@@ -113,6 +113,10 @@ else
         esac
     done
     shift $(($OPTIND - 1))
+    
+    if [ "$session" = "." ]; then
+        session=`$PYTHONBIN $SCRIPTPATH/sessionname.py "$session"`
+    fi
 
     if [ $mode = "name" -o $mode = "n" ]; then
         if [ $bSession -eq 0 ]; then
