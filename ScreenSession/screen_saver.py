@@ -229,9 +229,9 @@ def main():
     maxwin_real=scs.maxwin()
     if (maxwin==-1):
         maxwin=maxwin_real
-
     scs.MAXWIN = maxwin
     scs.MAXWIN_REAL = maxwin_real
+
     scs.force = force
     scs.enable_layout=enable_layout
     scs.exact=bExact

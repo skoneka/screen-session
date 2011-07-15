@@ -71,7 +71,6 @@ class ScreenSaver(object):
 
         if self.enable_layout:
             out("\nSaving layouts:")
-            self.homewindow_last,title=self.get_number_and_title()
             self.__save_layouts()
 
         out("\nSaving windows:")
