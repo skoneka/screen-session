@@ -16,39 +16,39 @@ unpractial/useless tools:
 
 
 help_help="\
-Usage:\t screen-session [mode] [options]\n\
+Usage:   screen-session [mode] [options]\n\
 A collection of utilities for GNU Screen.\n\
 \n\
-Help:\t scs [mode] --help\n\
-     \t scs help [mode]\n\
+Help:    scs help [mode]\n\
 \n\
 Options supported by all tools:\n\
-    -S [target]\t- target Screen session name\n\
+    -S [target] - target Screen session name, \".\" denotes the current session\n\
+    --help      - print detailed mode's help\n\
 \n\
 Environment variables:\n\
-    SCREENPATH\t- determines GNU Screen executable path\n\
-    PYTHONBIN\t- Python interpreter path\n\
+    SCREENPATH  - determines GNU Screen executable path\n\
+    PYTHONBIN   - Python interpreter path\n\
 \n\
 Session saver modes:\n\
-    save\t- save session\n\
-    load\t- load session\n\
-    ls  \t- list saved sessions\n\
+    save        - save a session\n\
+    load        - load a session from a save file\n\
+    ls          - list saved sessions\n\
 \n\
 Other tools:\n\
-    dump\t- print informations about windows in session\n\
-    find-file\t- find open files in windows\n\
-    group\t- move windows to a group\n\
-    kill\t- send a signal to the last process started in a window\n\
-    kill-group\t- kill a group and all windows inside\n\
-    kill-zombie\t- kill all zombie windows in session\n\
-    layoutlist\t- display a list of layouts in session\n\
-    manager\t- sessions manager with split screen preview\n\
-    name\t- get or set sessionname\n\
-    nest-layout\t- nest a layout in the current region\n\
-    new-window\t- open a Screen window with the same working directory\n\
-    regions\t- display a number in each region (tmux display-panes)\n\
-    renumber\t- renumber windows to fill the gaps\n\
-    subwindows\t- print windows contained in a group\n\
+    dump        - print informations about windows in the session\n\
+    find-file   - find open files in windows\n\
+    group       - move windows to a group\n\
+    kill        - send a signal to the last process started in a window\n\
+    kill-group  - kill a group and all windows inside\n\
+    kill-zombie - kill all zombie windows in the session\n\
+    layoutlist  - display a list of layouts in session\n\
+    manager     - sessions manager with split screen preview\n\
+    name        - get or set the sessionname\n\
+    nest-layout - nest a layout in the current region\n\
+    new-window  - open a new Screen window with the same working directory\n\
+    regions     - display a number in each region (tmux display-panes)\n\
+    renumber    - renumber windows to fill the gaps\n\
+    subwindows  - print windows contained in a group\n\
 \n\
 Please report bugs to http://github.com/skoneka/screen-session/issues\
 "
@@ -212,9 +212,9 @@ Options:\n\
 -w              - create a temporary window for layoutlist\n\
 -t <width>      - set title width ( default = 11 )\n\
 -c              - do not terminate layoutlist after selecting a layout\n\
-                  or reselect a running layoutlist, best used with -l option,\n\
-                  there may be running only one layoutlist started with "-c" per\n\
-                  session\n\
+                  or reselect a running layoutlist, best used with "-l" option,\n\
+                  there should be running only one layoutlist started with "-c"\n\
+                  per session\n\
 \n\
 Keys:\n\
 ?               - display help\n\
