@@ -16,21 +16,43 @@ def handler(signum,frame):
 def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,height):
     global MAXTITLELEN
     y,x = screen.getmaxyx()
-    curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
-    curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
-    curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
-    curses.init_pair(4,curses.COLOR_RED, curses.A_NORMAL)
-    norm = curses.A_NORMAL
-    bold = curses.A_BOLD
-    dim  = curses.A_DIM
+
+    # default background colors
+    try:
+        curses.use_default_colors()
+    except:
+        pass
+    
+    ## custom background
+    #curses.init_pair(5,curses.COLOR_WHITE, curses.COLOR_BLACK)
+    #screen.bkgd(' ',curses.color_pair(5))
+
+    ## color scheme for a light background
+    #curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
+    #curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    #curses.init_pair(3,curses.COLOR_BLACK, curses.COLOR_GREEN)
+    #curses.init_pair(4,curses.COLOR_RED, curses.COLOR_WHITE)
+    #
+    ## color scheme for a dark background
+    #curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
+    #curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    #curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
+    #curses.init_pair(4,curses.COLOR_RED, curses.A_NORMAL)
+
+    # ?universal? color scheme
+    curses.init_pair(1, -1, curses.COLOR_YELLOW)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLUE)
+    curses.init_pair(3, -1, curses.COLOR_GREEN)
+    curses.init_pair(4, -1, -1)
+
     screen.keypad(1)
     x=None
     last_sel_num = sel_num_before_search = sel_num = curlay
-    c_h = curses.color_pair(1) | bold
-    c_n = norm
-    c_curlay_n = curses.color_pair(2)
+    c_h = curses.color_pair(1) | curses.A_BOLD
+    c_n = curses.A_NORMAL
+    c_curlay_n = curses.color_pair(2) | curses.A_BOLD 
     c_find = curses.color_pair(3)
-    c_error = curses.color_pair(4)
+    c_error = curses.color_pair(4) | curses.A_BOLD
     row_len=None
     col_len=None
     search_num=None
@@ -150,13 +172,13 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 else:
                     search = ''
                 screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
-                s = "%s%sI"%(prompt,search)
+                s = "%s%s"%(prompt,search)
                 status_len=len(s)
-                screen.addstr(y-1,0,s,c_n)
+                screen.addstr(y-1,0,s,curses.A_BOLD)
             else:
                 screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
                 s="%s"%(errormsg)
-                screen.addstr(y-1, 2, s, c_error|bold)
+                screen.addstr(y-1, 2, s, c_error| curses.A_BOLD )
                 status_len=len(s)
                 errormsg=''
 
@@ -293,6 +315,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 pos_y_c = pos_y
                 pos_x = pos_y = 0
                 laytable,pos_start = create_table_std(ss, screen, curlay, mru_layouts, 0)
+                if len(laytable) > 1:
+                    pos_y = 1
                 layinfo = mru_layouts
             else:
                 layinfo = list(layinfo_c)
@@ -301,7 +325,6 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 pos_y = pos_y_c
                 pos_x_c = pos_y_c = layinfo_c = laytable_c = None
             screen.erase()
-            pass
         elif x in range(ord('0'),ord('9')+1):
             if not searching_num:
                 searching_num = True
@@ -365,7 +388,7 @@ def create_table_std(ss, screen, curlay, layinfo, lnum):
         col = i%maxrows
         if num == lnum:
             title = '*'+title
-        laytable[col].append((num,title[:MAXTITLELEN]))
+        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
         if curlay==num:
             row = len(laytable[col])-1
             pos_start=(row,col)
@@ -407,11 +430,11 @@ def create_table(ss, screen, curlay, layinfo, lnum, height):
 def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     global lock_and_com_file
     signal.signal(signal.SIGINT,handler)
+    session = session.split('.',1)[0]
 
     ret = 0
     ss = ScreenSaver(session)
-    if requirecleanup_win:
-        wnum = os.getenv('WINDOW')
+    wnum = os.getenv('WINDOW')
     if requirecleanup_lay:
         lnum=ss.get_layout_number()[0]
     else:
@@ -445,8 +468,6 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     curses.start_color()
     curses.noecho()
     #screen.notimeout(1)
-    #curses.init_pair(3,curses.COLOR_RED, curses.COLOR_WHITE)
-    #screen.bkgd(' ',curses.color_pair(3))
 
     try:
         choice = menu_table(ss,screen,lnum,curwin,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
