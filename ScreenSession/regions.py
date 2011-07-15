@@ -105,7 +105,7 @@ def handler(signum,frame):
 
     if number!=0 and bSelect:
         # this will work properly up to 62 regions (MAXSTR-4)/8
-        command=SCREEN+' -S %s -X eval'%session
+        command=SCREEN+' -S "%s" -X eval'%session
         if number<0:
             number=abs(number)
             cfocus='focus prev'
@@ -136,7 +136,7 @@ def cleanup():
 
 
 def prepare_windows(scs):
-    print('prepare_windows()')
+    print('prepare_windows(%s)'%scs.pid)
     global focusminsize
     regions=None
     regions=sc.get_regions(scs.pid)

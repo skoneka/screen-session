@@ -16,7 +16,7 @@ except:
     ppid=-1
 session=sys.argv[2]
 tdir = sys.argv[3]
-session_arg="-S %s"%session
+session_arg='-S "%s"'%session
 cwin = sc.get_current_window(session)
 windows_old = sc.parse_windows(sc.get_windows(session))[0]
 
