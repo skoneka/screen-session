@@ -24,26 +24,17 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
         pass
     
     ## custom background
-    #curses.init_pair(5,curses.COLOR_WHITE, curses.COLOR_BLACK)
-    #screen.bkgd(' ',curses.color_pair(5))
-
-    ## color scheme for a light background
-    #curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
-    #curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
-    #curses.init_pair(3,curses.COLOR_BLACK, curses.COLOR_GREEN)
-    #curses.init_pair(4,curses.COLOR_RED, curses.COLOR_WHITE)
-    #
-    ## color scheme for a dark background
-    #curses.init_pair(1,curses.COLOR_BLACK, curses.COLOR_YELLOW)
-    #curses.init_pair(2,curses.COLOR_YELLOW, curses.COLOR_BLUE)
-    #curses.init_pair(3,curses.COLOR_WHITE, curses.COLOR_GREEN)
-    #curses.init_pair(4,curses.COLOR_RED, curses.A_NORMAL)
+    #curses.init_pair(8,curses.COLOR_WHITE, curses.COLOR_BLACK)
+    #screen.bkgd(' ',curses.color_pair(8))
 
     # ?universal? color scheme
     curses.init_pair(1, -1, curses.COLOR_YELLOW)
     curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLUE)
     curses.init_pair(3, -1, curses.COLOR_GREEN)
     curses.init_pair(4, -1, -1)
+    curses.init_pair(5, curses.COLOR_RED, -1)
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_YELLOW)
+    curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLUE)
 
     screen.keypad(1)
     x=None
@@ -53,6 +44,9 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
     c_curlay_n = curses.color_pair(2) | curses.A_BOLD 
     c_find = curses.color_pair(3)
     c_error = curses.color_pair(4) | curses.A_BOLD
+    c_project = curses.color_pair(5) | curses.A_BOLD
+    c_h_project = curses.color_pair(6)
+    c_curlay_project = curses.color_pair(7) | curses.A_BOLD
     row_len=None
     col_len=None
     search_num=None
@@ -106,7 +100,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 except:
                     continue
         elif searching_num:
-            bfind=False
+            bfound=False
             if not search_num:
                 sn = sel_num_before_search
                 searching_num = False
@@ -119,36 +113,71 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                         if sn == num:
                             pos_x=j
                             pos_y=i
-                            bfind=True
+                            bfound=True
                             break
-                    if bfind:
+                    if bfound:
                         break
 
+        project_title = None
+        bfound=False
         for i,row in enumerate(laytable):
             for j,cell in enumerate(row):
                 num,title=cell
                 if sel_num == last_sel_num and j==pos_x and i==pos_y:
-                    color = c_h
                     sel_num = num
                     last_sel_num = sel_num
                     row_len = len(row)-1
+                    project_title = title.lower()
+                    bfound=True
+                    break
                 elif not sel_num == last_sel_num and sel_num == num:
                     pos_x=j
                     pos_y=i
-                    color=c_h
                     last_sel_num = sel_num
                     row_len = len(row)-1
+                    project_title = title.lower()
+                    bfound=True
+                    break
+            if bfound:
+                break
+
+
+        for i,row in enumerate(laytable):
+            for j,cell in enumerate(row):
+                num,title=cell
+                bsel = False
+                if sel_num == num:
+                    color=c_h
+                    c_p = c_h_project
+                    bsel = True
                 elif num==curlay:
                     color=c_curlay_n
+                    c_p = c_curlay_project
                 else:
                     color=c_n
+                    c_p = c_project
                 try:
                     screen.addstr(i,j*(MAXTITLELEN+5)," %-4s%s"%(num,title),color)
+                    tl = title.lower()
+                    pi = 0
+                    for k,l in enumerate(tl):
+                        try:
+                            if l == project_title[k]:
+                                pi += 1
+                            else:
+                                break
+                        except:
+                            break
+                    if pi > 1:
+                        if bsel:
+                            screen.addstr(i,j*(MAXTITLELEN+5)," %-4s"%(num),c_p)
+                        else:
+                            screen.addstr(i,j*(MAXTITLELEN+5)+5,"%s"%(title[0:pi]), c_p)
                     if findNext:
                         s = n_search_title
                     else:
                         s = search_title
-                    tfi = title.lower().strip().index(s.lower())
+                    tfi = tl.strip().index(s.lower())
                     screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]), c_find)
                 except:
                     pass
@@ -177,8 +206,12 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 screen.addstr(y-1,0,s,curses.A_BOLD)
             else:
                 screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
-                s="%s"%(errormsg)
-                screen.addstr(y-1, 2, s, c_error| curses.A_BOLD )
+                if errormsg:
+                    s="%s"%(errormsg)
+                    screen.addstr(y-1, 2, s, c_error| curses.A_BOLD )
+                else:
+                    s='Press \'?\' to view help'
+                    screen.addstr(y-1, 2, s, c_n )
                 status_len=len(s)
                 errormsg=''
 
@@ -251,6 +284,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pass
         elif x==ord('/'):
             searching_title = True
+            searching_num = False 
             search_title = '' 
         elif x==ord('\n') or x == ord(' '):
             if layinfo_c:
@@ -307,6 +341,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pass
             screen.refresh()
             x = screen.getch()
+            screen.erase()
         elif x == ord('m'):
             if not layinfo_c:
                 layinfo_c = list(layinfo)
@@ -337,6 +372,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 except:
                     pass
         else:
+            searching_num = False
             for i,row in enumerate(laytable):
                 try:
                     a = row[pos_x]
