@@ -5,6 +5,7 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 import curses
 
+AUTOSEARCH = True
 AUTOSEARCH_MIN_MATCH = 2
 MAXTITLELEN = 11
 NO_END = False
@@ -170,21 +171,22 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 try:
                     screen.addstr(i,j*(MAXTITLELEN+5)," %-4s%s"%(num,title),color)
                     tl = title.lower()
-                    pi = 0
-                    for k,l in enumerate(tl):
-                        try:
-                            if l == project_title[k]:
-                                pi += 1
-                            else:
+                    if E_AUTOSEARCH:
+                        pi = 0
+                        for k,l in enumerate(tl):
+                            try:
+                                if l == project_title[k]:
+                                    pi += 1
+                                else:
+                                    break
+                            except:
                                 break
-                        except:
-                            break
-                    if pi >= AUTOSEARCH_MIN_MATCH:
-                        if bsel:
-                            screen.addstr(i,j*(MAXTITLELEN+5)," %-4s"%(num),c_p)
-                        else:
-                            screen.addstr(i,j*(MAXTITLELEN+5)+5,"%s"%(title[0:pi]), c_p)
-                        c_f = c_find_project
+                        if pi >= AUTOSEARCH_MIN_MATCH:
+                            if bsel:
+                                screen.addstr(i,j*(MAXTITLELEN+5)," %-4s"%(num),c_p)
+                            else:
+                                screen.addstr(i,j*(MAXTITLELEN+5)+5,"%s"%(title[0:pi]), c_p)
+                            c_f = c_find_project
                     if findNext:
                         s = n_search_title
                     else:
@@ -635,7 +637,15 @@ if __name__=='__main__':
         MAXTITLELEN = 11
 
     try:
-        height = int(sys.argv[8])
+        if sys.argv[8]=='1':
+            AUTOSEARCH = True
+        else:
+            AUTOSEARCH = False
+    except:
+        AUTOSEARCH = True
+
+    try:
+        height = int(sys.argv[9])
     except:
         height = 20
 
