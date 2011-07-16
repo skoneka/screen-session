@@ -41,7 +41,7 @@ Other tools:\n\
     kill        - send a signal to the last process started in a window\n\
     kill-group  - kill a group and all windows inside\n\
     kill-zombie - kill all zombie windows in the session\n\
-    layoutlist  - display a list of layouts in session\n\
+    layoutlist  - display a list of layouts in the session\n\
     manager     - sessions manager with split screen preview\n\
     name        - get or set the sessionname\n\
     nest-layout - nest a layout in the current region\n\
@@ -202,7 +202,7 @@ help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
        scs ll\n\
        :bind l at 0 exec scs layoutlist -l -c 20\n\
 \n\
-Display a list of layouts. There are two list creation algorithms.\n\
+Displays a browseable list of layouts. There are two list creation algorithms.\n\
 If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers\n\
 are modulo divided by HEIGHT and the reminder determines their Y position.\n\
 This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
@@ -225,6 +225,7 @@ n and p         - next / previous search result\n\
 NUMBER          - move to a layout\n\
 r or C-c or C-l - refresh the layout list\n\
 m               - toggle MRU view, usable only if running with "-c" option\n\
+v               - toggle search/autohighlight results view\n\
 q               - quit / select previous layout\n\
 Q               - force quit if "-c" option was used\
 '
@@ -316,8 +317,10 @@ screen-session save -S SESSIONNAME mysavedsession\n\
 scs save --force\n\
 #3# save the current session without layouts\n\
 scs save --no-layout\n\
-#4# run session saver after 3 minutes of inactivity.\n\
-:idle 180 at 0 exec scs save --force --log /dev/null\
+#4# run session saver after 3 minutes of inactivity, exclude group SECURE\n\
+:idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null\n\
+#5# a binding which works after changing the sessioname\n\
+bind S eval 'colon' 'stuff \"at 0 exec screen -mdc /dev/null scs save -H SECURE -f -S \\\"$PID.$STY\\\"\"^M'\
 "
 
 help_saver_load="Usage: screen-session load [-S sessionname] [options] [source_savefile]\n\
