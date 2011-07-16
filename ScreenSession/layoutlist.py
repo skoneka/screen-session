@@ -7,37 +7,11 @@ if __name__=='__main__':
     helper = os.getenv('PYTHONBIN')+' '+os.path.join(os.path.split(os.path.abspath(__file__))[0],'layoutlist_agent.py')
 
     session=sys.argv[1]
-    try:
-        if sys.argv[2]=='1':
-            newlay=True
-        else:
-            raise Exception
-    except:
-        newlay=False
-
-    try:
-        if sys.argv[3]=='1':
-            newwin=True
-        else:
-            raise Exception
-    except:
-        newwin=False
-
-    try:
-        s_no_end = sys.argv[4]
-        if sys.argv[4]=='1':
-            no_end = True
-        else:
-            raise Exception
-    except:
-        s_no_end = '0'
-        no_end = False
-
-    try:
-        title_width=int(sys.argv[5])
-    except:
-        title_width = 11
-    
+    newlay = True if sys.argv[2]=='1' else False
+    newwin = True if sys.argv[3]=='1' else False
+    s_no_end = sys.argv[4]
+    no_end = True if sys.argv[4]=='1' else False
+    title_width=int(sys.argv[5])
     E_AUTOSEARCH = sys.argv[6]
 
     try:
@@ -64,7 +38,7 @@ if __name__=='__main__':
                 clay = ss.get_layout_number()[0]
                 f.close()
                 f = open( lock_and_com_file, 'w' )
-                f.write(pid+'\n'+tmpwin+'\n'+tmplay+'\n'+cwin+'\n'+clay+'\n'+str(title_width)+'\n'+str(height))
+                f.write(str(pid)+'\n'+str(tmpwin)+'\n'+str(tmplay)+'\n'+str(cwin)+'\n'+str(clay)+'\n'+str(title_width)+'\n'+str(height))
                 f.close()
                 from signal import SIGINT
                 os.kill(int(pid),SIGINT)

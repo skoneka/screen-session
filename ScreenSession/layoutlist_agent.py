@@ -5,7 +5,7 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 import curses
 
-AUTOSEARCH = True
+E_AUTOSEARCH = True
 AUTOSEARCH_MIN_MATCH = 2
 MAXTITLELEN = 11
 NO_END = False
@@ -206,6 +206,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
         if not searching_title:
             search_title=None
         try:
+            screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
             if searching_title or searching_num:
                 if searching_title:
                     prompt='> Search: '
@@ -217,12 +218,10 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     search = search_num
                 else:
                     search = ''
-                screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
                 s = "%s%s"%(prompt,search)
                 status_len=len(s)
                 screen.addstr(y-1,0,s,curses.A_BOLD)
             else:
-                screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
                 if errormsg:
                     s="%s"%(errormsg)
                     screen.addstr(y-1, 2, s, c_error| curses.A_BOLD )
@@ -595,54 +594,13 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
 
 if __name__=='__main__':
     session=sys.argv[1]
-
-    try:
-        curwin=sys.argv[2]
-    except:
-        curwin=None
-
-    try:
-        curlay=sys.argv[3]
-    except:
-        curlay,currentlayoutname=ss.get_layout_number()
-
-    try:
-        if sys.argv[4]=='1':
-            requirecleanup_win=True
-        else:
-            requirecleanup_win=False
-    except:
-        requirecleanup_win=False
-
-    try:
-        if sys.argv[5]=='1':
-            requirecleanup_lay=True
-        else:
-            requirecleanup_lay=False
-    except:
-        requirecleanup_lay=False
-
-    try:
-        if sys.argv[6]=='1':
-            NO_END = True
-        else:
-            NO_END = False
-    except:
-        NO_END = False
-
-
-    try:
-        MAXTITLELEN = int(sys.argv[7])
-    except:
-        MAXTITLELEN = 11
-
-    try:
-        if sys.argv[8]=='1':
-            AUTOSEARCH = True
-        else:
-            AUTOSEARCH = False
-    except:
-        AUTOSEARCH = True
+    curwin=sys.argv[2]
+    curlay=sys.argv[3]
+    requirecleanup_win = True if sys.argv[4]=='1' else False
+    requirecleanup_lay = True if sys.argv[5]=='1' else False
+    NO_END = True if sys.argv[6]=='1' else False
+    MAXTITLELEN = int(sys.argv[7])
+    E_AUTOSEARCH = True if sys.argv[8]=='1' else False
 
     try:
         height = int(sys.argv[9])

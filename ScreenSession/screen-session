@@ -80,7 +80,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
 else
     E_AUTOSEARCH='1'
     DIR=''
-    tOPT='none'
+    TITLE_WIDTH='11'
     cOPT='0'
     lOPT='0'
     wOPT='0'
@@ -95,7 +95,7 @@ else
         S)  session="$OPTARG"
             bSession=1
             ;;
-        t)  tOPT="$OPTARG"
+        t)  TITLE_WIDTH="$OPTARG"
             ;;
         P)  SHOWPID="0"
             ;;
@@ -182,7 +182,7 @@ else
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
-                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $tOPT $E_AUTOSEARCH "$@"
+                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH $E_AUTOSEARCH "$@"
                 ret=$?
             elif [ $mode = "renumber" ]; then
                 $PYTHONBIN $SCRIPTPATH/renumber.py "$session" "$@"
