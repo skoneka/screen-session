@@ -299,6 +299,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
       char *buf =
 	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
 		 23) * sizeof (char));
+      printf (PRIMER "unpacking: %s",session);
       sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
 		 session);
       system (buf);
@@ -745,20 +746,25 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       proc_args[proc_args_n + 3] =
 	malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
 		 strlen (VIM_INFO)+5) * sizeof (char));
+
       strcpy (proc_args[proc_args_n], "-S");
+
       strcpy (proc_args[proc_args_n + 1], basedir);
       strcat (proc_args[proc_args_n + 1], "/");
       strcat (proc_args[proc_args_n + 1], session);
       strcat (proc_args[proc_args_n + 1], "/");
       strcat (proc_args[proc_args_n + 1], proc_vim);
       strcat (proc_args[proc_args_n + 1], VIM_SESSION);
+
       strcpy (proc_args[proc_args_n + 2], "-i");
+
       strcpy (proc_args[proc_args_n + 3], basedir);
       strcat (proc_args[proc_args_n + 3], "/");
       strcat (proc_args[proc_args_n + 3], session);
       strcat (proc_args[proc_args_n + 3], "/");
       strcat (proc_args[proc_args_n + 3], proc_vim);
       strcat (proc_args[proc_args_n + 3], VIM_INFO);
+
       char *buf =
 	malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) + 5) * sizeof (char));
       strcpy (buf, session);
