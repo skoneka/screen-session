@@ -298,7 +298,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
       free (filepath);
       char *buf =
 	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
-		 23) * sizeof (char));
+		 30) * sizeof (char));
       printf (PRIMER "unpacking: %s",session);
       sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
 		 session);
