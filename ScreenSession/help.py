@@ -210,7 +210,9 @@ This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
 Options:\n\
 -l              - create a temporary layout and window for layoutlist\n\
 -w              - create a temporary window for layoutlist\n\
--t <width>      - set title width ( default = 11 )\n\
+-t <width=11>   - set title width\n\
+-a <min_len=2>  - minimum matching charecters for autohighlight,\n\
+                  min_len = 0 disables autohighlight\n\
 -c              - do not terminate layoutlist after selecting a layout\n\
                   or reselect a running layoutlist, best used with "-l" option,\n\
                   there should be running only one layoutlist started with "-c"\n\

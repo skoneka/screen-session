@@ -5,7 +5,6 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 import curses
 
-E_AUTOSEARCH = True
 AUTOSEARCH_MIN_MATCH = 2
 MAXTITLELEN = 11
 NO_END = False
@@ -171,7 +170,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 try:
                     screen.addstr(i,j*(MAXTITLELEN+5)," %-4s%s"%(num,title),color)
                     tl = title.lower()
-                    if E_AUTOSEARCH:
+                    if AUTOSEARCH_MIN_MATCH > 0:
                         pi = 0
                         for k,l in enumerate(tl):
                             try:
@@ -600,7 +599,7 @@ if __name__=='__main__':
     requirecleanup_lay = True if sys.argv[5]=='1' else False
     NO_END = True if sys.argv[6]=='1' else False
     MAXTITLELEN = int(sys.argv[7])
-    E_AUTOSEARCH = True if sys.argv[8]=='1' else False
+    AUTOSEARCH_MIN_MATCH = int(sys.argv[8])
 
     try:
         height = int(sys.argv[9])

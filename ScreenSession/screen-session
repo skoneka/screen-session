@@ -78,7 +78,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     done < $scsfiletmp
     /bin/rm -f $scsfiletmp
 else
-    E_AUTOSEARCH='1'
+    AUTOSEARCH='2'
     DIR=''
     TITLE_WIDTH='11'
     cOPT='0'
@@ -90,7 +90,7 @@ else
     shiftcount=0
     bSession=0
 
-    while getopts ":Prslcawt:S:d:": OPT; do
+    while getopts ":Prslca:wt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -111,7 +111,7 @@ else
             ;;
         d)  DIR="$OPTARG"
             ;;
-        a)  E_AUTOSEARCH="0"
+        a)  AUTOSEARCH="$OPTARG"
             ;;
         esac
     done
@@ -182,7 +182,7 @@ else
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
-                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH $E_AUTOSEARCH "$@"
+                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH "$AUTOSEARCH" "$@"
                 ret=$?
             elif [ $mode = "renumber" ]; then
                 $PYTHONBIN $SCRIPTPATH/renumber.py "$session" "$@"

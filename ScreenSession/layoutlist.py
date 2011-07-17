@@ -12,7 +12,7 @@ if __name__=='__main__':
     s_no_end = sys.argv[4]
     no_end = True if sys.argv[4]=='1' else False
     title_width=int(sys.argv[5])
-    E_AUTOSEARCH = sys.argv[6]
+    autosearch = sys.argv[6]
 
     try:
         height=int(sys.argv[7])
@@ -56,17 +56,17 @@ if __name__=='__main__':
     currentlayout,currentlayoutname=ss.get_layout_number()
     if newlay:
         if ss.get_layout_new('LAYOUTLIST'):
-            ss.screen('-t layoutlist %s %s %s %s 1 1 %s %s %s %s'%(helper,session,None,currentlayout,s_no_end,title_width,E_AUTOSEARCH,height))
+            ss.screen('-t layoutlist %s %s %s %s 1 1 %s %s %s %s'%(helper,session,None,currentlayout,s_no_end,title_width,autosearch,height))
         else:
             curwin = ss.get_number_and_title()[0]
-            ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s %s %s'%(helper,session,curwin,currentlayout,s_no_end,title_width,E_AUTOSEARCH,height))
+            ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s %s %s'%(helper,session,curwin,currentlayout,s_no_end,title_width,autosearch,height))
     elif newwin:
         curwin = ss.get_number_and_title()[0]
-        ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s %s %s'%(helper,session,curwin,currentlayout,s_no_end,title_width,E_AUTOSEARCH, height))
+        ss.screen('-t layoutlist %s %s %s %s 1 0 %s %s %s %s'%(helper,session,curwin,currentlayout,s_no_end,title_width,autosearch, height))
     else:
         import layoutlist_agent
         layoutlist_agent.MAXTITLELEN = title_width
         layoutlist_agent.NO_END = no_end
-        layoutlist_agent.E_AUTOSEARCH = True if E_AUTOSEARCH=='1' else False
+        layoutlist_agent.AUTOSEARCH_MIN_MATCH = int(autosearch)
         sys.exit(layoutlist_agent.run(session,False,False,None,currentlayout,height))
 
