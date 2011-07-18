@@ -228,7 +228,7 @@ NUMBER          - move to a layout\n\
 r or C-c or C-l - refresh the layout list\n\
 m               - toggle MRU view,\n\
 v               - toggle search/autohighlight results view\n\
-o               - toggle current layout selection\n\
+o               - toggle current and selected layout\n\
 q               - quit / select previous layout\n\
 Q               - force quit if "-c" option was used\
 '

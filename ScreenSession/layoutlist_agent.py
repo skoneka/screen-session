@@ -1,5 +1,5 @@
 ﻿#!/usr/bin/env python
-import os,sys,signal
+import os,sys,signal,pickle
 import GNUScreen as sc
 from util import tmpdir
 from ScreenSaver import ScreenSaver
@@ -15,6 +15,7 @@ def handler(signum,frame):
 
 def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,height):
     global MAXTITLELEN
+    global mru_file
     y,x = screen.getmaxyx()
 
     # default background colors
@@ -48,7 +49,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
     c_find_project = curses.color_pair(9)
     screen.keypad(1)
     x=None
-    last_sel_num = sel_num_before_search = sel_num = curlay
+    other_num = last_sel_num = sel_num_before_search = sel_num = curlay
     row_len=None
     col_len=None
     search_num=None
@@ -60,7 +61,10 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
     status_len = 0
     errormsg=''
     findNext=0
-    mru_layouts = []
+    try:
+        mru_layouts = pickle.load(open(mru_file, 'r'))
+    except:
+        mru_layouts = []
     view_layouts = []
     pos_x_c = pos_y_c = layinfo_c = laytable_c = None
     def mru_add(layout_num):
@@ -83,6 +87,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 layout_title = title
                 break
         mru_layouts.insert(0,(layout_num,layout_title))
+        pickle.dump( mru_layouts , open( mru_file, 'w' ))
 
     mru_add(curlay)
     while True:
@@ -150,7 +155,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     break
             if bfound:
                 break
-
+        if sel_num != curlay:
+            other_num = sel_num
         bSearchResults = False
         for i,row in enumerate(laytable):
             for j,cell in enumerate(row):
@@ -185,7 +191,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                                 screen.addstr(i,j*(MAXTITLELEN+5)," %-4s"%(num),c_p)
                             else:
                                 screen.addstr(i,j*(MAXTITLELEN+5)+5,"%s"%(title[0:pi]), c_p)
-                            c_f = c_find_project
+                            if not bsel:
+                                c_f = c_find_project
                     if findNext:
                         s = n_search_title
                     else:
@@ -234,7 +241,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             pass
         screen.refresh()
         x = screen.getch()
-        if x == -1 or x == 12 or ( x in (ord('r'),ord('R')) and not searching_title and not searching_num):
+        # refreshes layout list ^C ^L
+        if x in (-1,12,18) or ( x in (ord('r'),ord('R')) and not searching_title and not searching_num):
             if laytable_c:
                 pos_x = pos_x_c
                 pos_y = pos_y_c
@@ -276,6 +284,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             search_num=None
             search_title=None
             errormsg='Canceled'
+            n_search_title = search_title
         elif x == curses.KEY_BACKSPACE:
             try:
                 if len(search_num) == 0:
@@ -301,11 +310,11 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     search_title += chr(x)
                 except:
                     pass
-        elif x==ord('/'):
+        elif x in (ord('/'), ord(' ')):
             searching_title = True
             searching_num = False 
             search_title = '' 
-        elif x==ord('\n') or x == ord(' '):
+        elif x == ord('\n'):
             if layinfo_c:
                 layinfo = list(layinfo_c)
                 laytable = list(laytable_c)
@@ -340,16 +349,16 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 ss.command_at(False,'eval "layout select %s" "layout title"'%(curlay))
             else:
                 return curlay
-        elif x in (ord('n'),ord('N')):
+        elif x in (ord('n'),ord('P')):
             findNext = 1
-        elif x in (ord('p'),ord('P')):
+        elif x in (ord('p'),ord('N')):
             findNext = -1
         elif x in (curses.KEY_HOME, ord('^')):
             pos_x = 0
         elif x in (curses.KEY_END, ord('$')):
             pos_x = len(laytable[pos_y])-1
         elif x == curses.KEY_PPAGE:
-            pos_y = 0
+            pos_y = pos_y - 5 if pos_y - 5 > 0 else 0
         elif x == ord('?'):
             from help import help_layoutlist
             screen.erase()
@@ -361,7 +370,14 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             screen.refresh()
             x = screen.getch()
             screen.erase()
-        elif x == ord('m'):
+        elif x == ord('o'):
+            if sel_num != curlay:
+                other_num = sel_num
+                sel_num = curlay
+            else:
+                sel_num = other_num
+            b_force_sel_num = True
+        elif x in ( ord('m'), ord('a') ):
             screen.erase()
             if not layinfo_c:
                 layinfo_c = list(layinfo)
@@ -446,7 +462,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     break
             #sys.stderr.write("KEY(%d) POS(%d,%d) RLEN(%d) CLEN(%d)\n"%(x,pos_x,pos_y,row_len,col_len))
             if x == curses.KEY_NPAGE:
-                pos_y = col_len
+                pos_y = pos_y + 5 if pos_y + 5 < col_len else col_len
             elif x in (ord('j'), curses.KEY_DOWN):
                 if pos_y < col_len:
                     pos_y += 1
@@ -529,7 +545,7 @@ def create_table(ss, screen, curlay, layinfo, lnum, height):
 
 
 def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
-    global lock_and_com_file
+    global lock_and_com_file, mru_file
     signal.signal(signal.SIGINT,handler)
     session = session.split('.',1)[0]
 
@@ -541,6 +557,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
     else:
         lnum=None
 
+    mru_file = os.path.join(tmpdir,'___layoutlist_%s_MRU'%session)
     if NO_END:
         lock_and_com_file = os.path.join(tmpdir,'___layoutlist_%s'%session)
         f = open( lock_and_com_file, 'w')
