@@ -5,13 +5,13 @@ version_str="screen-session (%s) - a collection of tools for GNU Screen."%VERSIO
 
 '''
 broken/unfinished tools:
-    grab\t- grab a process and attach it to current tty\n\
-    \t\t  (requires injcode)\n\
-    sort\t- sort windows by title\n\
+    grab  - grab a process and attach it to current tty\n\
+          (requires injcode)\n\
+    sort  - sort windows by title\n\
     manager-remote - 
 
 unpractial/useless tools:
-    find-pid\t- find PIDs in windows (greping dump tool output is better)\n\
+    find-pid  - find PIDs in windows (greping dump tool output is better)\n\
 '''
 
 
@@ -62,15 +62,15 @@ Allows selecting, swapping and rotating. Inspired by tmux display-panes.\n\
 Requires an active layout.\n\
 \n\
 Keys:\n\
-goto region  -> number and <g> or <'> or <space>\n\
-swap regions -> number and <s>\n\
-rotate left  -> number and <l>\n\
-rotate right -> number and <r>\n\
+goto region  - number and [g] or ['] or [space]\n\
+swap regions - number and [s]\n\
+rotate left  - number and [l]\n\
+rotate right - number and [r]\n\
 \n\
-reverse goto region     -> number and <G>\n\
-swap regions and select -> number and <S>\n\
-rotate left  and select -> number and <L>\n\
-rotate right and select -> number and <R>\
+reverse goto region     - number and [G]\n\
+swap regions and select - number and [S]\n\
+rotate left  and select - number and [L]\n\
+rotate right and select - number and [R]\
 "
 
 help_kill="Usage: screen-session kill [options] [signal=TERM] [window=current]\n\
@@ -106,7 +106,7 @@ Start a new Screen window in the same working directory\n\
 on the position next to the current window.\n\
 \n\
 Options:\n\
--d <directory> - specify the new window\'s directory\
+-d [directory] - specify the new window\'s directory\
 '
 
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
@@ -116,9 +116,9 @@ Print informations about windows in session (MRU order by default).\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
 \n\
 Options:\n\
--P \t- do not show pid data\n\
--r \t- reverse the output\n\
--s \t- sort by window number\
+-P   - do not show pid data\n\
+-r   - reverse the output\n\
+-s   - sort by window number\
 "
 
 help_find_pid="Usage: screen-session find-pid [options] [PIDs]\n\
@@ -170,19 +170,19 @@ ALT + q   - quit\n\
 Alt + w   - wipe\n\
 \n\
 COMMANDS:\n\
-? or h    - display help\n\
-q[uit]    - exit session manager\n\
-e[nter]   - enter into a session\n\
-a[ttach] <name> - attach and select\n\
-d[etach] <name> - detach and deselect\n\
-n[ame] <name>   - rename\n\
-s[creen] <args> - create session\n\
-save <output>   - save session\n\
-w[ipe]    - wipe dead sessions\n\
-restart   - restart session manager\n\
-r[efresh] - refresh session list\n\
-l[ayout]  - toggle layout\n\
-kill K    - kill selected session\n\
+? or h          - display help\n\
+q[uit]          - exit session manager\n\
+e[nter]         - enter into a session\n\
+a[ttach] [name] - attach and select\n\
+d[etach] [name] - detach and deselect\n\
+n[ame] [name]   - rename\n\
+s[creen] [args] - create session\n\
+save [output]   - save session\n\
+w[ipe]          - wipe dead sessions\n\
+restart         - restart session manager\n\
+r[efresh]       - refresh session list\n\
+l[ayout]        - toggle layout\n\
+kill K          - kill selected session\n\
 "
 
 help_manager_remote="Usage: screen-session manager-remote\n\
@@ -210,8 +210,8 @@ This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
 Options:\n\
 -l              - create a temporary layout and window for layoutlist\n\
 -w              - create a temporary window for layoutlist\n\
--t <width=11>   - set title width\n\
--a <min_len=2>  - minimum matching charecters for autohighlight,\n\
+-t [width=11]   - set title width\n\
+-a [min_len=2]  - minimum matching charecters for autohighlight,\n\
                   min_len = 0 disables autohighlight\n\
 -c              - do not terminate layoutlist after selecting a layout\n\
                   or reselect a running layoutlist, best used with "-l" option,\n\
@@ -220,14 +220,15 @@ Options:\n\
 \n\
 Keys:\n\
 ?               - display help\n\
-ENTER and SPACE - confirm / select\n\
+ENTER           - confirm / select\n\
 ARROWS and hjkl - movement\n\
-/searchstring   - search layout titles\n\
+/ or SPACE      - start searching layout titles\n\
 n and p         - next / previous search result\n\
 NUMBER          - move to a layout\n\
 r or C-c or C-l - refresh the layout list\n\
-m               - toggle MRU view, usable only if running with "-c" option\n\
+m               - toggle MRU view,\n\
 v               - toggle search/autohighlight results view\n\
+o               - toggle current layout selection\n\
 q               - quit / select previous layout\n\
 Q               - force quit if "-c" option was used\
 '
@@ -254,25 +255,20 @@ help_name="Usage: screen-session name [options] [new_sessionname]\n\
 \n\
 Get or set sessionname.\
 "
-
-help_saver_modes='GNU Screen session saver.\n\
-Usage: screen-session [save|load|ls] [-S sessionname] [options] [savefile]'
-
-
 help_saver_other="Usage: screen-session other [options] \n\
  \n\
 Garden of Eden Creation Kit for GNU Screen.\n\
 Auxiliary mode, used mainly by screen-session-primer.\n\
 \n\
 Options:\n\
---pack <target>\n\
-  \tarchive unpacked savefile ( which must be accessible from --dir )\n\
---unpack <savefile>\n\
-  \tunpack savefile to /tmp/screen-session-$USER\n\
--l --log  <file>\n\
-  \toutput to a file instead of stdout\n\
--d --dir  <directory>\n\
-  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
+--pack [target]\n\
+    archive unpacked savefile ( which must be accessible from --dir )\n\
+--unpack [savefile]\n\
+    unpack savefile to /tmp/screen-session-$USER\n\
+-l --log  [file]\n\
+    output to a file instead of stdout\n\
+-d --dir  [directory = $HOME/.screen-sessions]\n\
+    directory holding saved sessions\
 "
 
 help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_filter]\n\
@@ -281,10 +277,10 @@ Garden of Eden Creation Kit for GNU Screen.\n\
 List saved sesssions.\n\
 \n\
 Options:\n\
--l --log  <file>\n\
-  \toutput to a file instead of stdout\n\
--d --dir  <directory>\n\
-  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\
+-l --log  [file]\n\
+    output to a file instead of stdout\n\
+-d --dir  [directory = $HOME/.screen-sessions]\n\
+    directory holding saved sessions\
 "
 
 help_saver_save="Usage: screen-session save [-S sessionname] [options] [target_savefile]\n\
@@ -295,22 +291,22 @@ Save GNU Screen and VIM sessions to a file.\n\
 \n\
 Options:\n\
 -f --force\n\
-  \tforce saving even if savefile with the same name already exists\n\
--e --exclude  <windows>\n\
-  \ta comma separated list of windows to be ignored during saving,\n\
-  \tif a window is a group all subwindows are also included\n\
--H --no-scroll  <windows>\n\
-  \ta comma separeted list of windows which scrollbacks will be ignored,\n\
-  \tif a window is a group all subwindows are also included,\n\
-  \tusing keyword \"all\" affects all windows\n\
+    force saving even if a savefile with the same name already exists\n\
+-e --exclude  [windows]\n\
+    a comma separated list of windows to be ignored during saving,\n\
+    if a window is a group all subwindows are also included\n\
+-H --no-scroll  [windows]\n\
+    a comma separeted list of windows which scrollbacks will be ignored,\n\
+    if a window is a group all subwindows are also included,\n\
+    using keyword \"all\" affects all windows\n\
 -y --no-layout\n\
-  \tdisable layout saving\n\
+    disable layout saving\n\
 -V --no-vim\n\
-  \tdisable vim session saving\n\
--l --log <file>\n\
-  \toutput to a file instead of stdout\n\
--d --dir  <directory>\n\
-  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
+    disable vim session saving\n\
+-l --log [file]\n\
+    output to a file instead of stdout\n\
+-d --dir  [directory = $HOME/.screen-sessions]\n\
+    directory holding saved sessions\n\
 \n\
 Examples:\n\
 #1# save Screen named SESSIONNAME as mysavedsession\n\
@@ -332,24 +328,24 @@ Load saved session from a file.\n\
 \n\
 Options:\n\
 -x --exact\n\
-  \tload session with the same window numbers, move existing windows,\n\
-  \tto OTHER_WINDOWS group and delete existing layouts\n\
+    load session with the same window numbers, move existing windows,\n\
+    to OTHER_WINDOWS group and delete existing layouts\n\
 -X --exact-kill\n\
-  \tsame as exact, but also kill all existing windows\n\
--F --force-start  <windows>\n\
+    same as exact, but also kill all existing windows\n\
+-F --force-start  [windows]\n\
     a comma separeted list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
     without waiting for user confirmation\n\
 -y --no-layout\n\
-  \tdisable layout loading\n\
+    disable layout loading\n\
 -n --no-group-wrap\n\
-  \tdo not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups\n\
+    do not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups\n\
 -m --no-mru\n\
-  \tdisable restoring of the Most Recently Used order of windows\n\
--l --log  <file>\n\
-  \toutput to a file instead of stdout\n\
--d --dir  <directory>\n\
-  \tdirectory holding saved sessions (default: $HOME/.screen-sessions)\n\
+    disable restoring of the Most Recently Used order of windows\n\
+-l --log  [file]\n\
+    output to a file instead of stdout\n\
+-d --dir  [directory = $HOME/.screen-sessions]\n\
+    directory holding saved sessions\n\
 \n\
 Examples:\n\
 #1# restore mysavedsession inside Screen named SESSIONNAME\n\

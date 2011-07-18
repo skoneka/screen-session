@@ -8,7 +8,7 @@ SRCMAIN2 = ${SRCDIR}/screen-session-helper.c
 EXE1 = ${SRCMAIN1:.c=}
 EXE2 = ${SRCMAIN2:.c=}
 SRCHEAD = ${SRCDIR}/screen-session-define.h 
-OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/help.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py ${SRCDIR}/subwindows.py ${SRCDIR}/screenrc_MANAGER ${SRCDIR}/layoutlist.py ${SRCDIR}/layoutlist_agent.py
+OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/help.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py ${SRCDIR}/subwindows.py ${SRCDIR}/screenrc_MANAGER ${SRCDIR}/layoutlist.py ${SRCDIR}/layoutlist_agent.py ${SRCDIR}/make_docs.py
 
 OBJ = ${SRCMAIN1:.c=.o} ${SRCMAIN2:.c=.o}
 pwd=`pwd`
@@ -38,14 +38,26 @@ clean:
 	@echo cleaning
 	@rm -f ${EXE1} ${EXE2} ${OBJ}
 
-dist:
+clean_www:
+	@rm -rf www
+
+docs: www
+
+www: www/index.html
+
+www/index.html: ${SRCDIR}/help.py ${SRCDIR}/make_docs.py
+	@echo building html documentation
+	@mkdir www
+	@python ${SRCDIR}/make_docs.py
+
+dist:  www
 	@echo creating dist tarball
 	@rm -rf screen-session-${VERSION}
-	@mkdir -p screen-session-${VERSION}
-	@mkdir -p screen-session-${VERSION}/${SRCDIR}
+	@mkdir -p screen-session-${VERSION} screen-session-${VERSION}/${SRCDIR} 
 	@cp -R Makefile config.mk LICENSE README INSTALL TODO gnu_screen.diff  screen-session-${VERSION}
-	@cp -R ${OTHSRC} ${SRCMAIN2} ${SRCMAIN1} screen-session-${VERSION}/${SRCDIR}
+	@cp -R ${OTHSRC} ${SRCMAIN2} ${SRCMAIN1} ${SRCHEAD} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
+	@cd screen-session-${VERSION}; make docs
 	@rm -f screen-session-${VERSION}.tar.gz
 	@tar -cf screen-session-${VERSION}.tar screen-session-${VERSION}
 	@gzip screen-session-${VERSION}.tar
@@ -77,4 +89,4 @@ uninstall:
 	@echo removing directory  ${INSTFOLDER}
 	@rm -r ${INSTFOLDER}
 
-.PHONY: all options clean dist install uninstall
+.PHONY: all options clean dist install uninstall docs
