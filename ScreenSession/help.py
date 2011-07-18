@@ -17,6 +17,7 @@ unpractial/useless tools:
 
 help_help="\
 Usage:   screen-session [mode] [options]\n\
+\n\
 A collection of utilities for GNU Screen.\n\
 \n\
 Help:    scs help [mode]\n\
@@ -92,7 +93,7 @@ help_kill_group="Usage: screen-session kill-group [options] [groupNum0] [groupNu
        scs kg\n\
 \n\
 Recursively kill groups and windows inside.\n\
-Accepts group titles and window numbers as arguments.\n\
+Accepts titles and window numbers as arguments.\n\
 A dot \".\" selects current window, 2 dots \"..\"  select current group.\n\
 Take extra care with this command.\
 "
@@ -102,8 +103,8 @@ help_new_window='Usage: screen-session new-window [options] [program]\n\
        scs nw\n\
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""\n\
 \n\
-Start a new Screen window in the same working directory\n\
-on the position next to the current window.\n\
+Start a new Screen window with the same working directory as the current window.\n\
+It also sets new window number to current number + 1.\n\
 \n\
 Options:\n\
 -d [directory] - specify the new window\'s directory\
@@ -138,7 +139,7 @@ tail -f /var/log/dmesg\n\
 scs find-file /var/log/dmesg\
 "
 
-help_grab="Grab a process and attach to the current tty.\n\
+_help_grab="Grab a process and attach to the current tty.\n\
 Works with applications without complicated output scheme.\n\
 A simple demonstration of injcode tool by Thomas Habets.\n\
 http://blog.habets.pp.se/2009/03/Moving-a-process-to-another-terminal\n\
@@ -238,7 +239,7 @@ help_renumber="Usage: screen-session renumber [options]\n\
 Renumber windows to fill the gaps.\
 "
 
-help_sort="Usage: screen-session sort [options]\n\
+_help_sort="Usage: screen-session sort [options]\n\
 \n\
 Sort windows by titles.\
 "
@@ -256,8 +257,7 @@ help_name="Usage: screen-session name [options] [new_sessionname]\n\
 Get or set sessionname.\
 "
 help_saver_other="Usage: screen-session other [options] \n\
- \n\
-Garden of Eden Creation Kit for GNU Screen.\n\
+\n\
 Auxiliary mode, used mainly by screen-session-primer.\n\
 \n\
 Options:\n\
@@ -272,8 +272,7 @@ Options:\n\
 "
 
 help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_filter]\n\
- \n\
-Garden of Eden Creation Kit for GNU Screen.\n\
+\n\
 List saved sesssions.\n\
 \n\
 Options:\n\
@@ -286,7 +285,6 @@ Options:\n\
 help_saver_save="Usage: screen-session save [-S sessionname] [options] [target_savefile]\n\
        :bind S at 0 exec screen -mdc /dev/null screen-session save -H SECURE -f -S $PID.$STY\n\
 \n\
-Garden of Eden Creation Kit for GNU Screen.\n\
 Save GNU Screen and VIM sessions to a file.\n\
 \n\
 Options:\n\
@@ -322,8 +320,7 @@ bind S eval 'colon' 'stuff \"at 0 exec screen -mdc /dev/null scs save -H SECURE 
 "
 
 help_saver_load="Usage: screen-session load [-S sessionname] [options] [source_savefile]\n\
- \n\
-Garden of Eden Creation Kit for GNU Screen.\n\
+\n\
 Load saved session from a file.\n\
 \n\
 Options:\n\
