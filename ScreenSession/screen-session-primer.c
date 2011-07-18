@@ -1198,7 +1198,7 @@ main (int argc, char **argv)
         sprintf (buf1, "%s/%s", fullpath, datafile);
         char *buf2 =
 	  malloc ((strlen(EDITOR) + strlen (fullpath) + strlen (datafile) + 20 ) * sizeof (char));
-        sprintf( buf2, "/tmp/screen-session-%s/primer_edit_%s_%d",getenv("USER"),session,getpid() );
+        sprintf( buf2, "\"/tmp/screen-session-%s/primer_edit_%s_%d\"",getenv("USER"),session,getpid() );
         char *buf0 = malloc ((strlen(EDITOR) + strlen (buf2) + 5 ) * sizeof (char));
         sprintf (buf0, "%s %s", EDITOR, buf2);
         printf(PRIMER "Editing source: %s\n",buf1);
