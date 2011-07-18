@@ -119,8 +119,7 @@ def removeit(path):
 def remove(path):
     try:
         os.remove(path)
-    except Exception,x:
-        #print(str(x))
+    except Exception:
         pass
 
 def cleantmp(tmpdir,home,projectsdir,archiveend,blacklistfile,timeout):
@@ -163,8 +162,8 @@ def archiveme(tmpdir,home,projectsdir,savedir,archiveend,target):
             if bInclude:
                 t1.add(f,os.path.split(f)[1])
         t1.close()
-    except Exception,x:
-        print(str(x))
+    except Exception:
+        print('Failed to archive.')
         raise x
 
 

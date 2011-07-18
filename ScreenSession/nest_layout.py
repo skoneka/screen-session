@@ -29,8 +29,7 @@ def main():
             hsize=int(regions.term_size_x),int(regions.term_size_y)
             if regions.regions:
                 break
-        except Exception,x:
-            print(x)
+        except Exception:
             sys.exit(2)
             pass
     print ("homelayout: %s"%homelayout)

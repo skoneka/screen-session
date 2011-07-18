@@ -591,7 +591,7 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         choice = menu_table(ss,screen,lnum,curwin,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
         if requirecleanup_lay and choice == lnum:
             choice = curlay
-    except Exception,x:
+    except Exception:
         import traceback
         traceback.print_exc(file=sys.stderr)
         choice = curlay
