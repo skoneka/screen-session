@@ -1,4 +1,23 @@
 #!/usr/bin/env python2
+#
+#    make_docs.py : script generating html docs
+#
+#    Copyright (C) 2010-2011 Artur Skonecki
+#
+#    Authors: Artur Skonecki <admin [>at<] adb.cba.pl>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import sys,inspect,re
 import help
 
@@ -26,6 +45,7 @@ HTML_END = """\
 
 MENU_ITEMS = (
         ('index.html', 'About'),\
+        ('news.html', 'News'),\
         ('documentation.html', 'Documentation'),\
         ('installation.html', 'Installation'),\
         ('gnu_screen.html', 'GNU Screen modifications'),\
@@ -128,9 +148,13 @@ def write_gnu_screen():
     menu = start_page(url)
     end_page(menu)
 
-def write_about():
-    url = 'about.html'
+def write_news():
+    url = 'news.html'
     menu = start_page(url)
+    print("""<samp>""")
+    for line in open('NEWS','r'):
+        print(line + '<br>')
+    print("""</samp>""")
     end_page(menu)
 
 def write_documentation():
@@ -195,8 +219,8 @@ def write_documentation():
 
 if __name__ == '__main__':
     write_index()
+    write_news()
     write_documentation()
     write_installation()
     write_gnu_screen()
     write_screenshots()
-    write_about()

@@ -1,4 +1,22 @@
 ﻿#!/usr/bin/env python
+#
+#    help.py : screen-session help system
+#
+#    Copyright (C) 2010-2011 Artur Skonecki
+#
+#    Authors: Artur Skonecki <admin [>at<] adb.cba.pl>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 VERSION='git'
 version_str="screen-session (%s) - a collection of tools for GNU Screen."%VERSION
@@ -10,7 +28,7 @@ broken/unfinished tools:
     sort  - sort windows by title\n\
     manager-remote -
 
-unpractial/useless tools:
+Unpractical/useless tools:
     find-pid  - find PIDs in windows (greping dump tool output is better)\n\
 '''
 
@@ -40,10 +58,10 @@ Other tools:\n\
     find-file   - find open files in windows\n\
     group       - move windows to a group\n\
     kill        - send a signal to the last process started in a window\n\
-    kill-group  - kill a group and all windows inside\n\
+    kill-group  - recursively kill a group and all windows inside\n\
     kill-zombie - kill all zombie windows in the session\n\
-    layoutlist  - display a list of layouts in the session\n\
-    manager     - sessions manager with split screen preview\n\
+    layoutlist  - display a browseable list of layouts in the session\n\
+    manager     - a sessions manager with a split Screen window preview\n\
     name        - get or set the sessionname\n\
     nest-layout - nest a layout in the current region\n\
     new-window  - open a new Screen window with the same working directory\n\
@@ -83,7 +101,7 @@ For a list of signal names run: $ pydoc signal\n\
 WARNING: sending SIGKILL to the current window may crash Screen\
 "
 
-help_kill_zombie="Usage: screen-session kill-zombie [options] [groupids]\n\
+help_kill_zombie="Usage: screen-session kill-zombie [options] [group_ids]\n\
        scs kz\n\
 \n\
 Kill all zombie windows in session. Optionally specify target groups.\
@@ -212,8 +230,8 @@ Options:\n\
 -l              - create a temporary layout and window for layoutlist\n\
 -w              - create a temporary window for layoutlist\n\
 -t [width=11]   - set title width\n\
--a [min_len=2]  - minimum matching charecters for autohighlight,\n\
-                  min_len = 0 disables autohighlight\n\
+-a [min_len=2]  - minimum matching charecters for auto highlight,\n\
+                  min_len = 0 disables auto highlight\n\
 -c              - do not terminate layoutlist after selecting a layout\n\
                   or reselect a running layoutlist, best used with "-l" option,\n\
                   there should be running only one layoutlist started with "-c"\n\
@@ -234,10 +252,12 @@ q               - quit / select previous layout\n\
 Q               - force quit if "-c" option was used\
 '
 
-help_renumber="Usage: screen-session renumber [options]\n\
+help_renumber="""Usage: screen-session renumber [options]\n\
 \n\
-Renumber windows to fill the gaps.\
-"
+Renumber windows to fill the gaps.\n\
+Use case: suppose you are trying to run ":at 0 some_command" but there is\n\
+         no such window.
+"""
 
 _help_sort="Usage: screen-session sort [options]\n\
 \n\
@@ -254,7 +274,7 @@ A dot \".\" selects current window, 2 dots \"..\"  select current group.\
 help_name="Usage: screen-session name [options] [new_sessionname]\n\
        scs n\n\
 \n\
-Get or set sessionname.\
+Get or set the sessionname.\
 "
 help_saver_other="Usage: screen-session other [options] \n\
 \n\
@@ -273,7 +293,7 @@ Options:\n\
 
 help_saver_ls="Usage: screen-session save [-S sessionname] [options] [savefile_filter]\n\
 \n\
-List saved sesssions.\n\
+List saved sessions.\n\
 \n\
 Options:\n\
 -l --log  [file]\n\
@@ -294,7 +314,7 @@ Options:\n\
     a comma separated list of windows to be ignored during saving,\n\
     if a window is a group all subwindows are also included\n\
 -H --no-scroll  [windows]\n\
-    a comma separeted list of windows which scrollbacks will be ignored,\n\
+    a comma separated list of windows which scrollbacks will be ignored,\n\
     if a window is a group all subwindows are also included,\n\
     using keyword \"all\" affects all windows\n\
 -y --no-layout\n\
@@ -330,7 +350,7 @@ Options:\n\
 -X --exact-kill\n\
     same as exact, but also kill all existing windows\n\
 -F --force-start  [windows]\n\
-    a comma separeted list of windows which will start programs immediately,\n\
+    a comma separated list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
     without waiting for user confirmation\n\
 -y --no-layout\n\

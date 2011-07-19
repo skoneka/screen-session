@@ -1,4 +1,33 @@
-
+/*    
+ *    Copyright (C) 2010-2011 Artur Skonecki
+ *
+ *    Authors: Artur Skonecki <admin [>at<] adb.cba.pl>
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, version 3 of the License.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * =====================================================================================
+ *
+ *       Filename:  screen-session-define.h
+ *
+ *    Description:  header file for screen-session-primer.c and screen-session-helper.c
+ *
+ *        Version:  1.0
+ *        Created:  02.08.2010 18:21:25
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ * =====================================================================================
+ */
 #ifdef COLOR			/* if you dont want color remove '-DCOLOR' from config.mk */
 #define cyan_b  "\033[1;36m"	/* 1 -> bold ;  36 -> cyan */
 #define green_u "\033[4;32m"	/* 4 -> underline ;  32 -> green */

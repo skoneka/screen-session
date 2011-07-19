@@ -1,10 +1,23 @@
 #!/usr/bin/env python
-# file: new-window.py
-# author: Artur Skonecki
-# website: http://adb.cba.pl
-# description: start new GNU Screen window in the same working directory
+#
+#    new-window.py : open a new Screen window with the same working directory
+#
+#    Copyright (C) 2010-2011 Artur Skonecki
+#
+#    Authors: Artur Skonecki <admin [>at<] adb.cba.pl>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# screen-in-dir sessionname [program] [args..]
 import os,sys,platform
 import GNUScreen as sc
 from GNUScreen import SCREEN
