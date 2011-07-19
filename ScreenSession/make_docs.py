@@ -63,11 +63,13 @@ def end_page(menu):
     import datetime
     today = datetime.date.today()
     date = today.strftime("%B %d, %Y")
-    print("""<h6><center>
+    print("""
+    <center>
+    <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
     Last modified: %s
-    </center>
     </h6>
+    </center>
     """ % (date))
     print(HTML_END)
     sys.stdout.close()
@@ -159,8 +161,6 @@ def write_documentation():
                     max_command_len = len (name)
                 helps_tools.append((name,icomment,text))
 
-    print("""</ol>""")
-
     def doc_print_index_row(href,name,comment):
         print("""<tr><td><a href="#%s">%s</a></td><td>&nbsp;%s</td></tr>"""%(href,name,comment))
     #for line in help_main:
@@ -178,7 +178,7 @@ def write_documentation():
 
     for name,icomment,text in helps_saver:
         print("""<a name="%s"></a>"""%name)
-        print("""<h3 style="color: #990000;"><b># %s</h3></b>"""%name.replace('_','-'))
+        print("""<h3 style="color: #990000;"><b># %s</b></h3>"""%name.replace('_','-'))
         print("""<samp>""")
         for l in text:
             print("%s<br>\n"%l)
