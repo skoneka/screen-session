@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    renumber.py : renumber windows to fill the gaps
 #

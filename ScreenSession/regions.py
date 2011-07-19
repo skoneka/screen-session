@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #    regions.py : display a number in each region (like tmux display-panes);
 #                 select, swap and rotate regions

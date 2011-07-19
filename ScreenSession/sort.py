@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    sort.py :  sort windows by title; currently broken, it should be rewritten
 #               with support for selecting groups through tools.subwindows()

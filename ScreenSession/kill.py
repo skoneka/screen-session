@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    kill.py : send a signal to the last process started in a window
 #

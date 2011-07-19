@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #    sessionname.py : get or set the sessionname, it qualifies for rewrite
 #

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    nest_layout.py : nest a layout in the current region
 #

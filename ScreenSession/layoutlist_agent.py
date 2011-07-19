@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    layoutlist.py : display a browseable list of layouts in the session
 #

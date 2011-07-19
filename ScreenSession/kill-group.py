@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    kill-group.py : recursively kill a group and all windows inside
 #

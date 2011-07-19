@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    kill-zombie.py : kill all zombie windows in the session
 #

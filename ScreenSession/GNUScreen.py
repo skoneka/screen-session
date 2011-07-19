@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #    GNUScreen.py : functions interfacing with GNU Screen
 #

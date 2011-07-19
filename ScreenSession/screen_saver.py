@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #    screen_saver.py : session saver - processing arguments and
 #                      packing / unpacking savefiles

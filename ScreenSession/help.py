@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    help.py : screen-session help system
 #
@@ -352,7 +352,7 @@ Options:\n\
 -F --force-start  [windows]\n\
     a comma separated list of windows which will start programs immediately,\n\
     using keyword \"all\" causes all loaded windows to start their subprograms\n\
-    without waiting for user confirmation\n\
+    without waiting for user's confirmation\n\
 -y --no-layout\n\
     disable layout loading\n\
 -n --no-group-wrap\n\

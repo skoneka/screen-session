@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 #
 #    new-window.py : open a new Screen window with the same working directory
 #

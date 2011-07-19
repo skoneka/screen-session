@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+﻿#!/usr/bin/env python2
 #
 #    find_pid.py : find pids in windows; obsoleted by dump.py
 #
