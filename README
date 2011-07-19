@@ -28,18 +28,18 @@ new-window  - start a new Screen window in the same working directory
               on the position next to the current window
 manager     - sessions manager (screenie like) but featuring session
               preview in a split window
-name        - get or set sessionname
+name        - get or set the sessionname
 nest-layout - copy a layout to the current region
 layoutlist  - display a list of layouts
-regions     - display number in every region (like tmux display-panes)
-dump        - dump informations about windows in session
-find-pid    - find PIDs in windows
+regions     - display a number in every region (like tmux display-panes)
+dump        - print detailed informations about windows in the session
 find-file   - find opened files in windows (requires lsof)
 group       - move windows to a group
 kill        - send SIGTERM to last process started in a window
 kill-zombie - kill all zombie windows in session
 kill-group  - recursively kill all windows in a group
 renumber    - renumber windows to fill gaps
+subwindows  - recursively print windows contained in groups
 
 
 -----------------------------------------------------------------------
@@ -56,48 +56,49 @@ examples
 
 
 -----------------------------------------------------------------------
-Detailed Description of session saver
+A Detailed Description of Session Saver
 -----------------------------------------------------------------------
 Session saver currently supports saving of:
 layouts, scrollbacks, titles, filters and is able to restart programs
 run in windows. It recognizes regular, group and zombie windows.
 Currently there is no support for serial and telnet window types.
-Session saver also saves VIM sessions inside the Screen session.
+By default, session saver also tries to save Vim sessions using ":mksession"
+and ":wviminfo".
 
-session saver saves directories and programs by directly reading /proc
-filesystem and sorts them by parent pid. There is almost no "stuffing"
-(except when saving vim sessions) so there is no interaction with
-programs in windows.
 
-After session loading, in every new window starts screen-session-primer
+Session saver accesses important data by directly reading /proc filesystem 
+and sorts processes by parent pid. There is almost no "stuffing" of commands 
+into windows (except when saving Vim sessions) so there is no interaction 
+with programs itself.
+
+During session loading, every new window starts with screen-session-primer
 (a small C program) which displays a list of processes and asks user what
-to do (whether to start none, part of or all window's processes).
-Then, primer tries to restore the string of processes by execing
+to do: whether to start none, some or all of window's processes or directly
+starts programs provided --force-start <win_num> option was used.
+
+Then, primer tries to restore the string of processes by executing
 for nodes:
-$ shell -c "program args; shell"
+$ shell -ic "primer_program-starter program-to-be-started arguments; shell"
 and for leafs:
-$ program args
+$ program-to-be-started arguments
 
-Entire string of processes can only be properly restored if every
-non-leaf is a shell which accepts '-c command' switch.
+The entire string of processes can only be properly restored if every
+non-leaf is a shell which accepts the '-c command' switch.
 
-Can be restored completly:
+May be restored completely:
 0 zsh -> 1 bash -> 2 vim hello.c
 
 Only up to 1:
 0 zsh -> 1 man hello -> 2 less
 
-screen-session-primer uses linux color escapes. If you dont want color
-remove "-DCOLOR" from config.mk
+screen-session-primer uses linux color escapes.
+To disable color remove "-DCOLOR" from config.mk
 
 Normally screen-session does not restore exact window numbers. If you
 want to force verbatim restoring use --exact flag.
 
-Savefiles are .tar.bz2 archives (scrollbacks can take a *lot* of space).
+Save files are .tar.bz2 archives (scrollbacks can take a *lot* of space).
 Temporary files are stored in  /tmp/screen-session-$USER.
-
-By default session saver also tries to save vim sessions using ":mksession"
-and ":wviminfo".
 
 
 -----------------------------------------------------------------------
@@ -105,10 +106,11 @@ Bugs
 -----------------------------------------------------------------------
 
 - Some tools do not work with detached Screen sessions.
-- slow startup if hardstatus is not ":hardstatus lastline"
+- slow startup of regions tool if there is no hardstatus line
 - in order to speed up Screen commands execution :msgminwait is set to 0
   and the original value is not restored.
+- :hardcopydir is altered and not restored
 
-Please send suggestions to admin<[at]>adb.cba.pl or github issue tracker
-http://github.com/skoneka/screen-session/issues
+Please send suggestions and bug reports to admin<[at]>adb.cba.pl 
+or Github issue tracker http://github.com/skoneka/screen-session/issues
 
