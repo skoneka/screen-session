@@ -217,7 +217,7 @@ def reset_tui(scs):
         reset_tui_2(scs)
     elif tui==3:
         reset_tui_3(scs)
-    
+
 
 def reset_tui_1(scs):
     scs.only()
@@ -258,7 +258,7 @@ def reset_tui_2(scs):
     time.sleep(0.1)
     scs.focus('top')
     scs.select('0')
-    
+
     dinfo=scs.dinfo()
     term_x,term_y=int(dinfo[0]),int(dinfo[1])
     reg_x=None
@@ -297,7 +297,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
 
     if last_session:
         mode,last_session=tui_attach_session(scs,last_session,psession)
-        
+
     mode=None
     try:
         while 1:
@@ -308,7 +308,7 @@ def logic(scs,fifoname,fifoname2,session,psession,last_session):
             else:
                 if line:
                     print2ui('UI: %s'%line)
-                ret=None                
+                ret=None
                 e=eval_command(scs,line,last_session,psession,fifoname2)
                 if e:
                     try:
@@ -423,7 +423,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
             tui_focus=0
             print2ui('LOGIC: focus top')
 
-    elif mode.startswith('r'): # refresh 
+    elif mode.startswith('r'): # refresh
         print2ui('LOGIC: refreshing')
     elif mode.startswith('l'): # layout
         print2ui('LOGIC: toggling layout')
@@ -457,7 +457,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         print2ui('LOGIC: wiping out dead sessions')
         menu_tmp_last_selection=-1
         scs.wipe()
-    elif mode.startswith('save') or mode=='S': # save 
+    elif mode.startswith('save') or mode=='S': # save
         if args[0]:
             arg_out='%s'%args[0]
         else:
@@ -477,7 +477,7 @@ def eval_command(scs,command,last_session,psession,fifoname2):
         l2=sc.get_session_list()
         newsession=sc.find_new_session(l1,l2)
         return tui_attach_session(scs,newsession,psession)
-        
+
     elif mode.startswith('n'): # name
         if last_session:
             print2ui('LOGIC: renaming session to \"%s\"'%args[0])
@@ -520,7 +520,7 @@ def ui1(fifoname):
             os.write(pipeout,'%s\n'%selection)
     #os.close(pipeout)
 
-       
+
 def attach_session(session):
     sys.stderr.write('attaching %s'%session)
     os.system(SCREEN+' -x \"%s\"'%(session))
@@ -532,7 +532,7 @@ def run(psession):
     fifoname=os.path.join(tmpdir,'___internal_manager_logic_%s'%os.getpid())
     fifoname2=os.path.join(tmpdir,'___internal_manager_ui2_%s'%os.getpid())
     last_session=None
-   
+
     if not os.path.exists(fifoname):
         os.mkfifo(fifoname)
     if not os.path.exists(fifoname2):
@@ -548,7 +548,7 @@ def run(psession):
         scs.source(os.path.join(os.path.split(os.path.abspath(__file__))[0],'screenrc_MANAGER'))
         #scs.source(os.path.join(HOME,'.screenrc_MANAGER'))
         data=mmap.mmap(-1,100)
-        
+
         pid=os.fork()
         if pid==0:
             command=logic(scs,fifoname,fifoname2,session,psession,last_session)
@@ -593,7 +593,7 @@ def run(psession):
                     pass
                 break
     pass
-    
+
 def main():
     global tui
     sys.stderr.write('starting..\n')

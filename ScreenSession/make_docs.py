@@ -48,7 +48,7 @@ def print_menu(menu):
         if i != 0:
             print(' | ')
         print(m)
-        
+
 def start_page(url):
     menu = gen_menu(MENU_ITEMS, url)
     sys.stdout = open('www/%s' % url,'w')
@@ -65,7 +65,7 @@ def end_page(menu):
     date = today.strftime("%B %d, %Y")
     print("""<h6><center>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: %s 
+    Last modified: %s
     </center>
     </h6>
     """ % (date))
@@ -86,7 +86,7 @@ def write_index_redirect():
 </html>
 """)
     sys.stdout.close()
-    
+
 def write_index():
     url = 'index.html'
     menu = start_page(url)
@@ -192,7 +192,7 @@ def write_documentation():
             print("%s<br>\n"%l)
         print("""</samp><hr>""")
     end_page(menu)
-    
+
 if __name__ == '__main__':
     write_index()
     write_documentation()

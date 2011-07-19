@@ -111,7 +111,7 @@ def get_regions(session):
         regions.regions.append(tuple(line))
     tfiled.close()
     if len(regions.regions[-1])==1: # remove it later after patching screen
-        regions.regions=regions.regions[:-1] 
+        regions.regions=regions.regions[:-1]
     regions.number_of_regions=len(regions.regions)
     remove(tfile)
     return regions
@@ -212,7 +212,7 @@ def _get_pid_info_linux(pid):
     if not cmdline.endswith('\0'):
         cmdline+='\0'
     f.close()
-    
+
     return (cwd,exe,cmdline)
 
 def get_pid_info(pid):
@@ -248,7 +248,7 @@ def sort_by_ppid(cpids):
             cpids_sort.append(pid)
             pid_tail=pid
             break;
-    
+
     for j in range(len(cpids)):
         for i,pid in enumerate(cpids):
             if pid_tail==cppids[pid]:
@@ -347,7 +347,7 @@ def get_session_list():
     w=subprocess.Popen('%s -ls' % SCREEN, shell=True, stdout=subprocess.PIPE).communicate()[0]
     if w.startswith('No Sockets'):
         return []
-    
+
     w=w.split('\n')
     w.pop(0)
 
@@ -391,19 +391,19 @@ def parse_windows(windows):
     firstwinregex='^\d+[%s]'%(winendings)
     firstwinactiveregex='^\d+[%s][%s]'%(winendingsactive,winendings)
     winactiveregex='\s\s\d+[%s][%s]'%(winendingsactive,winendings)
-    
+
     winids=re.compile(winregex).findall(windows)
     winfirst=re.compile(firstwinregex).findall(windows)
     winactive=re.compile(winactiveregex).findall(windows)
     winactivefirst=re.compile(firstwinactiveregex).findall(windows)
-    
+
     if len(winfirst)>0:
         winnumbers=[int(re.compile('\d+').findall(winfirst[0])[0])]
     else:
         winnumbers=[]
     for id in winids:
         winnumbers.append(int(re.compile('\d+').findall(id)[0]))
-    
+
     winactivenumbers=-1
     if len(winactivefirst)>0:
         winactivenumbers=int(re.compile('\d+').findall(winactivefirst[0])[0])
@@ -436,9 +436,9 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
         screen=SCREEN+" -S '%s' "%session
     else:
         screen=SCREEN+" "
-    
+
     delta=nextwindownumber-windownumber
-    
+
     if(delta<0):
         sign='-'
     else:
@@ -454,7 +454,7 @@ def move(windownumber,nextwindownumber,noswitch=False,session=None):
         os.system(command)
         command="%s -X number %s%d"%(screen,sign,delta)
         os.system(command)
-    
+
 
 def get_current_window(session=None):
     if session:

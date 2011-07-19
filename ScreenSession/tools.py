@@ -277,7 +277,7 @@ def get_win_last_proc(session,win="-1"):
     else:
         ## No processes for this window.
         return None
-    
+
 def kill_win_last_proc(session,win="-1",sig="TERM"):
     import signal
     pid = get_win_last_proc(session,win)

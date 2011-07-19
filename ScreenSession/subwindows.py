@@ -2,7 +2,7 @@
 # file: subwindows.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: print windows inside groups 
+# description: print windows inside groups
 
 import sys
 import tools

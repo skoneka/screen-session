@@ -20,12 +20,12 @@
 * manager-remote
 
 // saver:
-* Create a shellrc plug for more accurate command line saving 
+* Create a shellrc plug for more accurate command line saving
   and an ability to save other users processes
 * Write a .vimrc snippet for automatic undo history saving in vim 7.3+
 * Save parameters which can be passed to :screen
-    flow-control options (-f, -fn and -fa), monitoring (-M), logging (-L) 
-    login options (-l and -ln) , terminal type  option  (-T  <term>),  
+    flow-control options (-f, -fn and -fa), monitoring (-M), logging (-L)
+    login options (-l and -ln) , terminal type  option  (-T  <term>),
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
 * Encrypt savefiles

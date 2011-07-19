@@ -31,18 +31,18 @@ def doexit(var=0):
 def usageMode():
     import help
     out(help.help_saver_modes)
-    
+
 
 def usage():
     import help
     out(help.help_saver)
 
-def main():    
+def main():
     HOME=os.getenv('HOME')
     bad_arg=None
     logpipe=None
     global special_output
-    
+
     try:
         logpipe=sys.argv[2].split('=')[1]
         global logpipeh
@@ -60,7 +60,7 @@ def main():
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
-    
+
     mode = 0
     util.archiveend='.tar.bz2'
     pack=None
@@ -136,9 +136,9 @@ def main():
             out('Error parsing: '+o)
             raise SystemExit
             break;
-    
+
     home=os.path.expanduser('~')
-    
+
     if log:
         sys.stdout=open(log,'w')
         sys.stderr=sys.stdout
@@ -164,17 +164,17 @@ def main():
     else:
         usageMode()
         doexit(1)
-    
-    if bHelp:        
+
+    if bHelp:
         usage()
         doexit(0)
-    
+
     if not projectsdir:
-        projectsdir = '.screen-sessions'    
+        projectsdir = '.screen-sessions'
     if bList:
         list_sessions(home,projectsdir,util.archiveend,input)
         doexit(0)
-    
+
     if mode==0:
         if unpack:
             unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir)
@@ -211,21 +211,21 @@ def main():
                 doexit(1)
         pid = output
         savedir = input
-    
+
     scs=ScreenSaver(pid,projectsdir,savedir)
     scs.command_at(False,"msgminwait 0")
 
     if not scs.exists():
         out('No such session: %s'%pid)
         doexit(1)
-        
+
     if savedir == '__tmp_pack' and mode==1:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1)
     elif savedir == scs.blacklistfile:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1)
-    
+
     maxwin_real=scs.maxwin()
     if (maxwin==-1):
         maxwin=maxwin_real
@@ -247,7 +247,7 @@ def main():
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)
-    
+
     ret=0
     if mode==1: #mode save
         savedir_tmp=savedir+'__tmp'
@@ -287,7 +287,7 @@ def main():
             scs.savedir=savedir_real
             savedir=savedir_real
             sc.cleanup()
-            out('session "%s"'%scs.pid) 
+            out('session "%s"'%scs.pid)
             out('saved as "%s"'%(scs.savedir))
             scs.Xecho("screen-session finished saving as \"%s\""%(savedir))
     elif mode==2: #mode load
@@ -322,7 +322,7 @@ def main():
         if ret:
             out('session loading failed')
             scs.Xecho("screen-session loading FAILED")
-        else:    
+        else:
             scs.Xecho("screen-session finished loading")
 
     else:

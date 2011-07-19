@@ -23,7 +23,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
         curses.use_default_colors()
     except:
         pass
-    
+
     ## custom background
     #curses.init_pair(1,curses.COLOR_WHITE, curses.COLOR_BLACK)
     #screen.bkgd(' ',curses.color_pair(1))
@@ -40,7 +40,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
 
     c_h = curses.color_pair(2) | curses.A_BOLD
     c_n = curses.A_NORMAL
-    c_curlay_n = curses.color_pair(3) | curses.A_BOLD 
+    c_curlay_n = curses.color_pair(3) | curses.A_BOLD
     c_find = curses.color_pair(4)
     c_error = curses.color_pair(5) | curses.A_BOLD
     c_project = curses.color_pair(6) | curses.A_BOLD
@@ -204,7 +204,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]), c_f)
                 except:
                     pass
-        
+
         if findNext:
             findNext=0
         if not searching_num:
@@ -312,8 +312,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pass
         elif x in (ord('/'), ord(' ')):
             searching_title = True
-            searching_num = False 
-            search_title = '' 
+            searching_num = False
+            search_title = ''
         elif x == ord('\n'):
             if layinfo_c:
                 layinfo = list(layinfo_c)
@@ -430,7 +430,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                                 break
                         if pi >= AUTOSEARCH_MIN_MATCH:
                             view_layouts.append((num,title))
-                    
+
                 laytable,pos_start = create_table_std(ss, screen, sel_num, view_layouts, tmplay)
                 pos_x,pos_y = pos_start
                 layinfo = view_layouts

@@ -171,7 +171,7 @@ def list_sessions(home,projectsdir,archiveend,match,verbose=True):
     if not match:
         match=''
     files=glob.glob(os.path.join(home,projectsdir,'*%s*%s'%(match,archiveend)))
-    
+
     date_file_list=[]
     for file in files:
         # the tuple element mtime at index 8 is the last-modified-date
@@ -181,16 +181,16 @@ def list_sessions(home,projectsdir,archiveend,match,verbose=True):
         # note: this tuple can be sorted properly by date and time
         lastmod_date = time.localtime(stats.st_mtime)
         #date_file_tuple = lastmod_date, file, "%d\t"%(stats.st_size)
-        date_file_tuple = lastmod_date, file,"" 
+        date_file_tuple = lastmod_date, file,""
         date_file_list.append(date_file_tuple)
-    
+
     date_file_list.sort()
-    
+
     if len(date_file_list)>0:
         out('There are matching saved sessions:')
     else:
         out('There are no matching saved sessions.')
-    
+
     fileending_l=len(archiveend)
     file_name=None
     for file in date_file_list:
@@ -204,7 +204,7 @@ def list_sessions(home,projectsdir,archiveend,match,verbose=True):
             out("%s%s\t%s" % (file_size, file_date, file_name))
     if not verbose:
         out("%s%s\t%s" % (file_size, file_date, file_name))
-    
+
     if verbose and len(date_file_list)>0:
         out('%s matching sessions in %s'%(len(date_file_list),os.path.join(home,projectsdir)))
     return file_name

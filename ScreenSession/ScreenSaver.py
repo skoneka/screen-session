@@ -28,19 +28,19 @@ class ScreenSaver(object):
     sc=None
     wrap_group_id=None
     none_group='none_NoSuChGrOuP'
-    
+
     primer_base="screen-session-primer"
     primer=primer_base
     primer_arg="-p"
-    
+
     # blacklist file in projects directory
     blacklistfile="BLACKLIST"
-    
+
     # old static blacklist
     blacklist = ("rm","shutdown")
     # user submitted list of excluded windows
     excluded = None
-   
+
     vim_names = ('vi','vim','viless','vimdiff')
     __unique_ident=None
     __wins_trans = {}
@@ -75,7 +75,7 @@ class ScreenSaver(object):
 
         out("\nSaving windows:")
         self.__save_screen()
-        
+
         out("\nCleaning up scrollbacks.")
         self.__scrollback_clean()
         if self.__vim_files:
@@ -111,12 +111,12 @@ class ScreenSaver(object):
                         maxnewwindow = w
                 except:
                     pass
-                
+
             out('Biggest new window number: %d'%maxnewwindow)
             if self.enable_layout:
                 self.__remove_all_layouts()
             self.__move_all_windows(maxnewwindow+1,self.group_other,False)
-        
+
         self.homewindow=self.number()
         out("\nLoading windows:")
         self.__load_screen()
@@ -175,14 +175,14 @@ class ScreenSaver(object):
                 self.source(path_mru_tmp)
                 util.remove(path_mru_tmp)
             except:
-                sys.stderr.write(' Failed to load MRU.')    
+                sys.stderr.write(' Failed to load MRU.')
             out("")
 
 
     def __load_screen(self):
         homewindow=self.homewindow
         # out ("Homewindow is " +homewindow)
-        
+
         #check if target Screen is currently in some group and set hostgroup to it
         hostgroupid,hostgroup = self.get_group(homewindow)
 
@@ -196,7 +196,7 @@ class ScreenSaver(object):
             rootgroup="RESTORE_"+self.savedir
             self.screen('-t \"%s\" %s //group' % (rootgroup,0 ) )
             self.group(False,'%s' % (hostgroup) )
-        
+
         rootwindow=self.number()
         out("restoring Screen session inside window %s (%s)" %(rootwindow,rootgroup))
 
@@ -216,10 +216,10 @@ class ScreenSaver(object):
                     wins.append((win[0], win[1], win[2], win[3], self.__escape_bad_chars(win[4]), win[5], win[6],win[7],nproc))
             except Exception:
                 out('%d Unable to load window'%id)
-        
+
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             self.__wins_trans[win]=self.__create_win(self.exact,self.__wins_trans,self.pid,hostgroup,rootgroup,win,time,group,type,title,filter,scrollback_len,cmdargs,processes)
-        
+
         for win,time,group,type,title,filter,scrollback_len,cmdargs,processes in wins:
             try:
                 groupid,group=group.split(' ',1)
@@ -227,7 +227,7 @@ class ScreenSaver(object):
                 groupid="-1"
                 group=self.none_group
             self.__order_group(self.__wins_trans[win],self.pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes)
-        
+
         out ("Rootwindow is "+rootwindow)
         if self.wrap_group_id:
             out ("Wrap group is "+self.wrap_group_id)
@@ -238,7 +238,7 @@ class ScreenSaver(object):
             winarg=win
         else:
             winarg=""
-        
+
         if type[0]=='b' or type[0]=='z':
             if win in self.force_start:
                 primer_arg=self.primer_arg+'S'
@@ -256,10 +256,10 @@ class ScreenSaver(object):
         else:
             out ('%s Unknown window type "%s". Ignoring.'%(win,type))
             return -1
-       
+
         newwin = self.number()
         return newwin
-    
+
     def __order_group(self,newwin,pid,hostgroup,rootwindow,rootgroup,win,time,groupid,group,type,title,filter,scrollback_len,processes):
         if groupid=="-1":
             # this select is necessary in case of a group name conflict
@@ -273,7 +273,7 @@ class ScreenSaver(object):
             # this select is necessary in case of a group name conflict
             self.select(groupid)
             self.group(False,group,newwin)
-    
+
     def __scrollback_clean(self):
         '''clean up scrollback files: remove empty lines at the beginning and at the end of a file'''
         for f in glob.glob(os.path.join(self.basedir,self.savedir,'hardcopy.*')):
@@ -283,7 +283,7 @@ class ScreenSaver(object):
                 thefile = open(f,'r')
                 beginning=True
                 for line in thefile:
-                    if beginning: 
+                    if beginning:
                         if cmp(line,'\n') == 0:
                             line = line.replace('\n','')
                         else:
@@ -344,7 +344,7 @@ class ScreenSaver(object):
             if iwin==homewindow:
                 homewindow=iwin+shift
                 self.homewindow=str(homewindow)
-            
+
             if not self.bNoGroupWrap and cgroup==self.none_group:
                 self.select(self.wrap_group_id)
                 self.group(False,group,str(cwin))
@@ -368,7 +368,7 @@ class ScreenSaver(object):
             win="-p %s"%win
         cmd = '%s %s -X %s'% (self.sc,win,command)
         #print ('command_at(%s): %s'%(output,cmd))
-        os.system(cmd) 
+        os.system(cmd)
         if output:
             l=self.lastmsg()
             if not l:
@@ -386,7 +386,7 @@ class ScreenSaver(object):
             win="-p %s"%win
         try:
             cmd='%s %s -Q @%s'% (self.sc,win,command)
-            l=util.timeout_command(cmd,self.timeout)[0] 
+            l=util.timeout_command(cmd,self.timeout)[0]
             if l.startswith('C'):
                 #no such window
                 return -1
@@ -422,7 +422,7 @@ class ScreenSaver(object):
         return self.get_maxwin()
     '''
     def get_info(self,win):
-       
+
         msg=self.command_at(True, 'info',win)
         return msg
     '''
@@ -441,7 +441,7 @@ class ScreenSaver(object):
             return  size1x,size1y,size2x,size2y,size3,flow,encoding,number,title
         else:
             return None
-    
+
     def dinfo(self):
         msg=self.command_at(True, 'dinfo')
         msg = msg.split(' ')
@@ -467,14 +467,14 @@ class ScreenSaver(object):
             return msg.split('is ',1)[1].strip()
         except:
             return '0 0'
-    
+
     def stuff(self,args='',win="-1"):
         self.command_at(False, 'stuff "%s"'%args,win)
 
 
     def colon(self,args='',win="-1"):
         self.command_at(False, 'colon "%s"'%args,win)
-    
+
     def resize(self,args=''):
         self.command_at(False, 'resize %s'%args)
 
@@ -576,7 +576,7 @@ class ScreenSaver(object):
         currentlayout = currentlayout.strip()
         currentlayoutname = currentlayoutname.rsplit(')',1)[0]
         return currentlayout,currentlayoutname
-    
+
     def get_layout_new(self,name=''):
         msg=self.command_at(True, 'layout new \'%s\''%name)
         if msg.startswith('No more'):
@@ -638,7 +638,7 @@ class ScreenSaver(object):
         mru_w=[homewindow+'\n']
         for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,badctime,cmdargs in sc.gen_all_windows_full(self.pid,sc.datadir,False,False):
             mru_w.append("%s\n"%cwin)
-            
+
             cpids = None
             cpids_data=None
 
@@ -663,12 +663,12 @@ class ScreenSaver(object):
                         except:
                             errors.append('%s PID %s: Unable to access. No permission or no procfs.'%(cwin,pid))
                     cpids=ncpids
-            
+
             if(cpids):
                 for i,pid in enumerate(cpids):
                     if(cpids_data[i][3]):
                         text="BLACKLISTED"
-                    else: 
+                    else:
                         text=""
                     l=cpids_data[i][2].split('\0')
                     jremove=[]
@@ -711,7 +711,7 @@ class ScreenSaver(object):
                         args=nargs
                         newdata=(cpids_data[i][0],cpids_data[i][1],"\0".join(["%s"%v for v in args]),cpids_data[i][3])
                         cpids_data[i]=newdata
-                    
+
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(findir,"hardcopy."+cwin)
             sys.stdout.write("%s %s; "%(cwin,ctypestr))
@@ -756,7 +756,7 @@ class ScreenSaver(object):
             for error in errors:
                 out(error)
         out('\nSaved: '+str(ctime))
-        
+
     def __rollback(self,cmdline):
         try:
             cmdline=cmdline.split('\0')
@@ -769,14 +769,14 @@ class ScreenSaver(object):
             target=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
             number=ftail.split('_')[1]
             oldsavedir=fhead
-            
+
             # import win_* files from previous savefiles
             try:
                 shutil.move(os.path.join(self.homedir,cmdline[2],cmdline[4]),target)
             except Exception:
                 target=None
                 pass
-            
+
             # import hardcopy.* files from previous savefiles
             fhead,ftail=os.path.split(cmdline[3])
             target2=os.path.join(self.homedir,self.projectsdir,self.savedir,ftail+'__rollback')
@@ -793,7 +793,7 @@ class ScreenSaver(object):
                 return (None,None,None)
         except:
             return (None,None,None)
-        
+
 
     def __load_layouts(self):
         cdinfo=map(int,self.dinfo()[0:2])
@@ -870,7 +870,7 @@ class ScreenSaver(object):
                             self.resize('-v %d'%(size[1]))
                             self.fit()
                         self.focus()
-                    
+
                     # restore focus on the right region
                     self.select_region(focus_offset)
 
@@ -892,7 +892,7 @@ class ScreenSaver(object):
                 self.layout('select %s'%homelayout,False)
             else:
                 out('No homelayout - unable to return.')
-            
+
             if os.path.exists(os.path.join(self.basedir,self.savedir,"last_layout")) and len(layout_trans)>0:
                 last=os.readlink(os.path.join(self.basedir,self.savedir,"last_layout"))
                 (lasthead,lasttail)=os.path.split(last)
@@ -905,7 +905,7 @@ class ScreenSaver(object):
                 # ^^ layout numbering may change, use layout_trans={}
         else:
             self.enable_layout=False
-            
+
     def select_region(self,region):
         self.focus('top')
         for i in range(0,region):
@@ -927,7 +927,7 @@ class ScreenSaver(object):
                 title = ""
             sys.stdout.write("%s(%s); "%(num,title))
             oflayout.write('layout select %s\nlayout dump \"%s\"\ndumpscreen layout \"%s\"\n'%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
-        
+
         oflayout.write('layout select %s\n'%homelayout)
         oflayout.close()
         self.source(path_layout)
@@ -956,7 +956,7 @@ class ScreenSaver(object):
         except:
             sys.stdout.write('incomplete!\n')
             pass
-        
+
     def __save_vim(self,winid):
         findir=sc.datadir
         name="vim_W%s_%s"%(winid,self.__unique_ident)
@@ -968,7 +968,7 @@ class ScreenSaver(object):
         # undo files become useless if the target file changes even by a single byte
         # self.stuff(":bufdo exec 'wundo! %s'.expand('%%')\n"%(fname+'_undo_'), winid)
         return name
-           
+
     def __save_win(self,winid,ctype,pids_data,ctime,rollback):
         # print (self,winid,ctype,pids_data,ctime,rollback)
         errors=[]
@@ -981,7 +981,7 @@ class ScreenSaver(object):
         basedata_len=8
         zombie_vector_pos=8
         zombie_vector=linecache.getline(fname,zombie_vector_pos)
-            
+
         f=open(fname,"a")
         if rollback[0]:
             rollback_dir=rollback[2]

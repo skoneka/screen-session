@@ -31,13 +31,13 @@ gnu_screen.diff changes:
 -----------------------------------------------------------------------
 Installation - part 1
 -----------------------------------------------------------------------
-Edit config.mk to match your local setup (screen-session is installed 
-into the /usr/local/ namespace by default), you can also disable colors 
+Edit config.mk to match your local setup (screen-session is installed
+into the /usr/local/ namespace by default), you can also disable colors
 by removing "-DCOLOR".
 
-Afterwards enter the following command to build and install 
+Afterwards enter the following command to build and install
 screen-session:
-    
+
     make clean
     make
 
@@ -65,18 +65,18 @@ Compile and install Screen:
 -----------------------------------------------------------------------
 Installation - part 2 - option 2 - patching Screen on your own
 -----------------------------------------------------------------------
-Make sure you have a recent version of Screen and apply the necessary 
+Make sure you have a recent version of Screen and apply the necessary
 patch (gnu_screen.diff):
 
     git clone git://git.sv.gnu.org/screen.git screen
     cd screen
-    
+
     git apply --whitespace=nowarn ../screen-session/gnu_screen.diff
-    
+
     cd src
     autoreconf
     autoheader
-    
+
     ./configure --prefix=/usr/local
     make
 

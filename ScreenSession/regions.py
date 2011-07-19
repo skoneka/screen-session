@@ -29,7 +29,7 @@ def rotate_list(l, offset):
     one side are provided again on the other side.
     Returns a rotated copy of the list. If (offset) is 0,
     returns a copy of (l).
-    
+
     Examples:
         >>> rotate_list([1, 2, 3, 4, 5, 6], 2)
         [3, 4, 5, 6, 1, 2]
@@ -62,7 +62,7 @@ def handler(signum,frame):
         number=int(ch[1:])
     except:
         number=0
-        
+
 
     os.remove(inputfile)
     if ch[0]=='s':
@@ -93,7 +93,7 @@ def handler(signum,frame):
     else:
         mode=0
 
-    
+
     if number!=0 and mode==1:
         tmp=win_history[0]
         win_history[0]=win_history[number]
@@ -154,7 +154,7 @@ def prepare_windows(scs):
     f.close()
     scs.source(sourcefile)
     remove(sourcefile)
-    
+
     regions_n=[]
     regions_n=sc.get_regions(scs.pid)
     print("regions_n = "+str(regions_n))
@@ -169,7 +169,7 @@ def prepare_windows(scs):
         new_windows.append(r[0])
     for r in regions_n.regions[:focus_offset]:
         new_windows.append(r[0])
-        
+
     return this_win_history,new_windows,regions_c
 
 

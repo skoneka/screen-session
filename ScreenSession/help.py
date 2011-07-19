@@ -8,7 +8,7 @@ broken/unfinished tools:
     grab  - grab a process and attach it to current tty\n\
           (requires injcode)\n\
     sort  - sort windows by title\n\
-    manager-remote - 
+    manager-remote -
 
 unpractial/useless tools:
     find-pid  - find PIDs in windows (greping dump tool output is better)\n\

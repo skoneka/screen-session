@@ -10,7 +10,7 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  Artur Skonecki (), 
+ *         Author:  Artur Skonecki (),
  *        Company:  adb.cba.pl
  *
  * =====================================================================================
@@ -95,7 +95,7 @@ int copy_file(char *inputfile, char *outputfile)
   fclose(filew);
   return 0;
 }
-    
+
 void print_cmd(int cmdargs_s,char *cmdargs)
 {
   int i=0;
@@ -112,7 +112,7 @@ void print_cmd(int cmdargs_s,char *cmdargs)
   }
   fputc('\n',stdout);
 }
-void print_ints(int *numbers,int n) 
+void print_ints(int *numbers,int n)
 {
   int i;
   for(i=0;i<n;i++)
@@ -378,7 +378,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
   int *args=malloc(USERINPUTMAXBUFFERSIZE*sizeof(int));
   int args_index=0;
   int show_filter=*bFilter;
-  
+
   while (exit_flag == 0 && menu_choice == NONE)
     {
       valid_choice = 0;
@@ -602,10 +602,10 @@ is_blacklisted (char *basedir, char *program, int programid)
 
   if (!fp)
     {
-      /* 
+      /*
       fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
       perror("Error :");
-      */      
+      */
       free (filepath);
       return 0;
     }
@@ -884,10 +884,10 @@ reset_primer(char **argv, char *fullpath, char *scrollbackfile, char *datafile)
 int
 main (int argc, char **argv)
 {
-/* 
+/*
 /full/path/to/program -p workingdir scrollbackfile datafile
 ./program -s basedir thisprogramname datafile [processes_ids..]
-*/  
+*/
   int i;
   FILE *fp = NULL;
   int c;
@@ -1073,7 +1073,7 @@ main (int argc, char **argv)
               break;
           }
         if (b_zombie)
-          { 
+          {
             printf ("\n");
             b_zombie=0;
           }
@@ -1207,18 +1207,18 @@ main (int argc, char **argv)
         requireSession (fullpath, datafile, 1);
         copy_file(buf2,buf1);
         remove(buf2);
-        free(buf0); free(buf1); free(buf2); 
+        free(buf0); free(buf1); free(buf2);
         int pid = fork();
-        if (pid == 0) 
+        if (pid == 0)
         {
           buf0 = malloc((1+21+strlen(scs_exe)+strlen(workingdir)+strlen(session))*sizeof(char));
           sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe, workingdir, session);
           system(buf0); free(buf0);
           exit(0);
         }
-        else if (pid < 0) 
+        else if (pid < 0)
           fprintf (stderr,PRIMER": %s:%d failed to fork a process\n",__FILE__,__LINE__);
-        else 
+        else
           reset_primer(argv,fullpath,scrollbackfile,datafile);
         break;
 

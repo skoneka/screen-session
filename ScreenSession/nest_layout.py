@@ -56,7 +56,7 @@ def main():
     else:
         rsize=rsize[0],rsize[1]+1 # +1 for caption +1 for hardstatus
     rsize=hsize
-    
+
     print('rsize %s'%str(rsize))
     print('dinfo: %s'%str(hsize))
 

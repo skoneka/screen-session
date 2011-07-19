@@ -63,7 +63,7 @@ index 2b9722e..07422e2 100644
  extern void  Input __P((char *, int, int, void (*)(char *, int, char *), char *, int));
 +extern int   dump_history __P((char *));
  extern int   InInput __P((void));
- 
+
  /* help.c */
 diff --git a/src/fileio.c b/src/fileio.c
 index 88fbf64..e93a878 100644
@@ -150,7 +150,7 @@ index f0f9982..fc02de7 100644
 @@ -167,6 +167,32 @@ int data;
      inp_setprompt(istr, (char *)NULL);
  }
- 
+
 +int
 +dump_history(char *filename)
 +{
@@ -185,11 +185,11 @@ index 584abbd..19977c1 100644
 --- a/src/layout.c
 +++ b/src/layout.c
 @@ -33,6 +33,7 @@
- 
+
  extern struct display *display;
  extern int captionalways;
 +extern int focusminwidth, focusminheight;
- 
+
  struct layout *layouts;
  struct layout *laytab[MAXLAY];
 @@ -166,7 +167,8 @@ struct canvas *cv;
@@ -205,7 +205,7 @@ index 584abbd..19977c1 100644
 @@ -379,6 +381,46 @@ char *filename;
    return 1;
  }
- 
+
 +int
 +dump_canvas_scs(cv, file)
 +struct canvas *cv;
@@ -266,7 +266,7 @@ index 1814226..61f9f80 100644
 +  int              lay_focusminwidth;
 +  int              lay_focusminheight;
  };
- 
+
  extern void  AutosaveLayout __P((struct layout *));
 diff --git a/src/process.c b/src/process.c
 index dfa7c82..b2e1233 100644
@@ -291,8 +291,8 @@ index dfa7c82..b2e1233 100644
 +          WindowChanged(fore, 'E');
 +        }
        ch = (unsigned char)*s;
- 
-       /* 
+
+       /*
 @@ -1269,6 +1276,35 @@ int key;
      case RC_DUMPTERMCAP:
        WriteFile(user, (char *)0, DUMP_TERMCAP);
@@ -467,7 +467,7 @@ index dfa7c82..b2e1233 100644
  	  return 0;
  	}
 @@ -6496,7 +6558,11 @@ int i;
- 
+
    if (discard && (!act || act->nr != RC_COMMAND))
      {
 -      D_ESCseen = 0;
@@ -507,6 +507,6 @@ index 5c93f32..725a2cd 100644
  #define DUMP_SCROLLBACK 3
 +#define DUMP_SCSWINDOW  7
 +#define DUMP_SCSWINDOWFULL 8
- 
+
  #define SILENCE_OFF	0 /* Not checking for silence */
  #define SILENCE_ON	1 /* Window being monitored for silence */

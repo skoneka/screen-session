@@ -21,7 +21,7 @@ if __name__=='__main__':
 
     ss=ScreenSaver(session)
 
-    if no_end: 
+    if no_end:
         lock_and_com_file = os.path.join(tmpdir,'___layoutlist_%s'%session.split('.',1)[0])
         if os.path.exists(lock_and_com_file):
             try:

@@ -3,14 +3,14 @@
  *
  *       Filename:  screen-session-primer.c
  *
- *    Description:  regions tool helper application 
+ *    Description:  regions tool helper application
  *
  *        Version:  1.0
  *        Created:  02.08.2010 18:21:25
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  Artur Skonecki (), 
+ *         Author:  Artur Skonecki (),
  *        Company:  adb.cba.pl
  *
  * =====================================================================================
