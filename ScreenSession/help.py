@@ -107,7 +107,7 @@ Start a new Screen window with the same working directory as the current window.
 It also sets new window number to current number + 1.\n\
 \n\
 Options:\n\
--d [directory] - specify the new window\'s directory\
+-d [directory] - specify the new window working directory\
 '
 
 help_dump="Usage: screen-session dump [options] [window_ids]\n\
@@ -227,7 +227,7 @@ ARROWS and hjkl - movement\n\
 n and p         - next / previous search result\n\
 NUMBER          - move to a layout\n\
 r or C-c or C-l - refresh the layout list\n\
-m               - toggle MRU view,\n\
+m or a          - toggle MRU view,\n\
 v               - toggle search/autohighlight results view\n\
 o               - toggle current and selected layout\n\
 q               - quit / select previous layout\n\

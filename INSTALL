@@ -1,36 +1,70 @@
 -----------------------------------------------------------------------
 Requirements
 -----------------------------------------------------------------------
-screen-session  requires a recent version of Screen patched with gnu_screen.diff
-screen-session uses "ps", "pgrep" and reads /proc filesystem.
+screen-session  requires a modified version of GNU Screen,
+it uses "ps", "pgrep" and reads /proc filesystem.
 
-tested on:
-linux, python 2.5.2
-freebsd 8.1, python 2.6.5 (with mounted procfs)
-opensolaris, python 2.4.4
+
+Tested on:
+
+    Linux, Python 2.5.2 and 2.7.2
+    FreeBSD 8.1, Python 2.6.5 (with mounted procfs)
+    OpenSolaris, Python 2.4.4
+
+
+screen-4.1.0 bundled with screen-session:
+
+    - add "tty" command
+    - make "group" queryable
+    - associate focuminsize with the layout
+    - add "dumpscreen window|layout" command
+
 
 gnu_screen.diff changes:
-- add "tty" command
-- add "regionsize" command
-- make "group" queryable
-- associate focuminsize with the layout
-- add "dumpscreen window|layout" command
+
+    - add "tty" command
+    - make "group" queryable
+    - associate focuminsize with the layout
+    - add "dumpscreen window|layout" command
 
 
 -----------------------------------------------------------------------
-Installation
+Installation - part 1
 -----------------------------------------------------------------------
 Edit config.mk to match your local setup (screen-session is installed 
 into the /usr/local/ namespace by default), you can also disable colors 
 by removing "-DCOLOR".
 
-
 Afterwards enter the following command to build and install 
-screen-session (if necessary as root):
+screen-session:
+    
+    make clean
+    make
 
-    make clean install
+    make install # (if necessary as root)
+
+Note that the installation step is optional, only compilation is necessary.
+Just link to from your PATH to
+screen-session/ScreenSession/screen-session
 
 
+-----------------------------------------------------------------------
+Installation - part 2 - option 1 - using Screen distribution supplied
+                                   with screen-session
+-----------------------------------------------------------------------
+Compile and install Screen:
+
+    cd screen-session/screen-4.1.0
+
+    ./configure --prefix=/usr/local
+    make
+
+    sudo make install
+
+
+-----------------------------------------------------------------------
+Installation - part 2 - option 2 - patching Screen on your own
+-----------------------------------------------------------------------
 Make sure you have a recent version of Screen and apply the necessary 
 patch (gnu_screen.diff):
 

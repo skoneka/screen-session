@@ -48,6 +48,7 @@ www: www/index.html
 www/index.html: ${SRCDIR}/help.py ${SRCDIR}/make_docs.py
 	@echo building html documentation
 	@mkdir -p www
+	@cp ${SRCDIR}/ribbon.png www
 	@python ${SRCDIR}/make_docs.py
 
 dist:  www
