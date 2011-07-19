@@ -714,7 +714,7 @@ class ScreenSaver(object):
                     
                     cpids_data[i]=(cpids_data[i][0],cpids_data[i][1],cpids_data[i][2],cpids_data[i][3],vim_name)
             scrollback_filename=os.path.join(findir,"hardcopy."+cwin)
-            sys.stdout.write("%s %s | "%(cwin,ctypestr))
+            sys.stdout.write("%s %s; "%(cwin,ctypestr))
             errors+=self.__save_win(cwin,ctypestr,cpids_data,ctime,rollback)
             rollback=None,None,None
         out('')
