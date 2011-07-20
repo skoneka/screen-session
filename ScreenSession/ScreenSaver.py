@@ -59,8 +59,9 @@ class ScreenSaver(object):
 
     # old static blacklist
     blacklist = ("rm","shutdown")
-    # user submitted list of excluded windows
+    # user's list of excluded windows and layouts
     excluded = None
+    excluded_layouts = None
 
     vim_names = ('vi','vim','viless','vimdiff')
     __unique_ident=None
@@ -940,20 +941,27 @@ class ScreenSaver(object):
             return False
         path_layout=os.path.join(findir,"load_layout")
         oflayout=open(path_layout,'w')
+        ex_lay = []
         for lay in sc.gen_layout_info(self,sc.dumpscreen_layout_info(self)):
             try:
                 num = lay[0]
                 title = lay[1]
             except:
                 title = ""
-            sys.stdout.write("%s(%s); "%(num,title))
-            oflayout.write('layout select %s\nlayout dump \"%s\"\ndumpscreen layout \"%s\"\n'%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
-
+            if num in self.excluded_layouts or title in self.excluded_layouts:
+                ex_lay.append(lay)
+            else:
+                sys.stdout.write("%s(%s); "%(num,title))
+                oflayout.write('layout select %s\nlayout dump \"%s\"\ndumpscreen layout \"%s\"\n'%(num,os.path.join(findir,"layout_"+num),os.path.join(findir,"winlayout_"+num)))
+        
         oflayout.write('layout select %s\n'%homelayout)
         oflayout.close()
         self.source(path_layout)
         util.remove(path_layout)
         linkify(findir,"layout_"+homelayout,"last_layout")
+        if ex_lay:
+            sys.stdout.write("\n\nExcluded layouts: %s" % str(ex_lay))
+
         out("")
         return True
 

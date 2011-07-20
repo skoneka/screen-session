@@ -75,7 +75,11 @@ def main():
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:], "e:s:S:mntxXyc:fF:d:hvp:VH:l:", ["exclude=","exact","exact-kill","pack=","unpack=","log=","no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=","session=","special-output=","force","force-start=","dir=","help"])
+        opts,args = getopt.getopt(sys.argv[argstart:],\
+                "e:L:s:S:mntxXyc:fF:d:hvp:VH:l:",\
+["exclude=", "exclude-layout=", "exact","exact-kill","pack=","unpack=","log=",\
+"no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=",\
+"session=","special-output=","force","force-start=","dir=","help"])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
@@ -96,6 +100,7 @@ def main():
     force_start=[]
     scroll=[]
     excluded=None
+    excluded_layouts=None
     verbose = False
     log=None
     force = False
@@ -139,6 +144,8 @@ def main():
             bKill=True
         elif o in ("-e","--exclude"):
             excluded = a
+        elif o in ("-L","--exclude-layout"):
+            excluded_layouts = a
         elif o in ("-f","--force"):
             force = True
         elif o in ("-F","--force-start"):
@@ -261,6 +268,8 @@ def main():
         scs.force_start=force_start.strip().split(',')
     if excluded:
         scs.excluded=excluded.split(',')
+    if excluded_layouts:
+        scs.excluded_layouts = excluded_layouts.split(',')
     if scroll:
         scs.scroll=scroll.split(',')
 

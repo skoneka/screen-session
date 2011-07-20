@@ -204,7 +204,7 @@ l[ayout]        - toggle layout\n\
 kill K          - kill selected session\n\
 "
 
-help_manager_remote="Usage: screen-session manager-remote\n\
+_help_manager_remote="Usage: screen-session manager-remote\n\
 \n\
 Sessions manager for GNU Screen with preview in a split window and\n\
 support for multiple hosts. Requires python 2.5+\
@@ -312,10 +312,12 @@ Options:\n\
     force saving even if a savefile with the same name already exists\n\
 -e --exclude  [windows]\n\
     a comma separated list of windows to be ignored during saving,\n\
-    if a window is a group all subwindows are also included\n\
+    if a window is a group all nested windows are also included\n\
+-L --exclude-layout  [layouts]\n\
+    a comma separated list of layouts to be ignored during saving,\n\
 -H --no-scroll  [windows]\n\
     a comma separated list of windows which scrollbacks will be ignored,\n\
-    if a window is a group all subwindows are also included,\n\
+    if a window is a group all nested windows are also included,\n\
     using keyword \"all\" affects all windows\n\
 -y --no-layout\n\
     disable layout saving\n\
