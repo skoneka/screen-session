@@ -948,7 +948,7 @@ class ScreenSaver(object):
                 title = lay[1]
             except:
                 title = ""
-            if num in self.excluded_layouts or title in self.excluded_layouts:
+            if self.excluded_layouts and ( num in self.excluded_layouts or title in self.excluded_layouts):
                 ex_lay.append(lay)
             else:
                 sys.stdout.write("%s(%s); "%(num,title))
