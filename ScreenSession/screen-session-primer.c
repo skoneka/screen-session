@@ -36,9 +36,9 @@ Description of possible actions:\n\
 Key      | Arguments | Description\n\
 ----------------------------------\n\
 [A]ll    |           | try to restart all saved processes\n\
-[Z]ombie |           | run zombie command vector (used by Screen for resurrecting a window)\n\
+[Z]ombie |           | run the zombie command vector\n\
 [Q]uit   |           | terminate primer\n\
-[D]efault|           | start default shell in last working directory\n\
+[D]efault|           | start default shell in the last working directory\n\
 [R]eset  |           | reload primer\n\
 [E]dit   |           | edit primer's source file with $EDITOR\n\
          |[number]   | try to restart saved processes up to [number]\n\
@@ -55,6 +55,7 @@ Key      | Arguments | Description\n\
 #include <dirent.h>
 #include <limits.h>
 #include <signal.h>
+#include <libgen.h>
 
 #include "screen-session-define.h"
 
@@ -638,6 +639,24 @@ is_blacklisted (char *basedir, char *program, int programid)
 
 }
 
+void recurse_chdir(char *path)
+{
+  /*
+    use if the chdir() directory might not exist anymore
+  */
+  int s;
+  s = chdir(path);
+  if ( s == -1)
+    {
+      char *npath = dirname(path);
+      if ( strcmp(npath,".") == 0 )
+        return;
+      else
+        recurse_chdir(npath);
+    }
+  return;
+}
+
 int
 start (char *basedir, char *thisprogram, char *config, int procs_n,
        int *procs)
@@ -826,7 +845,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       //strcpy(proc_args[2],command);
     }
   printf ("\n");
-  chdir (proc_cwd);
+  recurse_chdir (proc_cwd);
   //printf("exe:%s\n",proc_exe);
   //for(i=0;i<proc_arg_n;
   execvp (proc_exe, proc_args);
@@ -1148,7 +1167,7 @@ main (int argc, char **argv)
         strcpy (arglist[0], shell);
         printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
                 proc_cwd);
-        chdir (proc_cwd);
+        recurse_chdir (proc_cwd);
         execute_filter(bFilter,scs_exe,filter);
         execvp (shell, arglist);
         break;
