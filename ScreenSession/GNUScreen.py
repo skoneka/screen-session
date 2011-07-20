@@ -92,15 +92,6 @@ class Regions:
     regions=[]
 
 def get_regions(session):
-## old list
-#[NUMBER_OF_REGIONS,
-# FOCUS_OFFSET,
-# ('TERM_SIZE_X', 'TERM_SIZE_Y'),
-# ('FOCUSMINSIZE_X', 'FOCUS_MINSIZE_Y'),
-# ('WINDOW_ID', 'REGION_SIZE_X', 'REGION_SIZE_Y'),
-# ('0', '105', '29'),
-# ('1', '105', '29')]
-
     from ScreenSaver import ScreenSaver
     import datetime
     ss=ScreenSaver(session)

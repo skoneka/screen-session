@@ -19,7 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 VERSION='git'
-version_str="screen-session (%s) - a collection of tools for GNU Screen."%VERSION
+version_str="screen-session %s - a collection of tools for GNU Screen."%VERSION
 
 '''
 broken/unfinished tools:
@@ -41,7 +41,7 @@ A collection of utilities for GNU Screen.\n\
 Help:    scs help [mode]\n\
 \n\
 Options supported by all tools:\n\
-    -S [target] - target Screen session name, \".\" denotes the current session\n\
+    -S [target] - target Screen session name,\n\
     --help      - print detailed mode's help\n\
 \n\
 Environment variables:\n\

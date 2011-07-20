@@ -129,7 +129,13 @@ def main():
             unpack = a
         elif o in ("-s","--savefile"):
             savefile = a
-        elif o in ("-S","--session"):
+        elif o in ("-S"):
+            if a == '.':
+                subprogram=os.path.join(os.path.dirname(sys.argv[0]),'sessionname.py')
+                current_session = util.timeout_command("%s %s \"%s\"" % (os.getenv('PYTHONBIN'), subprogram, current_session), 4)[0].strip()
+            else:
+                current_session = a
+        elif o in ("--session"):
             current_session = a
         elif o == "--special-output":
             special_output = open(a,'w')
@@ -242,7 +248,7 @@ def main():
     scs.command_at(False,"msgminwait 0")
 
     if not scs.exists():
-        out('No such session: %s'%pid)
+        out('No such session: \"%s\"'%pid)
         doexit(1)
 
     if savedir == '__tmp_pack' and mode==1:

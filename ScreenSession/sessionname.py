@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#    sessionname.py : get or set the sessionname, it qualifies for rewrite
+#    sessionname.py : get or set the sessionname, it qualifies for a rewrite
 #
 #    Copyright (C) 2010-2011 Artur Skonecki
 #
