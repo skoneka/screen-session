@@ -690,7 +690,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       return 1;
     }
 
-  // skip not important lines
+  // skip irrevelant lines
   while ((c = fgetc (fp)) != EOF)
     {
       if (c == '\n')
@@ -701,13 +701,13 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	break;
     }
   c = fgetc (fp);
-  getline (&proc_cwd, &proc_cwd_s, fp);
+  getline (&proc_cwd, &proc_cwd_s, fp); /* CWD */
   proc_cwd = strtrim_right (proc_cwd, '\n');
   printf (PRIMER "CWD(%s) starting: ",proc_cwd);
   //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
-  getline (&proc_exe, &proc_exe_s, fp);
+  getline (&proc_exe, &proc_exe_s, fp); /* EXE - executable path */
   proc_exe = strtrim_right (proc_exe, '\n');
-  fscanf (fp, "%d\n", &proc_args_n);
+  fscanf (fp, "%d\n", &proc_args_n); /* The number of program arguments */
   if (procs_n > 1)
     {
       proc_args_n += 2;
@@ -721,7 +721,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   fseek (fp, file_pos, SEEK_SET);
   int l = 0, prev_l = 0;
 
-  /* get length of program arguments */
+  /* allocate memory for program arguments */
   for (i = 0; i < proc_args_n; i++)
     {
       l = strlen (buf + prev_l);
@@ -736,6 +736,8 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   proc_args[proc_args_n + 4] = NULL;
   int null_c = 0;
   int word_c = 0;
+
+  /* fill proc_args table with program arguments */
   while ((c = fgetc (fp)) != EOF)
     {
       if (c == '\0')
@@ -764,10 +766,13 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       if (null_c > proc_args_n)
 	break;
     }
-  fscanf (fp, "%s\n", proc_blacklisted);
-  getline (&proc_vim, &proc_vim_s, fp);
+  fscanf (fp, "%s\n", proc_blacklisted); /* whether the particular process was blacklisted, currently broken */
+  getline (&proc_vim, &proc_vim_s, fp); /* vim save file base name */
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
+
+  /* if there is a vim save file base name append "-S vim_session -i vim_info" to
+   * proc_args */
   if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0)
     {
       proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
@@ -813,18 +818,25 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   //else if ( is_blacklisted(basedir,thisprogram) )
   //    return 0;
 
+  /* procs_n > 1 means there is more than a one process left to restart
+   * so we assume it is a shell */
   if (procs_n > 1)
     {
+      /* move saved arguments of the current shell to make place for
+      *   "-ic command" */
       for (i = proc_args_n - 1; i > 3; i--)
 	{
 	  strcpy (proc_args[i], proc_args[i - 3]);
 	}
-      strcpy (proc_args[1], "-ic");
+      
+      strcpy( proc_args[1], "-ic" );
 
       char *command =
-	malloc (((procs_n - 1) * 4 + (2 * strlen (thisprogram)) +
+	malloc (((procs_n) * 4 + 2 * ((2 * strlen (thisprogram)) +
 		 strlen (basedir) + strlen (config) + strlen (proc_exe) +
-		 10) * sizeof (char));
+		 20)) * sizeof (char));
+
+      /* primer - continue unwinding queued processes IDs */
       strcpy (command, thisprogram);
       strcat (command, " -s");
       strcat (command, " ");
@@ -833,21 +845,38 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       strcat (command, thisprogram);
       strcat (command, " ");
       strcat (command, config);
+
+      /* append queued processes IDs but skip the current shell ID */
       for (i = 1; i < procs_n; i++)
 	{
 	  char buf[4];
 	  sprintf (buf, " %d", procs[i]);
 	  strcat (command, buf);
 	}
+
+      /* command separator */
       strcat (command, "; ");
-      strcat (command, proc_exe);
+
+      /* primer - start the current shell after queued processes terminate */
+      strcat (command, thisprogram);
+      strcat (command, " -s");
+      strcat (command, " ");
+      strcat (command, basedir);
+      strcat (command, " ");
+      strcat (command, thisprogram);
+      strcat (command, " ");
+      strcat (command, config);
+
+      /* append the currently started shell ID */
+      char buf[4];
+      sprintf (buf, " %d", procs[0]);
+      strcat (command, buf);
+      printf("%s\n",command);
+
       proc_args[2] = command;
-      //strcpy(proc_args[2],command);
     }
   printf ("\n");
   recurse_chdir (proc_cwd);
-  //printf("exe:%s\n",proc_exe);
-  //for(i=0;i<proc_arg_n;
   execvp (proc_exe, proc_args);
   return 1;
 
@@ -940,6 +969,11 @@ main (int argc, char **argv)
   strcat(scs_exe,"/screen-session");
   if (strcmp (argv[1], "-s") == 0)
     {
+      /* 
+         programs starter
+         Example invocation:
+         INSTDIR/screen-session-primer -s /home/USER/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
+      */
       int *procs;
       procs = malloc ((argc - 5) * sizeof (int));
       for (i = 5; i < argc; i++)
@@ -949,27 +983,33 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[1], "-D") == 0)
     {
-      //start a program in a directory
-      //primer -D directory program args
+      /*
+        start a program in a directory
+        primer -D directory program args
+      */
       chdir(argv[2]);
       execvp(argv[3],&argv[3]);
       return 0;
     }
   else if (strcmp (argv[1], "-r") == 0)
     {
-      //requireSession
+      /* requireSession */
       requireSession (argv[2], argv[3], 0);
       return 0;
     }
   else if (strcmp (argv[1], "-rf") == 0)
     {
-      //requireSession
+      /* requireSession ?force? */
       requireSession (argv[2], argv[3], 0);
       return 0;
     }
   else if (strncmp (argv[1], "-p", 2) == 0) {
+      /* 
+         priming procedure invoked by session saver
+         Example invocation:
+         INSTALLPATH/screen-session-primer "-p" ".screen-sessions" "13983.pts-218.cvops/hardcopy.2" "13983.pts-218.cvops/win_2"
+      */
     int force_start = (argv[1][2]=='S') ? 1 : 0;
-    //session saver primer
     char *homedir = getenv ("HOME");
     char *workingdir = argv[2];
     char *scrollbackfile = argv[3];
@@ -1009,7 +1049,7 @@ main (int argc, char **argv)
     size_t timesaved_s=1;
     char *timesaved = malloc(timesaved_s*sizeof(char));
     getline (&buftext, &buftext_s, fp);	//win number
-    getline (&buftext, &buftext_s, fp);	//CURRENTLY UNUSED
+    getline (&buftext, &buftext_s, fp);	//CURRENTLY UNUSED (put window flags)
     getline (&buftext, &buftext_s, fp);	//group
     getline (&type, &type_s, fp);	//win type
     getline (&title, &title_s, fp);	    //title
