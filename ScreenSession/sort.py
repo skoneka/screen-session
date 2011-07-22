@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    sort.py :  sort windows by title; currently broken, it should be rewritten
 #               with support for selecting groups through tools.subwindows()
@@ -19,8 +20,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os,sys
+import os
+import sys
 import tools
-session=sys.argv[1]
-tools.sort(session,tools.require_dumpscreen_window(session,False))
+session = (sys.argv)[1]
+tools.sort(session, tools.require_dumpscreen_window(session, False))
 tools.cleanup()

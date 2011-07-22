@@ -1,6 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
-#    screen_saver.py : session saver - processing arguments and
+#    screen_saver.py : GNU Screen session saver - processing arguments and
 #                      packing / unpacking savefiles
 #
 #    Copyright (C) 2010-2011 Artur Skonecki
@@ -21,31 +22,41 @@
 # file: screen_saver.py
 # author: Artur Skonecki
 # website: http://adb.cba.pl
-# description: GNU Screen session saving program
 
-
-import sys,os,pwd,getopt,glob,time,signal,shutil,tempfile,traceback,re,pprint
+import sys
+import os
+import pwd
+import getopt
+import glob
+import time
+import signal
+import shutil
+import tempfile
+import traceback
+import re
+import pprint
 from ScreenSaver import ScreenSaver
 from util import *
 from util import tmpdir
 import util
 import GNUScreen as sc
 
+logpipeh = None
+special_output = None
 
-logpipeh=None
-special_output=None
 
 def doexit(var=0):
     global logpipeh
     if logpipeh:
         logpipeh.close()
-    if sys.stdout!=sys.__stdout__:
+    if sys.stdout != sys.__stdout__:
         sys.stdout.close()
     if special_output:
         special_output.write("R\n")
-        special_output.write("%s\n"%(var))
+        special_output.write("%s\n" % var)
         special_output.close()
     sys.exit(var)
+
 
 def usageMode():
     import help
@@ -56,70 +67,88 @@ def usage():
     import help
     out(help.help_saver)
 
+
 def main():
-    HOME=os.getenv('HOME')
-    bad_arg=None
-    logpipe=None
+    HOME = os.getenv('HOME')
+    bad_arg = None
+    logpipe = None
     global special_output
 
     try:
-        logpipe=sys.argv[2].split('=')[1]
+        logpipe = (sys.argv)[2].split('=')[1]
         global logpipeh
         if logpipe:
-            logpipeh=open(logpipe,'w')
-            sys.stdout=logpipeh
-            sys.stderr=logpipeh
-        argstart=3
+            logpipeh = open(logpipe, 'w')
+            sys.stdout = logpipeh
+            sys.stderr = logpipeh
+        argstart = 3
     except:
-        argstart=2
+        argstart = 2
         pass
 
     try:
-        opts,args = getopt.getopt(sys.argv[argstart:],\
-                "e:L:s:S:mntxXyc:fF:d:hvp:VH:l:",\
-["exclude=", "exclude-layout=", "exact","exact-kill","pack=","unpack=","log=",\
-"no-mru", "no-vim", "no-scroll=", "no-layout","no-group-wrap","savefile=",\
-"session=","special-output=","force","force-start=","dir=","help"])
+        (opts, args) = getopt.getopt((sys.argv)[argstart:],
+                "e:L:s:S:mntxXyc:fF:d:hvp:VH:l:", [
+            "exclude=",
+            "exclude-layout=",
+            "exact",
+            "exact-kill",
+            "pack=",
+            "unpack=",
+            "log=",
+            "no-mru",
+            "no-vim",
+            "no-scroll=",
+            "no-layout",
+            "no-group-wrap",
+            "savefile=",
+            "session=",
+            "special-output=",
+            "force",
+            "force-start=",
+            "dir=",
+            "help",
+            ])
     except getopt.GetoptError, err:
         out('BAD OPTIONS')
         raise SystemExit
 
     mode = 0
-    util.archiveend='.tar.bz2'
-    pack=None
-    unpack=None
-    current_session=None
-    bNoGroupWrap=False
-    bVim=True
-    bExact=False
-    bKill=False
-    bHelp=False
-    bList=False
-    bFull=False
-    mru=True
-    force_start=[]
-    scroll=[]
-    excluded=None
-    excluded_layouts=None
+    util.archiveend = '.tar.bz2'
+    pack = None
+    unpack = None
+    current_session = None
+    bNoGroupWrap = False
+    bVim = True
+    bExact = False
+    bKill = False
+    bHelp = False
+    bList = False
+    bFull = False
+    mru = True
+    force_start = []
+    scroll = []
+    excluded = None
+    excluded_layouts = None
     verbose = False
-    log=None
+    log = None
     force = False
     enable_layout = True
-    projectsdir =None
+    projectsdir = None
     savedir = None
     maxwin = -1
-    input=None
-    output=None
+    input = None
+    output = None
     try:
-        savefile=args[0]
+        savefile = args[0]
     except:
-        savefile=None
-    for o, a in opts:
+        savefile = None
+    for (o, a) in opts:
         if o == "-v":
             verbose = True
-        elif o in ("-n","--no-group-wrap"):
-            bNoGroupWrap=True
-        elif o in ("-l","--log"):
+        elif o in ("-n", "--no-group-wrap"):
+            bNoGroupWrap = True
+        elif o in ("-l", "--log"):
             log = a
         elif o == "-p":
             logpipe = a
@@ -127,71 +156,75 @@ def main():
             pack = a
         elif o == "--unpack":
             unpack = a
-        elif o in ("-s","--savefile"):
+        elif o in ("-s", "--savefile"):
             savefile = a
-        elif o in ("-S"):
+        elif o in "-S":
             if a == '.':
-                subprogram=os.path.join(os.path.dirname(sys.argv[0]),'sessionname.py')
-                current_session = util.timeout_command("%s %s \"%s\"" % (os.getenv('PYTHONBIN'), subprogram, current_session), 4)[0].strip()
+                subprogram = os.path.join(os.path.dirname((sys.argv)[0]),
+                        'sessionname.py')
+                current_session = util.timeout_command("%s %s \"%s\"" %
+                        (os.getenv('PYTHONBIN'), subprogram,
+                        current_session), 4)[0].strip()
             else:
                 current_session = a
-        elif o in ("--session"):
+        elif o in "--session":
             current_session = a
         elif o == "--special-output":
-            special_output = open(a,'w')
-        elif o in ("-V","--no-vim"):
+            special_output = open(a, 'w')
+        elif o in ("-V", "--no-vim"):
             bVim = False
-        elif o in ("-H","--no-scroll"):
+        elif o in ("-H", "--no-scroll"):
             scroll = a
-        elif o in ("-x","--exact"):
+        elif o in ("-x", "--exact"):
             bExact = True
-        elif o in ("-X","--exact-kill"):
+        elif o in ("-X", "--exact-kill"):
             bExact = True
-            bKill=True
-        elif o in ("-e","--exclude"):
+            bKill = True
+        elif o in ("-e", "--exclude"):
             excluded = a
-        elif o in ("-L","--exclude-layout"):
+        elif o in ("-L", "--exclude-layout"):
             excluded_layouts = a
-        elif o in ("-f","--force"):
+        elif o in ("-f", "--force"):
             force = True
-        elif o in ("-F","--force-start"):
+        elif o in ("-F", "--force-start"):
             force_start = a
-        elif o in ("-y","--no-layout"):
+        elif o in ("-y", "--no-layout"):
             enable_layout = False
-        elif o in ("-h","--help"):
-            bHelp=True
-        elif o in ("-m","--no-mru"):
-            mru=False
-        elif o in ("-d","--dir"):
+        elif o in ("-h", "--help"):
+            bHelp = True
+        elif o in ("-m", "--no-mru"):
+            mru = False
+        elif o in ("-d", "--dir"):
             projectsdir = a
         else:
-            out('Error parsing: '+o)
+            out('Error parsing: ' + o)
             raise SystemExit
-            break;
+            break
+            None
 
-    home=os.path.expanduser('~')
+    home = os.path.expanduser('~')
 
     if log:
-        sys.stdout=open(log,'w')
-        sys.stderr=sys.stdout
+        sys.stdout = open(log, 'w')
+        sys.stderr = sys.stdout
 
     if bad_arg:
-        out('Unhandled option: %s'%bad_arg)
+        out('Unhandled option: %s' % bad_arg)
         doexit(1)
 
-    if sys.argv[1] in ('save','s'):
-        mode=1
+    if (sys.argv)[1] in ('save', 's'):
+        mode = 1
         output = savefile
-    elif sys.argv[1] in ('load','l'):
-        mode=2
+    elif (sys.argv)[1] in ('load', 'l'):
+        mode = 2
         input = savefile
-    elif sys.argv[1] in ('list','ls'):
-        mode=0
-        bList=True
+    elif (sys.argv)[1] in ('list', 'ls'):
+        mode = 0
+        bList = True
         input = savefile
-    elif sys.argv[1] in ('--help','-h'):
-        bHelp=True
-    elif sys.argv[1] == 'other':
+    elif (sys.argv)[1] in ("--help", "-h"):
+        bHelp = True
+    elif (sys.argv)[1] == 'other':
         pass
     else:
         usageMode()
@@ -204,20 +237,21 @@ def main():
     if not projectsdir:
         projectsdir = '.screen-sessions'
     if bList:
-        list_sessions(home,projectsdir,util.archiveend,input)
+        list_sessions(home, projectsdir, util.archiveend, input)
         doexit(0)
 
-    if mode==0:
+    if mode == 0:
         if unpack:
-            unpackme(home,projectsdir,unpack,util.archiveend,util.tmpdir)
+            unpackme(home, projectsdir, unpack, util.archiveend, util.tmpdir)
         elif pack:
             if not output:
-                output=pack
-            archiveme(util.tmpdir,home,projectsdir,output,util.archiveend,pack+'/*')
+                output = pack
+            archiveme(util.tmpdir, home, projectsdir, output, util.archiveend,
+                      pack + '/*')
         else:
             usage()
         doexit(0)
-    elif mode==1:
+    elif mode == 1:
         if not input:
             if current_session:
                 input = current_session
@@ -231,7 +265,8 @@ def main():
             savedir = output
     elif mode == 2:
         if not input:
-            input=list_sessions(home,projectsdir,util.archiveend,'*',False)
+            input = list_sessions(home, projectsdir, util.archiveend,
+                                  '*', False)
             if not input:
                 out("No recent session to load.")
                 doexit(1)
@@ -244,64 +279,66 @@ def main():
         pid = output
         savedir = input
 
-    scs=ScreenSaver(pid,projectsdir,savedir)
-    scs.command_at(False,"msgminwait 0")
+    scs = ScreenSaver(pid, projectsdir, savedir)
+    scs.command_at(False, "msgminwait 0")
 
     if not scs.exists():
-        out('No such session: \"%s\"'%pid)
+        out('No such session: \"%s\"' % pid)
         doexit(1)
 
-    if savedir == '__tmp_pack' and mode==1:
+    if savedir == '__tmp_pack' and mode == 1:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1)
     elif savedir == scs.blacklistfile:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1)
 
-    maxwin_real=scs.maxwin()
-    if (maxwin==-1):
-        maxwin=maxwin_real
+    maxwin_real = scs.maxwin()
+    if maxwin == -1:
+        maxwin = maxwin_real
     scs.MAXWIN = maxwin
     scs.MAXWIN_REAL = maxwin_real
 
     scs.force = force
-    scs.enable_layout=enable_layout
-    scs.exact=bExact
-    scs.bVim=bVim
-    scs.mru=mru
-    scs.bNoGroupWrap=bNoGroupWrap
+    scs.enable_layout = enable_layout
+    scs.exact = bExact
+    scs.bVim = bVim
+    scs.mru = mru
+    scs.bNoGroupWrap = bNoGroupWrap
     if force_start:
-        scs.force_start=force_start.strip().split(',')
+        scs.force_start = force_start.strip().split(',')
     if excluded:
-        scs.excluded=excluded.split(',')
+        scs.excluded = excluded.split(',')
     if excluded_layouts:
         scs.excluded_layouts = excluded_layouts.split(',')
     if scroll:
-        scs.scroll=scroll.split(',')
+        scs.scroll = scroll.split(',')
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)
 
-    ret=0
-    if mode==1: #mode save
-        savedir_tmp=savedir+'__tmp'
-        savedir_real=savedir
-        removeit(os.path.join(home,projectsdir,savedir_tmp))
-        removeit(os.path.join(util.tmpdir,savedir_tmp))
+    ret = 0
+    if mode == 1:  #mode save
+        savedir_tmp = savedir + '__tmp'
+        savedir_real = savedir
+        removeit(os.path.join(home, projectsdir, savedir_tmp))
+        removeit(os.path.join(util.tmpdir, savedir_tmp))
+
         # save and archivize
-        if os.path.exists(os.path.join(home,projectsdir,savedir+util.archiveend)):
-            if force==False:
+
+        if os.path.exists(os.path.join(home, projectsdir, savedir + util.archiveend)):
+            if force == False:
                 scs.Xecho("screen-session saving FAILED. Savefile exists. Use --force")
                 out('Savefile exists. Use --force to overwrite.')
                 doexit(1)
             else:
                 out('Savefile exists. Forcing...')
-        scs.savedir=savedir_tmp
-        savedir=savedir_tmp
+        scs.savedir = savedir_tmp
+        savedir = savedir_tmp
         try:
             ret = scs.save()
         except:
-            ret=0
+            ret = 0
             traceback.print_exc(file=sys.stderr)
             out('session saving totally failed')
             scs.Xecho("screen-session saving totally FAILED")
@@ -313,30 +350,40 @@ def main():
         else:
             out('compressing...')
             scs.Xecho("screen-session compressing...")
-            removeit(os.path.join(home,projectsdir,savedir_real))
-            removeit(os.path.join(util.tmpdir,savedir_real))
-            archiveme(util.tmpdir,home,projectsdir,savedir_real,util.archiveend,savedir_real+'__tmp/*')
-            removeit(os.path.join(home,projectsdir,savedir_tmp))
-            removeit(os.path.join(util.tmpdir,savedir_tmp))
-            scs.savedir=savedir_real
-            savedir=savedir_real
+            removeit(os.path.join(home, projectsdir, savedir_real))
+            removeit(os.path.join(util.tmpdir, savedir_real))
+            archiveme(util.tmpdir, home, projectsdir, savedir_real, util.archiveend,
+                      savedir_real + '__tmp/*')
+            removeit(os.path.join(home, projectsdir, savedir_tmp))
+            removeit(os.path.join(util.tmpdir, savedir_tmp))
+            scs.savedir = savedir_real
+            savedir = savedir_real
             sc.cleanup()
-            out('session "%s"'%scs.pid)
-            out('saved as "%s"'%(scs.savedir))
-            scs.Xecho("screen-session finished saving as \"%s\""%(savedir))
-    elif mode==2: #mode load
+            out('session "%s"' % scs.pid)
+            out('saved as "%s"' % scs.savedir)
+            scs.Xecho("screen-session finished saving as \"%s\"" %
+                      savedir)
+    elif mode == 2:
+
+                  #mode load
         #cleanup old temporary files and directories
-        cleantmp(util.tmpdir,home,projectsdir,util.archiveend,scs.blacklistfile,200)
+
+        cleantmp(util.tmpdir, home, projectsdir, util.archiveend, scs.blacklistfile,
+                 200)
+
         # unpack and load
+
         try:
-            unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir)
+            unpackme(home, projectsdir, savedir, util.archiveend, util.tmpdir)
         except IOError:
-            recent=list_sessions(home,projectsdir,util.archiveend,savedir,True)
+            recent = list_sessions(home, projectsdir, util.archiveend,
+                                   savedir, True)
             if recent:
-                print('Selecting the most recent file: '+recent)
-                scs.savedir=savedir=input=recent
-                scs._scrollfile=os.path.join(scs.savedir,"hardcopy.")
-                unpackme(home,projectsdir,savedir,util.archiveend,util.tmpdir)
+                print 'Selecting the most recent file: ' + recent
+                scs.savedir = savedir = input = recent
+                scs._scrollfile = os.path.join(scs.savedir, "hardcopy.")
+                unpackme(home, projectsdir, savedir, util.archiveend,
+                         util.tmpdir)
             else:
                 raise IOError
 
@@ -344,10 +391,10 @@ def main():
             ret = scs.load()
             if special_output and bKill:
                 special_output.write("X\n")
-                special_output.write("%s\n"%(scs.pid))
-                special_output.write("%s\n"%(str(scs.wrap_group_id)))
+                special_output.write("%s\n" % scs.pid)
+                special_output.write("%s\n" % str(scs.wrap_group_id))
         except:
-            ret=0
+            ret = 0
             traceback.print_exc(file=sys.stderr)
             out('session loading totally failed')
             scs.Xecho("screen-session loading TOTALLY FAILED")
@@ -358,15 +405,14 @@ def main():
             scs.Xecho("screen-session loading FAILED")
         else:
             scs.Xecho("screen-session finished loading")
-
     else:
+
         out('session saver: No such mode')
     doexit(ret)
 
 
-
-if __name__=='__main__':
+if __name__ == '__main__':
     try:
         main()
     except IOError:
-        print('File access error')
+        print 'File access error'

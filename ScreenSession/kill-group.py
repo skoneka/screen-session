@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    kill-group.py : recursively kill a group and all windows inside
 #
@@ -21,7 +22,8 @@
 import sys
 import tools
 
-session=sys.argv[1]
-groupids=sys.argv[2:]
-tools.kill_group(session,tools.require_dumpscreen_window(session,False),groupids)
+session = (sys.argv)[1]
+groupids = (sys.argv)[2:]
+tools.kill_group(session, tools.require_dumpscreen_window(session, False),
+                 groupids)
 tools.cleanup()

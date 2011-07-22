@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    kill.py : send a signal to the last process started in a window
 #
@@ -22,17 +23,16 @@
 import sys
 import tools
 
-session=sys.argv[1]
+session = (sys.argv)[1]
 try:
-    mode=sys.argv[2]
+    mode = (sys.argv)[2]
 except:
-    mode='TERM'
+    mode = 'TERM'
 
 try:
-    win=sys.argv[3]
+    win = (sys.argv)[3]
 except:
-    win="-1"
+    win = "-1"
 
-
-ret = tools.kill_win_last_proc(session,win,mode)
+ret = tools.kill_win_last_proc(session, win, mode)
 exit(0 if ret else 1)

@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    renumber.py : renumber windows to fill the gaps
 #
@@ -18,9 +19,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os,sys
+import os
+import sys
 import tools
-session=sys.argv[1]
+session = (sys.argv)[1]
 
-tools.renumber(session,tools.require_dumpscreen_window(session,False))
+tools.renumber(session, tools.require_dumpscreen_window(session, False))
 tools.cleanup()

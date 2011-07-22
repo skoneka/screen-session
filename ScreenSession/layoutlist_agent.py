@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    layoutlist.py : display a browseable list of layouts in the session
 #
@@ -18,7 +19,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os,sys,signal,pickle
+import os
+import sys
+import signal
+import pickle
 import GNUScreen as sc
 from util import tmpdir
 from ScreenSaver import ScreenSaver
@@ -29,15 +33,28 @@ MAXTITLELEN = 11
 NO_END = False
 
 
-def handler(signum,frame):
+def handler(signum, frame):
     pass
 
-def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,height):
+
+def menu_table(
+    ss,
+    screen,
+    tmplay,
+    curwin,
+    curlay,
+    layinfo,
+    laytable,
+    pos_x,
+    pos_y,
+    height,
+    ):
     global MAXTITLELEN
     global mru_file
-    y,x = screen.getmaxyx()
+    (y, x) = screen.getmaxyx()
 
     # default background colors
+
     try:
         curses.use_default_colors()
     except:
@@ -48,6 +65,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
     #screen.bkgd(' ',curses.color_pair(1))
 
     # ?universal? color scheme
+
     curses.init_pair(2, -1, curses.COLOR_YELLOW)
     curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLUE)
     curses.init_pair(4, -1, curses.COLOR_GREEN)
@@ -67,30 +85,31 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
     c_curlay_project = curses.color_pair(8) | curses.A_BOLD
     c_find_project = curses.color_pair(9)
     screen.keypad(1)
-    x=None
+    x = None
     other_num = last_sel_num = sel_num_before_search = sel_num = curlay
-    row_len=None
-    col_len=None
-    search_num=None
-    search_title=''
-    n_search_title=''
-    searching_num=False
-    searching_title=False
+    row_len = None
+    col_len = None
+    search_num = None
+    search_title = ""
+    n_search_title = ""
+    searching_num = False
+    searching_title = False
     b_force_sel_num = False
     status_len = 0
-    errormsg=''
-    findNext=0
+    errormsg = ""
+    findNext = 0
     try:
         mru_layouts = pickle.load(open(mru_file, 'r'))
     except:
         mru_layouts = []
     view_layouts = []
     pos_x_c = pos_y_c = layinfo_c = laytable_c = None
+
     def mru_add(layout_num):
         layout_title = ""
         index = None
-        for i,lay in enumerate(mru_layouts):
-            num,title = lay
+        for (i, lay) in enumerate(mru_layouts):
+            (num, title) = lay
             if num == layout_num:
                 index = i
                 break
@@ -105,8 +124,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             if num == layout_num:
                 layout_title = title
                 break
-        mru_layouts.insert(0,(layout_num,layout_title))
-        pickle.dump( mru_layouts , open( mru_file, 'w' ))
+        mru_layouts.insert(0, (layout_num, layout_title))
+        pickle.dump(mru_layouts, open(mru_file, 'w'))
 
     mru_add(curlay)
     while True:
@@ -114,13 +133,13 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
         keyboard_int = False
         if findNext and n_search_title:
             layinfo_pos = 0
-            for k,e in enumerate(layinfo):
+            for (k, e) in enumerate(layinfo):
                 if e[0] == sel_num:
                     layinfo_pos = k
-            layinfo_tmp = layinfo[layinfo_pos+1:]+layinfo[:layinfo_pos]
+            layinfo_tmp = layinfo[layinfo_pos + 1:] + layinfo[:layinfo_pos]
             if findNext == -1:
                 layinfo_tmp.reverse()
-            for i,entry in enumerate(layinfo_tmp):
+            for (i, entry) in enumerate(layinfo_tmp):
                 try:
                     num = entry[0]
                     title = entry[1]
@@ -133,71 +152,75 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 except:
                     continue
         elif searching_num:
-            bfound=False
+            bfound = False
             if not search_num:
                 sn = sel_num_before_search
                 searching_num = False
             else:
                 sn = search_num
-            for i,row in enumerate(laytable):
-                for j,cell in enumerate(row):
-                    num,title=cell
+            for (i, row) in enumerate(laytable):
+                for (j, cell) in enumerate(row):
+                    (num, title) = cell
                     if sn:
                         if sn == num:
-                            pos_x=j
-                            pos_y=i
-                            bfound=True
+                            pos_x = j
+                            pos_y = i
+                            bfound = True
                             break
                     if bfound:
                         break
 
         project_title = None
-        bfound=False
-        for i,row in enumerate(laytable):
-            for j,cell in enumerate(row):
-                num,title=cell
-                if sel_num == last_sel_num and j==pos_x and i==pos_y and not b_force_sel_num:
+        bfound = False
+        for (i, row) in enumerate(laytable):
+            for (j, cell) in enumerate(row):
+                (num, title) = cell
+                if sel_num == last_sel_num and j == pos_x and i == pos_y and \
+                    not b_force_sel_num:
                     sel_num = num
                     last_sel_num = sel_num
-                    row_len = len(row)-1
+                    row_len = len(row) - 1
                     project_title = title.lower()
-                    bfound=True
+                    bfound = True
                     break
-                elif ( b_force_sel_num or not sel_num == last_sel_num ) and sel_num == num:
+                elif (b_force_sel_num or not sel_num == last_sel_num) and \
+                    sel_num == num:
                     b_force_sel_num = False
-                    pos_x=j
-                    pos_y=i
+                    pos_x = j
+                    pos_y = i
                     last_sel_num = sel_num
-                    row_len = len(row)-1
+                    row_len = len(row) - 1
                     project_title = title.lower()
-                    bfound=True
+                    bfound = True
                     break
             if bfound:
                 break
         if sel_num != curlay:
             other_num = sel_num
         bSearchResults = False
-        for i,row in enumerate(laytable):
-            for j,cell in enumerate(row):
-                num,title=cell
+        for (i, row) in enumerate(laytable):
+            for (j, cell) in enumerate(row):
+                (num, title) = cell
                 bsel = False
                 c_f = c_find
                 if sel_num == num:
-                    color=c_h
+                    color = c_h
                     c_p = c_h_project
                     bsel = True
-                elif num==curlay:
-                    color=c_curlay_n
+                elif num == curlay:
+                    color = c_curlay_n
                     c_p = c_curlay_project
                 else:
-                    color=c_n
+                    color = c_n
                     c_p = c_project
                 try:
-                    screen.addstr(i,j*(MAXTITLELEN+5)," %-4s%s"%(num,title),color)
+                    screen.addstr(i, j * (MAXTITLELEN + 5), " %-4s%s" %
+                                  (num, title), color)
                     tl = title.lower()
                     if AUTOSEARCH_MIN_MATCH > 0:
                         pi = 0
-                        for k,l in enumerate(tl):
+
+                        for (k, l) in enumerate(tl):
                             try:
                                 if l == project_title[k]:
                                     pi += 1
@@ -207,11 +230,12 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                                 break
                         if pi >= AUTOSEARCH_MIN_MATCH:
                             if bsel:
-                                screen.addstr(i,j*(MAXTITLELEN+5)," %-4s"%(num),c_p)
+                                screen.addstr(i, j*(MAXTITLELEN+5), " %-4s"%(num), c_p)
                             else:
-                                screen.addstr(i,j*(MAXTITLELEN+5)+5,"%s"%(title[0:pi]), c_p)
+                                screen.addstr(i, j*(MAXTITLELEN+5)+5, "%s"%(title[0:pi]), c_p)
                             if not bsel:
                                 c_f = c_find_project
+
                     if findNext:
                         s = n_search_title
                     else:
@@ -220,63 +244,69 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     if not bSearchResults:
                         bSearchResults = True
                         view_layouts = []
-                    screen.addstr(i,j*(MAXTITLELEN+5)+5+tfi,"%s"%(title[tfi:tfi+len(s)]), c_f)
+                    screen.addstr(i, j * (MAXTITLELEN + 5) + 5 + tfi,
+                                  "%s" % title[tfi:tfi + len(s)], c_f)
                 except:
                     pass
 
         if findNext:
-            findNext=0
+            findNext = 0
         if not searching_num:
-            search_num=None
+            search_num = None
         if not searching_title:
-            search_title=None
+            search_title = None
         try:
-            screen.addstr(y-1,0,"> %-*s"%(status_len,''),c_n)
+            screen.addstr(y - 1, 0, "> %-*s" % (status_len, ""), c_n)
             if searching_title or searching_num:
                 if searching_title:
-                    prompt='> Search: '
+                    prompt = '> Search: '
                 else:
-                    prompt='> Number: '
+                    prompt = '> Number: '
                 if search_title:
                     search = search_title
                 elif search_num:
                     search = search_num
                 else:
-                    search = ''
-                s = "%s%s"%(prompt,search)
-                status_len=len(s)
-                screen.addstr(y-1,0,s,curses.A_BOLD)
+                    search = ""
+                s = "%s%s" % (prompt, search)
+                status_len = len(s)
+                screen.addstr(y - 1, 0, s, curses.A_BOLD)
             else:
                 if errormsg:
-                    s="%s"%(errormsg)
-                    screen.addstr(y-1, 2, s, c_error| curses.A_BOLD )
+                    s = "%s" % errormsg
+                    screen.addstr(y - 1, 2, s, c_error | curses.A_BOLD)
                 else:
-                    s='Press \'?\' to view help'
-                    screen.addstr(y-1, 2, s, c_n )
-                status_len=len(s)
-                errormsg=''
-
+                    s = 'Press \'?\' to view help'
+                    screen.addstr(y - 1, 2, s, c_n)
+                status_len = len(s)
+                errormsg = ""
         except:
+
             pass
         screen.refresh()
         x = screen.getch()
+
         # refreshes layout list ^C ^L
-        if x in (-1,12,18) or ( x in (ord('r'),ord('R')) and not searching_title and not searching_num):
+
+        if x in (-1, 12, 18) or x in (ord('r'), ord('R')) and not searching_title and \
+            not searching_num:
             if laytable_c:
                 pos_x = pos_x_c
                 pos_y = pos_y_c
                 pos_x_c = pos_y_c = layinfo_c = laytable_c = None
-            y,x = screen.getmaxyx()
+            (y, x) = screen.getmaxyx()
             searching_title = False
             searching_num = False
             try:
                 try:
                     try:
                         if NO_END:
-                            f = open( lock_and_com_file, 'r' )
+                            f = open(lock_and_com_file, 'r')
                             from string import strip as str_strip
+
                             #pid,cwin,clay,MAXTITLELEN,height = map( str_strip,f.readlines() )
-                            nd = map( str_strip,f.readlines() )
+
+                            nd = map(str_strip, f.readlines())
                             curwin = nd[3]
                             curlay = nd[4]
                             MAXTITLELEN = int(nd[5])
@@ -286,23 +316,27 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                             mru_add(curlay)
                     except:
                         pass
-                    layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
-                    laytable,pos_start = create_table(ss, screen, curlay, layinfo, tmplay, height)
+                    layinfo = list(sc.gen_layout_info(ss, sc.dumpscreen_layout_info(ss)))
+                    (laytable, pos_start) = create_table(ss, screen,
+                            curlay, layinfo, tmplay, height)
                     errormsg = 'Refreshed'
                 finally:
                     sc.cleanup()
             except:
                 errormsg = 'Layouts dumping error.'
         elif searching_title and x == ord('\n'):
-            searching_title=False
+            searching_title = False
             n_search_title = search_title
-            findNext=True
-        elif x == 27: # Escape key
-            searching_num=False
-            searching_title=False
-            search_num=None
-            search_title=None
-            errormsg='Canceled'
+            findNext = True
+        elif x == 27:
+
+                      # Escape key
+
+            searching_num = False
+            searching_title = False
+            search_num = None
+            search_title = None
+            errormsg = 'Canceled'
             n_search_title = search_title
         elif x == curses.KEY_BACKSPACE:
             try:
@@ -323,7 +357,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             if x == curses.KEY_UP:
                 search_title = n_search_title
             elif x == curses.KEY_DOWN:
-                search_title = ''
+                search_title = ""
             else:
                 try:
                     search_title += chr(x)
@@ -332,7 +366,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
         elif x in (ord('/'), ord(' ')):
             searching_title = True
             searching_num = False
-            search_title = ''
+            search_title = ""
         elif x == ord('\n'):
             if layinfo_c:
                 layinfo = list(layinfo_c)
@@ -340,23 +374,27 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 pos_x = pos_x_c
                 pos_y = pos_y_c
                 pos_x_c = pos_y_c = layinfo_c = laytable_c = None
-            searching_num=False
+            searching_num = False
             if not sel_num:
                 curses.flash()
                 errormsg = "No layout selected."
             elif sel_num == tmplay:
                 curses.flash()
-                errormsg = "This IS layout %s."%sel_num
+                errormsg = "This IS layout %s." % sel_num
             else:
                 if NO_END:
                     mru_add(sel_num)
                     if curwin != '-1':
-                        ss.command_at(False,'eval "select %s" "layout select %s" "layout title"'%(curwin,sel_num))
+                        ss.command_at(False,
+                                'eval "select %s" "layout select %s" "layout title"' %
+                                (curwin, sel_num))
                     else:
-                        ss.command_at(False,'eval "layout select %s" "layout title"'%(sel_num))
+                        ss.command_at(False,
+                                'eval "layout select %s" "layout title"' %
+                                sel_num)
                 else:
                     return sel_num
-        elif x in (ord('q'),ord('Q')):
+        elif x in (ord('q'), ord('Q')):
             if NO_END and x == ord('q'):
                 if layinfo_c:
                     layinfo = list(layinfo_c)
@@ -365,25 +403,27 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pos_y = pos_y_c
                     pos_x_c = pos_y_c = layinfo_c = laytable_c = None
                 mru_add(sel_num)
-                ss.command_at(False,'eval "layout select %s" "layout title"'%(curlay))
+                ss.command_at(False,
+                              'eval "layout select %s" "layout title"' %
+                              curlay)
             else:
                 return curlay
-        elif x in (ord('n'),ord('P')):
+        elif x in (ord('n'), ord('P')):
             findNext = 1
-        elif x in (ord('p'),ord('N')):
+        elif x in (ord('p'), ord('N')):
             findNext = -1
         elif x in (curses.KEY_HOME, ord('^')):
             pos_x = 0
         elif x in (curses.KEY_END, ord('$')):
-            pos_x = len(laytable[pos_y])-1
+            pos_x = len(laytable[pos_y]) - 1
         elif x == curses.KEY_PPAGE:
             pos_y = pos_y - 5 if pos_y - 5 > 0 else 0
         elif x == ord('?'):
             from help import help_layoutlist
             screen.erase()
-            for i,line in enumerate(help_layoutlist.split('\n')):
+            for (i, line) in enumerate(help_layoutlist.split('\n')):
                 try:
-                    screen.addstr(i,0," %s"%(line),c_n)
+                    screen.addstr(i, 0, " %s" % line, c_n)
                 except:
                     pass
             screen.refresh()
@@ -396,7 +436,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
             else:
                 sel_num = other_num
             b_force_sel_num = True
-        elif x in ( ord('m'), ord('a') ):
+        elif x in (ord('m'), ord('a')):
             screen.erase()
             if not layinfo_c:
                 layinfo_c = list(layinfo)
@@ -404,7 +444,8 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 pos_x_c = pos_x
                 pos_y_c = pos_y
                 pos_x = pos_y = 0
-                laytable,pos_start = create_table_std(ss, screen, curlay, mru_layouts, tmplay)
+                (laytable, pos_start) = create_table_std(ss, screen,
+                        curlay, mru_layouts, tmplay)
                 if len(laytable) > 1:
                     pos_y = 1
                 layinfo = mru_layouts
@@ -434,12 +475,12 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     if bSearchResults:
                         try:
                             tfi = tl.index(nst)
-                            view_layouts.append((num,title))
+                            view_layouts.append((num, title))
                         except:
                             pass
                     else:
                         pi = 0
-                        for k,l in enumerate(tl):
+                        for (k, l) in enumerate(tl):
                             try:
                                 if l == project_title[k]:
                                     pi += 1
@@ -448,10 +489,11 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                             except:
                                 break
                         if pi >= AUTOSEARCH_MIN_MATCH:
-                            view_layouts.append((num,title))
+                            view_layouts.append((num, title))
 
-                laytable,pos_start = create_table_std(ss, screen, sel_num, view_layouts, tmplay)
-                pos_x,pos_y = pos_start
+                (laytable, pos_start) = create_table_std(ss, screen,
+                        sel_num, view_layouts, tmplay)
+                (pos_x, pos_y) = pos_start
                 layinfo = view_layouts
             else:
                 b_force_sel_num = True
@@ -460,7 +502,7 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                 pos_x = pos_x_c
                 pos_y = pos_y_c
                 pos_x_c = pos_y_c = layinfo_c = laytable_c = None
-        elif x in range(ord('0'),ord('9')+1):
+        elif x in range(ord('0'), ord('9') + 1):
             if not searching_num:
                 searching_num = True
                 sel_num_before_search = sel_num
@@ -473,13 +515,15 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pass
         else:
             searching_num = False
-            for i,row in enumerate(laytable):
+            for (i, row) in enumerate(laytable):
                 try:
                     a = row[pos_x]
                     col_len = i
                 except:
                     break
+
             #sys.stderr.write("KEY(%d) POS(%d,%d) RLEN(%d) CLEN(%d)\n"%(x,pos_x,pos_y,row_len,col_len))
+
             if x == curses.KEY_NPAGE:
                 pos_y = pos_y + 5 if pos_y + 5 < col_len else col_len
             elif x in (ord('j'), curses.KEY_DOWN):
@@ -504,110 +548,131 @@ def menu_table(ss,screen,tmplay,curwin,curlay,layinfo,laytable,pos_x,pos_y,heigh
                     pos_x = 0
             else:
                 try:
-                    c=chr(x)
+                    c = chr(x)
                 except:
-                    c='UNKNOWN'
-                errormsg='Unsupported keycode: %d \"%s\"' % (x,c)
+                    c = 'UNKNOWN'
+                errormsg = 'Unsupported keycode: %d \"%s\"' % (x, c)
                 curses.flash()
+
+
 def create_table_std(ss, screen, curlay, layinfo, lnum):
-    pos_start=(0,0)
-    y,x = screen.getmaxyx()
-    maxrows = y-1
-    laytable=[[] for i in range(0,maxrows)]
-    prev_inum=0
-    for i,lay in enumerate(layinfo):
+    pos_start = (0, 0)
+    (y, x) = screen.getmaxyx()
+    maxrows = y - 1
+    laytable = [[] for i in range(0, maxrows)]
+    prev_inum = 0
+    for (i, lay) in enumerate(layinfo):
         try:
             num = lay[0]
             title = lay[1]
         except:
             title = ""
-        col = i%maxrows
+        col = i % maxrows
         if num == lnum:
-            title = '*'+title
-        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
-        if curlay==num:
-            row = len(laytable[col])-1
-            pos_start=(row,col)
-    return laytable, pos_start
+            title = '*' + title
+        laytable[col].append((num, '%-*s' % (MAXTITLELEN, title[:MAXTITLELEN])))
+        if curlay == num:
+            row = len(laytable[col]) - 1
+            pos_start = (row, col)
+    return (laytable, pos_start)
+
 
 def create_table_mod(ss, screen, curlay, layinfo, lnum, height):
-    pos_start=(0,0)
-    laytable=[[] for i in range(0,height)]
-    prev_inum=0
-    for i,lay in enumerate(layinfo):
+    pos_start = (0, 0)
+    laytable = [[] for i in range(0, height)]
+    prev_inum = 0
+    for (i, lay) in enumerate(layinfo):
         try:
             num = lay[0]
             title = lay[1]
         except:
             title = ""
         inum = int(num)
+
         #sys.stderr.write("%d %d RANGE(%s)\n"%(prev_inum,inum,range(prev_inum+1,inum)))
-        for j in range(prev_inum+1,inum):
-            col = j%height
-            laytable[col].append(('','%-*s'%(MAXTITLELEN,'')))
-        col = inum%height
+
+        for j in range(prev_inum + 1, inum):
+            col = j % height
+            laytable[col].append(("", '%-*s' % (MAXTITLELEN, "")))
+        col = inum % height
         if num == lnum:
-            title = '*'+title
-        laytable[col].append((num,'%-*s'%(MAXTITLELEN,title[:MAXTITLELEN])))
-        if curlay==num:
-            row = len(laytable[col])-1
-            pos_start=(row,col)
-        prev_inum=inum
-    return laytable,pos_start
+            title = '*' + title
+        laytable[col].append((num, '%-*s' % (MAXTITLELEN, title[:MAXTITLELEN])))
+        if curlay == num:
+            row = len(laytable[col]) - 1
+            pos_start = (row, col)
+        prev_inum = inum
+    return (laytable, pos_start)
+
 
 def create_table(ss, screen, curlay, layinfo, lnum, height):
     if height:
-        return create_table_mod(ss, screen, curlay, layinfo, lnum, height)
+        return create_table_mod(ss, screen, curlay, layinfo, lnum,
+                                height)
     else:
         return create_table_std(ss, screen, curlay, layinfo, lnum)
 
 
-
-def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
+def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
+        height):
     global lock_and_com_file, mru_file
-    signal.signal(signal.SIGINT,handler)
-    session = session.split('.',1)[0]
+    signal.signal(signal.SIGINT, handler)
+    session = session.split('.', 1)[0]
 
     ret = 0
     ss = ScreenSaver(session)
     wnum = os.getenv('WINDOW')
     if requirecleanup_lay:
-        lnum=ss.get_layout_number()[0]
+        lnum = ss.get_layout_number()[0]
     else:
-        lnum=None
+        lnum = None
 
-    mru_file = os.path.join(tmpdir,'___layoutlist_%s_MRU'%session)
+    mru_file = os.path.join(tmpdir, '___layoutlist_%s_MRU' % session)
     if NO_END:
-        lock_and_com_file = os.path.join(tmpdir,'___layoutlist_%s'%session)
-        f = open( lock_and_com_file, 'w')
-        f.write(str(os.getpid())+'\n')
+        lock_and_com_file = os.path.join(tmpdir, '___layoutlist_%s' %
+                session)
+        f = open(lock_and_com_file, 'w')
+        f.write(str(os.getpid()) + '\n')
         if requirecleanup_win and not requirecleanup_lay:
-            f.write(wnum+'\n')
+            f.write(wnum + '\n')
         else:
             f.write('-1\n')
         if requirecleanup_lay:
-            f.write(lnum+'\n')
+            f.write(lnum + '\n')
         else:
             f.write('-1\n')
         f.close()
 
     try:
         try:
-            layinfo = list(sc.gen_layout_info(ss,sc.dumpscreen_layout_info(ss)))
+            layinfo = list(sc.gen_layout_info(ss, sc.dumpscreen_layout_info(ss)))
         finally:
             sc.cleanup()
     except:
         sys.stderr.write('Layouts dumping error.\n')
         return 1
     screen = curses.initscr()
-    laytable,pos_start = create_table(ss, screen, curlay, layinfo, lnum, height)
+    (laytable, pos_start) = create_table(ss, screen, curlay, layinfo,
+            lnum, height)
 
     curses.start_color()
     curses.noecho()
+
     #screen.notimeout(1)
 
     try:
-        choice = menu_table(ss,screen,lnum,curwin,curlay,layinfo,laytable,pos_start[0],pos_start[1],height)
+        choice = menu_table(
+            ss,
+            screen,
+            lnum,
+            curwin,
+            curlay,
+            layinfo,
+            laytable,
+            pos_start[0],
+            pos_start[1],
+            height,
+            )
         if requirecleanup_lay and choice == lnum:
             choice = curlay
     except Exception:
@@ -620,27 +685,34 @@ def run(session,requirecleanup_win,requirecleanup_lay,curwin,curlay,height):
         from util import remove
         remove(lock_and_com_file)
     if requirecleanup_lay:
-        ss.command_at(False,'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill" "layout title"'%(choice,lnum,wnum))
+        ss.command_at(False,
+                      'eval "layout select %s" "layout remove %s" "at \"%s\#\" kill" "layout title"' %
+                      (choice, lnum, wnum))
     elif requirecleanup_win:
-        ss.command_at(False,'eval "select %s" "layout select %s" "at \"%s\#\" kill" "layout title"'%(curwin,choice,wnum))
+        ss.command_at(False,
+                      'eval "select %s" "layout select %s" "at \"%s\#\" kill" "layout title"' %
+                      (curwin, choice, wnum))
     else:
-        ss.command_at(False,'eval "layout select %s" "layout title"'%(choice))
+        ss.command_at(False, 'eval "layout select %s" "layout title"' %
+                      choice)
     return ret
 
-if __name__=='__main__':
-    session=sys.argv[1]
-    curwin=sys.argv[2]
-    curlay=sys.argv[3]
-    requirecleanup_win = True if sys.argv[4]=='1' else False
-    requirecleanup_lay = True if sys.argv[5]=='1' else False
-    NO_END = True if sys.argv[6]=='1' else False
-    MAXTITLELEN = int(sys.argv[7])
-    AUTOSEARCH_MIN_MATCH = int(sys.argv[8])
+
+if __name__ == '__main__':
+    session = (sys.argv)[1]
+    curwin = (sys.argv)[2]
+    curlay = (sys.argv)[3]
+    requirecleanup_win = True if (sys.argv)[4] == '1' else False
+    requirecleanup_lay = True if (sys.argv)[5] == '1' else False
+    NO_END = True if (sys.argv)[6] == '1' else False
+    MAXTITLELEN = int((sys.argv)[7])
+    AUTOSEARCH_MIN_MATCH = int((sys.argv)[8])
 
     try:
-        height = int(sys.argv[9])
+        height = int((sys.argv)[9])
     except:
         height = 20
 
-    run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay, height)
+    run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
+        height)
 

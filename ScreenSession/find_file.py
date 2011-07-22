@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    find_file.py : find open files in windows
 #
@@ -21,13 +22,14 @@
 import sys
 import tools
 
-session=sys.argv[1]
-files=sys.argv[2:]
+session = (sys.argv)[1]
+files = (sys.argv)[2:]
 
-pids=tools.find_files_in_pids(files)
+pids = tools.find_files_in_pids(files)
 try:
-    pids=map(int,pids)
-    for win,title in tools.find_pids_in_windows(session,tools.require_dumpscreen_window(session,False),pids):
-        print("%s %s"%(win,title))
+    pids = map(int, pids)
+    for (win, title) in tools.find_pids_in_windows(session, tools.require_dumpscreen_window(session,
+            False), pids):
+        print "%s %s" % (win, title)
 except:
     pass

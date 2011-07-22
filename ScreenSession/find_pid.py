@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    find_pid.py : find pids in windows; obsoleted by dump.py
 #
@@ -21,8 +22,9 @@
 import sys
 import tools
 
-session=sys.argv[1]
-pids=map(int,sys.argv[2:])
-for win,title in tools.find_pids_in_windows(session,tools.require_dumpscreen_window(session,False),pids):
-    print("%s %s"%(win,title))
+session = (sys.argv)[1]
+pids = map(int, (sys.argv)[2:])
+for (win, title) in tools.find_pids_in_windows(session, tools.require_dumpscreen_window(session,
+        False), pids):
+    print "%s %s" % (win, title)
 tools.cleanup()

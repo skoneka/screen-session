@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    tools.py : functions used by tools
 #
@@ -23,237 +25,287 @@ import GNUScreen as sc
 import os
 from sys import stderr
 
-dumpscreen_window=sc.dumpscreen_window
-require_dumpscreen_window=sc.require_dumpscreen_window
+dumpscreen_window = sc.dumpscreen_window
+require_dumpscreen_window = sc.require_dumpscreen_window
+
 
 def cleanup():
     sc.cleanup()
 
-def find_pids_in_windows(session,datadir,pids):
-    import getpass,os
-    tty_and_pids=sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
+
+def find_pids_in_windows(session, datadir, pids):
+    import getpass
+    import os
+    tty_and_pids = sc._get_tty_pids_ps_with_cache_gen(getpass.getuser())
+
     #print(tty_and_pids)
-    ttys=[]
-    for tty,tpids in tty_and_pids.items():
+
+    ttys = []
+    for (tty, tpids) in tty_and_pids.items():
+
         #print('%s %s %s'%(pids,tty,tpids))
+
         for pid in pids:
             if pid in tpids:
                 ttys.append(tty)
-    wins=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
+    wins = []
+    for (cwin, cgroupid, ctype, ctty, ctitle) in sc.gen_all_windows_fast(session,
+            datadir):
         try:
             ctty = int(os.path.split(ctty)[1])
             if ctty in ttys:
-                wins.append(tuple([cwin,ctitle]))
+                wins.append(tuple([cwin, ctitle]))
         except Exception:
             pass
     return wins
 
+
 def find_files_in_pids(files):
     import os
-    cmd='lsof -F p %s | cut -c2-'%(" ".join(["\"%s\""%v for v in files]))
+    cmd = 'lsof -F p %s | cut -c2-' % (" ").join(["\"%s\"" % v for v in
+            files])
     f = os.popen(cmd)
-    pids=f.read().strip().split('\n')
+    pids = f.read().strip().split('\n')
     f.close()
     return pids
 
 
-def dump(ss,datadir,showpid=True,reverse=True,sort=False,groupids=[]):
+def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
     from sys import stdout
-    bShow=True
-    windows=[]
-    sum_process_total=0
-    sum_win=0
-    sum_zombie=0
-    sum_basic=0
-    sum_group=0
-    sum_telnet=0
-    sum_primer=0
-    sum_vim=0
+    bShow = True
+    windows = []
+    sum_process_total = 0
+    sum_win = 0
+    sum_zombie = 0
+    sum_basic = 0
+    sum_group = 0
+    sum_telnet = 0
+    sum_primer = 0
+    sum_vim = 0
     if groupids:
-        groups,windows=subwindows(ss.pid,datadir,groupids)
+        (groups, windows) = subwindows(ss.pid, datadir, groupids)
     try:
-        for cwin,cgroupid,cgroup,ctty,ctype,ctypestr,ctitle,cfilter,cscroll,ctime,cmdargs in sc.gen_all_windows_full(ss.pid,datadir,reverse,sort):
+        for (
+            cwin,
+            cgroupid,
+            cgroup,
+            ctty,
+            ctype,
+            ctypestr,
+            ctitle,
+            cfilter,
+            cscroll,
+            ctime,
+            cmdargs,
+            ) in sc.gen_all_windows_full(ss.pid, datadir, reverse, sort):
             if groupids:
                 if cwin in windows:
-                    bShow=True
+                    bShow = True
                 else:
-                    bShow=False
+                    bShow = False
             if bShow:
-                sum_win+=1
-                if ctype==-1:
-                    sum_zombie+=1
-                elif ctype==0:
-                    sum_basic+=1
-                elif ctype==1:
-                    sum_group+=1
-                elif ctype==2:
-                    sum_telnet+=1
-                print("----------------------------------------")
-                lines=[]
-                lines.append("%s TYPE  %s\n"%(cwin,ctypestr))
-                if cgroupid=='-1':
-                    groupstr='-1'
+                sum_win += 1
+                if ctype == -1:
+                    sum_zombie += 1
+                elif ctype == 0:
+                    sum_basic += 1
+                elif ctype == 1:
+                    sum_group += 1
+                elif ctype == 2:
+                    sum_telnet += 1
+                print "----------------------------------------"
+                lines = []
+                lines.append("%s TYPE  %s\n" % (cwin, ctypestr))
+                if cgroupid == "-1":
+                    groupstr = "-1"
                 else:
-                    groupstr=cgroupid+' '+cgroup
-                lines.append("%s GRP   %s\n"%(cwin,groupstr))
-                lines.append("%s TITL  %s\n"%(cwin,ctitle))
-                cmdargs=cmdargs.split('\0')
-                pcmdargs=cmdargs[0]
-                if cmdargs[1]!='':
-                    pcmdargs+=" "+" ".join(["\"%s\""%v for v in cmdargs[1:-1]])
-                lines.append("%s CARG  %s\n"%(cwin,pcmdargs))
-                if cfilter!='-1':
-                    lines.append("%s EXEC  %s\n"%(cwin,cfilter))
-                if ctype==0:
-                    lines.append("%s TTY   %s\n"%(cwin,ctty))
+                    groupstr = cgroupid + " " + cgroup
+                lines.append("%s GRP   %s\n" % (cwin, groupstr))
+                lines.append("%s TITL  %s\n" % (cwin, ctitle))
+                cmdargs = cmdargs.split('\0')
+                pcmdargs = cmdargs[0]
+                if cmdargs[1] != '':
+                    pcmdargs += " " + (" ").join(["\"%s\"" % v for v in
+                            cmdargs[1:-1]])
+                lines.append("%s CARG  %s\n" % (cwin, pcmdargs))
+                if cfilter != "-1":
+                    lines.append("%s EXEC  %s\n" % (cwin, cfilter))
+                if ctype == 0:
+                    lines.append("%s TTY   %s\n" % (cwin, ctty))
                     if showpid:
                         try:
-                            pids=sc.get_tty_pids(ctty)
+                            pids = sc.get_tty_pids(ctty)
                         except:
-                            lines.append ("%s No access\n"%cwin)
+                            lines.append("%s No access\n" % cwin)
                             pass
                         for pid in pids:
-                            sum_process_total+=1
+                            sum_process_total += 1
                             try:
-                                cwd,exe,cmd=sc.get_pid_info(pid)
-                                lines.append ("%s PID   %s CWD %s\n"%(cwin,pid,cwd))
-                                lines.append ("%s PID   %s EXE %s\n"%(cwin,pid,exe))
-                                cmd=cmd.split('\0')
-                                pcmd=cmd[0]
-                                if cmd[1]!='':
-                                    pcmd+=" "+" ".join(["\"%s\""%v for v in cmd[1:-1]])
-                                lines.append ("%s PID   %s CMD %s\n"%(cwin,pid,pcmd))
+                                (cwd, exe, cmd) = sc.get_pid_info(pid)
+                                lines.append("%s PID   %s CWD %s\n" % (cwin,
+                                        pid, cwd))
+                                lines.append("%s PID   %s EXE %s\n" % (cwin,
+                                        pid, exe))
+                                cmd = cmd.split('\0')
+                                pcmd = cmd[0]
+
+                                if cmd[1] != '':
+                                    pcmd += " "+" ".join(["\"%s\"" % v for v in cmd[1:-1]])
+
+                                lines.append("%s PID   %s CMD %s\n" % (cwin,
+                                        pid, pcmd))
+                            except:
+
                                 try:
-                                    if cmd[0].endswith('screen-session-primer') and cmd[1]=='-p':
-                                        sum_primer+=1
-                                        lines[0]=lines[0][:-1]+" / primer\n"
-                                    elif cmd[0] in ('vi','vim','viless','vimdiff'):
-                                        sum_vim+=1
-                                        lines[0]=lines[0][:-1]+" / VIM\n"
+                                    if cmd[0].endswith('screen-session-primer') and cmd[1] == '-p':
+                                        sum_primer += 1
+                                        lines[0] = lines[0][:-1] + " / primer\n"
+                                    elif cmd[0] in ('vi', 'vim', 'viless', 'vimdiff'):
+                                        sum_vim += 1
+                                        lines[0] = lines[0][:-1] + " / VIM\n"
                                 except:
                                     pass
-                            except:
-                                lines.append ("%s PID > %s < No permission\n"%(cwin,pid))
+
+                                lines.append("%s PID > %s < No permission\n" %
+                                        (cwin, pid))
                 try:
-                    map(stdout.write,lines)
+                    map(stdout.write, lines)
                 except:
-                    break;
+                    break
+                    None
                     pass
-        print('WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' %(sum_win,sum_basic,sum_group,sum_zombie,sum_telnet))
-        print('PROCESS: %d\t[ %d primer | %d vim ]'%(sum_process_total,sum_primer,sum_vim))
+        print 'WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' % \
+            (sum_win, sum_basic, sum_group, sum_zombie, sum_telnet)
+        print 'PROCESS: %d\t[ %d primer | %d vim ]' % (sum_process_total,
+                sum_primer, sum_vim)
     except IOError:
         pass
 
-def renumber(session,datadir):
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    wins=[]
-    wins_trans={}
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
-        iwin=int(cwin)
-        wins.append((iwin,cgroupid,ctype))
-        wins_trans[iwin]=iwin
 
-    wins.sort(key=lambda wins:wins[0])
-    print (wins_trans)
-    i=0
-    for win,groupid,ctype in wins:
-        if wins_trans[win]!=i:
+def renumber(session, datadir):
+    ss = ScreenSaver(session, '/dev/null', '/dev/null')
+    wins = []
+    wins_trans = {}
+    for (cwin, cgroupid, ctype, ctty, ctitle) in sc.gen_all_windows_fast(session,
+            datadir):
+        iwin = int(cwin)
+        wins.append((iwin, cgroupid, ctype))
+        wins_trans[iwin] = iwin
+
+    wins.sort(key=lambda wins: wins[0])
+    print wins_trans
+    i = 0
+    for (win, groupid, ctype) in wins:
+        if wins_trans[win] != i:
+
             #print("win %d(%d)(%s) as %d"%(wins_trans[win],win,group,i))
-            ss.number(str(i),str(wins_trans[win]))
-            tmp=wins_trans[win]
-            try:
-                wins_trans[win]=wins_trans[i]
-            except:
-                wins_trans[win]=-1
-            wins_trans[i]=tmp
-        i+=1
-    print (wins_trans)
 
-def sort(session,datadir,key=None):
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    wins=[]
-    wins_trans={}
-    groups={}
-    cgroup=None
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
-        iwin=int(cwin)
-        lastval=(groupid,iwin,ctype,ss.title('',iwin))
+            ss.number(str(i), str(wins_trans[win]))
+            tmp = wins_trans[win]
+            try:
+                wins_trans[win] = wins_trans[i]
+            except:
+                wins_trans[win] = -1
+            wins_trans[i] = tmp
+        i += 1
+    print wins_trans
+
+
+def sort(session, datadir, key=None):
+    ss = ScreenSaver(session, '/dev/null', '/dev/null')
+    wins = []
+    wins_trans = {}
+    groups = {}
+    cgroup = None
+    for (cwin, cgroupid, ctype, ctty, ctitle) in sc.gen_all_windows_fast(session,
+            datadir):
+        iwin = int(cwin)
+        lastval = (groupid, iwin, ctype, ss.title('', iwin))
         try:
             groups[groupid].append(lastval)
         except:
-            groups[groupid]=[lastval]
-        wins_trans[iwin]=iwin
+            groups[groupid] = [lastval]
+        wins_trans[iwin] = iwin
 
-    i=0
-    for group,props in groups.items():
+    i = 0
+    for (group, props) in groups.items():
         try:
-            props.sort(key=lambda wins:wins[3].lower())
+            props.sort(key=lambda wins: wins[3].lower())
         except:
-            print('FAIL')
-            print( str(len(props))+' : '+group + ' : ' + str(props))
+            print 'FAIL'
+            print str(len(props)) + ' : ' + group + ' : ' + str(props)
             pass
+
         #print( str(len(props))+' : '+group + ' : ' + str(props))
-        for groupid,win,ctype,title in props:
-            if wins_trans[win]!=i:
+
+        for (groupid, win, ctype, title) in props:
+            if wins_trans[win] != i:
+
                 #print("win %d(%d)(%s) as %d"%(wins_trans[win],win,group,i))
-                ss.number(str(i),str(wins_trans[win]))
-                tmp=wins_trans[win]
+
+                ss.number(str(i), str(wins_trans[win]))
+                tmp = wins_trans[win]
                 try:
-                    wins_trans[win]=wins_trans[i]
+                    wins_trans[win] = wins_trans[i]
                 except:
-                    wins_trans[win]=-1
-                wins_trans[i]=tmp
-            i+=1
+                    wins_trans[win] = -1
+                wins_trans[i] = tmp
+            i += 1
     return
 
 
-def kill_zombie(session,datadir,groupids=[]):
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
+def kill_zombie(session, datadir, groupids=[]):
+    ss = ScreenSaver(session, '/dev/null', '/dev/null')
     if groupids:
-        windows=subwindows(session,datadir,groupids)[1]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
-        if ctype==-1:
+        windows = subwindows(session, datadir, groupids)[1]
+    for (cwin, cgroupid, ctype, ctty, ctitle) in sc.gen_all_windows_fast(session,
+            datadir):
+        if ctype == -1:
             if groupids:
                 if cwin in windows:
                     ss.kill(cwin)
             else:
                 ss.kill(cwin)
 
-def subwindows(session,datadir,groupids):
-    ss=ScreenSaver(session)
-    bAll=False
-    if groupids[0] in ('cg','current','..'):
-        groupids[0]=ss.get_group()[0]
-        if groupids[0]=='-1':
-            bAll=True
-    elif groupids[0] in ('cw','current-window','.'):
-        groupids[0]=ss.get_number_and_title()[0]
-    elif groupids[0]=='all':
-        bAll=True
-    group_wins={}
-    group_groups={}
-    excluded_wins=[]
-    excluded_groups=[]
-    for cwin,cgroupid,ctype,ctty,ctitle in sc.gen_all_windows_fast(session,datadir):
-        if(ctype==1): # group
+
+def subwindows(session, datadir, groupids):
+    ss = ScreenSaver(session)
+    bAll = False
+    if groupids[0] in ('cg', 'current', '..'):
+        groupids[0] = ss.get_group()[0]
+        if groupids[0] == "-1":
+            bAll = True
+    elif groupids[0] in ('cw', 'current-window', '.'):
+        groupids[0] = ss.get_number_and_title()[0]
+    elif groupids[0] == 'all':
+        bAll = True
+    group_wins = {}
+    group_groups = {}
+    excluded_wins = []
+    excluded_groups = []
+    for (cwin, cgroupid, ctype, ctty, ctitle) in sc.gen_all_windows_fast(session,
+            datadir):
+        if ctype == 1:  # group
             if cwin in groupids or bAll or ctitle in groupids:
                 excluded_groups.append(cwin)
             try:
-                group_groups[cgroupid]+=[cwin]
+                group_groups[cgroupid] += [cwin]
             except:
-                group_groups[cgroupid]=[cwin]
-        else: # anything other than group
+                group_groups[cgroupid] = [cwin]
+        else:
+
+              # anything other than group
+
             if cwin in groupids or bAll or ctitle in groupids:
                 excluded_wins.append(cwin)
             else:
                 try:
-                    group_wins[cgroupid]+=[cwin]
+                    group_wins[cgroupid] += [cwin]
                 except:
-                    group_wins[cgroupid]=[cwin]
-    excluded_groups_tmp=[]
+                    group_wins[cgroupid] = [cwin]
+    excluded_groups_tmp = []
     while excluded_groups:
-        egroup=excluded_groups.pop()
+        egroup = excluded_groups.pop()
         if egroup not in excluded_groups_tmp:
             excluded_groups_tmp.append(egroup)
         try:
@@ -271,36 +323,42 @@ def subwindows(session,datadir,groupids):
                 excluded_wins.append(w)
         except:
             pass
-    return excluded_groups,excluded_wins
+    return (excluded_groups, excluded_wins)
 
-def kill_group(session,datadir,groupids):
-    ss=ScreenSaver(session)
-    excluded_groups,excluded_wins=subwindows(session,datadir,groupids)
-    print('Killing groups: %s'%str(excluded_groups))
-    print('All killed windows: %s'%str(excluded_wins))
+
+def kill_group(session, datadir, groupids):
+    ss = ScreenSaver(session)
+    (excluded_groups, excluded_wins) = subwindows(session, datadir,
+            groupids)
+    print 'Killing groups: %s' % str(excluded_groups)
+    print 'All killed windows: %s' % str(excluded_wins)
     for win in excluded_wins:
         ss.kill(win)
 
-def get_win_last_proc(session,win="-1"):
+
+def get_win_last_proc(session, win="-1"):
     import platform
-    ss=ScreenSaver(session,'/dev/null','/dev/null')
-    ctty=ss.tty(win)
-    if (ctty is None) or (ctty == -1):
+    ss = ScreenSaver(session, '/dev/null', '/dev/null')
+    ctty = ss.tty(win)
+    if ctty is None or ctty == -1:
         stderr.write("Window does not exist (%s)\n" % win)
         return False
     if platform.system() == 'FreeBSD':
-        pids=sc.get_tty_pids(ctty)
+        pids = sc.get_tty_pids(ctty)
     else:
-        pids=sc._get_tty_pids_pgrep(ctty)
+        pids = sc._get_tty_pids_pgrep(ctty)
     if len(pids) > 0:
         return pids[-1]
     else:
+
         ## No processes for this window.
+
         return None
 
-def kill_win_last_proc(session,win="-1",sig="TERM"):
+
+def kill_win_last_proc(session, win="-1", sig="TERM"):
     import signal
-    pid = get_win_last_proc(session,win)
+    pid = get_win_last_proc(session, win)
     if pid:
         snum = 'SIG' + sig.upper()
         if hasattr(signal, snum):
@@ -316,6 +374,10 @@ def kill_win_last_proc(session,win="-1",sig="TERM"):
             stderr.write("Not a valid signal (%s)\n" % sig)
             return False
     else:
+
         ## No processes for this window.
         ## Do nothing
+
         return True
+
+

@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    dump.py : print informations about windows in the session
 #
@@ -23,30 +24,29 @@ import GNUScreen as sc
 from ScreenSaver import ScreenSaver
 import tools
 
-
-
-if __name__=='__main__':
-    session=sys.argv[1]
-    showpid=sys.argv[2]
-    reverse=sys.argv[3]
-    sort=sys.argv[4]
+if __name__ == '__main__':
+    session = (sys.argv)[1]
+    showpid = (sys.argv)[2]
+    reverse = (sys.argv)[3]
+    sort = (sys.argv)[4]
     try:
-        groupids=sys.argv[5:]
+        groupids = (sys.argv)[5:]
     except:
-        groupids=[]
-    if showpid=='0':
-        showpid=False
+        groupids = []
+    if showpid == '0':
+        showpid = False
     else:
-        showpid=True
-    if reverse=='0':
-        reverse=True
+        showpid = True
+    if reverse == '0':
+        reverse = True
     else:
-        reverse=False
-    if sort=='0':
-        sort=False
+        reverse = False
+    if sort == '0':
+        sort = False
     else:
-        sort=True
-    ss=ScreenSaver(session)
-    tools.dump(ss,tools.require_dumpscreen_window(session,True),showpid,reverse,sort,groupids)
+        sort = True
+    ss = ScreenSaver(session)
+    tools.dump(ss, tools.require_dumpscreen_window(session, True),
+               showpid, reverse, sort, groupids)
     tools.cleanup()
 

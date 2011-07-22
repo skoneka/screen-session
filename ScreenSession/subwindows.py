@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    subwindows.py : recursively print windows contained in a group
 #
@@ -21,13 +22,14 @@
 import sys
 import tools
 
-session=sys.argv[1]
+session = (sys.argv)[1]
 try:
-    groupids=sys.argv[2]
-    groupids=sys.argv[2:]
+    groupids = (sys.argv)[2]
+    groupids = (sys.argv)[2:]
 except:
-    groupids=['all']
-groups,windows=tools.subwindows(session,tools.require_dumpscreen_window(session,False), groupids)
-print ('groups:  %s'%(" ".join(["%s"%v for v in groups])))
-print ('windows: %s'%(" ".join(["%s"%v for v in windows])))
+    groupids = ['all']
+(groups, windows) = tools.subwindows(session, tools.require_dumpscreen_window(session,
+        False), groupids)
+print 'groups:  %s' % (" ").join(["%s" % v for v in groups])
+print 'windows: %s' % (" ").join(["%s" % v for v in windows])
 tools.cleanup()

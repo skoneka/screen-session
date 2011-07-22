@@ -1,4 +1,5 @@
-﻿#!/usr/bin/env python2
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 #    kill-zombie.py : kill all zombie windows in the session
 #
@@ -21,8 +22,9 @@
 import sys
 import tools
 
-session=sys.argv[1]
-groupids=sys.argv[2:]
-tools.kill_zombie(session,tools.require_dumpscreen_window(session,False),groupids)
+session = (sys.argv)[1]
+groupids = (sys.argv)[2:]
+tools.kill_zombie(session, tools.require_dumpscreen_window(session,
+                  False), groupids)
 tools.cleanup()
 
