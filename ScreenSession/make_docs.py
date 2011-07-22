@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 #
-#    make_docs.py : script generating html docs
+#    make_docs.py : a script for generating html docs
 #
 #    Copyright (C) 2010-2011 Artur Skonecki
 #
@@ -21,22 +21,24 @@
 import sys,inspect,re
 import help
 
-TITLE = "screen-session project"
+TITLE = "screen-session"
+
+img_base = "http://adb.cba.pl/screen-session/0.6.3/screenshots/"
 
 HTML_BEG = """\
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 <head>
-<title>%(title)s</title>
+<title>screen-session project</title>
 <meta name="Generator" content="Vim/7.3">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 <link rel="home" title="Home" href="http://adb.cba.pl">
 </head>
 <body bgcolor="#ffffff" text="#000000">
-<a href="http://github.com/skoneka/screen-session"><img style="position: absolute; top: 0; right: 0; border: 0;" src="ribbon.png" alt="Fork me on GitHub"></a>
-<h1 style="color: #990000;">%(title)s</h1>
-""" % {'title': TITLE, 'version' : help.VERSION}
+<a href="http://github.com/skoneka/screen-session"><img style="positIon: absolute; top: 0; right: 0; border: 0;" src="%(img_base)s/ribbon.png" alt="Fork me on GitHub"></a>
+<h1 style="color: #990000;">screen-session</h1>
+""" % {'title': TITLE, 'version' : help.VERSION, 'img_base': img_base}
 
 HTML_END = """\
 </body>
@@ -120,7 +122,6 @@ def write_index():
 
 def write_screenshots():
     url = 'screenshots.html'
-    img_base = "http://adb.cba.pl/screen-session/0.6.3/screenshots/"
     menu = start_page(url)
     images = (
 ('saver-800x600.png','session saver screenshot'),

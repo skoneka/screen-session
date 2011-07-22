@@ -12,24 +12,19 @@ Tested on:
     OpenSolaris, Python 2.4.4
 
 
-screen-4.1.0 bundled with screen-session:
+Modifications included in Screen bundled with screen-session:
 
-    - add "tty" command
-    - make "group" queryable
+    - New commands:
+        - dumpscreen [window|layout|history] filename [-F]
+        - tty
+        - maxlay
+    - make "group", "maxwin"  queryable
     - associate focuminsize with the layout
-    - add "dumpscreen window|layout" command
-
-
-gnu_screen.diff changes:
-
-    - add "tty" command
-    - make "group" queryable
-    - associate focuminsize with the layout
-    - add "dumpscreen window|layout" command
+    - fix monitor crash
 
 
 -----------------------------------------------------------------------
-Installation - part 1
+Installation - part 1 - installing screen-session
 -----------------------------------------------------------------------
 Edit config.mk to match your local setup (screen-session is installed
 into the /usr/local/ namespace by default), you can also disable colors
@@ -41,20 +36,20 @@ screen-session:
     make clean
     make
 
-    make install # (if necessary as root)
+    make install        # if necessary as root 
+                        # it also symlinks screen-session as "scs"
 
 Note that the installation step is optional, only compilation is necessary.
-Just link to from your PATH to
-screen-session/ScreenSession/screen-session
+Just link to from your PATH to:
+screen-session-VERSION/ScreenSession/screen-session
 
 
 -----------------------------------------------------------------------
-Installation - part 2 - option 1 - using Screen distribution supplied
-                                   with screen-session
+Installation - part 2 - installing modified GNU Screen
 -----------------------------------------------------------------------
-Compile and install Screen:
+Compile and install the modified Screen:
 
-    cd screen-session/screen-4.1.0
+    cd screen-session-VERSION/screen-4.1.0
 
     ./configure --prefix=/usr/local
     make
@@ -62,25 +57,4 @@ Compile and install Screen:
     sudo make install
 
 
------------------------------------------------------------------------
-Installation - part 2 - option 2 - patching Screen on your own
------------------------------------------------------------------------
-Make sure you have a recent version of Screen and apply the necessary
-patch (gnu_screen.diff):
-
-    git clone git://git.sv.gnu.org/screen.git screen
-    cd screen
-
-    git apply --whitespace=nowarn ../screen-session/gnu_screen.diff
-
-    cd src
-    autoreconf
-    autoheader
-
-    ./configure --prefix=/usr/local
-    make
-
-    sudo make install
-
-Alternatively, download and compile prepatched Screen from:
-https://github.com/skoneka/escreen/downloads
+Github repository: https://github.com/skoneka/escreen

@@ -9,6 +9,7 @@
 * access any region without changing focus
 
 // new tools:
+* associate Vim tabs with Screen layouts
 * yank-ring (kill-ring)
 * register edit cp mv rm
 * Set terminal emulator title
@@ -22,14 +23,14 @@
 // saver:
 * Create a shellrc plug for more accurate command line saving
   and an ability to save other users processes
-* Write a .vimrc snippet for automatic undo history saving in vim 7.3+
+* Write a .vimrc snippet for automatic undo history saving in Vim 7.3+
 * Save parameters which can be passed to :screen
     flow-control options (-f, -fn and -fa), monitoring (-M), logging (-L)
     login options (-l and -ln) , terminal type  option  (-T  <term>),
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
-* Encrypt savefiles
-* Savefile editing (like in screeninator)
+* Encrypt save files
+* Save file editing (like in screeninator)
 
 // manager:
 * Add session-wide and host-wide window search

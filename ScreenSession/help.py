@@ -45,7 +45,7 @@ Options supported by all tools:\n\
     --help      - print detailed mode's help\n\
 \n\
 Environment variables:\n\
-    SCREENPATH  - determines GNU Screen executable path\n\
+    SCREENBIN   - GNU Screen executable path\n\
     PYTHONBIN   - Python interpreter path\n\
 \n\
 Session saver modes:\n\
@@ -224,7 +224,7 @@ help_layoutlist='Usage: screen-session layoutlist [options] [HEIGHT]\n\
 Displays a browseable list of layouts. There are two list creation algorithms.\n\
 If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers\n\
 are modulo divided by HEIGHT and the reminder determines their Y position.\n\
-This tool comes handy after raising MAXLAY in "screen/src/layout.h"\n\
+This tool comes handy after raising the maximum number of layouts."\n\
 \n\
 Options:\n\
 -l              - create a temporary layout and window for layoutlist\n\
@@ -247,7 +247,7 @@ NUMBER          - move to a layout\n\
 r or C-c or C-l - refresh the layout list\n\
 m or a          - toggle MRU view,\n\
 v               - toggle search/autohighlight results view\n\
-o               - toggle current and selected layout\n\
+o               - toggle current and selected layouts\n\
 q               - quit / select previous layout\n\
 Q               - force quit if "-c" option was used\
 '

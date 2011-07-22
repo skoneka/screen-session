@@ -100,9 +100,9 @@ screen-session-primer uses linux color escapes.
 To disable color remove "-DCOLOR" from config.mk
 
 Normally screen-session does not restore exact window numbers. If you
-want to force verbatim restoring use --exact flag.
+want to force verbatim restoring use --exact or --exact-kill flags.
 
-Save files are .tar.bz2 archives (scrollbacks can take a *lot* of space).
+Save files are .tar.bz2 archives (scrollbacks can take a lot of space).
 Temporary files are stored in  /tmp/screen-session-$USER.
 You may edit save files either by typing 'E' in a primer instance or with
 the "other" mode: $ screen-session other [ --unpack | --pack ] savefile
