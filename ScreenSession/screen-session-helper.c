@@ -35,7 +35,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <dirent.h>
 #include <limits.h>
 #include <signal.h>
 
@@ -238,14 +237,14 @@ get_font (char c)
 void
 print_number (char *n, char *color)
 {
+  int k;
+  int j;
   char ***font = malloc ((strlen (n) + 1) * sizeof (char ***));
   int letter_c = 0;
   while (n[letter_c] != '\0') {
     font[letter_c] = get_font (n[letter_c]);
     letter_c++;
   }
-  int k;
-  int j;
   printf ("%s", color);
   for (k = 0; k < FONTHEIGHT; k++) {
     for (j = 0; j < letter_c; j++) {
@@ -264,8 +263,6 @@ regions_helper (char *fname, char *n)
   pch = strrchr (fname, '-');
   if (pch) {
     pid = atoi (pch + 1);
-//        printf("signal %d",pid);
-//        kill(pid,SIGUSR2);
   }
   else {
     printf ("BAD ARGUMENTS");
@@ -309,12 +306,12 @@ main (int argc, char **argv)
     return 0;
   }
   else if (strcmp (argv[1], "-n") == 0) {
-    //print number
+    /* print number */
     print_number (argv[2], none);
     return 0;
   }
   else if (strcmp (argv[1], "-nh") == 0) {
-    //regions helper
+    /* regions helper */
     regions_helper (argv[2], argv[3]);
     return 0;
   }

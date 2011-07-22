@@ -406,7 +406,6 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       int got_number = 0;
       while ((char_count < USERINPUTMAXBUFFERSIZE)) {
 	ch = getchar ();
-	//printf("menu='%c' index='%d'  ch='%c'\n",menu, args_index,ch);
 	if (ch != ' ' && ch != '\n') {
 	  buffer[char_count++] = ch;
 	  buffer[char_count] = '\0';
@@ -523,7 +522,7 @@ make_arglist (char *program, char *arg1, char *arg2, char *arg3, int procs_n,
   args[0] = malloc ((strlen (program) + 1) * sizeof (char));
   args[1] = malloc ((strlen (arg1) + 1) * sizeof (char));
   args[2] = malloc ((strlen (arg2) + 1) * sizeof (char));
-  //has to pass program name because nested programs do not get name in argv[0]
+  /* has to pass program name because nested programs do not get name in argv[0] */
   args[3] = malloc ((strlen (program) + 1) * sizeof (char));
   args[4] = malloc ((strlen (arg3) + 1) * sizeof (char));
   for (i = 5; i < procs_n + 5; i++) {
@@ -605,8 +604,6 @@ is_blacklisted (char *basedir, char *program, int programid)
   }
   else
     free (filepath);
-  //int ret=FileSearch(fp,program);
-  //return (ret==-1)? 0 : 1;
   int ret = filesearch_line (fp, program);
   if (ret) {
     blacklist[blacklist_c] = programid;
@@ -668,7 +665,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
     return 1;
   }
 
-  // skip irrevelant lines
+  /* skip irrevelant lines */
   while ((c = fgetc (fp)) != EOF) {
     if (c == '\n') {
       nl_c++;
@@ -680,7 +677,6 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   getline (&proc_cwd, &proc_cwd_s, fp);	/* CWD */
   proc_cwd = strtrim_right (proc_cwd, '\n');
   printf (PRIMER "CWD(%s) starting: ", proc_cwd);
-  //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
   getline (&proc_exe, &proc_exe_s, fp);	/* EXE - executable path */
   proc_exe = strtrim_right (proc_exe, '\n');
   fscanf (fp, "%d\n", &proc_args_n);	/* The number of program arguments */
@@ -785,9 +781,8 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 
   if (strcmp (proc_blacklisted, "True") == 0)
     return 0;
-  //else if ( is_blacklisted(basedir,thisprogram) )
-  //    return 0;
-
+  /* else if ( is_blacklisted(basedir,thisprogram) )
+     return 0; */
   /* procs_n > 1 means there is more than a one process left to restart
    * so we assume it is a shell */
   if (procs_n > 1) {
@@ -877,7 +872,7 @@ read_scrollback (char *fullpath, char *scrollbackfile)
 void
 execute_filter (int bFilter, char *scs_exe, char *filter)
 {
-  // execute filter
+  /* execute filter */
   if (bFilter && (strncmp (filter, "-1", 2) != 0)) {
     printf ("Setting up filter...\n");
     char *command0 = malloc ((51 + strlen (scs_exe)) * sizeof (char));
@@ -983,10 +978,9 @@ main (int argc, char **argv)
     strcpy (fullpath, homedir);
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
-    chdir (fullpath);		// fopen's currently depends on this
+    chdir (fullpath);		/* some fopen's currently depend on this */
     read_scrollback (fullpath, scrollbackfile);
 
-    //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
     requireSession (fullpath, datafile, 0);
     fp = fopen (datafile, "r");
     if (!fp) {
@@ -1012,14 +1006,15 @@ main (int argc, char **argv)
     char *title = malloc (title_s * sizeof (char));
     size_t timesaved_s = 1;
     char *timesaved = malloc (timesaved_s * sizeof (char));
-    getline (&buftext, &buftext_s, fp);	//win number
-    getline (&buftext, &buftext_s, fp);	//CURRENTLY UNUSED (put window flags)
-    getline (&buftext, &buftext_s, fp);	//group
-    getline (&type, &type_s, fp);	//win type
-    getline (&title, &title_s, fp);	//title
-    getline (&filter, &filter_s, fp);	//filter
-    getline (&buftext, &buftext_s, fp);	//scrollback len
-    getline (&cmdargs, &cmdargs_s, fp);	//This pool is not used by primer. Screen dumps on this position zombie command vector. screen-session processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
+    getline (&buftext, &buftext_s, fp);	/* win number */
+    getline (&buftext, &buftext_s, fp);	/* CURRENTLY UNUSED (put window flags here) */
+    getline (&buftext, &buftext_s, fp);	/* group */
+    getline (&type, &type_s, fp);	/* win type */
+    getline (&title, &title_s, fp);	/* title */
+    getline (&filter, &filter_s, fp);	/* filter */
+    getline (&buftext, &buftext_s, fp);	/* scrollback len */
+    getline (&cmdargs, &cmdargs_s, fp);	/* This pool is not used by primer. Screen dumps on this position zombie command vector. session asver processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
+					 */
     fscanf (fp, "%d\n", &procs_c);
     int bFilter = 0;
     if (!force_start) {
@@ -1054,10 +1049,10 @@ main (int argc, char **argv)
     else
       b_zombie = 0;
     for (i = 0; i < procs_c; i++) {
-      fscanf (fp, "%s\n", buf);	//read --
+      fscanf (fp, "%s\n", buf);	/* read -- separator */
       if (!force_start && i != 0)
 	printf ("%s%s %d%s: ", blue_b, buf, i, none);
-      //cwd exe args
+      /* cwd exe args */
       getline (&proc_cwd, &proc_cwd_s, fp);
       proc_cwd = strtrim_right (proc_cwd, '\n');
       getline (&proc_exe, &proc_exe_s, fp);
@@ -1118,12 +1113,11 @@ main (int argc, char **argv)
 	     magenta, none);
       }
     }
-    getline (&buftext, &buftext_s, fp);	//last line - timesaved
+    getline (&buftext, &buftext_s, fp);	/*last line - output from :time */
     if (!force_start && type[0] != 'z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
     free (proc_vim);
-    //free(proc_cwd);
     free (title);
     free (timesaved);
     free (buftext);
