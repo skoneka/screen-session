@@ -30,7 +30,7 @@
  * =====================================================================================
  */
 
-char help_str[]="\
+char help_str[] = "\
 This is a program which \"primes\" other processes saved by screen-session.\n\
 Description of possible actions:\n\
 Key      | Arguments | Description\n\
@@ -61,7 +61,7 @@ Key      | Arguments | Description\n\
 
 int blacklist[BLACKLISTMAX];
 int blacklist_c = 0;
-char *scs_exe=NULL;
+char *scs_exe = NULL;
 
 enum menu
 {
@@ -76,64 +76,67 @@ enum menu
   DEFAULT
 };
 
-int copy_file(char *inputfile, char *outputfile)
+int
+copy_file (char *inputfile, char *outputfile)
 {
-  FILE * filer, * filew;
-  int numr,numw;
+  FILE *filer, *filew;
+  int numr, numw;
   char buffer[100];
 
 
-  if((filer=fopen(inputfile,"rb"))==NULL){
-          fprintf(stderr, "open read file error.\n");
-          return 1;
+  if ((filer = fopen (inputfile, "rb")) == NULL) {
+    fprintf (stderr, "open read file error.\n");
+    return 1;
   }
 
-  if((filew=fopen(outputfile,"wb"))==NULL){
-          fprintf(stderr,"open write file error.\n");
-          return 1;
+  if ((filew = fopen (outputfile, "wb")) == NULL) {
+    fprintf (stderr, "open write file error.\n");
+    return 1;
   }
-  while(feof(filer)==0){
-  if((numr=fread(buffer,1,100,filer))!=100){
-          if(ferror(filer)!=0){
-          fprintf(stderr,"read file error.\n");
-          return 1;
-          }
-          else if(feof(filer)!=0);
-  }
-    if((numw=fwrite(buffer,1,numr,filew))!=numr){
-            fprintf(stderr,"write file error.\n");
-            return 1;
+  while (feof (filer) == 0) {
+    if ((numr = fread (buffer, 1, 100, filer)) != 100) {
+      if (ferror (filer) != 0) {
+	fprintf (stderr, "read file error.\n");
+	return 1;
+      }
+      else if (feof (filer) != 0);
+    }
+    if ((numw = fwrite (buffer, 1, numr, filew)) != numr) {
+      fprintf (stderr, "write file error.\n");
+      return 1;
     }
   }
 
-  fclose(filer);
-  fclose(filew);
+  fclose (filer);
+  fclose (filew);
   return 0;
 }
 
-void print_cmd(int cmdargs_s,char *cmdargs)
+void
+print_cmd (int cmdargs_s, char *cmdargs)
 {
-  int i=0;
-  while(i<cmdargs_s) {
-      if (cmdargs[i]=='\0') {
-        if ( cmdargs[i+1]=='\0')
-          break;
-        else
-          fputc(',',stdout);
-      }
+  int i = 0;
+  while (i < cmdargs_s) {
+    if (cmdargs[i] == '\0') {
+      if (cmdargs[i + 1] == '\0')
+	break;
       else
-        fputc(cmdargs[i],stdout);
-      i++;
+	fputc (',', stdout);
+    }
+    else
+      fputc (cmdargs[i], stdout);
+    i++;
   }
-  fputc('\n',stdout);
+  fputc ('\n', stdout);
 }
-void print_ints(int *numbers,int n)
+
+void
+print_ints (int *numbers, int n)
 {
   int i;
-  for(i=0;i<n;i++)
-    {
-      printf("%d ",numbers[i]);
-    }
+  for (i = 0; i < n; i++) {
+    printf ("%d ", numbers[i]);
+  }
 }
 int
 line_to_string (FILE * fp, char **line, size_t * size)
@@ -143,47 +146,38 @@ line_to_string (FILE * fp, char **line, size_t * size)
   size_t count;
 
   count = 0;
-  while ((rc = getc (fp)) != EOF)
-    {
-      ++count;
-      if (count + 2 > *size)
-	{
-	  p = realloc (*line, count + 2);
-	  if (p == NULL)
-	    {
-	      if (*size > count)
-		{
-		  (*line)[count] = '\0';
-		  (*line)[count - 1] = (char) rc;
-		}
-	      else
-		{
-		  ungetc (rc, fp);
-		}
-	      count = 0;
-	      break;
-	    }
-	  *line = p;
-	  *size = count + 2;
-	}
-      if (rc == '\n')
-	{
-	  (*line)[count - 1] = '\0';
-	  break;
-	}
-      (*line)[count - 1] = (char) rc;
-    }
-  if (rc != EOF)
-    {
-      rc = count > INT_MAX ? INT_MAX : count;
-    }
-  else
-    {
-      if (*size > count)
-	{
+  while ((rc = getc (fp)) != EOF) {
+    ++count;
+    if (count + 2 > *size) {
+      p = realloc (*line, count + 2);
+      if (p == NULL) {
+	if (*size > count) {
 	  (*line)[count] = '\0';
+	  (*line)[count - 1] = (char) rc;
 	}
+	else {
+	  ungetc (rc, fp);
+	}
+	count = 0;
+	break;
+      }
+      *line = p;
+      *size = count + 2;
     }
+    if (rc == '\n') {
+      (*line)[count - 1] = '\0';
+      break;
+    }
+    (*line)[count - 1] = (char) rc;
+  }
+  if (rc != EOF) {
+    rc = count > INT_MAX ? INT_MAX : count;
+  }
+  else {
+    if (*size > count) {
+      (*line)[count] = '\0';
+    }
+  }
   return rc;
 
 }
@@ -203,15 +197,14 @@ strtrim_right (register char *p, register char c)
   register int len;
 
   len = strlen (p);
-  while (*p && len)
-    {
-      end = p + len - 1;
-      if (c == *end)
-	*end = 0;
-      else
-	break;
-      len = strlen (p);
-    }
+  while (*p && len) {
+    end = p + len - 1;
+    if (c == *end)
+      *end = 0;
+    else
+      break;
+    len = strlen (p);
+  }
   return (p);
 }
 
@@ -226,11 +219,10 @@ DirectoryExists (const char *pzPath)
 
   pDir = opendir (pzPath);
 
-  if (pDir != NULL)
-    {
-      bExists = 1;
-      (void) closedir (pDir);
-    }
+  if (pDir != NULL) {
+    bExists = 1;
+    (void) closedir (pDir);
+  }
 
   return bExists;
 }
@@ -239,11 +231,10 @@ int
 file_exists (const char *filename)
 {
   FILE *file = NULL;
-  if ((file = fopen (filename, "r")))
-    {
-      fclose (file);
-      return 1;
-    }
+  if ((file = fopen (filename, "r"))) {
+    fclose (file);
+    return 1;
+  }
   return 0;
 }
 
@@ -279,13 +270,12 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   pch = strtok (file, "/");
   if (pch)
     strcpy (session, pch);
-  else
-    {
-      free (file);
-      free (session);
-      free (basedir);
-      return 1;
-    }
+  else {
+    free (file);
+    free (session);
+    free (basedir);
+    return 1;
+  }
 
   char *filepath =
     malloc ((strlen (basedir) + strlen (session) + 2) * sizeof (char));
@@ -299,31 +289,29 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   strcpy (testfilepath, basedir);
   strcat (testfilepath, "/");
   strcat (testfilepath, file_in_session);
-  if (!force && file_exists (testfilepath))
-    {
-      free (file);
-      free (filepath);
-      free (testfilepath);
-      free (session);
-      free (basedir);
-      return 0;
-    }
-  else
-    {
-      free (filepath);
-      char *buf =
-	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
-		 30) * sizeof (char));
-      printf (PRIMER "unpacking: %s\n",session);
-      sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
-		 session);
-      system (buf);
-      free (file);
-      free (buf);
-      free (session);
-      free (basedir);
-      return 0;
-    }
+  if (!force && file_exists (testfilepath)) {
+    free (file);
+    free (filepath);
+    free (testfilepath);
+    free (session);
+    free (basedir);
+    return 0;
+  }
+  else {
+    free (filepath);
+    char *buf =
+      malloc ((strlen (scs_exe) + strlen (basedir) + strlen (session) + 1 +
+	       30) * sizeof (char));
+    printf (PRIMER "unpacking: %s\n", session);
+    sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
+	     session);
+    system (buf);
+    free (file);
+    free (buf);
+    free (session);
+    free (basedir);
+    return 0;
+  }
 }
 
 
@@ -343,18 +331,15 @@ parseNumber (char *buffer)
   int number;
   char *p;
   number = strtol (buffer, &p, 0);
-  if (strcmp ("", p) != 0)
-    {
-      return -1;
-    }
-  else if (errno == ERANGE)
-    {
-      return -1;
-    }
-  else if (errno == EINVAL)
-    {
-      return -1;
-    }
+  if (strcmp ("", p) != 0) {
+    return -1;
+  }
+  else if (errno == ERANGE) {
+    return -1;
+  }
+  else if (errno == EINVAL) {
+    return -1;
+  }
   number = atoi (buffer);
   if ((number < 0))
     number = 0;
@@ -390,139 +375,141 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
   int char_count;		/* number of characters read for this line */
   int exit_flag = 0, valid_choice, number = 0;
   enum menu menu_choice = NONE;
-  int *args=malloc(USERINPUTMAXBUFFERSIZE*sizeof(int));
-  int args_index=0;
-  int show_filter=*bFilter;
+  int *args = malloc (USERINPUTMAXBUFFERSIZE * sizeof (int));
+  int args_index = 0;
+  int show_filter = *bFilter;
 
-  while (exit_flag == 0 && menu_choice == NONE)
-    {
-      valid_choice = 0;
-      while (valid_choice == 0)
-	{
-	  printf
-	    ("%sRESTORE:%s [%sA%s]ll "SEP" [%sZ%s]ombie "SEP" [%sQ%s]uit "SEP" [%sD%s]efault "SEP" [%sR%s]eset "SEP" [%snumber%s] "SEP" [%sO%s]nly [%snumbers%s] "SEP" [%sE%s]dit "SEP" [%sH%s]elp ",
-	     green, none, red_b, none, red_b, none,red_b, none,red_b, none, red_b, none, blue, none,red_b, none, blue, none, red_b, none, red_b, none );
-          if (show_filter) printf(SEP" [%sF%s]ilter %s",red_b,none,(*bFilter)?"OFF":"ON");
+  while (exit_flag == 0 && menu_choice == NONE) {
+    valid_choice = 0;
+    while (valid_choice == 0) {
+      printf
+	("%sRESTORE:%s [%sA%s]ll " SEP " [%sZ%s]ombie " SEP " [%sQ%s]uit "
+	 SEP " [%sD%s]efault " SEP " [%sR%s]eset " SEP " [%snumber%s] "
+	 SEP " [%sO%s]nly [%snumbers%s] " SEP " [%sE%s]dit " SEP
+	 " [%sH%s]elp ", green, none, red_b, none, red_b, none, red_b,
+	 none, red_b, none, red_b, none, blue, none, red_b, none, blue,
+	 none, red_b, none, red_b, none);
+      if (show_filter)
+	printf (SEP " [%sF%s]ilter %s", red_b, none,
+		(*bFilter) ? "OFF" : "ON");
 
-	  printf ("%s?>%s ",green_r,none);
-	  ch = getchar ();
-	  char_count = 0;
-          char menu=ch;
-          if(menu >= '1' && menu <= '9')
-            {
-              ungetc(menu,stdin);
-              menu='N';
-            }
-          args_index=0;
-          args[args_index]=-1;
-          int got_number=0;
-	  while ((char_count < USERINPUTMAXBUFFERSIZE))
-	    {
-	      ch = getchar ();
-              //printf("menu='%c' index='%d'  ch='%c'\n",menu, args_index,ch);
-	      if (ch != ' ' && ch !='\n' ) {
-		buffer[char_count++] = ch;
-		buffer[char_count] = '\0';
-                got_number=1;
-              }
-              else if (got_number){
-                  args[args_index]=parseNumber(buffer);
-                  args_index = (args[args_index]>(-1))?(args_index+1):(args_index);
-                  char_count=0;
-                  got_number=0;
-              }
-              if (ch == '\n')
-                break;
-	    }
-          args_index--;
-	  buffer[char_count] = 0x00;	/* null terminate buffer */
-	  switch (menu)
-	    {
-            case '0':
-            case 'z':
-            case 'Z':
-	      number = 0;
-	      valid_choice = 1;
-	      menu_choice = ZOMBIE;
-              args[0]=0;
-              args_index=0;
-              break;
-	    case 'r':
-	    case 'R':
-	      number = -1;
-	      valid_choice = 1;
-	      menu_choice = RESET;
-	      break;
-	    case 'd':
-	    case 'D':
-	      number = -1;
-	      valid_choice = 1;
-	      menu_choice = DEFAULT;
-	      break;
-	    case 'a':
-	    case 'A':
-	      number = -1;
-	      menu_choice = ALL;
-	      valid_choice = 1;
-	      break;
-	    case 'o':
-	    case 'O':
-            case '/':
-	      menu_choice = ONLY;
-	      number = args[0];
-	      if (number == -1)
-		valid_choice = 0;
-	      else if (number > max)
-		valid_choice = 0;
-	      else
-		valid_choice = 1;
-	      break;
-	    case 'e':
-	    case 'E':
-              menu_choice=EDIT;
-              valid_choice = 1;
-              break;
-            case 'q':
-            case 'Q':
-	      menu_choice = EXIT;
-	      valid_choice = 1;
-	      break;
-	    case 'n':
-	    case 'N':
-	      menu_choice = NUMBER;
-	      number = args[0];
-	      if (number == -1)
-		valid_choice = 0;
-	      else if (number > max)
-		valid_choice = 0;
-	      else
-		valid_choice = 1;
-	      break;
-            case 'f':
-            case 'F':
-              *bFilter = (*bFilter)?0:1;
-              printf("Filter turned %s\n",(*bFilter)?"ON":"OFF");
-	      menu_choice = NONE;
-	      valid_choice = 0;
-              break;
-            case '?':
-            case 'h':
-            case 'H':
-              printf(help_str);
-	      valid_choice = 0;
-	      menu_choice = NONE;
-	    default:
-	      menu_choice = NONE;
-	      valid_choice = 0;
-              break;
-	    }
-
-
+      printf ("%s?>%s ", green_r, none);
+      ch = getchar ();
+      char_count = 0;
+      char menu = ch;
+      if (menu >= '1' && menu <= '9') {
+	ungetc (menu, stdin);
+	menu = 'N';
+      }
+      args_index = 0;
+      args[args_index] = -1;
+      int got_number = 0;
+      while ((char_count < USERINPUTMAXBUFFERSIZE)) {
+	ch = getchar ();
+	//printf("menu='%c' index='%d'  ch='%c'\n",menu, args_index,ch);
+	if (ch != ' ' && ch != '\n') {
+	  buffer[char_count++] = ch;
+	  buffer[char_count] = '\0';
+	  got_number = 1;
 	}
+	else if (got_number) {
+	  args[args_index] = parseNumber (buffer);
+	  args_index =
+	    (args[args_index] > (-1)) ? (args_index + 1) : (args_index);
+	  char_count = 0;
+	  got_number = 0;
+	}
+	if (ch == '\n')
+	  break;
+      }
+      args_index--;
+      buffer[char_count] = 0x00;	/* null terminate buffer */
+      switch (menu) {
+      case '0':
+      case 'z':
+      case 'Z':
+	number = 0;
+	valid_choice = 1;
+	menu_choice = ZOMBIE;
+	args[0] = 0;
+	args_index = 0;
+	break;
+      case 'r':
+      case 'R':
+	number = -1;
+	valid_choice = 1;
+	menu_choice = RESET;
+	break;
+      case 'd':
+      case 'D':
+	number = -1;
+	valid_choice = 1;
+	menu_choice = DEFAULT;
+	break;
+      case 'a':
+      case 'A':
+	number = -1;
+	menu_choice = ALL;
+	valid_choice = 1;
+	break;
+      case 'o':
+      case 'O':
+      case '/':
+	menu_choice = ONLY;
+	number = args[0];
+	if (number == -1)
+	  valid_choice = 0;
+	else if (number > max)
+	  valid_choice = 0;
+	else
+	  valid_choice = 1;
+	break;
+      case 'e':
+      case 'E':
+	menu_choice = EDIT;
+	valid_choice = 1;
+	break;
+      case 'q':
+      case 'Q':
+	menu_choice = EXIT;
+	valid_choice = 1;
+	break;
+      case 'n':
+      case 'N':
+	menu_choice = NUMBER;
+	number = args[0];
+	if (number == -1)
+	  valid_choice = 0;
+	else if (number > max)
+	  valid_choice = 0;
+	else
+	  valid_choice = 1;
+	break;
+      case 'f':
+      case 'F':
+	*bFilter = (*bFilter) ? 0 : 1;
+	printf ("Filter turned %s\n", (*bFilter) ? "ON" : "OFF");
+	menu_choice = NONE;
+	valid_choice = 0;
+	break;
+      case '?':
+      case 'h':
+      case 'H':
+	printf (help_str);
+	valid_choice = 0;
+	menu_choice = NONE;
+      default:
+	menu_choice = NONE;
+	valid_choice = 0;
+	break;
+      }
+
+
     }
+  }
   *num = args;
   *menu_num = menu_choice;
-   return args_index+1;
+  return args_index + 1;
 }
 
 char **
@@ -539,25 +526,22 @@ make_arglist (char *program, char *arg1, char *arg2, char *arg3, int procs_n,
   //has to pass program name because nested programs do not get name in argv[0]
   args[3] = malloc ((strlen (program) + 1) * sizeof (char));
   args[4] = malloc ((strlen (arg3) + 1) * sizeof (char));
-  for (i = 5; i < procs_n + 5; i++)
-    {
-      int i_procs = i - 5;
-      int blacklisted = 0;
-      int j;
-      for (j = 0; j < blacklist_c; j++)
-	{
-	  if (blacklist[j] == procs[i_procs])
-	    {
-	      blacklisted = 1;
-	      break;
-	    }
-	}
-      if (blacklisted)
+  for (i = 5; i < procs_n + 5; i++) {
+    int i_procs = i - 5;
+    int blacklisted = 0;
+    int j;
+    for (j = 0; j < blacklist_c; j++) {
+      if (blacklist[j] == procs[i_procs]) {
+	blacklisted = 1;
 	break;
-      sprintf (buf, "%d", procs[i_procs]);
-      args[i] = malloc ((strlen (buf) + 1) * sizeof (char));
-      strcpy (args[i], buf);
+      }
     }
+    if (blacklisted)
+      break;
+    sprintf (buf, "%d", procs[i_procs]);
+    args[i] = malloc ((strlen (buf) + 1) * sizeof (char));
+    strcpy (args[i], buf);
+  }
   strcpy (args[0], program);
   strcpy (args[1], arg1);
   strcpy (args[2], arg2);
@@ -577,28 +561,24 @@ filesearch_line (FILE * fp, char *s)
   int line_c = 0;
   char c;
 
-  while ((c = fgetc (fp)) != EOF)
-    {
-      if (c == '\n')
-	{
-	  if (strncmp (s, line, line_c) == 0)
-	    return 1;
-	  nl_c++;
-	  line_c = 0;
-	}
-      else
-	{
-	  line[line_c] = c;
-	  line_c++;
-	  line[line_c] = 0;
-
-	}
-    }
-  if (line_c != 0)
-    {
-      if (strncmp (s, line, line_c))
+  while ((c = fgetc (fp)) != EOF) {
+    if (c == '\n') {
+      if (strncmp (s, line, line_c) == 0)
 	return 1;
+      nl_c++;
+      line_c = 0;
     }
+    else {
+      line[line_c] = c;
+      line_c++;
+      line[line_c] = 0;
+
+    }
+  }
+  if (line_c != 0) {
+    if (strncmp (s, line, line_c))
+      return 1;
+  }
 
   return 0;
 }
@@ -615,50 +595,49 @@ is_blacklisted (char *basedir, char *program, int programid)
   FILE *fp = NULL;
   fp = fopen (filepath, "r");
 
-  if (!fp)
-    {
-      /*
-      fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
-      perror("Error :");
-      */
-      free (filepath);
-      return 0;
-    }
+  if (!fp) {
+    /*
+       fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
+       perror("Error :");
+     */
+    free (filepath);
+    return 0;
+  }
   else
     free (filepath);
   //int ret=FileSearch(fp,program);
   //return (ret==-1)? 0 : 1;
   int ret = filesearch_line (fp, program);
-  if (ret)
-    {
-      blacklist[blacklist_c] = programid;
-      blacklist_c++;
-    }
+  if (ret) {
+    blacklist[blacklist_c] = programid;
+    blacklist_c++;
+  }
   fclose (fp);
   return ret;
 
 }
 
-void recurse_chdir(char *path)
+void
+recurse_chdir (char *path)
 {
   /*
-    use if the chdir() directory might not exist anymore
-  */
+     use if the chdir() directory might not exist anymore
+   */
   int s;
-  s = chdir(path);
-  if ( s == -1)
-    {
-      char *npath = dirname(path);
-      if ( strcmp(npath,".") == 0 )
-        return;
-      else
-        recurse_chdir(npath);
-    }
+  s = chdir (path);
+  if (s == -1) {
+    char *npath = dirname (path);
+    if (strcmp (npath, ".") == 0)
+      return;
+    else
+      recurse_chdir (npath);
+  }
   return;
 }
 
 int
-start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
+start (char *basedir, char *thisprogram, char *config, int procs_n,
+       int *procs)
 {
   if (procs_n == 0)
     return 0;
@@ -679,38 +658,35 @@ start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
 
   fp = fopen (config, "r");
 
-  if (!fp)
-    {
+  if (!fp) {
 
-      fprintf (stderr,PRIMER": %s:%d Cannot open data file. Aborting.\n",__FILE__,__LINE__);
-      perror("Error :");
-      printf ("Press any key to continue...\n");
-      mygetch ();
-      return 1;
-    }
+    fprintf (stderr, PRIMER ": %s:%d Cannot open data file. Aborting.\n",
+	     __FILE__, __LINE__);
+    perror ("Error :");
+    printf ("Press any key to continue...\n");
+    mygetch ();
+    return 1;
+  }
 
   // skip irrevelant lines
-  while ((c = fgetc (fp)) != EOF)
-    {
-      if (c == '\n')
-	{
-	  nl_c++;
-	}
-      else if (nl_c > (BASEDATA_LINES + (procs[0] * PROCLINES)))
-	break;
+  while ((c = fgetc (fp)) != EOF) {
+    if (c == '\n') {
+      nl_c++;
     }
+    else if (nl_c > (BASEDATA_LINES + (procs[0] * PROCLINES)))
+      break;
+  }
   c = fgetc (fp);
-  getline (&proc_cwd, &proc_cwd_s, fp); /* CWD */
+  getline (&proc_cwd, &proc_cwd_s, fp);	/* CWD */
   proc_cwd = strtrim_right (proc_cwd, '\n');
-  printf (PRIMER "CWD(%s) starting: ",proc_cwd);
+  printf (PRIMER "CWD(%s) starting: ", proc_cwd);
   //fscanf(fp,"%s\n",proc_cwd); //cwd exe args
-  getline (&proc_exe, &proc_exe_s, fp); /* EXE - executable path */
+  getline (&proc_exe, &proc_exe_s, fp);	/* EXE - executable path */
   proc_exe = strtrim_right (proc_exe, '\n');
-  fscanf (fp, "%d\n", &proc_args_n); /* The number of program arguments */
-  if (procs_n > 1)
-    {
-      proc_args_n += 2;
-    }
+  fscanf (fp, "%d\n", &proc_args_n);	/* The number of program arguments */
+  if (procs_n > 1) {
+    proc_args_n += 2;
+  }
   proc_args = malloc ((proc_args_n + 5) * sizeof (char *));
 
   long file_pos = ftell (fp);
@@ -721,12 +697,11 @@ start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
   int l = 0, prev_l = 0;
 
   /* allocate memory for program arguments */
-  for (i = 0; i < proc_args_n; i++)
-    {
-      l = strlen (buf + prev_l);
-      prev_l += l + 1;
-      proc_args[i] = malloc ((l + 1) * sizeof (char));
-    }
+  for (i = 0; i < proc_args_n; i++) {
+    l = strlen (buf + prev_l);
+    prev_l += l + 1;
+    proc_args[i] = malloc ((l + 1) * sizeof (char));
+  }
 
   proc_args[proc_args_n] = NULL;
   proc_args[proc_args_n + 1] = NULL;
@@ -737,80 +712,76 @@ start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
   int word_c = 0;
 
   /* fill proc_args table with program arguments */
-  while ((c = fgetc (fp)) != EOF)
-    {
-      if (c == '\0')
-	{
-	  null_c++;
-	  word_c = 0;
-	  if (null_c % 2)
-	    fputs (" \"", stdout);
-	  else
-	    fputs ("\" ", stdout);
-	}
-      else if (c == '\n')
-	{
-	  if (null_c % 2)
-	    fputs ("\" ", stdout);
-	  break;
-	}
+  while ((c = fgetc (fp)) != EOF) {
+    if (c == '\0') {
+      null_c++;
+      word_c = 0;
+      if (null_c % 2)
+	fputs (" \"", stdout);
       else
-	{
-	  fputc (c, stdout);
-	  proc_args[null_c][word_c] = c;
-	  proc_args[null_c][word_c + 1] = 0;
-	  word_c++;
-
-	}
-      if (null_c > proc_args_n)
-	break;
+	fputs ("\" ", stdout);
     }
-  fscanf (fp, "%s\n", proc_blacklisted); /* whether the particular process was blacklisted, currently broken */
-  getline (&proc_vim, &proc_vim_s, fp); /* vim save file base name */
+    else if (c == '\n') {
+      if (null_c % 2)
+	fputs ("\" ", stdout);
+      break;
+    }
+    else {
+      fputc (c, stdout);
+      proc_args[null_c][word_c] = c;
+      proc_args[null_c][word_c + 1] = 0;
+      word_c++;
+
+    }
+    if (null_c > proc_args_n)
+      break;
+  }
+  fscanf (fp, "%s\n", proc_blacklisted);	/* whether the particular process was blacklisted, currently broken */
+  getline (&proc_vim, &proc_vim_s, fp);	/* vim save file base name */
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
 
   /* if there is a vim save file base name append "-S vim_session -i vim_info" to
    * proc_args */
-  if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0)
-    {
-      proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
-      proc_args[proc_args_n+2] = malloc ((strlen ("-i") + 1) * sizeof (char));
-      char *session = get_session (config);
-      proc_args[proc_args_n + 1] =
-	malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
-		 strlen (VIM_SESSION)+5) * sizeof (char));
-      proc_args[proc_args_n + 3] =
-	malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
-		 strlen (VIM_INFO)+5) * sizeof (char));
+  if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0) {
+    proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
+    proc_args[proc_args_n + 2] = malloc ((strlen ("-i") + 1) * sizeof (char));
+    char *session = get_session (config);
+    proc_args[proc_args_n + 1] =
+      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
+	       strlen (VIM_SESSION) + 5) * sizeof (char));
+    proc_args[proc_args_n + 3] =
+      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
+	       strlen (VIM_INFO) + 5) * sizeof (char));
 
-      strcpy (proc_args[proc_args_n], "-S");
+    strcpy (proc_args[proc_args_n], "-S");
 
-      strcpy (proc_args[proc_args_n + 1], basedir);
-      strcat (proc_args[proc_args_n + 1], "/");
-      strcat (proc_args[proc_args_n + 1], session);
-      strcat (proc_args[proc_args_n + 1], "/");
-      strcat (proc_args[proc_args_n + 1], proc_vim);
-      strcat (proc_args[proc_args_n + 1], VIM_SESSION);
+    strcpy (proc_args[proc_args_n + 1], basedir);
+    strcat (proc_args[proc_args_n + 1], "/");
+    strcat (proc_args[proc_args_n + 1], session);
+    strcat (proc_args[proc_args_n + 1], "/");
+    strcat (proc_args[proc_args_n + 1], proc_vim);
+    strcat (proc_args[proc_args_n + 1], VIM_SESSION);
 
-      strcpy (proc_args[proc_args_n + 2], "-i");
+    strcpy (proc_args[proc_args_n + 2], "-i");
 
-      strcpy (proc_args[proc_args_n + 3], basedir);
-      strcat (proc_args[proc_args_n + 3], "/");
-      strcat (proc_args[proc_args_n + 3], session);
-      strcat (proc_args[proc_args_n + 3], "/");
-      strcat (proc_args[proc_args_n + 3], proc_vim);
-      strcat (proc_args[proc_args_n + 3], VIM_INFO);
+    strcpy (proc_args[proc_args_n + 3], basedir);
+    strcat (proc_args[proc_args_n + 3], "/");
+    strcat (proc_args[proc_args_n + 3], session);
+    strcat (proc_args[proc_args_n + 3], "/");
+    strcat (proc_args[proc_args_n + 3], proc_vim);
+    strcat (proc_args[proc_args_n + 3], VIM_INFO);
 
-      char *buf =
-	malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) + 5) * sizeof (char));
-      strcpy (buf, session);
-      strcat (buf, "/");
-      strcat (buf, proc_vim);
-      strcat (buf, VIM_SESSION);
-      requireSession (basedir, buf, 0);
-      free (buf);
-    }
+    char *buf =
+      malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) +
+	       5) * sizeof (char));
+    strcpy (buf, session);
+    strcat (buf, "/");
+    strcat (buf, proc_vim);
+    strcat (buf, VIM_SESSION);
+    requireSession (basedir, buf, 0);
+    free (buf);
+  }
 
   if (strcmp (proc_blacklisted, "True") == 0)
     return 0;
@@ -819,60 +790,57 @@ start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
 
   /* procs_n > 1 means there is more than a one process left to restart
    * so we assume it is a shell */
-  if (procs_n > 1)
-    {
-      /* move saved arguments of the current shell to make place for
-      *   "-ic command" */
-      for (i = proc_args_n - 1; i > 3; i--)
-	{
-	  strcpy (proc_args[i], proc_args[i - 3]);
-	}
-      
-      strcpy( proc_args[1], "-ic" );
-
-      char *command =
-	malloc (((procs_n) * 4 + 2 * ((2 * strlen (thisprogram)) +
-		 strlen (basedir) + strlen (config) + strlen (proc_exe) +
-		 20)) * sizeof (char));
-
-      /* primer - continue unwinding queued processes IDs */
-      strcpy (command, thisprogram);
-      strcat (command, " -s");
-      strcat (command, " ");
-      strcat (command, basedir);
-      strcat (command, " ");
-      strcat (command, thisprogram);
-      strcat (command, " ");
-      strcat (command, config);
-
-      /* append queued processes IDs but skip the current shell ID */
-      for (i = 1; i < procs_n; i++)
-	{
-	  char buf[4];
-	  sprintf (buf, " %d", procs[i]);
-	  strcat (command, buf);
-	}
-
-      /* command separator */
-      strcat (command, "; ");
-
-      /* primer - will start the current shell after the termination of queued processes */
-      strcat (command, thisprogram);
-      strcat (command, " -s");
-      strcat (command, " ");
-      strcat (command, basedir);
-      strcat (command, " ");
-      strcat (command, thisprogram);
-      strcat (command, " ");
-      strcat (command, config);
-
-      /* append the currently started shell ID */
-      char buf[4];
-      sprintf (buf, " %d", procs[0]);
-      strcat (command, buf);
-
-      proc_args[2] = command;
+  if (procs_n > 1) {
+    /* move saved arguments of the current shell to make place for
+     *   "-ic command" */
+    for (i = proc_args_n - 1; i > 3; i--) {
+      strcpy (proc_args[i], proc_args[i - 3]);
     }
+
+    strcpy (proc_args[1], "-ic");
+
+    char *command =
+      malloc (((procs_n) * 4 + 2 * ((2 * strlen (thisprogram)) +
+				    strlen (basedir) + strlen (config) +
+				    strlen (proc_exe) + 20)) * sizeof (char));
+
+    /* primer - continue unwinding queued processes IDs */
+    strcpy (command, thisprogram);
+    strcat (command, " -s");
+    strcat (command, " ");
+    strcat (command, basedir);
+    strcat (command, " ");
+    strcat (command, thisprogram);
+    strcat (command, " ");
+    strcat (command, config);
+
+    /* append queued processes IDs but skip the current shell ID */
+    for (i = 1; i < procs_n; i++) {
+      char buf[4];
+      sprintf (buf, " %d", procs[i]);
+      strcat (command, buf);
+    }
+
+    /* command separator */
+    strcat (command, "; ");
+
+    /* primer - will start the current shell after the termination of queued processes */
+    strcat (command, thisprogram);
+    strcat (command, " -s");
+    strcat (command, " ");
+    strcat (command, basedir);
+    strcat (command, " ");
+    strcat (command, thisprogram);
+    strcat (command, " ");
+    strcat (command, config);
+
+    /* append the currently started shell ID */
+    char buf[4];
+    sprintf (buf, " %d", procs[0]);
+    strcat (command, buf);
+
+    proc_args[2] = command;
+  }
   printf ("\n");
   recurse_chdir (proc_cwd);
   execvp (proc_exe, proc_args);
@@ -881,65 +849,65 @@ start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
 }
 
 int
-read_scrollback(char *fullpath, char *scrollbackfile)
+read_scrollback (char *fullpath, char *scrollbackfile)
 {
-  if (strcmp(scrollbackfile,"0")==0)
+  if (strcmp (scrollbackfile, "0") == 0)
     return 0;
-  FILE *fp=NULL;
+  FILE *fp = NULL;
   char c;
-  chdir(fullpath);
+  chdir (fullpath);
   requireSession (fullpath, scrollbackfile, 0);
   fp = fopen (scrollbackfile, "r");
-  if (fp)
-    {
-      while ((c = fgetc (fp)) != EOF)
-        {
-          fputc (c, stdout);
-        }
-      fclose (fp);
+  if (fp) {
+    while ((c = fgetc (fp)) != EOF) {
+      fputc (c, stdout);
     }
-  else
-    {
-      fprintf (stderr,PRIMER": %s:%d Cannot open scrollback file.\n",__FILE__,__LINE__);
-      return 1;
-    }
+    fclose (fp);
+  }
+  else {
+    fprintf (stderr, PRIMER ": %s:%d Cannot open scrollback file.\n",
+	     __FILE__, __LINE__);
+    return 1;
+  }
   fp = NULL;
   return 0;
 
 }
 
 void
-execute_filter(int bFilter, char *scs_exe, char *filter)
+execute_filter (int bFilter, char *scs_exe, char *filter)
 {
   // execute filter
-  if (bFilter && (strncmp (filter, "-1", 2) != 0))
-    {
-      printf ("Setting up filter...\n");
-      char *command0 = malloc((51+strlen(scs_exe))*sizeof(char));
-      sprintf(command0,"screen -S \"$(%s name)\" -X stuff \"exec ",scs_exe);
-      char command1[] = "\"^M";
-      char *command =
-        malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
-                 1) * sizeof (char));
-      strcpy (command, command0);
-      strcat (command, filter);
-      strcat (command, command1);
-      system ("screen -X colon");
-      system (command);
-      free(command); free(command0);
-    }
+  if (bFilter && (strncmp (filter, "-1", 2) != 0)) {
+    printf ("Setting up filter...\n");
+    char *command0 = malloc ((51 + strlen (scs_exe)) * sizeof (char));
+    sprintf (command0, "screen -S \"$(%s name)\" -X stuff \"exec ", scs_exe);
+    char command1[] = "\"^M";
+    char *command =
+      malloc ((strlen (command0) + strlen (filter) + strlen (command1) +
+	       1) * sizeof (char));
+    strcpy (command, command0);
+    strcat (command, filter);
+    strcat (command, command1);
+    system ("screen -X colon");
+    system (command);
+    free (command);
+    free (command0);
+  }
 }
 
 void
-reset_primer(char **argv, char *fullpath, char *scrollbackfile, char *datafile)
+reset_primer (char **argv, char *fullpath, char *scrollbackfile,
+	      char *datafile)
 {
-  printf(PRIMER "Reseting...\n");
-  if ( strcmp(scrollbackfile,"0")==0)
+  printf (PRIMER "Reseting...\n");
+  if (strcmp (scrollbackfile, "0") == 0)
     requireSession (fullpath, datafile, 0);
   else
     requireSession (fullpath, scrollbackfile, 0);
-  execv (argv[0],argv);
+  execv (argv[0], argv);
 }
+
 #ifndef TEST
 int
 main (int argc, char **argv)
@@ -951,63 +919,60 @@ main (int argc, char **argv)
   int i;
   FILE *fp = NULL;
   int c;
-  if (argc == 1)
-    {
-      printf ("screen-session %s priming program\n",VERSION);
-      return 0;
-    }
-  char *scs_path=malloc( (strlen(argv[0])+1)*sizeof(char) );
-  char *pch=NULL;
-  strcpy(scs_path,argv[0]);
-  pch=strrchr(scs_path,'/');
-  *pch='\0';
-  scs_exe=malloc( (strlen(scs_path)+strlen("/screen-session")+1)*sizeof(char) );
-  strcpy(scs_exe,scs_path);
-  free(scs_path);
-  strcat(scs_exe,"/screen-session");
-  if (strcmp (argv[1], "-s") == 0)
-    {
-      /* 
-         programs starter
-         Example invocation:
-         INSTDIR/screen-session-primer -s /home/USER/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
-      */
-      int *procs;
-      procs = malloc ((argc - 5) * sizeof (int));
-      for (i = 5; i < argc; i++)
-	procs[i - 5] = atoi (argv[i]);
-      start (argv[2], argv[3], argv[4], i - 5, procs);
-      return 0;
-    }
-  else if (strcmp (argv[1], "-D") == 0)
-    {
-      /*
-        start a program in a directory
-        primer -D directory program args
-      */
-      chdir(argv[2]);
-      execvp(argv[3],&argv[3]);
-      return 0;
-    }
-  else if (strcmp (argv[1], "-r") == 0)
-    {
-      /* requireSession */
-      requireSession (argv[2], argv[3], 0);
-      return 0;
-    }
-  else if (strcmp (argv[1], "-rf") == 0)
-    {
-      /* requireSession ?force? */
-      requireSession (argv[2], argv[3], 0);
-      return 0;
-    }
+  if (argc == 1) {
+    printf ("screen-session %s priming program\n", VERSION);
+    return 0;
+  }
+  char *scs_path = malloc ((strlen (argv[0]) + 1) * sizeof (char));
+  char *pch = NULL;
+  strcpy (scs_path, argv[0]);
+  pch = strrchr (scs_path, '/');
+  *pch = '\0';
+  scs_exe =
+    malloc ((strlen (scs_path) + strlen ("/screen-session") +
+	     1) * sizeof (char));
+  strcpy (scs_exe, scs_path);
+  free (scs_path);
+  strcat (scs_exe, "/screen-session");
+  if (strcmp (argv[1], "-s") == 0) {
+    /* 
+       programs starter
+       Example invocation:
+       INSTDIR/screen-session-primer -s /home/USER/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
+     */
+    int *procs;
+    procs = malloc ((argc - 5) * sizeof (int));
+    for (i = 5; i < argc; i++)
+      procs[i - 5] = atoi (argv[i]);
+    start (argv[2], argv[3], argv[4], i - 5, procs);
+    return 0;
+  }
+  else if (strcmp (argv[1], "-D") == 0) {
+    /*
+       start a program in a directory
+       primer -D directory program args
+     */
+    chdir (argv[2]);
+    execvp (argv[3], &argv[3]);
+    return 0;
+  }
+  else if (strcmp (argv[1], "-r") == 0) {
+    /* requireSession */
+    requireSession (argv[2], argv[3], 0);
+    return 0;
+  }
+  else if (strcmp (argv[1], "-rf") == 0) {
+    /* requireSession ?force? */
+    requireSession (argv[2], argv[3], 0);
+    return 0;
+  }
   else if (strncmp (argv[1], "-p", 2) == 0) {
-      /* 
-         priming procedure invoked by session saver
-         Example invocation:
-         INSTALLPATH/screen-session-primer "-p" ".screen-sessions" "13983.pts-218.cvops/hardcopy.2" "13983.pts-218.cvops/win_2"
-      */
-    int force_start = (argv[1][2]=='S') ? 1 : 0;
+    /* 
+       priming procedure invoked by session saver
+       Example invocation:
+       INSTALLPATH/screen-session-primer "-p" ".screen-sessions" "13983.pts-218.cvops/hardcopy.2" "13983.pts-218.cvops/win_2"
+     */
+    int force_start = (argv[1][2] == 'S') ? 1 : 0;
     char *homedir = getenv ("HOME");
     char *workingdir = argv[2];
     char *scrollbackfile = argv[3];
@@ -1018,60 +983,59 @@ main (int argc, char **argv)
     strcpy (fullpath, homedir);
     strcat (fullpath, "/");
     strcat (fullpath, workingdir);
-    chdir(fullpath); // fopen's currently depends on this
-    read_scrollback(fullpath,scrollbackfile);
+    chdir (fullpath);		// fopen's currently depends on this
+    read_scrollback (fullpath, scrollbackfile);
 
     //printf("%sOpen: '%s' in: '$HOME/%s'%s\n",green_r,datafile,workingdir,none);
     requireSession (fullpath, datafile, 0);
     fp = fopen (datafile, "r");
-    if (!fp)
-      {
-        fprintf (stderr,PRIMER": %s:%d Cannot open data file (%s). Aborting.\n",__FILE__,__LINE__,datafile);
-        perror("Error :");
-        printf ("Press any key to continue...\n");
-        mygetch ();
-        return 1;
-      }
+    if (!fp) {
+      fprintf (stderr,
+	       PRIMER ": %s:%d Cannot open data file (%s). Aborting.\n",
+	       __FILE__, __LINE__, datafile);
+      perror ("Error :");
+      printf ("Press any key to continue...\n");
+      mygetch ();
+      return 1;
+    }
 
     int procs_c = 0;
     size_t filter_s = 1;
     char *filter = malloc (filter_s * sizeof (char));
-    size_t cmdargs_s= 1;
+    size_t cmdargs_s = 1;
     char *cmdargs = malloc (cmdargs_s * sizeof (char));
-    size_t buftext_s=1;
-    char *buftext = malloc(buftext_s*sizeof(char));
-    size_t type_s=1;
-    char *type = malloc(type_s*sizeof(char));
-    size_t title_s=1;
-    char *title = malloc(title_s*sizeof(char));
-    size_t timesaved_s=1;
-    char *timesaved = malloc(timesaved_s*sizeof(char));
+    size_t buftext_s = 1;
+    char *buftext = malloc (buftext_s * sizeof (char));
+    size_t type_s = 1;
+    char *type = malloc (type_s * sizeof (char));
+    size_t title_s = 1;
+    char *title = malloc (title_s * sizeof (char));
+    size_t timesaved_s = 1;
+    char *timesaved = malloc (timesaved_s * sizeof (char));
     getline (&buftext, &buftext_s, fp);	//win number
     getline (&buftext, &buftext_s, fp);	//CURRENTLY UNUSED (put window flags)
     getline (&buftext, &buftext_s, fp);	//group
     getline (&type, &type_s, fp);	//win type
-    getline (&title, &title_s, fp);	    //title
-    getline (&filter, &filter_s, fp);	    //filter
+    getline (&title, &title_s, fp);	//title
+    getline (&filter, &filter_s, fp);	//filter
     getline (&buftext, &buftext_s, fp);	//scrollback len
     getline (&cmdargs, &cmdargs_s, fp);	//This pool is not used by primer. Screen dumps on this position zombie command vector. screen-session processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
     fscanf (fp, "%d\n", &procs_c);
-    int bFilter=0;
-    if (!force_start)
-      {
-        printf ("%sTITLE:%s %s\n",green_r,none,title);
-        if (type[0]!='z')
-          {
-          filter = strtrim_right (filter, '\n');
-          if (strcmp (filter, "-1") != 0)
-            {
-              bFilter=1;
-              printf ("%sFILTER:%s %s\n",green_r, none, filter);
-            }
-          printf ("%s", none);
+    int bFilter = 0;
+    if (!force_start) {
+      printf ("%sTITLE:%s %s\n", green_r, none, title);
+      if (type[0] != 'z') {
+	filter = strtrim_right (filter, '\n');
+	if (strcmp (filter, "-1") != 0) {
+	  bFilter = 1;
+	  printf ("%sFILTER:%s %s\n", green_r, none, filter);
+	}
+	printf ("%s", none);
 
-          printf ("%s %d %s in %s %s %s\n", red_r, procs_c-1, blue_r, red_r, datafile, none);
-          }
+	printf ("%s %d %s in %s %s %s\n", red_r, procs_c - 1, blue_r,
+		red_r, datafile, none);
       }
+    }
 
     size_t proc_cwd_s = 1;
     size_t proc_exe_s = 1;
@@ -1085,221 +1049,220 @@ main (int argc, char **argv)
     char proc_blacklisted[7];
     char buf[5];
     int b_zombie;
-    if (type[0]=='z')
-      b_zombie=1;
+    if (type[0] == 'z')
+      b_zombie = 1;
     else
-      b_zombie=0;
-    for (i = 0; i < procs_c; i++)
-      {
-        fscanf (fp, "%s\n", buf);	//read --
-        if (!force_start && i!=0)
-          printf ("%s%s %d%s: ", blue_b, buf, i, none);
-        //cwd exe args
-        getline (&proc_cwd, &proc_cwd_s, fp);
-        proc_cwd = strtrim_right (proc_cwd, '\n');
-        getline (&proc_exe, &proc_exe_s, fp);
-        proc_exe = strtrim_right (proc_exe, '\n');
-        fscanf (fp, "%d\n", &proc_args_n);
-        int null_c = 0;
-        cmdline_begin_c = 0;
-        if (b_zombie)
-          printf("%sZOMBIE:%s ",red,none);
-        while ((c = fgetc (fp)) != EOF)
-          {
-            if (cmdline_begin_c < CMDLINE_BEGIN)
-              {
-                cmdline_begin[cmdline_begin_c] = c;
-                cmdline_begin[cmdline_begin_c + 1] = '\0';
-                cmdline_begin_c++;
-              }
-            if (i!=0 || b_zombie)
-              {
-            if (!force_start)
-              {
-                if (c == '\0')
-                  {
-                    null_c++;
-                    if (null_c == 1)
-                      fputs (" \"", stdout);
-                    else
-                      fputs ("\" \"", stdout);
-                  }
-                else if (c == '\n')
-                  {
-                    fputs ("\" ", stdout);
-                    break;
-                  }
-                else
-                  fputc (c, stdout);
-              }
-              }
-            else
-              {
-                if (c == '\n')
-                  {
-                    break;
-                  }
-              }
-            if (null_c > proc_args_n)
-              break;
-          }
-        if (b_zombie)
-          {
-            printf ("\n");
-            b_zombie=0;
-          }
-        fscanf (fp, "%s\n", proc_blacklisted);
-        getline (&proc_vim, &proc_vim_s, fp);
-        proc_vim = strtrim_right (proc_vim, '\n');
-        if (!force_start && i!=0)
-          {
-            printf ("\n");
-            printf ("\tCWD: %s\n", proc_cwd);
-            printf ("\tEXE: %s\n", proc_exe);
-            if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0)
-              printf ("\tVIMSESSION: %s\n", proc_vim);
-            if (strncmp (proc_blacklisted, "True", 4) == 0
-                || is_blacklisted (fullpath, cmdline_begin, i))
-              printf ("\t%sBLACKLISTED - program and child processes\n\tcannot be started (use [O]nly)%s\n", magenta, none);
-          }
+      b_zombie = 0;
+    for (i = 0; i < procs_c; i++) {
+      fscanf (fp, "%s\n", buf);	//read --
+      if (!force_start && i != 0)
+	printf ("%s%s %d%s: ", blue_b, buf, i, none);
+      //cwd exe args
+      getline (&proc_cwd, &proc_cwd_s, fp);
+      proc_cwd = strtrim_right (proc_cwd, '\n');
+      getline (&proc_exe, &proc_exe_s, fp);
+      proc_exe = strtrim_right (proc_exe, '\n');
+      fscanf (fp, "%d\n", &proc_args_n);
+      int null_c = 0;
+      cmdline_begin_c = 0;
+      if (b_zombie)
+	printf ("%sZOMBIE:%s ", red, none);
+      while ((c = fgetc (fp)) != EOF) {
+	if (cmdline_begin_c < CMDLINE_BEGIN) {
+	  cmdline_begin[cmdline_begin_c] = c;
+	  cmdline_begin[cmdline_begin_c + 1] = '\0';
+	  cmdline_begin_c++;
+	}
+	if (i != 0 || b_zombie) {
+	  if (!force_start) {
+	    if (c == '\0') {
+	      null_c++;
+	      if (null_c == 1)
+		fputs (" \"", stdout);
+	      else
+		fputs ("\" \"", stdout);
+	    }
+	    else if (c == '\n') {
+	      fputs ("\" ", stdout);
+	      break;
+	    }
+	    else
+	      fputc (c, stdout);
+	  }
+	}
+	else {
+	  if (c == '\n') {
+	    break;
+	  }
+	}
+	if (null_c > proc_args_n)
+	  break;
       }
+      if (b_zombie) {
+	printf ("\n");
+	b_zombie = 0;
+      }
+      fscanf (fp, "%s\n", proc_blacklisted);
+      getline (&proc_vim, &proc_vim_s, fp);
+      proc_vim = strtrim_right (proc_vim, '\n');
+      if (!force_start && i != 0) {
+	printf ("\n");
+	printf ("\tCWD: %s\n", proc_cwd);
+	printf ("\tEXE: %s\n", proc_exe);
+	if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0)
+	  printf ("\tVIMSESSION: %s\n", proc_vim);
+	if (strncmp (proc_blacklisted, "True", 4) == 0
+	    || is_blacklisted (fullpath, cmdline_begin, i))
+	  printf
+	    ("\t%sBLACKLISTED - program and child processes\n\tcannot be started (use [O]nly)%s\n",
+	     magenta, none);
+      }
+    }
     getline (&buftext, &buftext_s, fp);	//last line - timesaved
-    if (!force_start && type[0]!='z')
+    if (!force_start && type[0] != 'z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
-    free(proc_vim);
+    free (proc_vim);
     //free(proc_cwd);
-    free(title);
-    free(timesaved);
-    free(buftext);
+    free (title);
+    free (timesaved);
+    free (buftext);
     int menu;
     int number;
     int *numbers;
     int numbers_c;
     if (force_start)
-      menu=ALL;
+      menu = ALL;
     else
-      numbers_c=userInput (&menu, &numbers, procs_c-1, &bFilter);
+      numbers_c = userInput (&menu, &numbers, procs_c - 1, &bFilter);
     char *shell = NULL;
     char **arglist = NULL;
     int *args;
 
 
     args = malloc (procs_c * sizeof (int));
-    switch (menu)
-      {
+    switch (menu) {
 
-      case EXIT:
-        printf (PRIMER "Exiting...\n");
-        return 0;
-        break;
-      case RESET:
-        reset_primer(argv,fullpath,scrollbackfile,datafile);
-        break;
-      case DEFAULT:
-        read_scrollback(fullpath,scrollbackfile);
-        shell = getenv ("SHELL");
-        arglist = malloc (2 * sizeof (char *));
-        arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
-        arglist[1] = NULL;
-        strcpy (arglist[0], shell);
-        printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
-                proc_cwd);
-        recurse_chdir (proc_cwd);
-        execute_filter(bFilter,scs_exe,filter);
-        execvp (shell, arglist);
-        break;
-      case ZOMBIE:
-        printf(PRIMER "ZOMBIE\n");
+    case EXIT:
+      printf (PRIMER "Exiting...\n");
+      return 0;
+      break;
+    case RESET:
+      reset_primer (argv, fullpath, scrollbackfile, datafile);
+      break;
+    case DEFAULT:
+      read_scrollback (fullpath, scrollbackfile);
+      shell = getenv ("SHELL");
+      arglist = malloc (2 * sizeof (char *));
+      arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
+      arglist[1] = NULL;
+      strcpy (arglist[0], shell);
+      printf (PRIMER "Starting $SHELL(%s) in last cwd(%s)...\n", shell,
+	      proc_cwd);
+      recurse_chdir (proc_cwd);
+      execute_filter (bFilter, scs_exe, filter);
+      execvp (shell, arglist);
+      break;
+    case ZOMBIE:
+      printf (PRIMER "ZOMBIE\n");
       /* FALLTHROUGH */
-      case ONLY:
-        read_scrollback(fullpath,scrollbackfile);
-        printf (PRIMER "Starting processes ");
-        print_ints(numbers,numbers_c);
-        printf("...\n");
-        arglist = make_arglist (argv[0], "-s", fullpath, datafile,numbers_c, numbers);
-        execute_filter(bFilter,scs_exe,filter);
-        execv (argv[0], arglist);
-        break;
+    case ONLY:
+      read_scrollback (fullpath, scrollbackfile);
+      printf (PRIMER "Starting processes ");
+      print_ints (numbers, numbers_c);
+      printf ("...\n");
+      arglist =
+	make_arglist (argv[0], "-s", fullpath, datafile, numbers_c, numbers);
+      execute_filter (bFilter, scs_exe, filter);
+      execv (argv[0], arglist);
+      break;
 
-      case ALL:
-        if (!force_start)
-          read_scrollback(fullpath,scrollbackfile);
-        printf (PRIMER "Starting all programs... ");
-        for (i = 1; i <= procs_c-1; i++)
-          {
-            args[i-1] = i;
-          }
-        print_ints(args,procs_c-1);
-        printf("\n");
-        arglist =
-          make_arglist (argv[0], "-s", fullpath, datafile, procs_c-1, args);
-        execute_filter(bFilter,scs_exe,filter);
-        execv (argv[0], arglist);
-
-        break;
-
-      case NUMBER:
-        read_scrollback(fullpath,scrollbackfile);
-        number=numbers[0];
-        printf (PRIMER "Starting programs up to %d ( ", number);
-        if (number > procs_c)
-          {
-            number = procs_c;
-            printf (PRIMER "No such window. Starting programs up to %d ( ",
-                    number - 1);
-          }
-        for (i = 1; i <= number; i++)
-          {
-            args[i-1] = i;
-          }
-        print_ints(args,number);
-        printf(")\n");
-        arglist =
-          make_arglist (argv[0], "-s", fullpath, datafile, number, args);
-        execute_filter(bFilter,scs_exe,filter);
-        execv (argv[0], arglist);
-        break;
-      case EDIT:
-        requireSession (fullpath, datafile, 0);
-        char *EDITOR = getenv("EDITOR");
-        char *session = get_session(datafile);
-        char *buf1 =
-	  malloc ((strlen (fullpath) + strlen (datafile) + 2 ) * sizeof (char));
-        sprintf (buf1, "%s/%s", fullpath, datafile);
-        char *buf2 =
-	  malloc ((strlen(EDITOR) + strlen (fullpath) + strlen (datafile) + 20 ) * sizeof (char));
-        sprintf( buf2, "\"/tmp/screen-session-%s/primer_edit_%s_%d\"",getenv("USER"),session,getpid() );
-        char *buf0 = malloc ((strlen(EDITOR) + strlen (buf2) + 5 ) * sizeof (char));
-        sprintf (buf0, "%s %s", EDITOR, buf2);
-        printf(PRIMER "Editing source: %s\n",buf1);
-        copy_file(buf1,buf2);
-        system(buf0);
-        requireSession (fullpath, datafile, 1);
-        copy_file(buf2,buf1);
-        remove(buf2);
-        free(buf0); free(buf1); free(buf2);
-        int pid = fork();
-        if (pid == 0)
-        {
-          buf0 = malloc((1+21+strlen(scs_exe)+strlen(workingdir)+strlen(session))*sizeof(char));
-          sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe, workingdir, session);
-          system(buf0); free(buf0);
-          exit(0);
-        }
-        else if (pid < 0)
-          fprintf (stderr,PRIMER": %s:%d failed to fork a process\n",__FILE__,__LINE__);
-        else
-          reset_primer(argv,fullpath,scrollbackfile,datafile);
-        break;
-
+    case ALL:
+      if (!force_start)
+	read_scrollback (fullpath, scrollbackfile);
+      printf (PRIMER "Starting all programs... ");
+      for (i = 1; i <= procs_c - 1; i++) {
+	args[i - 1] = i;
       }
-    fprintf (stderr,PRIMER": %s:%d fatal error - unsupported action %d\n",__FILE__,__LINE__,menu);
+      print_ints (args, procs_c - 1);
+      printf ("\n");
+      arglist =
+	make_arglist (argv[0], "-s", fullpath, datafile, procs_c - 1, args);
+      execute_filter (bFilter, scs_exe, filter);
+      execv (argv[0], arglist);
+
+      break;
+
+    case NUMBER:
+      read_scrollback (fullpath, scrollbackfile);
+      number = numbers[0];
+      printf (PRIMER "Starting programs up to %d ( ", number);
+      if (number > procs_c) {
+	number = procs_c;
+	printf (PRIMER "No such window. Starting programs up to %d ( ",
+		number - 1);
+      }
+      for (i = 1; i <= number; i++) {
+	args[i - 1] = i;
+      }
+      print_ints (args, number);
+      printf (")\n");
+      arglist =
+	make_arglist (argv[0], "-s", fullpath, datafile, number, args);
+      execute_filter (bFilter, scs_exe, filter);
+      execv (argv[0], arglist);
+      break;
+    case EDIT:
+      requireSession (fullpath, datafile, 0);
+      char *EDITOR = getenv ("EDITOR");
+      char *session = get_session (datafile);
+      char *buf1 =
+	malloc ((strlen (fullpath) + strlen (datafile) + 2) * sizeof (char));
+      sprintf (buf1, "%s/%s", fullpath, datafile);
+      char *buf2 =
+	malloc ((strlen (EDITOR) + strlen (fullpath) + strlen (datafile) +
+		 20) * sizeof (char));
+      sprintf (buf2, "\"/tmp/screen-session-%s/primer_edit_%s_%d\"",
+	       getenv ("USER"), session, getpid ());
+      char *buf0 =
+	malloc ((strlen (EDITOR) + strlen (buf2) + 5) * sizeof (char));
+      sprintf (buf0, "%s %s", EDITOR, buf2);
+      printf (PRIMER "Editing source: %s\n", buf1);
+      copy_file (buf1, buf2);
+      system (buf0);
+      requireSession (fullpath, datafile, 1);
+      copy_file (buf2, buf1);
+      remove (buf2);
+      free (buf0);
+      free (buf1);
+      free (buf2);
+      int pid = fork ();
+      if (pid == 0) {
+	buf0 =
+	  malloc ((1 + 21 + strlen (scs_exe) + strlen (workingdir) +
+		   strlen (session)) * sizeof (char));
+	sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe,
+		 workingdir, session);
+	system (buf0);
+	free (buf0);
+	exit (0);
+      }
+      else if (pid < 0)
+	fprintf (stderr, PRIMER ": %s:%d failed to fork a process\n",
+		 __FILE__, __LINE__);
+      else
+	reset_primer (argv, fullpath, scrollbackfile, datafile);
+      break;
+
+    }
+    fprintf (stderr, PRIMER ": %s:%d fatal error - unsupported action %d\n",
+	     __FILE__, __LINE__, menu);
     mygetch ();
     return 44;
   }
   else {
-      printf ("screen-session %s priming program: No such mode \"%s\"\n",VERSION,argv[1]);
+    printf ("screen-session %s priming program: No such mode \"%s\"\n",
+	    VERSION, argv[1]);
   }
 }
 
