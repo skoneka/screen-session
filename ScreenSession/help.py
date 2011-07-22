@@ -27,684 +27,386 @@ version_str = \
 '''
 broken/unfinished tools:
     grab  - grab a process and attach it to current tty
-\
           (requires injcode)
-\
     sort  - sort windows by title
-\
     manager-remote -
 
 Unpractical/useless tools:
     find-pid  - find PIDs in windows (greping dump tool output is better)
-\
 '''
 
-help_help = \
-    """\
+help_help = """\
 Usage:   screen-session [mode] [options]
-\
 
-\
 A collection of utilities for GNU Screen.
-\
 
-\
 Help:    scs help [mode]
-\
 
-\
 Options supported by all tools:
-\
     -S [target] - target Screen session name,
-\
     --help      - print detailed mode's help
-\
 
-\
 Environment variables:
-\
     SCREENBIN   - GNU Screen executable path
-\
     PYTHONBIN   - Python interpreter path
-\
 
-\
 Session saver modes:
-\
     save        - save a session
-\
     load        - load a session from a save file
-\
     ls          - list saved sessions
-\
 
-\
 Other tools:
-\
     dump        - print informations about windows in the session
-\
     find-file   - find open files in windows
-\
     group       - move windows to a group
-\
     kill        - send a signal to the last process started in a window
-\
     kill-group  - recursively kill a group and all windows inside
-\
     kill-zombie - kill all zombie windows in the session
-\
     layoutlist  - display a browseable list of layouts in the session
-\
     manager     - a sessions manager with a split Screen window preview
-\
     name        - get or set the sessionname
-\
     nest-layout - nest a layout in the current region
-\
     new-window  - open a new Screen window with the same working directory
-\
     regions     - display a number in each region (tmux display-panes)
-\
     renumber    - renumber windows to fill the gaps
-\
     subwindows  - print windows contained in a group
-\
 
-\
 Please report bugs to http://github.com/skoneka/screen-session/issues\
 """
 
-help_regions = \
-    """Usage: screen-session regions [options]
-\
+help_regions = """\
+Usage: screen-session regions [options]
        scs r
-\
        :bind X at 0 exec scs regions
-\
 
-\
 Display a number in each region.
-\
 Allows selecting, swapping and rotating. Inspired by tmux display-panes.
-\
 Requires an active layout.
-\
 
-\
 Keys:
-\
 goto region  - number and [g] or ['] or [space]
-\
 swap regions - number and [s]
-\
 rotate left  - number and [l]
-\
 rotate right - number and [r]
-\
 
-\
 reverse goto region     - number and [G]
-\
 swap regions and select - number and [S]
-\
 rotate left  and select - number and [L]
-\
 rotate right and select - number and [R]\
 """
 
-help_kill = \
-    """Usage: screen-session kill [options] [signal=TERM] [window=current]
-\
+help_kill = """\
+Usage: screen-session kill [options] [signal=TERM] [window=current]
        scs K
-\
 
-\
 Kill last process started in a window.
-\
 Useful for closing random emacs/vim instances and hung up ssh clients.
-\
 For a list of signal names run: $ pydoc signal
-\
 WARNING: sending SIGKILL to the current window may crash Screen\
 """
 
-help_kill_zombie = \
-    """Usage: screen-session kill-zombie [options] [group_ids]
-\
+help_kill_zombie = """\
+Usage: screen-session kill-zombie [options] [group_ids]
        scs kz
-\
 
-\
 Kill all zombie windows in session. Optionally specify target groups.\
 """
 
-help_kill_group = \
-    """Usage: screen-session kill-group [options] [groupNum0] [groupNum..]
-\
+help_kill_group = """\
+Usage: screen-session kill-group [options] [groupNum0] [groupNum..]
        scs kg
-\
 
-\
 Recursively kill groups and windows inside.
-\
 Accepts titles and window numbers as arguments.
-\
-A dot \".\" selects current window, 2 dots \"..\"  select current group.
-\
+A dot "." selects current window, 2 dots ".."  select current group.
 Take extra care with this command.\
 """
 
-help_new_window = \
-    '''Usage: screen-session new-window [options] [program]
-\
+help_new_window = """\
+Usage: screen-session new-window [options] [program]
        scs new
-\
        scs nw
-\
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""
-\
 
-\
 Start a new Screen window with the same working directory as the current window.
-\
 It also sets new window number to current number + 1.
-\
 
-\
 Options:
-\
 -d [directory] - specify the new window working directory\
-'''
+"""
 
-help_dump = \
-    """Usage: screen-session dump [options] [window_ids]
-\
+help_dump = """\
+Usage: screen-session dump [options] [window_ids]
        scs d
-\
 
-\
 Print informations about windows in session (MRU order by default).
-\
-A dot \".\" selects current window, 2 dots \"..\"  select current group.
-\
+A dot "." selects current window, 2 dots ".."  select current group.
 
-\
 Options:
-\
 -P   - do not show pid data
-\
 -r   - reverse the output
-\
 -s   - sort by window number\
 """
 
-help_find_pid = \
-    """Usage: screen-session find-pid [options] [PIDs]
-\
+_help_find_pid = """\
+Usage: screen-session find-pid [options] [PIDs]
        scs fp
-\
 
-\
-Find PIDs in windows.
-\
+Find PIDs in windows. Obsoleted by "dump" tool.
 Example: screen-session find-pid $(pgrep vim)\
 """
 
-help_find_file = \
-    """Usage: screen-session find-file [options] [files]
-\
+help_find_file = """\
+Usage: screen-session find-file [options] [files]
        scs ff
-\
 
-\
 Find open files in windows. Requires lsof.
-\
 
-\
 Example:
-\
 tail -f /var/log/dmesg
-\
 scs find-file /var/log/dmesg\
 """
 
-_help_grab = \
-    """Grab a process and attach to the current tty.
-\
+_help_grab = """\
+Grab a process and attach to the current tty.
 Works with applications without complicated output scheme.
-\
 A simple demonstration of injcode tool by Thomas Habets.
-\
 http://blog.habets.pp.se/2009/03/Moving-a-process-to-another-terminal
-\
 
 Usage: screen-session grab [PID]
-\
 and on the previous shell type:
-\
 $ disown
-\
 It works more reliably if commands from the script are typed manually."""
 
-help_group = \
-    '''Usage: screen-session group [options] [GROUP] [windows]
-\
+help_group = """\
+Usage: screen-session group [options] [GROUP] [windows]
        scs g
-\
        :bind G eval "colon" "stuff \\"at 0 exec scs group \\""
-\
 
-\
 Move windows to a group.
-\
 If no windows given, move the current window.\
-'''
+"""
 
 #help_manager="Usage: screen-session manager [options]\n\
 
-help_manager = \
-    """Usage: screen-session manager [account@host]
-\
+help_manager = """\
+Usage: screen-session manager [account@host]
        scs m
-\
 
-\
 Sessions manager for GNU Screen with preview in a split window.
-\
 Requires python 2.5+
-\
 
-\
 KEYS:
-\
 CTRL + g  - default escape key
-\
 ALT + t   - toggle between regions
-\
 ALT + e   - step into a selected session
-\
 ALT + q   - quit
-\
 Alt + w   - wipe
-\
 
-\
 COMMANDS:
-\
 ? or h          - display help
-\
 q[uit]          - exit session manager
-\
 e[nter]         - enter into a session
-\
 a[ttach] [name] - attach and select
-\
 d[etach] [name] - detach and deselect
-\
 n[ame] [name]   - rename
-\
 s[creen] [args] - create session
-\
 save [output]   - save session
-\
 w[ipe]          - wipe dead sessions
-\
 restart         - restart session manager
-\
 r[efresh]       - refresh session list
-\
 l[ayout]        - toggle layout
-\
 kill K          - kill selected session
-\
 """
 
-_help_manager_remote = \
-    """Usage: screen-session manager-remote
-\
+_help_manager_remote = """\
+Usage: screen-session manager-remote
 
-\
 Sessions manager for GNU Screen with preview in a split window and
-\
 support for multiple hosts. Requires python 2.5+\
 """
 
-help_nest = \
-    '''Usage: screen-session nest-layout [options] [TARGET_LAYOUT]
-\
+help_nest = """\
+Usage: screen-session nest-layout [options] [TARGET_LAYOUT]
        scs nl
-\
        :bind N eval "colon" "stuff \\"at 0 exec scs nest-layout \\""
-\
 
-\
 Nest a layout in the current region.\
-'''
+"""
 
-help_layoutlist = \
-    '''Usage: screen-session layoutlist [options] [HEIGHT]
-\
+help_layoutlist = """\
+Usage: screen-session layoutlist [options] [HEIGHT]
        scs ll
-\
        :bind l at 0 exec scs layoutlist -l -c 20
-\
 
-\
 Displays a browseable list of layouts. There are two list creation algorithms.
-\
 If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers
-\
 are modulo divided by HEIGHT and the reminder determines their Y position.
-\
 This tool comes handy after raising the maximum number of layouts."
-\
 
-\
 Options:
-\
 -l              - create a temporary layout and window for layoutlist
-\
 -w              - create a temporary window for layoutlist
-\
 -t [width=11]   - set title width
-\
 -a [min_len=2]  - minimum matching charecters for auto highlight,
-\
                   min_len = 0 disables auto highlight
-\
 -c              - do not terminate layoutlist after selecting a layout
-\
                   or reselect a running layoutlist, best used with "-l" option,
-\
                   there should be running only one layoutlist started with "-c"
-\
                   per session
-\
 
-\
 Keys:
-\
 ?               - display help
-\
 ENTER           - confirm / select
-\
 ARROWS and hjkl - movement
-\
 / or SPACE      - start searching layout titles
-\
 n and p         - next / previous search result
-\
 NUMBER          - move to a layout
-\
 r or C-c or C-l - refresh the layout list
-\
 m or a          - toggle MRU view,
-\
 v               - toggle search/autohighlight results view
-\
 o               - toggle current and selected layouts
-\
 q               - quit / select previous layout
-\
 Q               - force quit if "-c" option was used\
-'''
+"""
 
-help_renumber = \
-    """Usage: screen-session renumber [options]
-\
+help_renumber = """\
+Usage: screen-session renumber [options]
 
-\
 Renumber windows to fill the gaps.
-\
 Use case: suppose you are trying to run ":at 0 some_command" but there is
-\
          no such window.
 """
 
-_help_sort = \
-    """Usage: screen-session sort [options]
-\
+_help_sort = """\
+Usage: screen-session sort [options]
 
-\
 Sort windows by titles.\
 """
 
-help_subwindows = \
-    """Usage: screen-session subwindows [groupids or titles]
-\
+help_subwindows = """\
+Usage: screen-session subwindows [groupids or titles]
        scs sw
-\
 
-\
 Print windows contained in groups.
-\
-A dot \".\" selects current window, 2 dots \"..\"  select current group.\
+A dot "." selects current window, 2 dots ".."  select current group.\
 """
 
-help_name = \
-    """Usage: screen-session name [options] [new_sessionname]
-\
+help_name = """\
+Usage: screen-session name [options] [new_sessionname]
        scs n
-\
 
-\
 Get or set the sessionname.\
 """
-help_saver_other = \
-    """Usage: screen-session other [options] 
-\
+help_saver_other = """\
+Usage: screen-session other [options] 
 
-\
 Auxiliary mode, used mainly by screen-session-primer.
-\
 
-\
 Options:
-\
 --pack [target]
-\
     archive unpacked savefile ( which must be accessible from --dir )
-\
 --unpack [savefile]
-\
     unpack savefile to /tmp/screen-session-$USER
-\
 -l --log  [file]
-\
     output to a file instead of stdout
-\
 -d --dir  [directory = $HOME/.screen-sessions]
-\
     directory holding saved sessions\
 """
 
-help_saver_ls = \
-    """Usage: screen-session save [-S sessionname] [options] [savefile_filter]
-\
+help_saver_ls = """\
+Usage: screen-session save [-S sessionname] [options] [savefile_filter]
 
-\
 List saved sessions.
-\
 
-\
 Options:
-\
 -l --log  [file]
-\
     output to a file instead of stdout
-\
 -d --dir  [directory = $HOME/.screen-sessions]
-\
     directory holding saved sessions\
 """
 
-help_saver_save = \
-    """Usage: screen-session save [-S sessionname] [options] [target_savefile]
-\
-       :bind S at 0 exec screen -mdc /dev/null screen-session save -H SECURE -f -S $PID.$STY
-\
+help_saver_save = """\
+Usage: screen-session save [-S sessionname] [options] [target_savefile]
+       :bind S at 0 exec screen -mdc /dev/null screen-session save -fS $PID.$STY
 
-\
 Save GNU Screen and VIM sessions to a file.
-\
 
-\
 Options:
-\
 -f --force
-\
     force saving even if a savefile with the same name already exists
-\
 -e --exclude  [windows]
-\
     a comma separated list of windows to be ignored during saving,
-\
     if a window is a group all nested windows are also included
-\
 -L --exclude-layout  [layouts]
-\
     a comma separated list of layouts to be ignored during saving,
-\
 -H --no-scroll  [windows]
-\
     a comma separated list of windows which scrollbacks will be ignored,
-\
     if a window is a group all nested windows are also included,
-\
-    using keyword \"all\" affects all windows
-\
+    using keyword "all" affects all windows
 -y --no-layout
-\
     disable layout saving
-\
 -V --no-vim
-\
     disable vim session saving
-\
 -l --log [file]
-\
     output to a file instead of stdout
-\
 -d --dir  [directory = $HOME/.screen-sessions]
-\
     directory holding saved sessions
-\
 
-\
 Examples:
-\
 #1# save Screen named SESSIONNAME as mysavedsession
-\
 screen-session save -S SESSIONNAME mysavedsession
-\
 #2# save the current session, force overwrite of old savefiles
-\
 scs save --force
-\
 #3# save the current session without layouts
-\
 scs save --no-layout
-\
 #4# run session saver after 3 minutes of inactivity, exclude group SECURE
-\
 :idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null
-\
-#5# a binding which works after changing the sessioname
-\
-bind S eval 'colon' 'stuff \"at 0 exec screen -mdc /dev/null scs save -H SECURE -f -S \\\"$PID.$STY\\\"\"^M'\
+#5# an alternative binding
+bind S eval 'colon' 'stuff "at 0 exec screen -mdc /dev/null scs save -fS \\"$PID.$STY\\""'\
 """
 
-help_saver_load = \
-    """Usage: screen-session load [-S sessionname] [options] [source_savefile]
-\
+help_saver_load = """\
+Usage: screen-session load [-S sessionname] [options] [source_savefile]
 
-\
 Load saved session from a file.
-\
 
-\
 Options:
-\
 -x --exact
-\
     load session with the same window numbers, move existing windows,
-\
     to OTHER_WINDOWS group and delete existing layouts
-\
 -X --exact-kill
-\
     same as exact, but also kill all existing windows
-\
 -F --force-start  [windows]
-\
     a comma separated list of windows which will start programs immediately,
-\
-    using keyword \"all\" causes all loaded windows to start their subprograms
-\
+    using keyword "all" causes all loaded windows to start their subprograms
     without waiting for user's confirmation
-\
 -y --no-layout
-\
     disable layout loading
-\
 -n --no-group-wrap
-\
     do not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups
-\
 -m --no-mru
-\
     disable restoring of the Most Recently Used order of windows
-\
 -l --log  [file]
-\
     output to a file instead of stdout
-\
 -d --dir  [directory = $HOME/.screen-sessions]
-\
     directory holding saved sessions
-\
 
-\
 Examples:
-\
 #1# restore mysavedsession inside Screen named SESSIONNAME
-\
 screen-session load -S SESSIONNAME --exact mysavedsession
-\
 #2# load the last saved session inside the current Screen session
-\
 scs load
-\
 #3# load the last saved session with exactly the same window numbers
-\
 scs load --exact
-\
 #4# load the last saved session inside the current session without layouts
-\
 scs load --no-layout
-\
 #5# load the last saved session into a new Screen
-\
 screen -m scs load --exact-kill\
 """
 
 
 def run(argv):
-    if False:
-        print help_regions
-        print help_kill_zombie
-        print help_kill_cgroup
-        print help_new_window
-        print help_dump
-        print help_grab
-        print help_group
-        print help_manager
-        print help_nest
-        print help_renumber
-        print help_sort
-        print help_name
-        print help_saver_modes
-
     try:
         mode = argv[1]
     except:
@@ -730,17 +432,17 @@ def run(argv):
         elif mode in ('dump', 'd'):
             print help_dump
         elif mode in ('find-pid', 'fp'):
-            print help_find_pid
+            print _help_find_pid
         elif mode in ('find-file', 'ff'):
             print help_find_file
         elif mode == 'grab':
-            print help_grab
+            print _help_grab
         elif mode in ('group', 'g'):
             print help_group
         elif mode in ('manager', 'm'):
             print help_manager
         elif mode in ('manager-remote', 'mr'):
-            print help_manager_remote
+            print _help_manager_remote
         elif mode in ('nest', 'nest-layout', 'nl'):
             print help_nest
         elif mode in ('layoutlist', 'll'):
@@ -748,7 +450,7 @@ def run(argv):
         elif mode == 'renumber':
             print help_renumber
         elif mode == 'sort':
-            print help_sort
+            print _help_sort
         elif mode in ('subwindows', 'sw'):
             print help_subwindows
         elif mode in ('name', 'n'):
