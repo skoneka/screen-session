@@ -1,7 +1,7 @@
 #
 #    ScreenSaver.py : a class which saves and loads sessions, it also contains
 #                     many important functions interfacing with GNU Screen
-#                     ( which should moved somewhere else )
+#                     ( which should moved to GNUScreen.py )
 #
 #    Copyright (C) 2010-2011 Artur Skonecki
 #

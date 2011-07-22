@@ -65,8 +65,6 @@ if __name__=='__main__':
                 elif tmpwin != '-1':
                     ss.command_at(False,'select %s'%(tmpwin))
             except:
-                import traceback
-                traceback.print_exc(file=sys.stderr)
                 pass
             else:
                 sys.exit(0)

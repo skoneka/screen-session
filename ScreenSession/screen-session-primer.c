@@ -1,4 +1,4 @@
-/*    
+/*
  *    Copyright (C) 2010-2011 Artur Skonecki
  *
  *    Authors: Artur Skonecki http://github.com/skoneka
@@ -38,7 +38,7 @@ Key      | Arguments | Description\n\
 [A]ll    |           | try to restart all saved processes\n\
 [Z]ombie |           | run the zombie command vector\n\
 [Q]uit   |           | terminate primer\n\
-[D]efault|           | start default shell in the last working directory\n\
+[D]efault|           | start $SHELL in the last working directory\n\
 [R]eset  |           | reload primer\n\
 [E]dit   |           | edit primer's source file with $EDITOR\n\
          |[number]   | try to restart saved processes up to [number]\n\
@@ -314,7 +314,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
       char *buf =
 	malloc ((strlen(scs_exe) + strlen (basedir) + strlen (session)  + 1 +
 		 30) * sizeof (char));
-      printf (PRIMER "unpacking: %s",session);
+      printf (PRIMER "unpacking: %s\n",session);
       sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
 		 session);
       system (buf);
@@ -658,8 +658,7 @@ void recurse_chdir(char *path)
 }
 
 int
-start (char *basedir, char *thisprogram, char *config, int procs_n,
-       int *procs)
+start( char *basedir, char *thisprogram, char *config, int procs_n, int *procs )
 {
   if (procs_n == 0)
     return 0;
@@ -857,7 +856,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       /* command separator */
       strcat (command, "; ");
 
-      /* primer - start the current shell after queued processes terminate */
+      /* primer - will start the current shell after the termination of queued processes */
       strcat (command, thisprogram);
       strcat (command, " -s");
       strcat (command, " ");
@@ -871,7 +870,6 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       char buf[4];
       sprintf (buf, " %d", procs[0]);
       strcat (command, buf);
-      printf("%s\n",command);
 
       proc_args[2] = command;
     }
