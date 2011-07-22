@@ -21,7 +21,7 @@
 import os,subprocess,re,sys,platform
 from util import tmpdir,removeit,remove
 
-SCREEN=os.getenv('SCREENBIN')
+SCREEN=os.getenv('SCREENPATH')
 if not SCREEN:
     from util import which
     SCREEN=which('screen')[0]
@@ -52,7 +52,7 @@ def dumpscreen_window(session,full=False):
     tdir = make_dumpscreen_dirs(session)
     ss=ScreenSaver(session)
     if full:
-        ss.command_at(False,"at \# dumpscreen window \"%s\" -F"%(tdir))
+        ss.command_at(False,"at \# dumpscreen window-full \"%s\""%(tdir))
         f=open(os.path.join(tdir,'full'),'w')
         f.close()
     tfile=os.path.join(tdir,'winlist')
