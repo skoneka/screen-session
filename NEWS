@@ -1,0 +1,66 @@
+Announcing screen-session 0.6.3
+-------------------------------
+
+screen-session home page:
+  http://skoneka.github.com/screen-session/
+
+Screenshots:
+  http://skoneka.github.com/screen-session/screenshots.html
+
+Download:
+  http://github.com/skoneka/screen-session/downloads.html
+
+Installation:
+  http://skoneka.github.com/screen-session/installation.html
+
+Development:
+  git clone git://github.com/skoneka/screen-session
+
+
+About this release:
+===================
+
+This version of screen-session contains a few new features and fixes a number
+of bugs in the previous release. It claims to run on Python 2.4 - 2.7 and
+supports Linux, FreeBSD and Solaris. Currently, running screen-session requires
+modified GNU Screen sources.
+
+
+New in this release:
+====================
+
+  * Layoutlist tool - displays a browseable list of layouts with a few nifty
+    features ( search with highlight, MRU view, may run in a temporary layout )
+
+  * Subwindows tool - prints windows nested in a group, adds the support
+    for selecting windows nested in groups
+
+  * Session saver:
+    - added support for saving zombie windows
+    - more streamlined command line invocation
+    - session saving performance improvements
+
+  * The installation process is considerably simpler.
+    Screen-session is now distributed with patched GNU Screen sources placed in
+    screen-session-0.6.3/screen-4.1.0            ( not the real 4.1.0 release )
+    Github repository: https://github.com/skoneka/escreen
+
+
+About screen-session
+====================
+
+screen-session is a collection of tools for GNU Screen, the most prominent one
+being the session saver ( with integrated VIM session saving ).
+A full list of tools along their detailed descriptions, examples and screenshots
+is available at the project's homepage.
+
+screen-session is released under the GNU GPL.
+
+
+Note
+====
+
+  * Session saver file format has changed. Save files are incompatible.
+  * Please let me know if there are some interesting scripts out there possibly
+    suitable for inclusion in screen-session.
+
