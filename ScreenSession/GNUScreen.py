@@ -21,7 +21,7 @@
 import os,subprocess,re,sys,platform
 from util import tmpdir,removeit,remove
 
-SCREEN=os.getenv('SCREENPATH')
+SCREEN=os.getenv('SCREENBIN')
 if not SCREEN:
     from util import which
     SCREEN=which('screen')[0]

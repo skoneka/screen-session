@@ -5,8 +5,8 @@
 # description: screen-session tools starter
 # it is necessary to run screen_saver.py, and some other tools, embedded in other Screen, to be able to start it inside the target Screen session
 
-if [ -z "$SCREENPATH" ]; then
-    export SCREENPATH=`which screen`
+if [ -z "$SCREENBIN" ]; then
+    export SCREENBIN=`which screen`
 fi
 
 if [ -z "$PYTHONBIN" ]; then
@@ -61,7 +61,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     fi
     mkfifo $scsfile
 
-    $SCREENPATH -S SCREEN-SESSION_SAVER -mdc /dev/null $PYTHONBIN $SCRIPTPATH/screen_saver.py $mode "logpipe=$scsfile" --special-output "$scsfiletmp" --session "$session" "$@"
+    $SCREENBIN -S SCREEN-SESSION_SAVER -mdc /dev/null $PYTHONBIN $SCRIPTPATH/screen_saver.py $mode "logpipe=$scsfile" --special-output "$scsfiletmp" --session "$session" "$@"
     #$PYTHONBIN $SCRIPTPATH/screen_saver.py $mode logpipe=  --special-output "$scsfiletmp" --session "$session" "$@"
     cat $scsfile
     /bin/rm -f $scsfile
@@ -135,7 +135,7 @@ else
         $PYTHONBIN $SCRIPTPATH/help.py "$@"
         ret=$?
     else
-        $SCREENPATH -S "$session" -X msgminwait 0
+        $SCREENBIN -S "$session" -X msgminwait 0
         if [ $mode = "manager" -o $mode = "m" ]; then
             $PYTHONBIN $SCRIPTPATH/manager.py pn "psession=$session" "$@"
         #elif [ $mode = "manager-remote" -o $mode = "mr" ]; then
@@ -147,13 +147,13 @@ else
                 sh $SCRIPTPATH/win-to-group "$session" "$@"
                 ret=$?
             elif [ $mode = "regions" -o $mode = "r" ]; then
-                $SCREENPATH -S SCREEN-SESSION_REGIONS -mdc /dev/null $PYTHONBIN $SCRIPTPATH/regions.py "$session" "$@"
+                $SCREENBIN -S SCREEN-SESSION_REGIONS -mdc /dev/null $PYTHONBIN $SCRIPTPATH/regions.py "$session" "$@"
                 ret=$?
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then
                     $PYTHONBIN $SCRIPTPATH/help.py $mode
                 else
-                    $SCREENPATH -S SCREEN-SESSION_NEST -mdc /dev/null $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
+                    $SCREENBIN -S SCREEN-SESSION_NEST -mdc /dev/null $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
                 fi
                 ret=$?
             elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" -o $mode = "nw" ]; then
@@ -179,7 +179,7 @@ else
                 if [ $# -eq 0 ]; then
                     $PYTHONBIN $SCRIPTPATH/help.py $mode
                 else
-                    $SCREENPATH -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null $PYTHONBIN $SCRIPTPATH/kill-group.py "$session" "$@"
+                    $SCREENBIN -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null $PYTHONBIN $SCRIPTPATH/kill-group.py "$session" "$@"
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
