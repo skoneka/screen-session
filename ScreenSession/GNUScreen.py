@@ -98,7 +98,6 @@ def require_dumpscreen_window(session, full=False):
 class Regions:
 
     title = None
-    number_of_regions = None
     focus_offset = None
     term_size_x = None
     term_size_y = None
@@ -106,11 +105,65 @@ class Regions:
     focusminsize_y = None
     regions = []
 
+def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y):
+    from ScreenSaver import ScreenSaver
+    ss = ScreenSaver(session)
+    term_size_x = int(regions.term_size_x)
+    term_size_y = int(regions.term_size_y)
+    regions_size = []
+    winlist = []
+
+    # recalculate regions dimensions
+
+    for (window, sizex, sizey) in regions.regions:
+        winlist.append(window)
+        nsizex = (int(sizex) * new_term_size_x) / term_size_x
+        nsizey = (int(sizey) * new_term_sizy_y) / term_size_y
+        regions_size.append((nsizex, nsizey))
+        if not window == "-1":
+            try:
+
+                # wins_trans may be incomplete
+
+                if wins_trans:
+                    w = (wins_trans)[window]
+                else:
+                    w = window
+                ss.select("%s" % w)
+            except:
+                stderr.write('Unable to set focus for: %s\n' %
+                    window)
+        ss.focus()
+
+    # set regions dimensions, do not run if there is only a single region
+
+    if len(regions_size) > 1:
+        ss.focus('top')
+        for (nsizex, nsizey) in regions_size:
+            if sizex > 0:
+                ss.resize('-h %d' % nsizex)
+                ss.resize('-v %d' % nsizey)
+                ss.fit()
+            ss.focus()
+
+        # restore focus on the right region
+
+        ss.select_region(regions.focus_offset)
+
+    ss.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
+
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver
     tdir = make_dumpscreen_dirs(session)
     ss = ScreenSaver(session)
-    tfile = os.path.join(tdir, '___regions-%d' % os.getpid())
+    tfile = None
+    i = 0
+    while True:
+        tfile = os.path.join(tdir, '___regions-%d-%d' % (os.getpid(),i))
+        if not os.path.exists(tfile):
+            break
+        else:
+            i += 1
     ss.query_at('dumpscreen layout \"%s\"' % tfile)
     return tfile
 
@@ -141,7 +194,6 @@ def get_regions(tfile):
     tfiled.close()
     if len((regions.regions)[-1]) == 1:  # remove it later after patching screen
         regions.regions = (regions.regions)[:-1]
-    regions.number_of_regions = len(regions.regions)
     return regions
 
 

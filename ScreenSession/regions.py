@@ -175,7 +175,7 @@ def prepare_windows(scs):
     regions = sc.get_regions(sc.dumpscreen_layout(scs.pid))
     sc.cleanup()
     focusminsize = "%s %s" % (regions.focusminsize_x, regions.focusminsize_x)
-    regions_c = regions.number_of_regions
+    regions_c = len(regions.regions)
     focus_offset = regions.focus_offset
     print ("regions = " + str(regions))
     scs.focusminsize('0 0')

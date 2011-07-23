@@ -1065,7 +1065,7 @@ class ScreenSaver(object):
                 layoutnumber = filename.rsplit("_", 1)[1]
                 (head, tail) = os.path.split(filename)
 
-                # the winlayout_NUM files contain detailed regions data
+                # the winlayout_NUM files contain "dumpscreen layout" output 
                 # (see GNUScreen.Regions class)
                 
                 filename2 = os.path.join(head, "win" + tail)
@@ -1077,7 +1077,6 @@ class ScreenSaver(object):
                     f.close()
                     break
                 else:
-                    focus_offset = 0
                     if self.exact:
                         self.layout('number %s' % layoutnumber, False)
                         currentlayout = layoutnumber
@@ -1085,48 +1084,26 @@ class ScreenSaver(object):
                         currentlayout = self.get_layout_number()[0]
                     layout_trans[layoutnumber] = currentlayout
 
+                    # source the output produced by "layout dump"
+                    
                     self.source(filename)
-                    term_size_x = int(regions.term_size_x)
-                    term_size_y = int(regions.term_size_y)
+            
                     regions_size = []
                     winlist = []
-                    focus_offset = 0
+
                     for (window, sizex, sizey) in regions.regions:
                         winlist.append(window)
-                        nsizex = (int(sizex) * cdinfo[0]) / term_size_x
-                        nsizey = (int(sizey) * cdinfo[1]) / term_size_y
-                        regions_size.append((nsizex, nsizey))
-                        if not window == "-1":
-                            try:
+                        regions_size.append((sizex, sizey))
 
-                                # __wins_trans may be incomplete
-
-                                self.select("%s" % (self.__wins_trans)[window])
-                            except:
-                                out('Unable to set focus for: %s' %
-                                    window)
-                        self.focus()
-
-                    out("%s (%s) : regions : %s(%s) %s - %s" % (layoutnumber,
-                        regions.title, regions.number_of_regions, regions.focus_offset, winlist,
+                    out("%s (%s) %s regions (focus %s)\t\t%s - %s" % (layoutnumber,
+                        regions.title, len(regions.regions), regions.focus_offset, winlist,
                         regions_size))
 
-                    # set regions dimensions
-                    if len(regions_size) > 1:
-                        self.focus('top')
-                        for (sizex, sizey) in regions_size:
-                            if size[0] > 0:
-                                self.resize('-h %d' % sizex)
-                                self.resize('-v %d' % sizey)
-                                self.fit()
-                            self.focus()
-
-                        # restore focus on the right region
-
-                        self.select_region(regions.focus_offset)
-
-                    self.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
+                    sc.load_regions(self.pid, regions, self.__wins_trans, cdinfo[0], cdinfo[1])
             except:
+                import traceback
+                traceback.print_exc(file=sys.stderr)
+                raise
                 layout_c += 1
                 if layout_c > 2000:
                     out('Errors during layouts loading.')

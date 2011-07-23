@@ -22,7 +22,7 @@
 import os
 import sys
 import GNUScreen as sc
-from util import tmpdir
+from util import tmpdir,remove
 from ScreenSaver import ScreenSaver
 
 
@@ -40,10 +40,12 @@ def main():
 
     scs = ScreenSaver(session)
     (homelayout, homelayoutname) = scs.get_layout_number()
-    regions = sc.get_regions(sc.dumpscreen_layout(scs.pid))
-    sc.cleanup()
+
+    regions_file_org = regions_file = sc.dumpscreen_layout(scs.pid)
+    regions_org = regions = sc.get_regions(regions_file)
+
     focusminsize = "%s %s" % (regions.focusminsize_x, regions.focusminsize_y)
-    regions_c = regions.number_of_regions
+    regions_c = len(regions.regions)
     foff = regions.focus_offset
     rsize = tuple([int((regions.regions)[foff][1]), int((regions.regions)[foff][2])])
     hsize = (int(regions.term_size_x), int(regions.term_size_y))
@@ -54,10 +56,12 @@ def main():
     scs.layout('select %s' % tlayout, False)
     print ("tlayout : %s" % scs.get_layout_number()[0])
     scs.layout('dump %s' % dumpfile, False)
-    regions = sc.get_regions(sc.dumpscreen_layout(scs.pid))
-    sc.cleanup()
+
+    regions_file = sc.dumpscreen_layout(scs.pid)
+    regions = sc.get_regions(regions_file)
+
     tfocusminsize = "%s %s" % (regions.focusminsize_x, regions.focusminsize_y)
-    regions_c = regions.number_of_regions
+    regions_c = len(regions.regions)
     tfoff = regions.focus_offset
     hsize = (int(regions.term_size_x), int(regions.term_size_y))
 
@@ -72,6 +76,8 @@ def main():
 
     scs.layout('select %s' % homelayout, False)
     scs.source(dumpfile)
+
+    #sc.load_regions(session, regions_org, None, hsize[0], hsize[1])
     scs.select_region(foff)
     for r in regions.regions:
         if r[0][0] == '-':
@@ -86,7 +92,11 @@ def main():
         scs.focus()
     scs.select_region(foff + tfoff)
     scs.focusminsize(focusminsize)
-    os.remove(dumpfile)
+
+    remove(dumpfile)
+    remove(regions_file)
+    remove(regions_file_org)
+    sc.cleanup()
 
 if __name__ == '__main__':
     main()
