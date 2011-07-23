@@ -158,6 +158,7 @@ mygetch (void)
   tcsetattr (STDIN_FILENO, TCSANOW, &newt);
   ch = getchar ();
   tcsetattr (STDIN_FILENO, TCSANOW, &oldt);
+  fputc(ch,stdout);
 
   return ch;
 }
@@ -275,7 +276,7 @@ goto:\t [number]<space><g><'>\n\
 swap:\t [number]<s> \n\
 rotate left:\t [number]<l>\n\
 rotate right:\t [number]<r>\n\
-");
+>> ");
   }
   else {
     print_number (n, green);

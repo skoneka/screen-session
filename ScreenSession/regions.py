@@ -147,7 +147,7 @@ def handler(signum, frame):
 
 
 def cleanup():
-    print 'restoring windows ' + str(win_history)
+    print ('restoring windows ' + str(win_history))
     cmd = ''
     f = open(sourcefile, 'w')
     for (i, w) in enumerate(win_history):
@@ -160,7 +160,7 @@ focus
     f.flush()
     f.close()
     scs.source(sourcefile)
-    print focusminsize
+    print (focusminsize)
     scs.focusminsize(focusminsize)
     try:
         os.remove(inputfile)
@@ -169,14 +169,15 @@ focus
 
 
 def prepare_windows(scs):
-    print 'prepare_windows(%s)' % scs.pid
+    print ('prepare_windows(%s)' % scs.pid)
     global focusminsize
     regions = None
-    regions = sc.get_regions(scs.pid)
+    regions = sc.get_regions(sc.dumpscreen_layout(scs.pid))
+    sc.cleanup()
     focusminsize = "%s %s" % (regions.focusminsize_x, regions.focusminsize_x)
     regions_c = regions.number_of_regions
     focus_offset = regions.focus_offset
-    print "regions = " + str(regions)
+    print ("regions = " + str(regions))
     scs.focusminsize('0 0')
     this_win_history = []
     cmd = ''
@@ -192,8 +193,9 @@ focus
     remove(sourcefile)
 
     regions_n = []
-    regions_n = sc.get_regions(scs.pid)
-    print "regions_n = " + str(regions_n)
+    regions_n = sc.get_regions(sc.dumpscreen_layout(scs.pid))
+    sc.cleanup()
+    print ("regions_n = " + str(regions_n))
 
     for r in (regions.regions)[focus_offset:]:
         this_win_history.append(r[0])
@@ -217,13 +219,13 @@ if __name__ == '__main__':
     file = os.path.join(tmpdir, logfile)
     sys.stdout = open(logfile, 'w')
     sys.stderr = sys.stdout
-    print 'regions script'
+    print ('regions script')
     subprogram = os.path.join(os.path.dirname((sys.argv)[0]), subprogram)
 
     session = (sys.argv)[1]
     scs = ScreenSaver(session)
     (win_history, wins, regions_c) = prepare_windows(scs)
-    print 'helper windows ' + str(wins)
+    print ('helper windows ' + str(wins))
 
     signal.signal(signal.SIGUSR1, handler)
     signal.pause()

@@ -72,13 +72,11 @@ def dumpscreen_window(session, full=False):
     ss.query_at("at \# dumpscreen window \"%s\"" % tfile)
     return tdir
 
-
 def dumpscreen_layout_info(ss):
     tdir = make_dumpscreen_dirs(ss.pid)
     tfile = os.path.join(tdir, 'layout-info')
     ss.query_at("dumpscreen layout-info \"%s\"" % tfile)
     return tfile
-
 
 def gen_layout_info(ss, tfile):
     for line in open(tfile, "r"):
@@ -97,7 +95,6 @@ def require_dumpscreen_window(session, full=False):
         dumpscreen_window(session, full)
     return datadir
 
-
 class Regions:
 
     title = None
@@ -109,13 +106,16 @@ class Regions:
     focusminsize_y = None
     regions = []
 
-
-def get_regions(session):
+def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver
-    import datetime
+    tdir = make_dumpscreen_dirs(session)
     ss = ScreenSaver(session)
-    tfile = os.path.join(tmpdir, '___regions-%d' % os.getpid())
+    tfile = os.path.join(tdir, '___regions-%d' % os.getpid())
     ss.query_at('dumpscreen layout \"%s\"' % tfile)
+    return tfile
+
+def get_regions(tfile):
+    import datetime
     tfiled = None
     start = datetime.datetime.now()
     while tfiled == None:
@@ -142,7 +142,6 @@ def get_regions(session):
     if len((regions.regions)[-1]) == 1:  # remove it later after patching screen
         regions.regions = (regions.regions)[:-1]
     regions.number_of_regions = len(regions.regions)
-    remove(tfile)
     return regions
 
 

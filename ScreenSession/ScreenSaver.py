@@ -1064,13 +1064,16 @@ class ScreenSaver(object):
                         'layout_%d' % lc))[0]
                 layoutnumber = filename.rsplit("_", 1)[1]
                 (head, tail) = os.path.split(filename)
-                filename2 = os.path.join(head, "win" + tail)  #read winlayout
-                f = open(filename2, 'r')
-                layoutname = f.readline().strip()
-                status = self.get_layout_new(layoutname)
+
+                # the winlayout_NUM files contain detailed regions data
+                # (see GNUScreen.Regions class)
+                
+                filename2 = os.path.join(head, "win" + tail)
+                regions = sc.get_regions(filename2)
+                status = self.get_layout_new(regions.title)
                 if not status:
                     out('Maximum number of layouts reached. Ignoring layout %s (%s).' %
-                        (layoutnumber, layoutname))
+                        (layoutnumber, regions.title))
                     f.close()
                     break
                 else:
@@ -1083,28 +1086,15 @@ class ScreenSaver(object):
                     layout_trans[layoutnumber] = currentlayout
 
                     self.source(filename)
-                    dinfo = map(int, f.readline().split(" "))
-                    focusminsize = f.readline()
+                    term_size_x = int(regions.term_size_x)
+                    term_size_y = int(regions.term_size_y)
                     regions_size = []
                     winlist = []
                     focus_offset = 0
-                    for (i, line) in enumerate(f):
-                        try:
-                            if line[0] == 'f':
-                                (focus_offset, window, sizex, sizey) = \
-                                    line.strip().split(" ")
-                                focus_offset = i
-                            else:
-                                (window, sizex, sizey) = line.strip().split(" ")
-                        except:
-                            try:
-                                region_c = line.strip()
-                            except:
-                                pass
-                            break
+                    for (window, sizex, sizey) in regions.regions:
                         winlist.append(window)
-                        nsizex = (int(sizex) * cdinfo[0]) / dinfo[0]
-                        nsizey = (int(sizey) * cdinfo[1]) / dinfo[1]
+                        nsizex = (int(sizex) * cdinfo[0]) / term_size_x
+                        nsizey = (int(sizey) * cdinfo[1]) / term_size_y
                         regions_size.append((nsizex, nsizey))
                         if not window == "-1":
                             try:
@@ -1116,28 +1106,26 @@ class ScreenSaver(object):
                                 out('Unable to set focus for: %s' %
                                     window)
                         self.focus()
-                    f.close()
 
                     out("%s (%s) : regions : %s(%s) %s - %s" % (layoutnumber,
-                        layoutname, region_c, focus_offset, winlist,
+                        regions.title, regions.number_of_regions, regions.focus_offset, winlist,
                         regions_size))
 
                     # set regions dimensions
-                    #if len(regions_size) > 1:
+                    if len(regions_size) > 1:
+                        self.focus('top')
+                        for (sizex, sizey) in regions_size:
+                            if size[0] > 0:
+                                self.resize('-h %d' % sizex)
+                                self.resize('-v %d' % sizey)
+                                self.fit()
+                            self.focus()
 
-                    self.focus('top')
-                    for size in regions_size:
-                        if size[0] > 0:
-                            self.resize('-h %d' % size[0])
-                            self.resize('-v %d' % size[1])
-                            self.fit()
-                        self.focus()
+                        # restore focus on the right region
 
-                    # restore focus on the right region
+                        self.select_region(regions.focus_offset)
 
-                    self.select_region(focus_offset)
-
-                    self.focusminsize(focusminsize)
+                    self.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
             except:
                 layout_c += 1
                 if layout_c > 2000:
