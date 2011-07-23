@@ -26,7 +26,7 @@ import sys
 import platform
 from util import tmpdir, removeit, remove
 
-SCREEN = os.getenv('SCREENPATH')
+SCREEN = os.getenv('SCREENBIN')
 if not SCREEN:
     from util import which
     SCREEN = which('screen')[0]
@@ -131,7 +131,7 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
                     w = window
                 ss.select("%s" % w)
             except:
-                stderr.write('Unable to set focus for: %s\n' %
+                sys.stderr.write('Unable to set focus for: %s\n' %
                     window)
         ss.focus()
 
@@ -149,8 +149,8 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
         # restore focus on the right region
 
         ss.select_region(regions.focus_offset)
-
-    ss.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
+    if regions.focusminsize_x != '0' or regions.focusminsize_y != '0':
+        ss.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
 
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver

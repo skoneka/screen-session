@@ -2,7 +2,7 @@
 SESSIONNAME=$1
 
 if [ $# -eq 1 ]; then
-    $SCREENPATH -S $SESSIONNAME -Q @group
+    $SCREENBIN -S $SESSIONNAME -Q @group
     exit 0
 fi
 
@@ -10,10 +10,11 @@ GROUPNAME=$2
 shift 2
 
 if [ $# -eq 0 ]; then
-    $SCREENPATH -S $SESSIONNAME -X group $GROUPNAME
+    $SCREENBIN -S $SESSIONNAME -X group $GROUPNAME
 else
     for window in "$@"
     do
-        $SCREENPATH -S $SESSIONNAME -X at $window group $GROUPNAME
+        #$SCREENBIN -S $SESSIONNAME -X at $window group $GROUPNAME
+        $SCREENBIN -S $SESSIONNAME -p $window -X group $GROUPNAME
     done
 fi

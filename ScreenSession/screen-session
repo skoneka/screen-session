@@ -1,9 +1,23 @@
 #!/bin/sh
-# file: screen-session
-# author: Artur Skonecki
-# website: http://adb.cba.pl
-# description: screen-session tools starter
-# it is necessary to run screen_saver.py, and some other tools, embedded in other Screen, to be able to start it inside the target Screen session
+# -*- coding: utf-8 -*-
+#
+#    screen-session : screen-session tools starter
+#
+#    Copyright (C) 2010-2011 Artur Skonecki
+#
+#    Authors: Artur Skonecki http://github.com/skoneka
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3 of the License.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if [ -z "$SCREENBIN" ]; then
     export SCREENBIN=`which screen`
@@ -44,7 +58,6 @@ if [ ! -d "$scsfiledir" ]; then
 fi
 
 if [ "$session" = '' ]; then
-    #session=`$PYTHONBIN $SCRIPTPATH/sessionname.py`
     if [ "$STY" = '' ]; then
         session='__no__session__'
     else
@@ -53,30 +66,8 @@ if [ "$session" = '' ]; then
 fi
 
 if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
-    scsfile="$scsfiledir/___scspipe-$$"
-    scsfiletmp="$scsfiledir/___scstmp-$$"
-    
-    if [ -d "$scsfile" ]; then
-        /bin/rm -f $scsfile
-    fi
-    mkfifo $scsfile
-
-    $SCREENBIN -S SCREEN-SESSION_SAVER -mdc /dev/null $PYTHONBIN $SCRIPTPATH/screen_saver.py $mode "logpipe=$scsfile" --special-output "$scsfiletmp" --session "$session" "$@"
-    #$PYTHONBIN $SCRIPTPATH/screen_saver.py $mode logpipe=  --special-output "$scsfiletmp" --session "$session" "$@"
-    cat $scsfile
-    /bin/rm -f $scsfile
-
-    while read cmd
-    do
-        if [ "$cmd" = "X" ]; then
-            read session
-            read twin
-            screen-session kill-group -S "$session" $twin
-        elif [ "$cmd" = "R" ]; then
-            read ret
-        fi
-    done < $scsfiletmp
-    /bin/rm -f $scsfiletmp
+    $PYTHONBIN $SCRIPTPATH/screen_saver.py $mode --session "$session" "$@"
+    ret=$?
 else
     AUTOSEARCH='2'
     DIR=''
@@ -147,16 +138,16 @@ else
                 sh $SCRIPTPATH/win-to-group "$session" "$@"
                 ret=$?
             elif [ $mode = "regions" -o $mode = "r" ]; then
-                $SCREENBIN -S SCREEN-SESSION_REGIONS -mdc /dev/null $PYTHONBIN $SCRIPTPATH/regions.py "$session" "$@"
+                $PYTHONBIN $SCRIPTPATH/regions.py "$session" "$@"
                 ret=$?
             elif [ $mode = "nest-layout" -o $mode = "nl" -o $mode = "nest" ]; then
                 if [ $# -eq 0 ]; then
                     $PYTHONBIN $SCRIPTPATH/help.py $mode
                 else
-                    $SCREENBIN -S SCREEN-SESSION_NEST -mdc /dev/null $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
+                    $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
                 fi
                 ret=$?
-            elif [ $mode = "dir" -o $mode = "new" -o $mode = "new-window" -o $mode = "nw" ]; then
+            elif [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
                 $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" "$DIR" "$@"
                 ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
@@ -179,7 +170,7 @@ else
                 if [ $# -eq 0 ]; then
                     $PYTHONBIN $SCRIPTPATH/help.py $mode
                 else
-                    $SCREENBIN -S SCREEN-SESSION_KILL-GROUP -mdc /dev/null $PYTHONBIN $SCRIPTPATH/kill-group.py "$session" "$@"
+                    $PYTHONBIN $SCRIPTPATH/kill-group.py "$session" "$@"
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then

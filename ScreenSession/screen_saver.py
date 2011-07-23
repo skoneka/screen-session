@@ -19,9 +19,6 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-# file: screen_saver.py
-# author: Artur Skonecki
-# website: http://adb.cba.pl
 
 import sys
 import os
@@ -41,20 +38,10 @@ from util import tmpdir
 import util
 import GNUScreen as sc
 
-logpipeh = None
-special_output = None
-
 
 def doexit(var=0):
-    global logpipeh
-    if logpipeh:
-        logpipeh.close()
     if sys.stdout != sys.__stdout__:
         sys.stdout.close()
-    if special_output:
-        special_output.write("R\n")
-        special_output.write("%s\n" % var)
-        special_output.close()
     sys.exit(var)
 
 
@@ -71,20 +58,8 @@ def usage():
 def main():
     HOME = os.getenv('HOME')
     bad_arg = None
-    logpipe = None
-    global special_output
 
-    try:
-        logpipe = (sys.argv)[2].split('=')[1]
-        global logpipeh
-        if logpipe:
-            logpipeh = open(logpipe, 'w')
-            sys.stdout = logpipeh
-            sys.stderr = logpipeh
-        argstart = 3
-    except:
-        argstart = 2
-        pass
+    argstart = 2
 
     try:
         (opts, args) = getopt.getopt((sys.argv)[argstart:],
@@ -103,7 +78,6 @@ def main():
             "no-group-wrap",
             "savefile=",
             "session=",
-            "special-output=",
             "force",
             "force-start=",
             "dir=",
@@ -150,8 +124,6 @@ def main():
             bNoGroupWrap = True
         elif o in ("-l", "--log"):
             log = a
-        elif o == "-p":
-            logpipe = a
         elif o == "--pack":
             pack = a
         elif o == "--unpack":
@@ -169,8 +141,6 @@ def main():
                 current_session = a
         elif o in "--session":
             current_session = a
-        elif o == "--special-output":
-            special_output = open(a, 'w')
         elif o in ("-V", "--no-vim"):
             bVim = False
         elif o in ("-H", "--no-scroll"):
@@ -389,10 +359,11 @@ def main():
 
         try:
             ret = scs.load()
-            if special_output and bKill:
-                special_output.write("X\n")
-                special_output.write("%s\n" % scs.pid)
-                special_output.write("%s\n" % str(scs.wrap_group_id))
+            if bKill:
+                os.system('%s -mdc /dev/null %s kill-group -S "%s" %s' %
+                        (os.getenv('SCREENBIN'),
+                        os.path.join(os.path.dirname((sys.argv)[0]),"screen-session"),
+                        scs.pid, str(scs.wrap_group_id)))
         except:
             ret = 0
             traceback.print_exc(file=sys.stderr)
