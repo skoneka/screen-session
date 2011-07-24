@@ -25,6 +25,11 @@ from util import tmpdir
 from ScreenSaver import ScreenSaver
 
 if __name__ == '__main__':
+    lltmpdir = os.path.join(tmpdir, '___layoutlist')
+    try:
+        os.makedirs(lltmpdir)
+    except:
+        pass
     helper = os.getenv('PYTHONBIN') + ' ' + os.path.join(os.path.split(os.path.abspath(__file__))[0],
             'layoutlist_agent.py')
 
@@ -35,16 +40,18 @@ if __name__ == '__main__':
     no_end = True if (sys.argv)[4] == '1' else False
     title_width = int((sys.argv)[5])
     autosearch = (sys.argv)[6]
+    layout_checkpoint = True if (sys.argv)[7] == '1' else False
 
     try:
-        height = int((sys.argv)[7])
+        height = int((sys.argv)[8])
     except:
         height = 0
 
-    ss = ScreenSaver(session)
 
+    
+    ss = ScreenSaver(session)
     if no_end:
-        lock_and_com_file = os.path.join(tmpdir, '___layoutlist_%s' %
+        lock_and_com_file = os.path.join(lltmpdir, '%s' %
                 session.split('.', 1)[0])
         if os.path.exists(lock_and_com_file):
             try:
@@ -60,6 +67,10 @@ if __name__ == '__main__':
                 clay = f.readline().strip()
                 clay = ss.get_layout_number()[0]
                 f.close()
+                if layout_checkpoint:
+                    import layout
+                    layout.setup_dirs(session, clay)
+                    layout.layout_checkpoint(session, clay)
                 f = open(lock_and_com_file, 'w')
                 f.write(str(pid) + '\n' + str(tmpwin) + '\n' + str(tmplay) +
                         '\n' + str(cwin) + '\n' + str(clay) + '\n' + str(title_width) +
@@ -77,6 +88,10 @@ if __name__ == '__main__':
                 sys.exit(0)
 
     (currentlayout, currentlayoutname) = ss.get_layout_number()
+    if layout_checkpoint:
+        import layout
+        layout.setup_dirs(session, currentlayout)
+        layout.layout_checkpoint(session, currentlayout)
     if newlay:
         if ss.get_layout_new('LAYOUTLIST'):
             ss.screen('-t layoutlist %s %s %s %s 1 1 %s %s %s %s' % (helper,

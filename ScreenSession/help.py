@@ -245,15 +245,16 @@ are modulo divided by HEIGHT and the reminder determines their Y position.
 This tool comes handy after raising the maximum number of layouts."
 
 Options:
--l              - create a temporary layout and window for layoutlist
--w              - create a temporary window for layoutlist
--t [width=11]   - set title width
 -a [min_len=2]  - minimum matching charecters for auto highlight,
                   min_len = 0 disables auto highlight
 -c              - do not terminate layoutlist after selecting a layout
                   or reselect a running layoutlist, best used with "-l" option,
                   there should be running only one layoutlist started with "-c"
                   per session
+-l              - create a temporary layout and window for layoutlist
+-p              - run layout-checkpoint before activating layoutlist
+-w              - create a temporary window for layoutlist
+-t [width=11]   - set title width
 
 Keys:
 ?               - display help
@@ -268,6 +269,49 @@ v               - toggle search/autohighlight results view
 o               - toggle current and selected layouts
 q               - quit / select previous layout
 Q               - force quit if "-c" option was used\
+"""
+
+
+help_layout_checkpoint = """\
+Usage: screen-session layout-checkpoint [options] 
+       scs lc
+
+Record a snapshot of the current layout.
+Either run it frequently or integrate it with keybindings.
+
+Example:
+    bind S eval "split" "at 0 exec screen-session layout-checkpoint"
+
+See also: layout-undo, layout-redo, layout-history\
+"""
+
+help_layout_undo= """\
+Usage: screen-session layout-undo [options] [step = 1] 
+       scs lu
+
+Load a snapshot of the current layout,
+step = 0 indicates current snapshot, step = 1 previous snapshot,...
+
+See also: layout-checkpoint, layout-redo, layout-history\
+"""
+
+help_layout_redo= """\
+Usage: screen-session layout-redo [options] [step = 1] 
+       scs lr
+
+Load a snapshot of the current layout,
+step = 0 indicates current snapshot, step = 1 previous snapshot,...
+
+See also: layout-checkpoint, layout-undo, layout-history\
+"""
+
+help_layout_history= """\
+Usage: screen-session layout-history [options] 
+       scs lh
+
+Display saved snapshots of the current layout.
+
+See also: layout-checkpoint, layout-undo, layout-redo\
 """
 
 help_renumber = """\
@@ -311,7 +355,9 @@ Options:
 -l --log  [file]
     output to a file instead of stdout
 -d --dir  [directory = $HOME/.screen-sessions]
-    directory holding saved sessions\
+    directory holding saved sessions
+
+See also: save, load, ls\
 """
 
 help_saver_ls = """\
@@ -323,7 +369,9 @@ Options:
 -l --log  [file]
     output to a file instead of stdout
 -d --dir  [directory = $HOME/.screen-sessions]
-    directory holding saved sessions\
+    directory holding saved sessions
+
+See also: save, load, other\
 """
 
 help_saver_save = """\
@@ -363,7 +411,9 @@ scs save --no-layout
 #4# run session saver after 3 minutes of inactivity, exclude group SECURE
 :idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null
 #5# an alternative binding
-bind S eval 'colon' 'stuff "at 0 exec screen -mdc /dev/null scs save -fS \\"$PID.$STY\\""'\
+bind S eval 'colon' 'stuff "at 0 exec screen -mdc /dev/null scs save -fS \\"$PID.$STY\\""'
+
+See also: load, ls, other\
 """
 
 help_saver_load = """\
@@ -402,7 +452,9 @@ scs load --exact
 #4# load the last saved session inside the current session without layouts
 scs load --no-layout
 #5# load the last saved session into a new Screen
-screen -m scs load --exact-kill\
+screen -m scs load --exact-kill
+
+See also: save, ls, other\
 """
 
 
@@ -447,6 +499,14 @@ def run(argv):
             print help_nest
         elif mode in ('layoutlist', 'll'):
             print help_layoutlist
+        elif mode in ('layout-checkpoint', 'lc'):
+            print help_layout_checkpoint
+        elif mode in ('layout-undo', 'lu'):
+            print help_layout_undo
+        elif mode in ('layout-redo', 'lr'):
+            print help_layout_redo
+        elif mode in ('layout-history', 'lh'):
+            print help_layout_history
         elif mode == 'renumber':
             print help_renumber
         elif mode == 'sort':

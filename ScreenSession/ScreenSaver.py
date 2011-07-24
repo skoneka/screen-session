@@ -549,12 +549,12 @@ class ScreenSaver(object):
             swin = "-p %s" % win
         cmd = '%s %s -X %s' % (self.sc, swin, command)
 
-        print ('command_at(%s, %s, %s): %s'%(output, command, win, cmd))
+        # print ('command_at(%s, %s, %s): %s'%(output, command, win, cmd))
 
         os.system(cmd)
         if output:
             l = self.lastmsg()
-            print ('>>> %s' % l)
+            # print ('>>> %s' % l)
             if not l:
                 return ""
             if l.startswith('C'):
@@ -574,7 +574,7 @@ class ScreenSaver(object):
             cmd = '%s %s -Q @%s' % (self.sc, win, command)
             l = util.timeout_command(cmd, self.timeout)[0]
 
-            print ('%s = query_at(%s, %s): %s'%(l, command, win , cmd))
+            # print ('%s = query_at(%s, %s): %s'%(l, command, win , cmd))
 
             if l.startswith('C'):
 

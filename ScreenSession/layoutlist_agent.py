@@ -616,6 +616,12 @@ def create_table(ss, screen, curlay, layinfo, lnum, height):
 def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
         height):
     global lock_and_com_file, mru_file
+    lltmpdir = os.path.join(tmpdir, '___layoutlist')
+    try:
+        os.makedirs(lltmpdir)
+    except:
+        pass
+
     signal.signal(signal.SIGINT, handler)
     session = session.split('.', 1)[0]
 
@@ -627,9 +633,9 @@ def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
     else:
         lnum = None
 
-    mru_file = os.path.join(tmpdir, '___layoutlist_%s_MRU' % session)
+    mru_file = os.path.join(lltmpdir, '%s_MRU' % session)
     if NO_END:
-        lock_and_com_file = os.path.join(tmpdir, '___layoutlist_%s' %
+        lock_and_com_file = os.path.join(lltmpdir, '%s' %
                 session)
         f = open(lock_and_com_file, 'w')
         f.write(str(os.getpid()) + '\n')

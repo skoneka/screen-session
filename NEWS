@@ -35,6 +35,9 @@ New in this release:
   * Subwindows tool - prints windows nested in a group, adds the support
     for selecting windows nested in groups
 
+  * layout-checkpoint, layout-undo, layout-redo, layout-history - a basic
+    undo/redo for regions
+
   * Session saver:
     - added support for saving zombie windows
     - more streamlined command line invocation
@@ -42,8 +45,15 @@ New in this release:
 
   * The installation process is considerably simpler.
     Screen-session is now distributed with patched GNU Screen sources placed in
-    screen-session-0.6.3/screen-4.1.0            ( not the real 4.1.0 release )
+    screen-session-0.6.3/screen-4.1.0            ( not the real 4.1.0 )
     Github repository: https://github.com/skoneka/escreen
+    - New commands:
+        - dumpscreen [window | window-full | layout | layout-info | history]
+        - tty
+        - maxlay
+    - make "group", "maxwin", "layout", "screen"  queryable
+    - associate focuminsize with the layout
+    - fix monitor crash
 
 
 About screen-session
@@ -61,6 +71,5 @@ Note
 ====
 
   * Session saver file format has changed. Save files are incompatible.
-  * Please let me know if there are some interesting scripts out there possibly
-    suitable for inclusion in screen-session.
+  * Please let me know if there are some interesting Screen scripts out there.
 

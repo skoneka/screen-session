@@ -70,6 +70,7 @@ if [ $mode = "save" -o $mode = "load" -o $mode = "ls" -o $mode = "other" ]; then
     ret=$?
 else
     AUTOSEARCH='2'
+    LAYOUT_CHECKPOINT='0'
     DIR=''
     TITLE_WIDTH='11'
     cOPT='0'
@@ -81,7 +82,7 @@ else
     shiftcount=0
     bSession=0
 
-    while getopts ":Prslca:wt:S:d:": OPT; do
+    while getopts ":Pprslca:wt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -89,6 +90,8 @@ else
         t)  TITLE_WIDTH="$OPTARG"
             ;;
         P)  SHOWPID="0"
+            ;;
+        p)  LAYOUT_CHECKPOINT="1"
             ;;
         r)  REVERSE="1"
             ;;
@@ -174,7 +177,19 @@ else
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
-                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH "$AUTOSEARCH" "$@"
+                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH "$AUTOSEARCH" "$LAYOUT_CHECKPOINT" "$@"
+                ret=$?
+            elif [ $mode = "layout-checkpoint" -o $mode = "lc" ]; then
+                $PYTHONBIN $SCRIPTPATH/layout.py checkpoint "$session" "$@"
+                ret=$?
+            elif [ $mode = "layout-undo" -o $mode = "lu" ]; then
+                $PYTHONBIN $SCRIPTPATH/layout.py undo "$session" "$@"
+                ret=$?
+            elif [ $mode = "layout-redo" -o $mode = "lr" ]; then
+                $PYTHONBIN $SCRIPTPATH/layout.py redo "$session" "$@"
+                ret=$?
+            elif [ $mode = "layout-history" -o $mode = "lh" ]; then
+                $PYTHONBIN $SCRIPTPATH/layout.py history "$session" "$@"
                 ret=$?
             elif [ $mode = "renumber" ]; then
                 $PYTHONBIN $SCRIPTPATH/renumber.py "$session" "$@"

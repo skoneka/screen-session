@@ -43,7 +43,7 @@ def cleanup():
 def make_dumpscreen_dirs(session):
     global dumpscreen_window_dirs
     global datadir
-    tdir = os.path.join(tmpdir, '___dumpscreen-S%s-%d' % (session, os.getpid()))
+    tdir = os.path.join(tmpdir, '___dumpscreen/S%s-%d' % (session, os.getpid()))
     if tdir not in dumpscreen_window_dirs:
         dumpscreen_window_dirs.append(tdir)
     datadir = tdir
@@ -52,7 +52,7 @@ def make_dumpscreen_dirs(session):
     #    removeit(tdir)
 
     if not os.path.exists(tdir):
-        os.mkdir(tdir)
+        os.makedirs(tdir)
     return tdir
 
 
@@ -85,7 +85,7 @@ def gen_layout_info(ss, tfile):
 
 def require_dumpscreen_window(session, full=False):
     global datadir
-    tdir = os.path.join(tmpdir, '___dumpscreen-S%s-%d' % (session, os.getpid()))
+    tdir = os.path.join(tmpdir, '___dumpscreen/S%s-%d' % (session, os.getpid()))
     try:
         if not os.path.exists(os.path.join(tdir, 'winlist')):
             raise Exception
@@ -165,6 +165,21 @@ def dumpscreen_layout(session):
         else:
             i += 1
     ss.query_at('dumpscreen layout \"%s\"' % tfile)
+    return tfile
+
+def layout_dump(session):
+    from ScreenSaver import ScreenSaver
+    tdir = make_dumpscreen_dirs(session)
+    ss = ScreenSaver(session)
+    tfile = None
+    i = 0
+    while True:
+        tfile = os.path.join(tdir, '___layout_dump-%d-%d' % (os.getpid(),i))
+        if not os.path.exists(tfile):
+            break
+        else:
+            i += 1
+    ss.query_at('layout dump \"%s\"' % tfile)
     return tfile
 
 def get_regions(tfile):
