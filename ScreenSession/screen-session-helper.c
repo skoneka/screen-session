@@ -289,10 +289,12 @@ rotate right:\t [number]<r>\n\
   /*
      printf ("prefix: %d ; ", prefix);
      printf ("mode: %c\n", mode);
-   */
-  FILE *f = fopen (fname, "w");
-  fprintf (f, "%c%d", mode, prefix);
-  fclose (f);
+  */
+  if (n[0] == '0') {
+    FILE *f = fopen (fname, "w");
+    fprintf (f, "%c%d", mode, prefix);
+    fclose (f);
+  }
   kill (pid, SIGUSR1);
   mygetch ();
 

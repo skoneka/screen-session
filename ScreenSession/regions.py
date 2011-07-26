@@ -84,49 +84,53 @@ def handler(signum, frame):
     global win_history
     bSelect = False
     mode = -1
-    f = open(inputfile, "r")
-    ch = f.readline()
-    f.close()
+    number = 0
     try:
-        number = int(ch[1:])
-    except:
-        number = 0
+        f = open(inputfile, "r")
+        ch = f.readline()
+        f.close()
+        remove(inputfile)
+        try:
+            number = int(ch[1:])
+        except:
+            number = 0
 
-    os.remove(inputfile)
-    if ch[0] == 's':
-        mode = 1
-    elif ch[0] == 'S':
-        mode = 1
-        bSelect = True
-    elif ch[0] == " " or ch[0] == "'" or ch[0] == 'g' or ch[0] == 'G':
-        mode = 0
-        bSelect = True
-        if ch[0] == 'G':
+        if ch[0] == 's':
+            mode = 1
+        elif ch[0] == 'S':
+            mode = 1
+            bSelect = True
+        elif ch[0] == " " or ch[0] == "'" or ch[0] == 'g' or ch[0] == 'G':
+            mode = 0
+            bSelect = True
+            if ch[0] == 'G':
+                number = -1 * number
+        elif ch[0] == "l":
+            mode = 2
+            rnumber = number
+        elif ch[0] == "L":
+            mode = 2
+            rnumber = number
             number = -1 * number
-    elif ch[0] == "l":
-        mode = 2
-        rnumber = number
-    elif ch[0] == "L":
-        mode = 2
-        rnumber = number
-        number = -1 * number
-        bSelect = True
-    elif ch[0] == "r":
-        rnumber = -1 * number
-        mode = 2
-    elif ch[0] == "R":
-        rnumber = -1 * number
-        mode = 2
-        bSelect = True
-    else:
-        mode = 0
+            bSelect = True
+        elif ch[0] == "r":
+            rnumber = -1 * number
+            mode = 2
+        elif ch[0] == "R":
+            rnumber = -1 * number
+            mode = 2
+            bSelect = True
+        else:
+            mode = 0
 
-    if number != 0 and mode == 1:
-        tmp = win_history[0]
-        win_history[0] = win_history[number]
-        win_history[number] = tmp
-    elif mode == 2:
-        win_history = rotate_list(win_history, rnumber)
+        if number != 0 and mode == 1:
+            tmp = win_history[0]
+            win_history[0] = win_history[number]
+            win_history[number] = tmp
+        elif mode == 2:
+            win_history = rotate_list(win_history, rnumber)
+    except IOError:
+        sys.stderr.write('No input file found.\n')
 
     cleanup()
 
@@ -162,11 +166,8 @@ focus
     scs.source(sourcefile)
     print (focusminsize)
     scs.focusminsize(focusminsize)
-    try:
-        os.remove(inputfile)
-    except:
-        pass
-
+    sc.cleanup()
+    remove(sourcefile)
 
 def prepare_windows(scs):
     print ('prepare_windows(%s)' % scs.pid)

@@ -193,8 +193,8 @@ def removeit(path):
 def remove(path):
     try:
         os.remove(path)
-    except Exception:
-        pass
+    except:
+        sys.stderr.write('Unable to remove "%s"\n' % path)
 
 
 def cleantmp(tmpdir, home, projectsdir, archiveend, blacklistfile,
