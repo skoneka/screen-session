@@ -99,7 +99,7 @@ def main():
     bHelp = False
     bList = False
     bFull = False
-    mru = True
+    mru = False
     force_start = []
     scroll = []
     excluded = None
@@ -162,8 +162,8 @@ def main():
             enable_layout = False
         elif o in ("-h", "--help"):
             bHelp = True
-        elif o in ("-m", "--no-mru"):
-            mru = False
+        elif o in ("-m", "--mru"):
+            mru = True
         elif o in ("-d", "--dir"):
             projectsdir = a
         else:
@@ -333,13 +333,12 @@ def main():
             out('saved as "%s"' % scs.savedir)
             scs.Xecho("screen-session finished saving as \"%s\"" %
                       savedir)
-    elif mode == 2:
+    elif mode == 2:  #mode load
 
-                  #mode load
         #cleanup old temporary files and directories
 
         cleantmp(util.tmpdir, home, projectsdir, util.archiveend, scs.blacklistfile,
-                 200)
+                 500)
 
         # unpack and load
 
