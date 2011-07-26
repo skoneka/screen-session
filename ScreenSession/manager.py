@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-#    manager.py : sessions manager with a split screen preview
+#    manager.py : sessions manager with a split screen preview,
+#                 it has few now unecessary hacks (PITA)
 #
 #    Copyright (C) 2010-2011 Artur Skonecki
 #
@@ -27,6 +28,7 @@ import tempfile
 import pwd
 import mmap
 import string
+import signal
 import GNUScreen as sc
 from GNUScreen import SCREEN
 import util
@@ -46,10 +48,8 @@ except NameError:
     original_input = builtins.input
     del builtins.input
 
-
     def raw_input(*args, **kwargs):
         return original_input(*args, **kwargs)
-
 
     builtins.raw_input = raw_input
 
@@ -61,11 +61,15 @@ USER = os.getenv('USER')
 HOSTNAME = getoutput('hostname')
 configdir = os.path.join(HOME, '.screen-session')
 
-# accountsfile was supposed to hold accounts for unfinished manager-remote
+
+def handler(signum, frame):
+    pass
+
+"""
+# accountsfile was supposed to hold accounts for the unfinished manager-remote
 
 accountsfile = os.path.join(configdir, 'accounts')
 
-"""
 def menu_account(accounts,last_selection):
     try:
         while True:
@@ -147,7 +151,7 @@ def menu_tmp(preselect=None):
         for s in output.split("\n"):
             s = re.sub(r'\s+', " ", s)
             if s.find(" ") == 0 and len(s) > 1:
-                text.append(s)
+                text.append(s.strip())
                 items = s.split(" ")
                 sessions.append(items[1])
                 i += 1
@@ -156,17 +160,15 @@ def menu_tmp(preselect=None):
     tries = 0
     while tries < 3:
         sys.stdout.write("""[%s@%s] GNU Screen sessions:
-
-""" % (USER,
-                         HOSTNAME))
+""" % (USER, HOSTNAME))
         i = 1
         for s in text:
-            if i == menu_tmp_last_selection:
-                sys.stdout.write(">%d<%s\n" % (i, s))
-            else:
-                sys.stdout.write("|%d|%s\n" % (i, s))
+            #if sessions[i-1] == menu_tmp_last_selection:
+            #    sys.stdout.write(">%d< %s\n" % (i, s))
+            #else:
+            sys.stdout.write(" %d. %s\n" % (i, s))
             i += 1
-        sys.stdout.write("|%d| Create a new session\n" % i)
+        sys.stdout.write(" %d. Create a new session\n" % i)
         i += 1
         try:
             command = None
@@ -179,7 +181,7 @@ def menu_tmp(preselect=None):
                 try:
                     choice = int(inputstring)
                     if choice >= 0 and choice < i:
-                        menu_tmp_last_selection = choice
+                        menu_tmp_last_selection = sessions[choice - 1]
                         break
                     print2ui('UI: Out of range')
                     os.system('clear')
@@ -189,9 +191,11 @@ def menu_tmp(preselect=None):
             else:
                 return "enter"
         except KeyboardInterrupt:
+            command = "refresh"
+            return command
+        except EOFError:
             command = "quit"
             return command
-            break
         except:
             if choice == "":
                 choice = 1
@@ -223,7 +227,7 @@ ERROR: Invalid input
 def prime(fifoname):
     l1 = sc.get_session_list()
     cmd = SCREEN + \
-        ' -S "MANAGER_NOATTACH" -m -d -c /dev/null "%s" "%s" "%s" "%s"' % \
+        ' -S "GNU_SCREEN_SESSIONS_MANAGER" -m -d -c /dev/null "%s" "%s" "%s" "%s"' % \
         (os.getenv('PYTHONBIN'), (sys.argv)[0], 'ui', fifoname)
     sys.stderr.write(cmd + "\n")
     os.popen(cmd)
@@ -367,6 +371,7 @@ def logic(scs, fifoname, fifoname2, session, psession, last_session):
                 psession)
 
     mode = None
+    pid = int(pipein.readline()[:-1].split(' ', 1)[1].strip())
     try:
         while 1:
 
@@ -379,7 +384,7 @@ def logic(scs, fifoname, fifoname2, session, psession, last_session):
                     print2ui('UI: %s' % line)
                 ret = None
                 e = eval_command(scs, line, last_session, psession,
-                                 fifoname2)
+                                 fifoname2, pid)
                 if e:
                     try:
                         if e[1]:
@@ -400,9 +405,9 @@ def logic(scs, fifoname, fifoname2, session, psession, last_session):
                             psession = e[2]
                     except:
                         pass
-
-                    if mode and mode != "enter" or mode == "enter" and \
-                        last_session:
+                    
+                    if mode and mode != "enter" or (mode == "enter" and \
+                        last_session):
                         raise SystemExit
                     else:
                         mode = None
@@ -442,7 +447,7 @@ def tui_attach_session(scs, arg, psession):
     return (None, arg)
 
 
-def eval_command(scs, command, last_session, psession, fifoname2):
+def eval_command(scs, command, last_session, psession, fifoname2, ui_pid):
     global menu_tmp_last_selection
     global tui
     command = command.split(" ", 1)
@@ -454,8 +459,9 @@ def eval_command(scs, command, last_session, psession, fifoname2):
     else:
         args = [""]
 
-    #print2ui('command: %s args: %s'%(command,str(args)))
-
+    #print2ui('pid: %d command: %s args: %s'%(ui_pid,command,str(args)))
+    #print2ui('trying to send SIGINT to %s'% type(ui_pid))
+    #os.kill(ui_pid, signal.SIGINT)
     if mode.startswith('a'):  # attach
         return tui_attach_session(scs, args[0], psession)
     if mode.startswith('d'):  # deselect
@@ -596,6 +602,8 @@ def eval_command(scs, command, last_session, psession, fifoname2):
         os.popen(cmd)
         l2 = sc.get_session_list()
         newsession = sc.find_new_session(l1, l2)
+        menu_tmp_last_selection = newsession
+        print2ui('LOGIC: "%s"' % menu_tmp_last_selection)
         return tui_attach_session(scs, newsession, psession)
     elif mode.startswith('n'):
 
@@ -629,17 +637,18 @@ def eval_command(scs, command, last_session, psession, fifoname2):
                 scs.kill(cnum)
             scs.focus('top')
             return (None, nsessionname, psession)
+    elif mode == 'pid':
+        return ('pid', int(args[0]))
     else:
         print2ui('LOGIC: no such command')
 
 
 def ui1(fifoname):
+
     sys.stderr.write('starting ui1\n')
     sys.stderr.flush()
-
-    #print ('ui1 writing [%s]'%fifoname)
-
     pipeout = os.open(fifoname, os.O_WRONLY)
+    os.write(pipeout, 'pid %d\n' % os.getpid())
     selection = ""
     while selection != None:
         selection = menu_tmp()
@@ -657,6 +666,7 @@ def attach_session(session):
 
 
 def run(psession):
+    signal.signal(signal.SIGINT, handler)
     if not os.path.exists(tmpdir):
         os.makedirs(tmpdir)
 
@@ -691,9 +701,12 @@ def run(psession):
         if pid == 0:
             command = logic(scs, fifoname, fifoname2, session, psession,
                             last_session)
-            for (i, c) in enumerate(command):
-                data[i] = c
-            break
+            try:
+                for (i, c) in enumerate(command):
+                    data[i] = c
+                break
+            except:
+                pass
         else:
             attach_session(session)
             os.waitpid(pid, 0)
@@ -755,20 +768,20 @@ def main():
                 bMenuRemote = True
         iaccount = 0
         while True:
-            if bMenuRemote:
-                f = open(accountsfile, 'r')
-                accounts_tmp = map(string.strip, f.readlines())
-                accounts = ['%s@%s' % (USER, HOSTNAME)]
-                for a in accounts_tmp:
-                    if a:
-                        accounts.append(a)
-                iaccount = menu_account(accounts, iaccount)
-                if iaccount == -1:
-                    break
-                elif iaccount == 0:
-                    account = 'current'
-                else:
-                    account = accounts[iaccount]
+            #if bMenuRemote:
+            #    f = open(accountsfile, 'r')
+            #    accounts_tmp = map(string.strip, f.readlines())
+            #    accounts = ['%s@%s' % (USER, HOSTNAME)]
+            #    for a in accounts_tmp:
+            #        if a:
+            #            accounts.append(a)
+            #    iaccount = menu_account(accounts, iaccount)
+            #    if iaccount == -1:
+            #        break
+            #    elif iaccount == 0:
+            #        account = 'current'
+            #    else:
+            #        account = accounts[iaccount]
 
             if account != 'current':
                 print 'Connecting with %s' % account
@@ -804,7 +817,7 @@ if __name__ == '__main__':
         sys.stderr = open(log, 'a')
     if not os.path.exists(configdir):
         os.mkdir(configdir)
-    if not os.path.exists(accountsfile):
-        f = open(accountsfile, 'w')
-        f.close()
+    #if not os.path.exists(accountsfile):
+    #    f = open(accountsfile, 'w')
+    #    f.close()
     main()
