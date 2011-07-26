@@ -3,7 +3,7 @@ rendition so By
 title "command window"
 zombie cr
 caption string "%?%E%{+b}%?%?%F%{kr}%?%t"
-hardstatus lastline "%{+b}%?%E%{+B}%?%{Yk}ALT-T toggle %=GNU SCREEN SESSIONS MANAGER%= ALT-E enter"
+hardstatus lastline "%{+b}%?%E%{+B}%?%{Yk}ALT-T toggle %=%p.%S%= ALT-E enter"
 escape ^Gg
 defmousetrack on
 
