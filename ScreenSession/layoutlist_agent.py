@@ -36,6 +36,9 @@ NO_END = False
 def handler(signum, frame):
     pass
 
+#class menu_table_namespace: 
+#    # TODO: use it for nonlocal variables in menu_table nested functions
+#    pass
 
 def menu_table(
     ss,
@@ -98,6 +101,7 @@ def menu_table(
     status_len = 0
     errormsg = ""
     findNext = 0
+    current_view = 'n'
     try:
         mru_layouts = pickle.load(open(mru_file, 'r'))
     except:
@@ -291,6 +295,7 @@ def menu_table(
         if x in (-1, 12, 18) or x in (ord('r'), ord('R')) and not searching_title and \
             not searching_num:
             if laytable_c:
+                current_view = 'n'
                 pos_x = pos_x_c
                 pos_y = pos_y_c
                 pos_x_c = pos_y_c = layinfo_c = laytable_c = None
@@ -369,6 +374,7 @@ def menu_table(
             search_title = ""
         elif x == ord('\n'):
             if layinfo_c:
+                current_view = 'n'
                 layinfo = list(layinfo_c)
                 laytable = list(laytable_c)
                 pos_x = pos_x_c
@@ -397,6 +403,7 @@ def menu_table(
         elif x in (ord('q'), ord('Q')):
             if NO_END and x == ord('q'):
                 if layinfo_c:
+                    current_view = 'n'
                     layinfo = list(layinfo_c)
                     laytable = list(laytable_c)
                     pos_x = pos_x_c
@@ -439,17 +446,19 @@ def menu_table(
         elif x in (ord('m'), ord('a')):
             screen.erase()
             if not layinfo_c:
+                current_view = 'm'
                 layinfo_c = list(layinfo)
                 laytable_c = list(laytable)
+                layinfo = mru_layouts
                 pos_x_c = pos_x
                 pos_y_c = pos_y
                 pos_x = pos_y = 0
                 (laytable, pos_start) = create_table_std(ss, screen,
-                        curlay, mru_layouts, tmplay)
+                        curlay, layinfo, tmplay)
                 if len(laytable) > 1:
                     pos_y = 1
-                layinfo = mru_layouts
             else:
+                current_view = 'n'
                 b_force_sel_num = True
                 layinfo = list(layinfo_c)
                 laytable = list(laytable_c)
@@ -459,6 +468,7 @@ def menu_table(
         elif x == ord('v'):
             screen.erase()
             if not layinfo_c:
+                current_view = 'v'
                 layinfo_c = list(layinfo)
                 laytable_c = list(laytable)
                 pos_x_c = pos_x
@@ -496,6 +506,7 @@ def menu_table(
                 (pos_x, pos_y) = pos_start
                 layinfo = view_layouts
             else:
+                current_view = 'n'
                 b_force_sel_num = True
                 layinfo = list(layinfo_c)
                 laytable = list(laytable_c)
