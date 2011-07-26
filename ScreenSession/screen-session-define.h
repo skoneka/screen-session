@@ -28,6 +28,8 @@
  *
  * =====================================================================================
  */
+#include <assert.h>
+
 #ifdef COLOR			/* if you dont want color remove '-DCOLOR' from config.mk */
 #define cyan_b  "\033[1;36m"	/* 1 -> bold ;  36 -> cyan */
 #define green_u "\033[4;32m"	/* 4 -> underline ;  32 -> green */
@@ -88,3 +90,8 @@
 #define Q(x) QUOTEME(x)
 #define X $
 #define O \20
+#define SAFE_FREE(pt)\
+    assert(pt!=NULL);\
+    free(pt);\
+    pt = NULL;
+#define SAFE_PTR(pt) assert(pt!=NULL); pt

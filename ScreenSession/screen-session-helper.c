@@ -3,12 +3,12 @@
  *
  *    Authors: Artur Skonecki http://github.com/skoneka
  *
- *    This program is free software: you can redistribute it and/or modify
+ *    This program is SAFE_FREE software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, version 3 of the License.
  *
  *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    but WITHOUT ANY WARRANTY;
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *    GNU General Public License for more details.
  *
@@ -254,6 +254,7 @@ print_number (char *n, char *color)
     printf ("\n");
   }
   printf ("%s", none);
+  SAFE_FREE (font);
 }
 
 void

@@ -3,12 +3,12 @@
  *
  *    Authors: Artur Skonecki http://github.com/skoneka
  *
- *    This program is free software: you can redistribute it and/or modify
+ *    This program is SAFE_FREE software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
  *    the Free Software Foundation, version 3 of the License.
  *
  *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    but WITHOUT ANY WARRANTY;
  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *    GNU General Public License for more details.
  *
@@ -79,7 +79,7 @@ enum menu
 int
 copy_file (char *inputfile, char *outputfile)
 {
-  FILE *filer, *filew;
+  FILE *filer = NULL, *filew = NULL;
   int numr, numw;
   char buffer[100];
 
@@ -142,7 +142,7 @@ int
 line_to_string (FILE * fp, char **line, size_t * size)
 {
   int rc;
-  void *p;
+  void *p = NULL;
   size_t count;
 
   count = 0;
@@ -251,7 +251,7 @@ get_session (const char *file_in_session)
   pch = strtok (file, "/");
   if (pch)
     strcpy (session, pch);
-  free (file);
+  SAFE_FREE (file);
   return session;
 }
 
@@ -271,9 +271,9 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   if (pch)
     strcpy (session, pch);
   else {
-    free (file);
-    free (session);
-    free (basedir);
+    SAFE_FREE (file);
+    SAFE_FREE (session);
+    SAFE_FREE (basedir);
     return 1;
   }
 
@@ -290,15 +290,15 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   strcat (testfilepath, "/");
   strcat (testfilepath, file_in_session);
   if (!force && file_exists (testfilepath)) {
-    free (file);
-    free (filepath);
-    free (testfilepath);
-    free (session);
-    free (basedir);
+    SAFE_FREE (file);
+    SAFE_FREE (filepath);
+    SAFE_FREE (testfilepath);
+    SAFE_FREE (session);
+    SAFE_FREE (basedir);
     return 0;
   }
   else {
-    free (filepath);
+    SAFE_FREE (filepath);
     char *buf =
       malloc ((strlen (scs_exe) + strlen (basedir) + strlen (session) + 1 +
 	       30) * sizeof (char));
@@ -306,10 +306,10 @@ requireSession (const char *basepath, const char *file_in_session, int force)
     sprintf (buf, "%s other --dir \"%s\" --unpack \"%s\"", scs_exe, basedir,
 	     session);
     system (buf);
-    free (file);
-    free (buf);
-    free (session);
-    free (basedir);
+    SAFE_FREE (file);
+    SAFE_FREE (buf);
+    SAFE_FREE (session);
+    SAFE_FREE (basedir);
     return 0;
   }
 }
@@ -329,7 +329,7 @@ int
 parseNumber (char *buffer)
 {
   int number;
-  char *p;
+  char *p = NULL;
   number = strtol (buffer, &p, 0);
   if (strcmp ("", p) != 0) {
     return -1;
@@ -599,11 +599,11 @@ is_blacklisted (char *basedir, char *program, int programid)
        fprintf (stderr,PRIMER": %s:%d Cannot open blacklist '%s'.\n",__FILE__,__LINE__, filepath);
        perror("Error :");
      */
-    free (filepath);
+    SAFE_FREE (filepath);
     return 0;
   }
   else
-    free (filepath);
+    SAFE_FREE (filepath);
   int ret = filesearch_line (fp, program);
   if (ret) {
     blacklist[blacklist_c] = programid;
@@ -646,7 +646,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   char *proc_vim = malloc (proc_vim_s * sizeof (char));
   int proc_args_n;
   char proc_blacklisted[7];
-  char **proc_args;
+  char **proc_args = NULL;
   int i, nl_c = 0;
   char c;
   FILE *fp = NULL;
@@ -776,7 +776,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
     strcat (buf, proc_vim);
     strcat (buf, VIM_SESSION);
     requireSession (basedir, buf, 0);
-    free (buf);
+    SAFE_FREE (buf);
   }
 
   if (strcmp (proc_blacklisted, "True") == 0)
@@ -886,8 +886,8 @@ execute_filter (int bFilter, char *scs_exe, char *filter)
     strcat (command, command1);
     system ("screen -X colon");
     system (command);
-    free (command);
-    free (command0);
+    SAFE_FREE (command);
+    SAFE_FREE (command0);
   }
 }
 
@@ -927,7 +927,7 @@ main (int argc, char **argv)
     malloc ((strlen (scs_path) + strlen ("/screen-session") +
 	     1) * sizeof (char));
   strcpy (scs_exe, scs_path);
-  free (scs_path);
+  SAFE_FREE (scs_path);
   strcat (scs_exe, "/screen-session");
   if (strcmp (argv[1], "-s") == 0) {
     /* 
@@ -935,8 +935,7 @@ main (int argc, char **argv)
        Example invocation:
        INSTDIR/screen-session-primer -s /home/USER/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
      */
-    int *procs;
-    procs = malloc ((argc - 5) * sizeof (int));
+    int *procs = malloc ((argc - 5) * sizeof (int));
     for (i = 5; i < argc; i++)
       procs[i - 5] = atoi (argv[i]);
     start (argv[2], argv[3], argv[4], i - 5, procs);
@@ -1117,13 +1116,13 @@ main (int argc, char **argv)
     if (!force_start && type[0] != 'z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);
-    free (proc_vim);
-    free (title);
-    free (timesaved);
-    free (buftext);
+    SAFE_FREE (proc_vim);
+    SAFE_FREE (title);
+    SAFE_FREE (timesaved);
+    SAFE_FREE (buftext);
     int menu;
     int number;
-    int *numbers;
+    int *numbers = NULL;
     int numbers_c;
     if (force_start)
       menu = ALL;
@@ -1131,10 +1130,9 @@ main (int argc, char **argv)
       numbers_c = userInput (&menu, &numbers, procs_c - 1, &bFilter);
     char *shell = NULL;
     char **arglist = NULL;
-    int *args;
+    int *args = NULL;
 
 
-    args = malloc (procs_c * sizeof (int));
     switch (menu) {
 
     case EXIT:
@@ -1172,6 +1170,7 @@ main (int argc, char **argv)
       break;
 
     case ALL:
+      args = malloc (procs_c * sizeof (int));
       if (!force_start)
 	read_scrollback (fullpath, scrollbackfile);
       printf (PRIMER "Starting all programs... ");
@@ -1182,12 +1181,14 @@ main (int argc, char **argv)
       printf ("\n");
       arglist =
 	make_arglist (argv[0], "-s", fullpath, datafile, procs_c - 1, args);
+      SAFE_FREE (args);
       execute_filter (bFilter, scs_exe, filter);
       execv (argv[0], arglist);
 
       break;
 
     case NUMBER:
+      args = malloc (procs_c * sizeof (int));
       read_scrollback (fullpath, scrollbackfile);
       number = numbers[0];
       printf (PRIMER "Starting programs up to %d ( ", number);
@@ -1203,6 +1204,7 @@ main (int argc, char **argv)
       printf (")\n");
       arglist =
 	make_arglist (argv[0], "-s", fullpath, datafile, number, args);
+      SAFE_FREE (args);
       execute_filter (bFilter, scs_exe, filter);
       execv (argv[0], arglist);
       break;
@@ -1227,9 +1229,9 @@ main (int argc, char **argv)
       requireSession (fullpath, datafile, 1);
       copy_file (buf2, buf1);
       remove (buf2);
-      free (buf0);
-      free (buf1);
-      free (buf2);
+      SAFE_FREE (buf0);
+      SAFE_FREE (buf1);
+      SAFE_FREE (buf2);
       int pid = fork ();
       if (pid == 0) {
 	buf0 =
@@ -1238,7 +1240,7 @@ main (int argc, char **argv)
 	sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe,
 		 workingdir, session);
 	system (buf0);
-	free (buf0);
+	SAFE_FREE (buf0);
 	exit (0);
       }
       else if (pid < 0)
