@@ -112,9 +112,16 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
     term_size_y = int(regions.term_size_y)
     regions_size = []
     winlist = []
+    # ___source
+    ___source_dir = os.path.join(tmpdir, '___source')
+    ___source_file = os.path.join(___source_dir, "%s" % str(os.getpid()))
+    if not os.path.exists(___source_dir):
+        os.makedirs(___source_dir)
+    
+    f = open(___source_file, 'w')
 
-    # recalculate regions dimensions
-
+    # recalculate regions dimensions, select windows
+    f.write('focus top\n')
     for (window, sizex, sizey) in regions.regions:
         winlist.append(window)
         nsizex = (int(sizex) * new_term_size_x) / term_size_x
@@ -129,28 +136,33 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
                     w = (wins_trans)[window]
                 else:
                     w = window
-                ss.select("%s" % w)
+                f.write('select %s\n' % w)
             except:
                 sys.stderr.write('Unable to set focus for: %s\n' %
                     window)
-        ss.focus()
+        else: 
+            f.write('select -\n')
+        f.write('focus\n')
 
     # set regions dimensions, do not run if there is only a single region
 
     if len(regions_size) > 1:
-        ss.focus('top')
+        f.write('focus top\n')
         for (nsizex, nsizey) in regions_size:
             if sizex > 0:
-                ss.resize('-h %d' % nsizex)
-                ss.resize('-v %d' % nsizey)
-                ss.fit()
-            ss.focus()
+                f.write('resize -h %d\n' %nsizex)
+                f.write('resize -v %d\n' %nsizey)
+                f.write('fit\n')
+            f.write('focus\n')
 
         # restore focus on the right region
-
-        ss.select_region(regions.focus_offset)
+        f.write('focus top\n')
+        for i in range(0, regions.focus_offset):
+            f.write('focus\n')
     if regions.focusminsize_x != '0' or regions.focusminsize_y != '0':
-        ss.focusminsize(" ".join((regions.focusminsize_x, regions.focusminsize_y)))
+        f.write("%s %s\n" % (regions.focusminsize_x, regions.focusminsize_y))
+    f.close()
+    ss.source(___source_file)
 
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver
@@ -207,8 +219,6 @@ def get_regions(tfile):
             line = line.strip().split(" ")
         regions.regions.append(tuple(line))
     tfiled.close()
-    if len((regions.regions)[-1]) == 1:  # remove it later after patching screen
-        regions.regions = (regions.regions)[:-1]
     return regions
 
 
