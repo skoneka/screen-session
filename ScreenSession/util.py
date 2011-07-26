@@ -171,15 +171,24 @@ def unpackme(home, projectsdir, savedir, archiveend, tmpdir):
 
 
 def removeit(path):
-    try:
-        shutil.rmtree(path)
-    except:
-        try:
-            os.remove(path)
-        except:
-            pass
-        pass
+    if not os.path.exists(path):
+        return 1
+    if os.path.islink(path):
+        p = os.readlink(path)
+    else:
+        p = path
+    g = glob.glob(os.path.join(path,'*'))
+    for f in g:
+        if os.path.isdir(f):
+            sys.stderr.write('Unable to remove. %s has subdirectories!' % p)
+            return 2
 
+    for f in g:
+        os.remove(f)
+    os.rmdir(p)
+
+    if os.path.islink(path):
+        os.remove(path)
 
 def remove(path):
     try:
