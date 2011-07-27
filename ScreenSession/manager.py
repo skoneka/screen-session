@@ -181,7 +181,10 @@ def menu_tmp(preselect=None):
                 try:
                     choice = int(inputstring)
                     if choice >= 0 and choice < i:
-                        menu_tmp_last_selection = sessions[choice - 1]
+                        if choice == i-1:
+                            command = 'screen'
+                        else:
+                            menu_tmp_last_selection = sessions[choice - 1]
                         break
                     print2ui('UI: Out of range')
                     os.system('clear')
