@@ -12,17 +12,6 @@ Tested on:
     OpenSolaris, Python 2.4.4
 
 
-Modifications included in Screen bundled with screen-session:
-
-    - New commands:
-        - dumpscreen [window|layout|history] filename [-F]
-        - tty
-        - maxlay
-    - make "group", "maxwin"  queryable
-    - associate focuminsize with the layout
-    - fix monitor crash
-
-
 -----------------------------------------------------------------------
 Installation - part 1 - installing screen-session
 -----------------------------------------------------------------------
@@ -47,6 +36,18 @@ screen-session-VERSION/ScreenSession/screen-session
 -----------------------------------------------------------------------
 Installation - part 2 - installing modified GNU Screen
 -----------------------------------------------------------------------
+Github repository: https://github.com/skoneka/escreen
+Modifications included in Screen bundled with screen-session.
+    - New commands:
+        - dumpscreen [window | window-full | layout | layout-info | history]
+        - tty
+        - maxlay
+    - make "group", "maxwin", "layout", "screen"  queryable
+    - associate focuminsize with the layout
+    - fix monitor crash
+    - an escape for the escape key
+
+
 Compile and install the modified Screen:
 
     cd screen-session-VERSION/screen-4.1.0
@@ -57,4 +58,3 @@ Compile and install the modified Screen:
     sudo make install
 
 
-Github repository: https://github.com/skoneka/escreen

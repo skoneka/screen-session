@@ -35,8 +35,8 @@ New in this release:
   * Subwindows tool - prints windows nested in a group, adds the support
     for selecting windows nested in groups
 
-  * layout-checkpoint, layout-undo, layout-redo, layout-history - a basic
-    undo/redo for regions
+  * layout-checkpoint, layout-undo, layout-redo, layout-history
+    - basic undo/redo for regions
 
   * Session saver:
     - added support for saving zombie windows
@@ -54,6 +54,7 @@ New in this release:
     - make "group", "maxwin", "layout", "screen"  queryable
     - associate focuminsize with the layout
     - fix monitor crash
+    - an escape for the escape key
 
 
 About screen-session

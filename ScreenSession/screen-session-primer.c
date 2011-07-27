@@ -611,7 +611,6 @@ is_blacklisted (char *basedir, char *program, int programid)
   }
   fclose (fp);
   return ret;
-
 }
 
 void
@@ -840,7 +839,6 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   recurse_chdir (proc_cwd);
   execvp (proc_exe, proc_args);
   return 1;
-
 }
 
 int
@@ -933,7 +931,7 @@ main (int argc, char **argv)
     /* 
        programs starter
        Example invocation:
-       INSTDIR/screen-session-primer -s /home/USER/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
+       INSTDIR/screen-session-primer -s HOME/.screen-sessions INSTDIR/screen-session-primer 13983.pts-218.cvops/win_2 1 2 3
      */
     int *procs = malloc ((argc - 5) * sizeof (int));
     for (i = 5; i < argc; i++)

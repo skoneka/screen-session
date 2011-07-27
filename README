@@ -24,20 +24,24 @@ load        - load session
 ls          - list saved sessions
 ----
 
-new-window  - start a new Screen window in the same working directory
-              on the position next to the current window
-manager     - sessions manager (screenie like) but featuring session
-              preview in a split window
-name        - get or set the sessionname
-nest-layout - copy a layout to the current region
-layoutlist  - display a list of layouts
-regions     - display a number in every region (like tmux display-panes)
 dump        - print detailed informations about windows in the session
 find-file   - find opened files in windows (requires lsof)
 group       - move windows to a group
+layoutlist  - display a list of layouts
+layout-checkpoint - record a snapshot of the current layout.
+layout-history - display saved snapshots of the current layout
+layout-redo - load a snapshot of the current layout,
+layout-undo - load a snapshot of the current layout,
 kill        - send SIGTERM to last process started in a window
 kill-zombie - kill all zombie windows in session
 kill-group  - recursively kill all windows in a group
+manager     - sessions manager (screenie like) but featuring session
+              preview in a split window
+nest-layout - copy a layout to the current region
+new-window  - start a new Screen window in the same working directory
+              on the position next to the current window
+name        - get or set the sessionname
+regions     - display a number in every region (like tmux display-panes)
 renumber    - renumber windows to fill gaps
 subwindows  - recursively print windows contained in groups
 
@@ -114,11 +118,11 @@ $HOME/.screen-sessions/ directory.
 Bugs
 -----------------------------------------------------------------------
 
-- Some tools do not work with detached Screen sessions.
-- slow startup of regions tool if there is no hardstatus line
-- in order to speed up Screen commands execution :msgminwait is set to 0
+* Tools using layouts may fail if operating on detached Screen sessions.
+* Slow startup of regions tool if there is no hardstatus line
+* In order to speed up Screen commands execution :msgminwait is set to 0
   and the original value is not restored.
-- :hardcopydir is altered and not restored
+* :hardcopydir is altered and not restored
 
 Please send suggestions and bug reports to admin<[at]>adb.cba.pl 
 or Github issue tracker http://github.com/skoneka/screen-session/issues

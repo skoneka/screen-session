@@ -26,9 +26,6 @@ options:
 	@echo "LDFLAGS  = ${LDFLAGS}"
 	@echo "CC       = ${CC}"
 
-#.c.o:
-#	${CC} -o $@ -c ${CFLAGS} $<
-
 ${OBJ}: config.mk
 
 ${EXE1}: ${SRCMAIN1}  ${SRCHEAD} config.mk

@@ -51,8 +51,8 @@ Environment variables:
     PYTHONBIN   - Python interpreter path
 
 Session saver modes:
-    save        - save a session
-    load        - load a session from a save file
+    save        - save Screen ( and VIM ) session
+    load        - load session
     ls          - list saved sessions
 
 Other tools:
@@ -63,6 +63,10 @@ Other tools:
     kill-group  - recursively kill a group and all windows inside
     kill-zombie - kill all zombie windows in the session
     layoutlist  - display a browseable list of layouts in the session
+    layout-checkpoint - record a snapshot of the current layout.
+    layout-history - display saved snapshots of the current layout
+    layout-redo - load a snapshot of the current layout,
+    layout-undo - load a snapshot of the current layout,
     manager     - a sessions manager with a split Screen window preview
     name        - get or set the sessionname
     nest-layout - nest a layout in the current region
@@ -269,6 +273,8 @@ v               - toggle search/autohighlight results view
 o               - toggle current and selected layouts
 q               - quit / select previous layout
 Q               - force quit if "-c" option was used\
+
+See also: layout-checkpoint
 """
 
 
@@ -282,7 +288,7 @@ Either run it frequently or integrate it with keybindings.
 Example:
     bind S eval "split" "at 0 exec screen-session layout-checkpoint"
 
-See also: layout-undo, layout-redo, layout-history\
+See also: layoutlist, layout-undo, layout-redo, layout-history\
 """
 
 help_layout_undo= """\
@@ -435,8 +441,8 @@ Options:
     disable layout loading
 -n --no-group-wrap
     do not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups
--m --no-mru
-    disable restoring of the Most Recently Used order of windows
+-m --mru
+    enable restoring of the Most Recently Used order of windows
 -l --log  [file]
     output to a file instead of stdout
 -d --dir  [directory = $HOME/.screen-sessions]
@@ -465,9 +471,6 @@ def run(argv):
         mode = 'help'
     try:
         if mode in ('help', 'h'):
-
-            #print(version_str+'\n')
-
             print help_help
         elif mode == '--version':
             print version_str

@@ -52,7 +52,6 @@ HTML_END = """\
 
 MENU_ITEMS = (('index.html', 'About'), ('news.html', 'News'), ('documentation.html',
               'Documentation'), ('installation.html', 'Installation'), ('gnu_screen.html',
-              'GNU Screen modifications'), ('screenshots.html',
               'Screenshots'), ('https://github.com/skoneka/screen-session/issues',
               'Feedback'), ('https://github.com/skoneka/screen-session/downloads',
               'Download'))
@@ -243,5 +242,5 @@ if __name__ == '__main__':
     write_news()
     write_documentation()
     write_installation()
-    write_gnu_screen()
+    # write_gnu_screen()
     write_screenshots()
