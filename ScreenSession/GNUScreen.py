@@ -24,7 +24,7 @@ import subprocess
 import re
 import sys
 import platform
-from util import tmpdir, removeit, remove
+from util import tmpdir, tmpdir_source, removeit, remove
 
 SCREEN = os.getenv('SCREENBIN')
 if not SCREEN:
@@ -113,12 +113,11 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
     regions_size = []
     winlist = []
     # ___source
-    ___source_dir = os.path.join(tmpdir, '___source')
-    ___source_file = os.path.join(___source_dir, "%s" % str(os.getpid()))
-    if not os.path.exists(___source_dir):
-        os.makedirs(___source_dir)
+    source_file = os.path.join(tmpdir_source, "load_regions-%s" % str(os.getpid()))
+    if not os.path.exists(tmpdir_source):
+        os.makedirs(tmpdir_source)
     
-    f = open(___source_file, 'w')
+    f = open(source_file, 'w')
 
     # recalculate regions dimensions, select windows
     f.write('focus top\n')
@@ -162,7 +161,8 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
     if regions.focusminsize_x != '0' or regions.focusminsize_y != '0':
         f.write("%s %s\n" % (regions.focusminsize_x, regions.focusminsize_y))
     f.close()
-    ss.source(___source_file)
+    ss.source(source_file)
+    remove(source_file)
 
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver

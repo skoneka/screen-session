@@ -38,6 +38,7 @@ archiveend = ""
 import tempfile
 import pwd
 tmpdir = os.path.join(tempfile.gettempdir(), 'screen-session-' + pwd.getpwuid(os.geteuid())[0])
+tmpdir_source = os.path.join(tmpdir, '___source')
 
 
 def _timeout_command_split(command, timeout):

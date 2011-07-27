@@ -27,14 +27,14 @@ import signal
 import tempfile
 import pwd
 import copy
-from util import tmpdir, remove
+from util import tmpdir, tmpdir_source, remove
 import GNUScreen as sc
 from GNUScreen import SCREEN
 from ScreenSaver import ScreenSaver
 
 logfile = "___log-regions"
-inputfile = "___scs-regions-input-%d" % os.getpid()
-sourcefile = os.path.join(tmpdir, "___scs-regions-source-%d" % os.getpid())
+inputfile = "___regions-input-%d" % os.getpid()
+sourcefile = os.path.join(tmpdir_source, "regions-source-%d" % os.getpid())
 subprogram = 'screen-session-helper'
 subprogram_args = '-nh'
 
@@ -213,8 +213,8 @@ focus
 
 
 if __name__ == '__main__':
-    if not os.path.exists(tmpdir):
-        os.makedirs(tmpdir)
+    if not os.path.exists(tmpdir_source):
+        os.makedirs(tmpdir_source)
     logfile = os.path.join(tmpdir, logfile)
     inputfile = os.path.join(tmpdir, inputfile)
     file = os.path.join(tmpdir, logfile)
