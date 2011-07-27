@@ -1,5 +1,5 @@
 # screen-session version
-VERSION = 0.6.3-dev
+VERSION = 0.6.3
 
 # Customize below to fit your system
 
@@ -14,10 +14,10 @@ LIBS =
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
-#CFLAGS = -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
-#LDFLAGS = -s ${LIBS}
-CFLAGS = -ggdb -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
-LDFLAGS = ${LIBS}
+CFLAGS = -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
+LDFLAGS = -s ${LIBS}
+# CFLAGS = -ggdb -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
+# LDFLAGS = ${LIBS}
 
 # compiler and linker
 CC = cc
