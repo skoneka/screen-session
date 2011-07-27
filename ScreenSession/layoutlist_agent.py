@@ -285,12 +285,12 @@ def menu_table(
                 status_len = len(s)
                 errormsg = ""
         except:
-
             pass
+
         screen.refresh()
         x = screen.getch()
 
-        # refreshes layout list ^C ^L
+        # layout list refresh ^C ^L ^R
 
         if x in (-1, 12, 18) or x in (ord('r'), ord('R')) and not searching_title and \
             not searching_num:
@@ -313,7 +313,7 @@ def menu_table(
 
                             nd = map(str_strip, f.readlines())
                             curwin = nd[3]
-                            curlay = nd[4]
+                            sel_num = curlay = nd[4]
                             MAXTITLELEN = int(nd[5])
                             height = int(nd[6])
                             f.close()
