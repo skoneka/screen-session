@@ -332,8 +332,23 @@ def kill_group(session, datadir, groupids):
             groupids)
     print 'Killing groups: %s' % str(excluded_groups)
     print 'All killed windows: %s' % str(excluded_wins)
+
     for win in excluded_wins:
         ss.kill(win)
+
+    ## sourcing commands may lock Screen session 
+    #from util import tmpdir_source, remove
+    #if not os.path.exists(tmpdir_source):
+    #    os.makedirs(tmpdir_source)
+    #sourcefile = os.path.join(tmpdir_source, 'kill_group-%d' % os.getpid())
+    #f = open(sourcefile, 'w')
+    #
+    #for win in excluded_wins:
+    #    f.write('at %s kill\n' % win)
+    #
+    #f.close()
+    #ss.source(sourcefile)
+    ##remove(sourcefile)
 
 
 def get_win_last_proc(session, win="-1"):
