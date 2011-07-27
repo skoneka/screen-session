@@ -1,1 +1,298 @@
-screen-session project
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>screen-session project</title>
+<meta name="Generator" content="Vim/7.3">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<link rel="home" title="Home" href="http://adb.cba.pl">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<a href="http://github.com/skoneka/screen-session"><img style="positIon: absolute; top: 0; right: 0; border: 0;" src="http://adb.cba.pl/screen-session/0.6.3/screenshots//ribbon.png" alt="Fork me on GitHub"></a>
+<h1 style="color: #990000;">screen-session</h1>
+
+<b>About</b>
+ | 
+<a href="news.html">News</a>
+ | 
+<a href="documentation.html">Documentation</a>
+ | 
+<a href="installation.html">Installation</a>
+ | 
+<a href="screenshots.html">Screenshots</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/issues">Feedback</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/downloads">Download</a>
+<h3>About</h3>
+<samp>
+screen-session - a collection of tools for GNU Screen
+<br>
+====================================================
+<br>
+
+<br>
+Website: http://skoneka.github.com/screen-session/
+<br>
+
+<br>
+Development: git clone git://github.com/skoneka/screen-session
+<br>
+
+<br>
+Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Description
+<br>
+-----------------------------------------------------------------------
+<br>
+screen-session is a collection of tools for GNU Screen.
+<br>
+It includes a session saver and a session manager, among others.
+<br>
+
+<br>
+online documentation is available at:
+<br>
+http://skoneka.github.com/screen-session/documentation.html
+<br>
+
+<br>
+Available screen-session modes:
+<br>
+
+<br>
+----
+<br>
+save        - save Screen ( and VIM ) session
+<br>
+load        - load session
+<br>
+ls          - list saved sessions
+<br>
+----
+<br>
+
+<br>
+dump        - print detailed informations about windows in the session
+<br>
+find-file   - find opened files in windows (requires lsof)
+<br>
+group       - move windows to a group
+<br>
+layoutlist  - display a list of layouts
+<br>
+layout-checkpoint - record a snapshot of the current layout.
+<br>
+layout-history - display saved snapshots of the current layout
+<br>
+layout-redo - load a snapshot of the current layout,
+<br>
+layout-undo - load a snapshot of the current layout,
+<br>
+kill        - send SIGTERM to last process started in a window
+<br>
+kill-zombie - kill all zombie windows in session
+<br>
+kill-group  - recursively kill all windows in a group
+<br>
+manager     - sessions manager (screenie like) but featuring session
+<br>
+              preview in a split window
+<br>
+nest-layout - copy a layout to the current region
+<br>
+new-window  - start a new Screen window in the same working directory
+<br>
+              on the position next to the current window
+<br>
+name        - get or set the sessionname
+<br>
+regions     - display a number in every region (like tmux display-panes)
+<br>
+renumber    - renumber windows to fill gaps
+<br>
+subwindows  - recursively print windows contained in groups
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Installation and Requirements
+<br>
+-----------------------------------------------------------------------
+<br>
+see INSTALL
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Running screen-session
+<br>
+-----------------------------------------------------------------------
+<br>
+run "screen-session help" and "screen-session help [MODE]" for detailed
+<br>
+examples
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+A Detailed Description of Session Saver
+<br>
+-----------------------------------------------------------------------
+<br>
+Session saver currently supports saving of:
+<br>
+layouts, scrollbacks, titles, filters and is able to restart programs
+<br>
+run in windows. It recognizes regular, group and zombie windows.
+<br>
+Currently there is no support for serial and telnet window types.
+<br>
+By default, session saver also tries to save Vim sessions using ":mksession"
+<br>
+and ":wviminfo".
+<br>
+
+<br>
+Session saver accesses important data by directly reading /proc filesystem 
+<br>
+and sorts processes by parent pid. There is almost no "stuffing" of commands 
+<br>
+into windows (except when saving Vim sessions) so there is no interaction 
+<br>
+with programs itself. Currently, saver is not capable of saving other user's
+<br>
+processes, even if used with sudo, but this may change in future.
+<br>
+
+<br>
+During session loading, every new window starts with screen-session-primer
+<br>
+(a small C program) which displays a list of processes and asks user what
+<br>
+to do: whether to start none, some or all of window's processes or directly
+<br>
+starts programs provided "--force-start [win_num]" option was used.
+<br>
+
+<br>
+Then, primer tries to restore the string of processes by executing
+<br>
+for nodes:
+<br>
+$ shell -ic "primer_start-program ID-of-a-process-to-be-started IDs-of-queued-programs; primer_start-program ID-of-the-shell" shell-arguments
+<br>
+(during resaving the "-ic arguments" part is ignored)
+<br>
+
+<br>
+And for the last process to be restored:
+<br>
+$ primer_start-program ID-of-a-process-to-be-started
+<br>
+
+<br>
+primer_start-program reads the process data from savefile/win_NUM and calls
+<br>
+execvp() function.
+<br>
+
+<br>
+Primer is capable of restoring an arbitrary number of processes, provided that
+<br>
+all intermediate nodes are shells which accept the '-c command' switch.
+<br>
+
+<br>
+May be restored completely:
+<br>
+0 zsh -> 1 bash -> 2 vim hello.c
+<br>
+
+<br>
+Only up to 1:
+<br>
+0 zsh -> 1 man hello -> 2 less
+<br>
+
+<br>
+screen-session-primer uses linux color escapes.
+<br>
+To disable color remove "-DCOLOR" from config.mk
+<br>
+
+<br>
+Normally screen-session does not restore exact window numbers. If you
+<br>
+want to force verbatim restoring use --exact or --exact-kill flags.
+<br>
+
+<br>
+Save files are .tar.bz2 archives (scrollbacks can take a lot of space).
+<br>
+Temporary files are stored in  /tmp/screen-session-$USER.
+<br>
+You may edit save files either by typing 'E' in a primer instance or with
+<br>
+the "other" mode: $ screen-session other [ --unpack | --pack ] savefile
+<br>
+which unpacks the savefile to the temporary directory and symlinks it to
+<br>
+$HOME/.screen-sessions/ directory.
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Bugs
+<br>
+-----------------------------------------------------------------------
+<br>
+
+<br>
+* Tools using layouts may fail if operating on detached Screen sessions.
+<br>
+* Slow startup of regions tool if there is no hardstatus line
+<br>
+* In order to speed up Screen commands execution :msgminwait is set to 0
+<br>
+  and the original value is not restored.
+<br>
+* :hardcopydir is altered and not restored
+<br>
+
+<br>
+Please send suggestions and bug reports to admin<[at]>adb.cba.pl 
+<br>
+or Github issue tracker http://github.com/skoneka/screen-session/issues
+<br>
+
+<br>
+</samp>
+
+    <center>
+    <h6>
+    <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
+    Last modified: July 27, 2011
+    </h6>
+    </center>
+    
+</body>
+</html>
+
