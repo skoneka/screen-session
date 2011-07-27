@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>screen-session project</title>
+<meta name="Generator" content="Vim/7.3">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<link rel="home" title="Home" href="http://adb.cba.pl">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<a href="http://github.com/skoneka/screen-session"><img style="positIon: absolute; top: 0; right: 0; border: 0;" src="http://adb.cba.pl/screen-session/0.6.3/screenshots//ribbon.png" alt="Fork me on GitHub"></a>
+<h1 style="color: #990000;">screen-session</h1>
+
+<a href="index.html">About</a>
+ | 
+<a href="news.html">News</a>
+ | 
+<a href="documentation.html">Documentation</a>
+ | 
+<b>Installation</b>
+ | 
+<a href="screenshots.html">Screenshots</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/issues">Feedback</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/downloads">Download</a>
+<h3>Installation</h3>
+<samp>
+-----------------------------------------------------------------------
+<br>
+Requirements
+<br>
+-----------------------------------------------------------------------
+<br>
+screen-session  requires a modified version of GNU Screen,
+<br>
+it uses "ps", "pgrep" and reads /proc filesystem.
+<br>
+
+<br>
+
+<br>
+Tested on:
+<br>
+
+<br>
+    Linux, Python 2.5.2 and 2.7.2
+<br>
+    FreeBSD 8.1, Python 2.6.5 (with mounted procfs)
+<br>
+    OpenSolaris, Python 2.4.4
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Installation - part 1 - installing screen-session
+<br>
+-----------------------------------------------------------------------
+<br>
+Edit config.mk to match your local setup (screen-session is installed
+<br>
+into the /usr/local/ namespace by default), you can also disable colors
+<br>
+by removing "-DCOLOR".
+<br>
+
+<br>
+Afterwards enter the following command to build and install
+<br>
+screen-session:
+<br>
+
+<br>
+    make clean
+<br>
+    make
+<br>
+
+<br>
+    make install        # if necessary as root 
+<br>
+                        # it also symlinks screen-session as "scs"
+<br>
+
+<br>
+Note that the installation step is optional, only compilation is necessary.
+<br>
+Just link to from your PATH to:
+<br>
+screen-session-VERSION/ScreenSession/screen-session
+<br>
+
+<br>
+
+<br>
+-----------------------------------------------------------------------
+<br>
+Installation - part 2 - installing modified GNU Screen
+<br>
+-----------------------------------------------------------------------
+<br>
+Github repository: https://github.com/skoneka/escreen
+<br>
+Modifications included in Screen bundled with screen-session.
+<br>
+    - New commands:
+<br>
+        - dumpscreen [window | window-full | layout | layout-info | history]
+<br>
+        - tty
+<br>
+        - maxlay
+<br>
+    - make "group", "maxwin", "layout", "screen"  queryable
+<br>
+    - associate focuminsize with the layout
+<br>
+    - fix monitor crash
+<br>
+    - an escape for the escape key
+<br>
+
+<br>
+
+<br>
+Compile and install the modified Screen:
+<br>
+
+<br>
+    cd screen-session-VERSION/screen-4.1.0
+<br>
+
+<br>
+    ./configure --prefix=/usr/local
+<br>
+    make
+<br>
+
+<br>
+    sudo make install
+<br>
+
+<br>
+
+<br>
+</samp>
+
+    <center>
+    <h6>
+    <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
+    Last modified: July 27, 2011
+    </h6>
+    </center>
+    
+</body>
+</html>
+

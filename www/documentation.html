@@ -1,0 +1,728 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>screen-session project</title>
+<meta name="Generator" content="Vim/7.3">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+<link rel="home" title="Home" href="http://adb.cba.pl">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<a href="http://github.com/skoneka/screen-session"><img style="positIon: absolute; top: 0; right: 0; border: 0;" src="http://adb.cba.pl/screen-session/0.6.3/screenshots//ribbon.png" alt="Fork me on GitHub"></a>
+<h1 style="color: #990000;">screen-session</h1>
+
+<a href="index.html">About</a>
+ | 
+<a href="news.html">News</a>
+ | 
+<b>Documentation</b>
+ | 
+<a href="installation.html">Installation</a>
+ | 
+<a href="screenshots.html">Screenshots</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/issues">Feedback</a>
+ | 
+<a href="https://github.com/skoneka/screen-session/downloads">Download</a>
+<h3>Documentation</h3>
+<h4>Session saver modes:</h4>
+<table>
+<tr><td><a href="#load">load</a></td><td>&nbsp;Load saved session from a file.</td></tr>
+<tr><td><a href="#ls">ls</a></td><td>&nbsp;List saved sessions.</td></tr>
+<tr><td><a href="#other">other</a></td><td>&nbsp;Auxiliary mode, used mainly by screen-session-primer.</td></tr>
+<tr><td><a href="#save">save</a></td><td>&nbsp;Save GNU Screen and VIM sessions to a file.</td></tr>
+</table>
+<h4>Tools:</h4>
+<table>
+<tr><td><a href="#dump">dump</a></td><td>&nbsp;Print informations about windows in session (MRU order by default).</td></tr>
+<tr><td><a href="#find_file">find-file</a></td><td>&nbsp;Find open files in windows. Requires lsof.</td></tr>
+<tr><td><a href="#group">group</a></td><td>&nbsp;Move windows to a group.</td></tr>
+<tr><td><a href="#kill">kill</a></td><td>&nbsp;Kill last process started in a window.</td></tr>
+<tr><td><a href="#kill_group">kill-group</a></td><td>&nbsp;Recursively kill groups and windows inside.</td></tr>
+<tr><td><a href="#kill_zombie">kill-zombie</a></td><td>&nbsp;Kill all zombie windows in session. Optionally specify target groups.</td></tr>
+<tr><td><a href="#layout_checkpoint">layout-checkpoint</a></td><td>&nbsp;Record a snapshot of the current layout.</td></tr>
+<tr><td><a href="#layout_history">layout-history</a></td><td>&nbsp;Display saved snapshots of the current layout.</td></tr>
+<tr><td><a href="#layout_redo">layout-redo</a></td><td>&nbsp;Load a snapshot of the current layout,</td></tr>
+<tr><td><a href="#layout_undo">layout-undo</a></td><td>&nbsp;Load a snapshot of the current layout,</td></tr>
+<tr><td><a href="#layoutlist">layoutlist</a></td><td>&nbsp;Displays a browseable list of layouts. There are two list creation algorithms.</td></tr>
+<tr><td><a href="#manager">manager</a></td><td>&nbsp;Sessions manager for GNU Screen with preview in a split window.</td></tr>
+<tr><td><a href="#name">name</a></td><td>&nbsp;Get or set the sessionname.</td></tr>
+<tr><td><a href="#nest">nest</a></td><td>&nbsp;Nest a layout in the current region.</td></tr>
+<tr><td><a href="#new_window">new-window</a></td><td>&nbsp;Start a new Screen window with the same working directory as the current window.</td></tr>
+<tr><td><a href="#regions">regions</a></td><td>&nbsp;Display a number in each region.</td></tr>
+<tr><td><a href="#renumber">renumber</a></td><td>&nbsp;Renumber windows to fill the gaps.</td></tr>
+<tr><td><a href="#subwindows">subwindows</a></td><td>&nbsp;Print windows contained in groups.</td></tr>
+</table>
+<a name="load"></a>
+<h3 style="color: #990000;"><b># load</b></h3>
+<samp>
+Usage: screen-session load [-S sessionname] [options] [source_savefile]<br>
+
+<br>
+
+Load saved session from a file.<br>
+
+<br>
+
+Options:<br>
+
+-x --exact<br>
+
+&nbsp;&nbsp;&nbsp; load session with the same window numbers, move existing windows,<br>
+
+&nbsp;&nbsp;&nbsp; to OTHER_WINDOWS group and delete existing layouts<br>
+
+-X --exact-kill<br>
+
+&nbsp;&nbsp;&nbsp; same as exact, but also kill all existing windows<br>
+
+-F --force-start&nbsp; [windows]<br>
+
+&nbsp;&nbsp;&nbsp; a comma separated list of windows which will start programs immediately,<br>
+
+&nbsp;&nbsp;&nbsp; using keyword "all" causes all loaded windows to start their subprograms<br>
+
+&nbsp;&nbsp;&nbsp; without waiting for user's confirmation<br>
+
+-y --no-layout<br>
+
+&nbsp;&nbsp;&nbsp; disable layout loading<br>
+
+-n --no-group-wrap<br>
+
+&nbsp;&nbsp;&nbsp; do not wrap windows in RESTORE_* or OTHER_WINDOWS_* groups<br>
+
+-m --mru<br>
+
+&nbsp;&nbsp;&nbsp; enable restoring of the Most Recently Used order of windows<br>
+
+-l --log&nbsp; [file]<br>
+
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+
+-d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
+
+&nbsp;&nbsp;&nbsp; directory holding saved sessions<br>
+
+<br>
+
+Examples:<br>
+
+#1# restore mysavedsession inside Screen named SESSIONNAME<br>
+
+screen-session load -S SESSIONNAME --exact mysavedsession<br>
+
+#2# load the last saved session inside the current Screen session<br>
+
+scs load<br>
+
+#3# load the last saved session with exactly the same window numbers<br>
+
+scs load --exact<br>
+
+#4# load the last saved session inside the current session without layouts<br>
+
+scs load --no-layout<br>
+
+#5# load the last saved session into a new Screen<br>
+
+screen -m scs load --exact-kill<br>
+
+<br>
+
+See also: save, ls, other<br>
+
+</samp><hr>
+<a name="ls"></a>
+<h3 style="color: #990000;"><b># ls</b></h3>
+<samp>
+Usage: screen-session save [-S sessionname] [options] [savefile_filter]<br>
+
+<br>
+
+List saved sessions.<br>
+
+<br>
+
+Options:<br>
+
+-l --log&nbsp; [file]<br>
+
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+
+-d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
+
+&nbsp;&nbsp;&nbsp; directory holding saved sessions<br>
+
+<br>
+
+See also: save, load, other<br>
+
+</samp><hr>
+<a name="other"></a>
+<h3 style="color: #990000;"><b># other</b></h3>
+<samp>
+Usage: screen-session other [options] <br>
+
+<br>
+
+Auxiliary mode, used mainly by screen-session-primer.<br>
+
+<br>
+
+Options:<br>
+
+--pack [target]<br>
+
+&nbsp;&nbsp;&nbsp; archive unpacked savefile ( which must be accessible from --dir )<br>
+
+--unpack [savefile]<br>
+
+&nbsp;&nbsp;&nbsp; unpack savefile to /tmp/screen-session-$USER<br>
+
+-l --log&nbsp; [file]<br>
+
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+
+-d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
+
+&nbsp;&nbsp;&nbsp; directory holding saved sessions<br>
+
+<br>
+
+See also: save, load, ls<br>
+
+</samp><hr>
+<a name="save"></a>
+<h3 style="color: #990000;"><b># save</b></h3>
+<samp>
+Usage: screen-session save [-S sessionname] [options] [target_savefile]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind S at 0 exec screen -mdc /dev/null screen-session save -fS $PID.$STY<br>
+
+<br>
+
+Save GNU Screen and VIM sessions to a file.<br>
+
+<br>
+
+Options:<br>
+
+-f --force<br>
+
+&nbsp;&nbsp;&nbsp; force saving even if a savefile with the same name already exists<br>
+
+-e --exclude&nbsp; [windows]<br>
+
+&nbsp;&nbsp;&nbsp; a comma separated list of windows to be ignored during saving,<br>
+
+&nbsp;&nbsp;&nbsp; if a window is a group all nested windows are also included<br>
+
+-L --exclude-layout&nbsp; [layouts]<br>
+
+&nbsp;&nbsp;&nbsp; a comma separated list of layouts to be ignored during saving,<br>
+
+-H --no-scroll&nbsp; [windows]<br>
+
+&nbsp;&nbsp;&nbsp; a comma separated list of windows which scrollbacks will be ignored,<br>
+
+&nbsp;&nbsp;&nbsp; if a window is a group all nested windows are also included,<br>
+
+&nbsp;&nbsp;&nbsp; using keyword "all" affects all windows<br>
+
+-y --no-layout<br>
+
+&nbsp;&nbsp;&nbsp; disable layout saving<br>
+
+-V --no-vim<br>
+
+&nbsp;&nbsp;&nbsp; disable vim session saving<br>
+
+-l --log [file]<br>
+
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+
+-d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
+
+&nbsp;&nbsp;&nbsp; directory holding saved sessions<br>
+
+<br>
+
+Examples:<br>
+
+#1# save Screen named SESSIONNAME as mysavedsession<br>
+
+screen-session save -S SESSIONNAME mysavedsession<br>
+
+#2# save the current session, force overwrite of old savefiles<br>
+
+scs save --force<br>
+
+#3# save the current session without layouts<br>
+
+scs save --no-layout<br>
+
+#4# run session saver after 3 minutes of inactivity, exclude group SECURE<br>
+
+:idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null<br>
+
+#5# an alternative binding<br>
+
+bind S eval 'colon' 'stuff "at 0 exec screen -mdc /dev/null scs save -fS \"$PID.$STY\""'<br>
+
+<br>
+
+See also: load, ls, other<br>
+
+</samp><hr>
+<a name="dump"></a>
+<h3 style="color: #990000;"># dump</h3>
+<samp>
+Usage: screen-session dump [options] [window_ids]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs d<br>
+
+<br>
+
+Print informations about windows in session (MRU order by default).<br>
+
+A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
+
+<br>
+
+Options:<br>
+
+-P&nbsp;&nbsp; - do not show pid data<br>
+
+-r&nbsp;&nbsp; - reverse the output<br>
+
+-s&nbsp;&nbsp; - sort by window number<br>
+
+</samp><hr>
+<a name="find_file"></a>
+<h3 style="color: #990000;"># find-file</h3>
+<samp>
+Usage: screen-session find-file [options] [files]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs ff<br>
+
+<br>
+
+Find open files in windows. Requires lsof.<br>
+
+<br>
+
+Example:<br>
+
+tail -f /var/log/dmesg<br>
+
+scs find-file /var/log/dmesg<br>
+
+</samp><hr>
+<a name="group"></a>
+<h3 style="color: #990000;"># group</h3>
+<samp>
+Usage: screen-session group [options] [GROUP] [windows]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs g<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind G eval "colon" "stuff \"at 0 exec scs group \""<br>
+
+<br>
+
+Move windows to a group.<br>
+
+If no windows given, move the current window.<br>
+
+</samp><hr>
+<a name="kill"></a>
+<h3 style="color: #990000;"># kill</h3>
+<samp>
+Usage: screen-session kill [options] [signal=TERM] [window=current]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs K<br>
+
+<br>
+
+Kill last process started in a window.<br>
+
+Useful for closing random emacs/vim instances and hung up ssh clients.<br>
+
+For a list of signal names run: $ pydoc signal<br>
+
+WARNING: sending SIGKILL to the current window may crash Screen<br>
+
+</samp><hr>
+<a name="kill_group"></a>
+<h3 style="color: #990000;"># kill-group</h3>
+<samp>
+Usage: screen-session kill-group [options] [groupNum0] [groupNum..]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs kg<br>
+
+<br>
+
+Recursively kill groups and windows inside.<br>
+
+Accepts titles and window numbers as arguments.<br>
+
+A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
+
+Take extra care with this command.<br>
+
+</samp><hr>
+<a name="kill_zombie"></a>
+<h3 style="color: #990000;"># kill-zombie</h3>
+<samp>
+Usage: screen-session kill-zombie [options] [group_ids]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs kz<br>
+
+<br>
+
+Kill all zombie windows in session. Optionally specify target groups.<br>
+
+</samp><hr>
+<a name="layout_checkpoint"></a>
+<h3 style="color: #990000;"># layout-checkpoint</h3>
+<samp>
+Usage: screen-session layout-checkpoint [options] <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lc<br>
+
+<br>
+
+Record a snapshot of the current layout.<br>
+
+Either run it frequently or integrate it with keybindings.<br>
+
+<br>
+
+Example:<br>
+
+&nbsp;&nbsp;&nbsp; bind S eval "split" "at 0 exec screen-session layout-checkpoint"<br>
+
+<br>
+
+See also: layoutlist, layout-undo, layout-redo, layout-history<br>
+
+</samp><hr>
+<a name="layout_history"></a>
+<h3 style="color: #990000;"># layout-history</h3>
+<samp>
+Usage: screen-session layout-history [options] <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lh<br>
+
+<br>
+
+Display saved snapshots of the current layout.<br>
+
+<br>
+
+See also: layout-checkpoint, layout-undo, layout-redo<br>
+
+</samp><hr>
+<a name="layout_redo"></a>
+<h3 style="color: #990000;"># layout-redo</h3>
+<samp>
+Usage: screen-session layout-redo [options] [step = 1] <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lr<br>
+
+<br>
+
+Load a snapshot of the current layout,<br>
+
+step = 0 indicates current snapshot, step = 1 previous snapshot,...<br>
+
+<br>
+
+See also: layout-checkpoint, layout-undo, layout-history<br>
+
+</samp><hr>
+<a name="layout_undo"></a>
+<h3 style="color: #990000;"># layout-undo</h3>
+<samp>
+Usage: screen-session layout-undo [options] [step = 1] <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lu<br>
+
+<br>
+
+Load a snapshot of the current layout,<br>
+
+step = 0 indicates current snapshot, step = 1 previous snapshot,...<br>
+
+<br>
+
+See also: layout-checkpoint, layout-redo, layout-history<br>
+
+</samp><hr>
+<a name="layoutlist"></a>
+<h3 style="color: #990000;"># layoutlist</h3>
+<samp>
+Usage: screen-session layoutlist [options] [HEIGHT]<br>
+
+       scs ll<br>
+
+       :bind l at 0 exec scs layoutlist -l -c 20<br>
+
+<br>
+
+Displays a browseable list of layouts. There are two list creation algorithms.<br>
+
+If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers<br>
+
+are modulo divided by HEIGHT and the reminder determines their Y position.<br>
+
+This tool comes handy after raising the maximum number of layouts."<br>
+
+<br>
+
+Options:<br>
+
+-a [min_len=2]&nbsp; - minimum matching charecters for auto highlight,<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; min_len = 0 disables auto highlight<br>
+
+-c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - do not terminate layoutlist after selecting a layout<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; or reselect a running layoutlist, best used with "-l" option,<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; there should be running only one layoutlist started with "-c"<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; per session<br>
+
+-l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - create a temporary layout and window for layoutlist<br>
+
+-p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - run layout-checkpoint before activating layoutlist<br>
+
+-w&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - create a temporary window for layoutlist<br>
+
+-t [width=11]&nbsp;&nbsp; - set title width<br>
+
+<br>
+
+Keys:<br>
+
+?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - display help<br>
+
+ENTER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - confirm / select<br>
+
+ARROWS and hjkl - movement<br>
+
+/ or SPACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - start searching layout titles<br>
+
+n and p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - next / previous search result<br>
+
+NUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - move to a layout<br>
+
+r or C-c or C-l - refresh the layout list<br>
+
+m or a&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - toggle MRU view,<br>
+
+v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - toggle search/autohighlight results view<br>
+
+o&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - toggle current and selected layouts<br>
+
+q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - quit / select previous layout<br>
+
+Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - force quit if "-c" option was used<br>
+
+See also: layout-checkpoint<br>
+
+<br>
+
+</samp><hr>
+<a name="manager"></a>
+<h3 style="color: #990000;"># manager</h3>
+<samp>
+Usage: screen-session manager [account@host]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs m<br>
+
+<br>
+
+Sessions manager for GNU Screen with preview in a split window.<br>
+
+Requires python 2.5+<br>
+
+<br>
+
+KEYS:<br>
+
+CTRL + g&nbsp; - default escape key<br>
+
+ALT + t&nbsp;&nbsp; - toggle between regions<br>
+
+ALT + e&nbsp;&nbsp; - step into a selected session<br>
+
+ALT + q&nbsp;&nbsp; - quit<br>
+
+Alt + w&nbsp;&nbsp; - wipe<br>
+
+<br>
+
+COMMANDS:<br>
+
+? or h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - display help<br>
+
+q[uit]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - exit session manager<br>
+
+e[nter]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - enter into a session<br>
+
+a[ttach] [name] - attach and select<br>
+
+d[etach] [name] - detach and deselect<br>
+
+n[ame] [name]&nbsp;&nbsp; - rename<br>
+
+s[creen] [args] - create session<br>
+
+save [output]&nbsp;&nbsp; - save session<br>
+
+w[ipe]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - wipe dead sessions<br>
+
+restart&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - restart session manager<br>
+
+r[efresh]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - refresh session list<br>
+
+l[ayout]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - toggle layout<br>
+
+kill K&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - kill selected session<br>
+
+<br>
+
+</samp><hr>
+<a name="name"></a>
+<h3 style="color: #990000;"># name</h3>
+<samp>
+Usage: screen-session name [options] [new_sessionname]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs n<br>
+
+<br>
+
+Get or set the sessionname.<br>
+
+</samp><hr>
+<a name="nest"></a>
+<h3 style="color: #990000;"># nest</h3>
+<samp>
+Usage: screen-session nest-layout [options] [TARGET_LAYOUT]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs nl<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind N eval "colon" "stuff \"at 0 exec scs nest-layout \""<br>
+
+<br>
+
+Nest a layout in the current region.<br>
+
+</samp><hr>
+<a name="new_window"></a>
+<h3 style="color: #990000;"># new-window</h3>
+<samp>
+Usage: screen-session new-window [options] [program]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs new<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs nw<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind c eval "colon" "stuff \"at 0 exec scs new-window \""<br>
+
+<br>
+
+Start a new Screen window with the same working directory as the current window.<br>
+
+It also sets new window number to current number + 1.<br>
+
+<br>
+
+Options:<br>
+
+-d [directory] - specify the new window working directory<br>
+
+</samp><hr>
+<a name="regions"></a>
+<h3 style="color: #990000;"># regions</h3>
+<samp>
+Usage: screen-session regions [options]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs r<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind X at 0 exec scs regions<br>
+
+<br>
+
+Display a number in each region.<br>
+
+Allows selecting, swapping and rotating. Inspired by tmux display-panes.<br>
+
+Requires an active layout.<br>
+
+<br>
+
+Keys:<br>
+
+goto region&nbsp; - number and [g] or ['] or [space]<br>
+
+swap regions - number and [s]<br>
+
+rotate left&nbsp; - number and [l]<br>
+
+rotate right - number and [r]<br>
+
+<br>
+
+reverse goto region&nbsp;&nbsp;&nbsp;&nbsp; - number and [G]<br>
+
+swap regions and select - number and [S]<br>
+
+rotate left&nbsp; and select - number and [L]<br>
+
+rotate right and select - number and [R]<br>
+
+</samp><hr>
+<a name="renumber"></a>
+<h3 style="color: #990000;"># renumber</h3>
+<samp>
+Usage: screen-session renumber [options]<br>
+
+<br>
+
+Renumber windows to fill the gaps.<br>
+
+Use case: suppose you are trying to run ":at 0 some_command" but there is<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; no such window.<br>
+
+<br>
+
+</samp><hr>
+<a name="subwindows"></a>
+<h3 style="color: #990000;"># subwindows</h3>
+<samp>
+Usage: screen-session subwindows [groupids or titles]<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs sw<br>
+
+<br>
+
+Print windows contained in groups.<br>
+
+A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
+
+</samp><hr>
+
+    <center>
+    <h6>
+    <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
+    Last modified: July 27, 2011
+    </h6>
+    </center>
+    
+</body>
+</html>
+
