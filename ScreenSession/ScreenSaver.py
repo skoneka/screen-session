@@ -151,6 +151,7 @@ class ScreenSaver(object):
         # keep original numbering, move existing windows
 
         self.homewindow = self.number()
+
         if self.exact:
             maxnewwindow = -1
             for w in winlist:
@@ -167,12 +168,16 @@ class ScreenSaver(object):
             self.__move_all_windows(maxnewwindow + 1, self.group_other,
                                     False)
 
-        self.homewindow = self.number()
         out("\nLoading windows:")
         self.__load_screen()
+
         if self.enable_layout:
             out("\nLoading layouts:")
-            self.__load_layouts()
+            try:
+                self.__load_layouts()
+            except:
+                sys.stderr.write('Layouts loading failed!\n')
+
         self.__restore_mru()
 
         return 0
