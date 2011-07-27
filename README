@@ -78,7 +78,7 @@ processes, even if used with sudo, but this may change in future.
 During session loading, every new window starts with screen-session-primer
 (a small C program) which displays a list of processes and asks user what
 to do: whether to start none, some or all of window's processes or directly
-starts programs provided --force-start <win_num> option was used.
+starts programs provided "--force-start [win_num]" option was used.
 
 Then, primer tries to restore the string of processes by executing
 for nodes:

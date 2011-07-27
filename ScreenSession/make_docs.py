@@ -50,11 +50,12 @@ HTML_END = """\
 </html>
 """
 
-MENU_ITEMS = (('index.html', 'About'), ('news.html', 'News'), ('documentation.html',
-              'Documentation'), ('installation.html', 'Installation'), ('gnu_screen.html',
-              'Screenshots'), ('https://github.com/skoneka/screen-session/issues',
-              'Feedback'), ('https://github.com/skoneka/screen-session/downloads',
-              'Download'))
+MENU_ITEMS = (('index.html', 'About'), ('news.html', 'News'), 
+              ('documentation.html', 'Documentation'),
+              ('installation.html', 'Installation'),
+              ('screenshots.html', 'Screenshots'),
+              ('https://github.com/skoneka/screen-session/issues', 'Feedback'),
+              ('https://github.com/skoneka/screen-session/downloads', 'Download'))
 
 
 def gen_menu(menu_items, current_url):
