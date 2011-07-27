@@ -359,10 +359,11 @@ def main():
         try:
             ret = scs.load()
             if bKill:
-                os.system('%s -mdc /dev/null %s kill-group -S "%s" %s' %
-                        (os.getenv('SCREENBIN'),
-                        os.path.join(os.path.dirname((sys.argv)[0]),"screen-session"),
-                        scs.pid, str(scs.wrap_group_id)))
+                print('Killing wrap group: "%s"'% scs.wrap_group_id)
+                os.system('%s -mdc /dev/null -S SESSION_SAVER_KILL-GROUP %s kill-group -S "%s" %s' %
+                (os.getenv('SCREENBIN'),
+                os.path.join(os.path.dirname((sys.argv)[0]),"screen-session"),
+                scs.pid, str(scs.wrap_group_id)))
         except:
             ret = 0
             traceback.print_exc(file=sys.stderr)
