@@ -28,19 +28,17 @@
 <samp>
 screen-session - a collection of tools for GNU Screen
 <br>
-====================================================
+=====================================================
 <br>
 
 <br>
-Website: http://skoneka.github.com/screen-session/
+Website: <a href="http://skoneka.github.com/screen-session/">http://skoneka.github.com/screen-session/</a>
 <br>
 
 <br>
 Development: git clone git://github.com/skoneka/screen-session
 <br>
 
-<br>
-Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 <br>
 
 <br>
@@ -58,7 +56,7 @@ It includes a session saver and a session manager, among others.
 <br>
 online documentation is available at:
 <br>
-http://skoneka.github.com/screen-session/documentation.html
+<a href="http://skoneka.github.com/screen-session/documentation.html">http://skoneka.github.com/screen-session/documentation.html</a>
 <br>
 
 <br>
@@ -68,55 +66,55 @@ Available screen-session modes:
 <br>
 ----
 <br>
-save        - save Screen ( and VIM ) session
+save&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - save Screen ( and VIM ) session
 <br>
-load        - load session
+load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - load session
 <br>
-ls          - list saved sessions
+ls&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - list saved sessions
 <br>
 ----
 <br>
 
 <br>
-dump        - print detailed informations about windows in the session
+dump&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - print detailed informations about windows in the session
 <br>
-find-file   - find opened files in windows (requires lsof)
+find-file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - find opened files in windows (requires lsof)
 <br>
-group       - move windows to a group
+group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - move windows to a group
 <br>
-layoutlist  - display a list of layouts
+layoutlist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - display a list of layouts
 <br>
 layout-checkpoint - record a snapshot of the current layout.
 <br>
-layout-history - display saved snapshots of the current layout
+layout-history&nbsp;&nbsp;&nbsp; - display saved snapshots of the current layout
 <br>
-layout-redo - load a snapshot of the current layout,
+layout-redo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - load a snapshot of the current layout,
 <br>
-layout-undo - load a snapshot of the current layout,
+layout-undo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - load a snapshot of the current layout,
 <br>
-kill        - send SIGTERM to last process started in a window
+kill&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - send SIGTERM to last process started in a window
 <br>
-kill-zombie - kill all zombie windows in session
+kill-zombie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - kill all zombie windows in session
 <br>
-kill-group  - recursively kill all windows in a group
+kill-group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - recursively kill all windows in a group
 <br>
-manager     - sessions manager (screenie like) but featuring session
+manager&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - sessions manager (screenie like) but featuring session
 <br>
-              preview in a split window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; preview in a split window
 <br>
-nest-layout - copy a layout to the current region
+nest-layout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - copy a layout to the current region
 <br>
-new-window  - start a new Screen window in the same working directory
+new-window&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - start a new Screen window in the same working directory
 <br>
-              on the position next to the current window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; on the position next to the current window
 <br>
-name        - get or set the sessionname
+name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - get or set the sessionname
 <br>
-regions     - display a number in every region (like tmux display-panes)
+regions&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - display a number in every region (like tmux display-panes)
 <br>
-renumber    - renumber windows to fill gaps
+renumber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - renumber windows to fill gaps
 <br>
-subwindows  - recursively print windows contained in groups
+subwindows&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - recursively print windows contained in groups
 <br>
 
 <br>
@@ -194,7 +192,9 @@ Then, primer tries to restore the string of processes by executing
 <br>
 for nodes:
 <br>
-$ shell -ic "primer_start-program ID-of-a-process-to-be-started IDs-of-queued-programs; primer_start-program ID-of-the-shell" shell-arguments
+$ shell -ic "primer_start-program ID-of-a-process-to-be-started \
+<br>
+IDs-of-queued-programs; primer_start-program ID-of-the-shell" shell-arguments
 <br>
 (during resaving the "-ic arguments" part is ignored)
 <br>
@@ -244,7 +244,7 @@ want to force verbatim restoring use --exact or --exact-kill flags.
 <br>
 Save files are .tar.bz2 archives (scrollbacks can take a lot of space).
 <br>
-Temporary files are stored in  /tmp/screen-session-$USER.
+Temporary files are stored in&nbsp; /tmp/screen-session-$USER.
 <br>
 You may edit save files either by typing 'E' in a primer instance or with
 <br>
@@ -268,19 +268,19 @@ Bugs
 <br>
 * Tools using layouts may fail if operating on detached Screen sessions.
 <br>
-* Slow startup of regions tool if there is no hardstatus line
+* Regions tool startup is slow if there is no hardstatus line.
 <br>
 * In order to speed up Screen commands execution :msgminwait is set to 0
 <br>
-  and the original value is not restored.
+&nbsp; and the original value is not restored.
 <br>
 * :hardcopydir is altered and not restored
 <br>
 
 <br>
-Please send suggestions and bug reports to admin<[at]>adb.cba.pl 
+Please send suggestions and bug reports to Github issue tracker:
 <br>
-or Github issue tracker http://github.com/skoneka/screen-session/issues
+<a href="http://github.com/skoneka/screen-session/issues">http://github.com/skoneka/screen-session/issues</a>
 <br>
 
 <br>
@@ -289,7 +289,7 @@ or Github issue tracker http://github.com/skoneka/screen-session/issues
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: July 27, 2011
+    Last modified: July 28, 2011
     </h6>
     </center>
     
