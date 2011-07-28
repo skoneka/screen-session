@@ -101,11 +101,12 @@ def get_layout_history(session, layout):
     layhist.undo.sort(reverse = True)
     
     n_undo = []
-    for (i,f) in enumerate(layhist.undo):
+    for (i,e) in enumerate(layhist.undo):
+        d,f = e
         if i >= HISTLEN:
             removeit(f)
         else:
-            n_undo.append(f)
+            n_undo.append((d,f))
     layhist.undo = n_undo
 
     for f in glob.glob(os.path.join(tdir_r, 'L*')):
