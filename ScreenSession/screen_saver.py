@@ -31,7 +31,6 @@ import shutil
 import tempfile
 import traceback
 import re
-import pprint
 from ScreenSaver import ScreenSaver
 from util import *
 from util import tmpdir
@@ -84,7 +83,7 @@ def main():
             "help",
             ])
     except getopt.GetoptError, err:
-        out('BAD OPTIONS')
+        sys.stderr.write('BAD OPTIONS\n')
         raise SystemExit
 
     mode = 0
@@ -310,7 +309,7 @@ def main():
         except:
             ret = 0
             traceback.print_exc(file=sys.stderr)
-            out('session saving totally failed')
+            sys.stderr.write('session saving totally failed\n')
             scs.Xecho("screen-session saving totally FAILED")
             doexit(1)
 
@@ -348,7 +347,7 @@ def main():
             recent = list_sessions(home, projectsdir, util.archiveend,
                                    savedir, True)
             if recent:
-                print 'Selecting the most recent file: ' + recent
+                out('Selecting the most recent file: ' + recent)
                 scs.savedir = savedir = input = recent
                 scs._scrollfile = os.path.join(scs.savedir, "hardcopy.")
                 unpackme(home, projectsdir, savedir, util.archiveend,
@@ -359,7 +358,7 @@ def main():
         try:
             ret = scs.load()
             if bKill:
-                print('Killing wrap group: "%s"'% scs.wrap_group_id)
+                out('Killing wrap group: %s'% scs.wrap_group_id)
                 os.system('%s -mdc /dev/null -S SESSION_SAVER_KILL-GROUP %s kill-group -S "%s" %s' %
                 (os.getenv('SCREENBIN'),
                 os.path.join(os.path.dirname((sys.argv)[0]),"screen-session"),
@@ -367,7 +366,7 @@ def main():
         except:
             ret = 0
             traceback.print_exc(file=sys.stderr)
-            out('session loading totally failed')
+            sys.stderr.write('session loading totally failed\n')
             scs.Xecho("screen-session loading TOTALLY FAILED")
             doexit(1)
 
@@ -386,4 +385,4 @@ if __name__ == '__main__':
     try:
         main()
     except IOError:
-        print 'File access error'
+        sys.stderr.write('File access error\n')
