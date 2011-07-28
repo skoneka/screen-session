@@ -23,9 +23,11 @@ import os
 import sys
 import glob
 import time
-from util import tmpdir
+from util import tmpdir, removeit
 from ScreenSaver import ScreenSaver
 import GNUScreen as sc
+
+HISTLEN = 8
 
 layout_dump = 'layout_dump'
 layout_regions = 'layout_regions'
@@ -97,6 +99,14 @@ def get_layout_history(session, layout):
         date_file_tuple = (lastmod_date, f)
         layhist.undo.append(date_file_tuple)
     layhist.undo.sort(reverse = True)
+    
+    n_undo = []
+    for (i,f) in enumerate(layhist.undo):
+        if i >= HISTLEN:
+            removeit(f)
+        else:
+            n_undo.append(f)
+    layhist.undo = n_undo
 
     for f in glob.glob(os.path.join(tdir_r, 'L*')):
         stats = os.stat(f)
