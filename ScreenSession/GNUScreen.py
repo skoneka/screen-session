@@ -31,14 +31,22 @@ if not SCREEN:
     from util import which
     SCREEN = which('screen')[0]
 
+layout_files_prefix = os.path.join(tmpdir_source, "layout-")
+
 datadir = None
 dumpscreen_window_dirs = []
-
 
 def cleanup():
     for tdir in dumpscreen_window_dirs:
         removeit(tdir)
 
+    # remove old files in "___source" directory
+    import glob
+    import time
+    now = time.time()
+    for f in glob.glob(os.path.join(tmpdir_source, '*')):
+        if now - os.stat(f).st_mtime > 30:
+            remove(f)
 
 def make_dumpscreen_dirs(session):
     global dumpscreen_window_dirs
@@ -105,22 +113,49 @@ class Regions:
     focusminsize_y = None
     regions = []
 
-def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y):
+layout_source_file = None
+layout_session = None
+layout_file = None
+
+def layout_begin(session):
+    global layout_file
+    global layout_source_file
+    global layout_session
+    layout_session = session
+    layout_source_file = os.path.join(layout_files_prefix+"%d" % (os.getpid()))
+    if not os.path.exists(tmpdir_source):
+        os.makedirs(tmpdir_source)
+    layout_file = open(layout_source_file, 'w')
+    return layout_file
+
+def layout_select_layout(layout):
+    global layout_file
+    layout_file.write('layout select %s\n' % layout)
+
+def layout_load_dump(sfile):
+    global layout_file
+    for l in sfile:
+        layout_file.write(l)
+
+def layout_end():
+    global layout_file
+    global layout_session
+    global layout_source_file
+    layout_file.close()
     from ScreenSaver import ScreenSaver
-    ss = ScreenSaver(session)
+    ss = ScreenSaver(layout_session)
+    ss.source(layout_source_file)
+
+
+def layout_load_regions(regions, wins_trans, new_term_size_x, new_term_sizy_y):
+    global layout_file
     term_size_x = int(regions.term_size_x)
     term_size_y = int(regions.term_size_y)
     regions_size = []
     winlist = []
-    # ___source
-    source_file = os.path.join(tmpdir_source, "load_regions-%s" % str(os.getpid()))
-    if not os.path.exists(tmpdir_source):
-        os.makedirs(tmpdir_source)
-    
-    f = open(source_file, 'w')
 
     # recalculate regions dimensions, select windows
-    f.write('focus top\n')
+    layout_file.write('focus top\n')
     for (window, sizex, sizey) in regions.regions:
         winlist.append(window)
         nsizex = (int(sizex) * new_term_size_x) / term_size_x
@@ -135,34 +170,31 @@ def load_regions(session, regions, wins_trans, new_term_size_x, new_term_sizy_y)
                     w = (wins_trans)[window]
                 else:
                     w = window
-                f.write('select %s\n' % w)
+                layout_file.write('select %s\n' % w)
             except:
                 sys.stderr.write('Unable to set focus for: %s\n' %
                     window)
         else: 
-            f.write('select -\n')
-        f.write('focus\n')
+            layout_file.write('select -\n')
+        layout_file.write('focus\n')
 
     # set regions dimensions, do not run if there is only a single region
 
     if len(regions_size) > 1:
-        f.write('focus top\n')
+        layout_file.write('focus top\n')
         for (nsizex, nsizey) in regions_size:
             if sizex > 0:
-                f.write('resize -h %d\n' %nsizex)
-                f.write('resize -v %d\n' %nsizey)
-                f.write('fit\n')
-            f.write('focus\n')
+                layout_file.write('resize -h %d\n' %nsizex)
+                layout_file.write('resize -v %d\n' %nsizey)
+                layout_file.write('fit\n')
+            layout_file.write('focus\n')
 
         # restore focus on the right region
-        f.write('focus top\n')
+        layout_file.write('focus top\n')
         for i in range(0, regions.focus_offset):
-            f.write('focus\n')
+            layout_file.write('focus\n')
     if regions.focusminsize_x != '0' or regions.focusminsize_y != '0':
-        f.write("%s %s\n" % (regions.focusminsize_x, regions.focusminsize_y))
-    f.close()
-    ss.source(source_file)
-    remove(source_file)
+        layout_file.write("%s %s\n" % (regions.focusminsize_x, regions.focusminsize_y))
 
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver

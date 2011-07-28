@@ -58,7 +58,6 @@ def nest_layout(session, src_layuot, dst_layout):
     print ('src_term_size: %s' % str(src_term_size))
 
     scs.layout('select %s' % dst_layout, False)
-    scs.source(src_dumpfile)
     
     regions_new = sc.Regions()
     regions_new.focus_offset =  regions_dst.focus_offset + regions_src.focus_offset
@@ -82,7 +81,10 @@ def nest_layout(session, src_layuot, dst_layout):
     print('source regions: ' + str(regions_src.regions))
     print('new regions: ' + str(regions_new.regions))
 
-    sc.load_regions(session, regions_new, None, dst_term_size[0], dst_term_size[1])
+    sc.layout_begin(session)
+    sc.layout_load_dump(open(src_dumpfile, 'r'))
+    sc.layout_load_regions(regions_new, None, dst_term_size[0], dst_term_size[1])
+    sc.layout_end()
 
     remove(src_dumpfile)
     remove(regions_file_dst)

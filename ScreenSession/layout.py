@@ -142,11 +142,13 @@ if __name__ == '__main__':
             targ = 0
 
         cur = layhist.current[0]
-        ss.only()
-        ss.source(os.path.join(ld, layout_dump))
         term_x, term_y = map(int, ss.dinfo()[0:2])
-        sc.load_regions(session, sc.get_regions(os.path.join(ld, layout_regions)),
+        lay_f = sc.layout_begin(session)
+        lay_f.write('only\n')
+        sc.layout_load_dump(open(os.path.join(ld, layout_dump), 'r'))
+        sc.layout_load_regions(sc.get_regions(os.path.join(ld, layout_regions)),
                 None, term_x, term_y)
+        sc.layout_end()
 
         os.rename(ld, os.path.join(tdir, os.path.basename(ld)))
         if targ > 0:

@@ -177,8 +177,10 @@ class ScreenSaver(object):
                 self.__load_layouts()
             except:
                 sys.stderr.write('Layouts loading failed!\n')
+                # raise
 
         self.__restore_mru()
+        sc.cleanup()
 
         return 0
 
@@ -246,7 +248,6 @@ class ScreenSaver(object):
         #check if target Screen is currently in some group and set hostgroup to it
 
         (hostgroupid, hostgroup) = self.get_group(homewindow)
-        
         rootwindow = self.number()
         if self.exact:
             rootgroup = self.none_group
@@ -292,23 +293,8 @@ class ScreenSaver(object):
             except Exception:
                 sys.stderr.write('%d Unable to load window\n' % id)
 
-        for (
-            win,
-            time,
-            group,
-            type,
-            title,
-            filter,
-            scrollback_len,
-            cmdargs,
-            processes,
-            ) in wins:
-            (self.__wins_trans)[win] = self.__create_win(
-                self.exact,
-                self.__wins_trans,
-                self.pid,
-                hostgroup,
-                rootgroup,
+        try:
+            for (
                 win,
                 time,
                 group,
@@ -318,7 +304,25 @@ class ScreenSaver(object):
                 scrollback_len,
                 cmdargs,
                 processes,
-                )
+                ) in wins:
+                (self.__wins_trans)[win] = self.__create_win(
+                    self.exact,
+                    self.__wins_trans,
+                    self.pid,
+                    hostgroup,
+                    rootgroup,
+                    win,
+                    time,
+                    group,
+                    type,
+                    title,
+                    filter,
+                    scrollback_len,
+                    cmdargs,
+                    processes,
+                    )
+        except ValueError:
+            sys.stderr.write('Ignoring windows - maximum number of windows reached.\n')
 
         for (
             win,
@@ -332,26 +336,29 @@ class ScreenSaver(object):
             processes,
             ) in wins:
             try:
-                (groupid, group) = group.split(" ", 1)
+                try:
+                    (groupid, group) = group.split(" ", 1)
+                except:
+                    groupid = "-1"
+                    group = self.none_group
+                self.__order_group(
+                    (self.__wins_trans)[win],
+                    self.pid,
+                    hostgroup,
+                    rootwindow,
+                    rootgroup,
+                    win,
+                    time,
+                    groupid,
+                    group,
+                    type,
+                    title,
+                    filter,
+                    scrollback_len,
+                    processes,
+                    )
             except:
-                groupid = "-1"
-                group = self.none_group
-            self.__order_group(
-                (self.__wins_trans)[win],
-                self.pid,
-                hostgroup,
-                rootwindow,
-                rootgroup,
-                win,
-                time,
-                groupid,
-                group,
-                type,
-                title,
-                filter,
-                scrollback_len,
-                processes,
-                )
+                pass
 
         out("Rootwindow is " + rootwindow)
         if self.wrap_group_id:
@@ -542,7 +549,6 @@ class ScreenSaver(object):
                 out('Moving window %s to %d' % (cwin, iwin + shift))
             os.system(command)
         self.select('%d' % homewindow)
-        sc.cleanup()
 
     def lastmsg(self):
         return util.timeout_command('%s -Q @lastmsg' % self.sc, self.timeout)[0]
@@ -705,8 +711,11 @@ class ScreenSaver(object):
         self.command_at(False, 'split %s' % args)
 
     def screen(self, args="", win="-1"):
-        return self.query_at('screen %s' % args, win).split(':')[1].strip()
-
+        msg = self.query_at('screen %s' % args, win)
+        if msg.startswith('No more'):
+            raise ValueError('No more windows.')
+        else:
+            return msg.split(':')[1].strip()
     def scrollback(self, args="", win="-1"):
         msg = self.command_at(True, 'scrollback %s' % args, win)
         return msg.rsplit(" ", 1)[1].strip()
@@ -1054,6 +1063,7 @@ class ScreenSaver(object):
         if layout_c > 0:
             self.__layouts_loaded = True
         lc = 0
+        layout_file = sc.layout_begin(self.pid)
         while lc < layout_c:
             filename = None
             try:
@@ -1064,14 +1074,13 @@ class ScreenSaver(object):
 
                 # the winlayout_NUM files contain "dumpscreen layout" output 
                 # (see GNUScreen.Regions class)
-                
+
                 filename2 = os.path.join(head, "win" + tail)
                 regions = sc.get_regions(filename2)
                 status = self.get_layout_new(regions.title)
                 if not status:
-                    sys.stderr.write('Maximum number of layouts reached. Ignoring layout %s (%s).\n' %
+                    sys.stderr.write('\nMaximum number of layouts reached. Ignoring layout %s (%s).\n' %
                         (layoutnumber, regions.title))
-                    f.close()
                     break
                 else:
                     if self.exact:
@@ -1081,32 +1090,29 @@ class ScreenSaver(object):
                         currentlayout = self.get_layout_number()[0]
                     layout_trans[layoutnumber] = currentlayout
 
+                    sc.layout_select_layout(currentlayout)
                     # source the output produced by "layout dump"
-                    
-                    self.source(filename)
-            
+                    sc.layout_load_dump(open(filename,'r'))
+
                     regions_size = []
                     winlist = []
 
                     for (window, sizex, sizey) in regions.regions:
                         winlist.append(window)
                         regions_size.append((sizex, sizey))
-
-                    out("%s (%s) %s regions (focus %s)\t\t%s - %s" % (layoutnumber,
-                        regions.title, len(regions.regions), regions.focus_offset, winlist,
-                        regions_size))
-
-                    sc.load_regions(self.pid, regions, self.__wins_trans, cdinfo[0], cdinfo[1])
+                    sc.layout_load_regions(regions, self.__wins_trans, cdinfo[0], cdinfo[1])
+                    # sys.stdout.write(" %s (%s);" % (layoutnumber, regions.title))
             except:
                 # import traceback
                 # traceback.print_exc(file=sys.stderr)
                 # raise
                 layout_c += 1
                 if layout_c > 2000:
-                    sys.stderr.write('Errors during layouts loading.\n')
+                    sys.stderr.write('\nErrors during layouts loading.\n')
                     break
             finally:
                 lc += 1
+        out('')
         if not lc == 0:
 
             # select last layout
@@ -1116,7 +1122,7 @@ class ScreenSaver(object):
 
             if homelayout != -1:
                 out("Returning homelayout %s" % homelayout)
-                self.layout('select %s' % homelayout, False)
+                layout_file.write('layout select %s' % homelayout)
             else:
                 sys.stderr.write('No homelayout - unable to return.\n')
 
@@ -1128,15 +1134,14 @@ class ScreenSaver(object):
                 last = lasttail.split("_", 2)
                 lastid_l = last[1]
                 try:
-                    self.layout('select %s' % layout_trans[lastid_l],
-                                False)
+                    out("Selecting last layout: %s (%s)" % (layout_trans[lastid_l], lastid_l))
+                    layout_file.write('layout select %s' % layout_trans[lastid_l])
+                    # ^^ layout numbering may change, use layout_trans={}
                 except:
-                    sys.stderr.write("Unable to select last_layout %s\n" % lastid_l)
+                    sys.stderr.write("Unable to select last layout %s\n" % lastid_l)
         else:
-
-                # ^^ layout numbering may change, use layout_trans={}
-
             self.enable_layout = False
+        sc.layout_end()
 
     def select_region(self, region):
         self.focus('top')

@@ -43,12 +43,13 @@ A collection of utilities for GNU Screen.
 Help:    scs help [mode]
 
 Options supported by all tools:
-    -S [target] - target Screen session name,
+    -S [target] - target Screen session name
     --help      - print detailed mode's help
 
 Environment variables:
     SCREENBIN   - GNU Screen executable path
     PYTHONBIN   - Python interpreter path
+    STY         - target Screen session name
 
 Session saver modes:
     save        - save Screen ( and VIM ) session
@@ -385,6 +386,7 @@ Usage: screen-session save [-S sessionname] [options] [target_savefile]
        :bind S at 0 exec screen -mdc /dev/null screen-session save -fS $PID.$STY
 
 Save GNU Screen and VIM sessions to a file.
+Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 Options:
 -f --force
@@ -426,6 +428,7 @@ help_saver_load = """\
 Usage: screen-session load [-S sessionname] [options] [source_savefile]
 
 Load saved session from a file.
+Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 Options:
 -x --exact
