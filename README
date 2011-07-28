@@ -1,11 +1,10 @@
 screen-session - a collection of tools for GNU Screen
-====================================================
+=====================================================
 
 Website: http://skoneka.github.com/screen-session/
 
 Development: git clone git://github.com/skoneka/screen-session
 
-Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 -----------------------------------------------------------------------
 Description
@@ -19,31 +18,31 @@ http://skoneka.github.com/screen-session/documentation.html
 Available screen-session modes:
 
 ----
-save        - save Screen ( and VIM ) session
-load        - load session
-ls          - list saved sessions
+save              - save Screen ( and VIM ) session
+load              - load session
+ls                - list saved sessions
 ----
 
-dump        - print detailed informations about windows in the session
-find-file   - find opened files in windows (requires lsof)
-group       - move windows to a group
-layoutlist  - display a list of layouts
+dump              - print detailed informations about windows in the session
+find-file         - find opened files in windows (requires lsof)
+group             - move windows to a group
+layoutlist        - display a list of layouts
 layout-checkpoint - record a snapshot of the current layout.
-layout-history - display saved snapshots of the current layout
-layout-redo - load a snapshot of the current layout,
-layout-undo - load a snapshot of the current layout,
-kill        - send SIGTERM to last process started in a window
-kill-zombie - kill all zombie windows in session
-kill-group  - recursively kill all windows in a group
-manager     - sessions manager (screenie like) but featuring session
-              preview in a split window
-nest-layout - copy a layout to the current region
-new-window  - start a new Screen window in the same working directory
-              on the position next to the current window
-name        - get or set the sessionname
-regions     - display a number in every region (like tmux display-panes)
-renumber    - renumber windows to fill gaps
-subwindows  - recursively print windows contained in groups
+layout-history    - display saved snapshots of the current layout
+layout-redo       - load a snapshot of the current layout,
+layout-undo       - load a snapshot of the current layout,
+kill              - send SIGTERM to last process started in a window
+kill-zombie       - kill all zombie windows in session
+kill-group        - recursively kill all windows in a group
+manager           - sessions manager (screenie like) but featuring session
+                    preview in a split window
+nest-layout       - copy a layout to the current region
+new-window        - start a new Screen window in the same working directory
+                    on the position next to the current window
+name              - get or set the sessionname
+regions           - display a number in every region (like tmux display-panes)
+renumber          - renumber windows to fill gaps
+subwindows        - recursively print windows contained in groups
 
 
 -----------------------------------------------------------------------
@@ -82,7 +81,8 @@ starts programs provided "--force-start [win_num]" option was used.
 
 Then, primer tries to restore the string of processes by executing
 for nodes:
-$ shell -ic "primer_start-program ID-of-a-process-to-be-started IDs-of-queued-programs; primer_start-program ID-of-the-shell" shell-arguments
+$ shell -ic "primer_start-program ID-of-a-process-to-be-started \
+IDs-of-queued-programs; primer_start-program ID-of-the-shell" shell-arguments
 (during resaving the "-ic arguments" part is ignored)
 
 And for the last process to be restored:
@@ -119,11 +119,11 @@ Bugs
 -----------------------------------------------------------------------
 
 * Tools using layouts may fail if operating on detached Screen sessions.
-* Slow startup of regions tool if there is no hardstatus line
+* Regions tool startup is slow if there is no hardstatus line.
 * In order to speed up Screen commands execution :msgminwait is set to 0
   and the original value is not restored.
 * :hardcopydir is altered and not restored
 
-Please send suggestions and bug reports to admin<[at]>adb.cba.pl 
-or Github issue tracker http://github.com/skoneka/screen-session/issues
+Please send suggestions and bug reports to Github issue tracker:
+http://github.com/skoneka/screen-session/issues
 

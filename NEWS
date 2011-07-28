@@ -45,7 +45,8 @@ New in this release:
 
   * The installation process is considerably simpler.
     Screen-session is now distributed with patched GNU Screen sources placed in
-    screen-session-0.6.3/screen-4.1.0            ( not the real 4.1.0 )
+    screen-session-0.6.3/screen-4.1.0
+    ( Screen development sources with a few modifications )
     Github repository: https://github.com/skoneka/escreen
     - New commands:
         - dumpscreen [window | window-full | layout | layout-info | history]

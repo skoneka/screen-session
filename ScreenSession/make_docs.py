@@ -57,6 +57,29 @@ MENU_ITEMS = (('index.html', 'About'), ('news.html', 'News'),
               ('https://github.com/skoneka/screen-session/issues', 'Feedback'),
               ('https://github.com/skoneka/screen-session/downloads', 'Download'))
 
+_urlfinderregex = re.compile(r'http([^\.\s]+\.[^\.\s]*)+[^\.\s]{2,}')
+
+def linkify(text, maxlinklength):
+    def replacewithlink(matchobj):
+        url = matchobj.group(0)
+        text = unicode(url)
+        if len(text) > maxlinklength:
+            halflength = maxlinklength / 2
+            text = text[0:halflength] + '...' + text[len(text) - halflength:]
+
+        return '<a href="' + url + '">' + text + '</a>'
+
+    if text != None and text != '':
+        return _urlfinderregex.sub(replacewithlink, text)
+    else:
+        return ''
+
+def process_text(text):
+    import re
+    #text= re.findall(r"\b(?:(?:https?|ftp|file)://|www\.|ftp\.)[-A-Z0-9+&@#/%=~_|$?!:,.]*[A-Z0-9+&@#/%=~_|$]", text)
+    text = linkify(text, 200)
+    text = re.sub(' (?= )(?=([^"]*"[^"]*")*[^"]*$)', "&nbsp;", text)
+    return text
 
 def gen_menu(menu_items, current_url):
     menu = []
@@ -124,7 +147,7 @@ def write_index():
     menu = start_page(url)
     print """<samp>"""
     for line in open('README', 'r'):
-        print line + '<br>'
+        print process_text(line) + '<br>'
     print """</samp>"""
     end_page(menu)
 
@@ -132,12 +155,12 @@ def write_index():
 def write_screenshots():
     url = 'screenshots.html'
     menu = start_page(url)
-    images = (('saver-800x600.png', 'session saver screenshot'), ('layoutlist-800x600.png',
-              'layoutlist screenshot'), ('manager-800x600.png',
-              'session manager screenshot'), ('regions-800x600.png',
-              'regions tool screenshot'))
+    images = (('saver-800x600.png', 'session saver'),
+              ('layoutlist-800x600.png', 'layoutlist'),
+              ('manager-800x600.png', 'session manager'),
+              ('regions-800x600.png', 'regions tool'))
     for (f, desc) in images:
-        print """<br>%s<br><a href="%s"><img alt="%s" src="%s"></a><br><br>""" % \
+        print """<br>%s<br><a href="%s"><img alt="%s screenshot" src="%s"></a><br><br>""" % \
             (desc, img_base + f, desc, img_base + 'thumbs/' + f)
 
     end_page(menu)
@@ -148,7 +171,7 @@ def write_installation():
     menu = start_page(url)
     print """<samp>"""
     for line in open('INSTALL', 'r'):
-        print line + '<br>'
+        print process_text(line) + '<br>'
     print """</samp>"""
     end_page(menu)
 
@@ -164,7 +187,7 @@ def write_news():
     menu = start_page(url)
     print """<samp>"""
     for line in open('NEWS', 'r'):
-        print line + '<br>'
+        print(process_text(line) + '<br>')
     print """</samp>"""
     end_page(menu)
 
@@ -182,8 +205,7 @@ def write_documentation():
 
             #text = str(obj)
 
-            text = re.sub(' (?= )(?=([^"]*"[^"]*")*[^"]*$)', "&nbsp;",
-                          str(obj)).split('\n')
+            text = process_text(str(obj)).split('\n')
             for (l, line) in enumerate(text):
                 if line.strip() == "":
                     icomment = l + 1
