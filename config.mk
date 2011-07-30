@@ -22,3 +22,6 @@ LDFLAGS = -s ${LIBS}
 # compiler and linker
 CC = cc
 
+# Python binary used in the Makefile
+PYTHONBIN = python
+

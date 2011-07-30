@@ -50,7 +50,7 @@ www: www/index.html
 www/index.html: ${DOCS_GEN} ${DOCS_SRC_0} ${DOCS_SRC_1} Makefile
 	@echo building html documentation
 	@mkdir -p www
-	@python ${DOCS_GEN}
+	@${PYTHONBIN} ${DOCS_GEN}
 	@rm -f ${DOCS_GEN:.py=.pyc} ${DOCS_SRC_1:.py=.pyc}
 
 dist: dist_scs dist_screen
@@ -142,7 +142,7 @@ install: all
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
-	@python -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
+	@${PYTHONBIN} -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
 
 installtest: all
 	@echo linking \"${pwd}/${SRCDIR}/screen-session\" to \"${DESTDIR}${PREFIX}/bin/screen-session\"
