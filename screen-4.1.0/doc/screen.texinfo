@@ -5464,6 +5464,8 @@ either @code{AM} or @code{PM}
 current time @code{HH:MM} in 24h format
 @item C
 current time @code{HH:MM} in 12h format
+@item E
+sets %? to true if command mode is active (escape key was pressed)
 @item d
 day number
 @item D
