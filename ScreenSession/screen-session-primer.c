@@ -83,7 +83,6 @@ copy_file (char *inputfile, char *outputfile)
   int numr, numw;
   char buffer[100];
 
-
   if ((filer = fopen (inputfile, "rb")) == NULL) {
     fprintf (stderr, "open read file error.\n");
     return 1;
@@ -259,7 +258,7 @@ int
 requireSession (const char *basepath, const char *file_in_session, int force)
 {
   char *file = malloc ((strlen (file_in_session) + 1) * sizeof (char));
-  char *session = malloc ((strlen (file_in_session) + 1) * sizeof (char));
+  char *session = malloc ((strlen (file_in_session) + 5) * sizeof (char));
   char *basedir = malloc ((strlen (basepath) + 1) * sizeof (char));
 
   strcpy (basedir, basepath);
@@ -280,8 +279,7 @@ requireSession (const char *basepath, const char *file_in_session, int force)
   char *filepath =
     malloc ((strlen (basedir) + strlen (session) + 2) * sizeof (char));
   char *testfilepath =
-    malloc ((strlen (basedir) + strlen (session) + strlen (file_in_session) +
-	     2) * sizeof (char));
+    malloc ((strlen (basedir) + strlen (file_in_session) + 2) * sizeof (char));
   strcpy (filepath, basedir);
   strcat (filepath, "/");
   strcat (filepath, session);
@@ -1214,13 +1212,13 @@ main (int argc, char **argv)
 	malloc ((strlen (fullpath) + strlen (datafile) + 2) * sizeof (char));
       sprintf (buf1, "%s/%s", fullpath, datafile);
       char *buf2 =
-	malloc ((strlen (EDITOR) + strlen (fullpath) + strlen (datafile) +
-		 20) * sizeof (char));
-      sprintf (buf2, "\"/tmp/screen-session-%s/primer_edit_%s_%d\"",
+	malloc ((strlen (getenv("USER")) + strlen (session) + 40 + 6) 
+                * sizeof (char));
+      sprintf (buf2, "/tmp/screen-session-%s/primer_edit_%s_%d",
 	       getenv ("USER"), session, getpid ());
       char *buf0 =
-	malloc ((strlen (EDITOR) + strlen (buf2) + 5) * sizeof (char));
-      sprintf (buf0, "%s %s", EDITOR, buf2);
+	malloc ((strlen (EDITOR) + strlen (buf2) + 8) * sizeof (char));
+      sprintf (buf0, "%s \"%s\"", EDITOR, buf2);
       printf (PRIMER "Editing source: %s\n", buf1);
       copy_file (buf1, buf2);
       system (buf0);
@@ -1230,15 +1228,27 @@ main (int argc, char **argv)
       SAFE_FREE (buf0);
       SAFE_FREE (buf1);
       SAFE_FREE (buf2);
+
+      char *buf_pack =
+        malloc ((1 + 31 + strlen (scs_exe) + strlen (workingdir) +
+                 strlen (session)) * sizeof (char));
+      sprintf (buf_pack, "%s other --dir \"%s\" --pack \"%s\"", scs_exe,
+               workingdir, session);
+      system (buf_pack);
+      SAFE_FREE (buf_pack);
+      reset_primer (argv, fullpath, scrollbackfile, datafile);
+      
+      /* 
       int pid = fork ();
       if (pid == 0) {
-	buf0 =
-	  malloc ((1 + 21 + strlen (scs_exe) + strlen (workingdir) +
+	char *buf_pack =
+	  malloc ((1 + 31 + strlen (scs_exe) + strlen (workingdir) +
 		   strlen (session)) * sizeof (char));
-	sprintf (buf0, "%s other --dir \"%s\" --pack \"%s\"", scs_exe,
+        printf(buf_pack);
+	sprintf (buf_pack, "%s other --dir \"%s\" --pack \"%s\"", scs_exe,
 		 workingdir, session);
-	system (buf0);
-	SAFE_FREE (buf0);
+	system (buf_pack);
+	SAFE_FREE (buf_pack);
 	exit (0);
       }
       else if (pid < 0)
@@ -1247,6 +1257,7 @@ main (int argc, char **argv)
       else
 	reset_primer (argv, fullpath, scrollbackfile, datafile);
       break;
+      */
 
     }
     fprintf (stderr, PRIMER ": %s:%d fatal error - unsupported action %d\n",
