@@ -137,9 +137,6 @@ def requireme(home, projectsdir, file_in_session, force=False):
 
 
 def unpackme(home, projectsdir, savedir, archiveend, tmpdir):
-
-    #print   str((home,projectsdir,savedir,archiveend,tmpdir,full))
-
     HOME = os.getenv('HOME')
     if not savedir or not home or not projectsdir or os.path.join(home,
             projectsdir, savedir) == HOME or os.path.join(tmpdir,
@@ -148,9 +145,6 @@ def unpackme(home, projectsdir, savedir, archiveend, tmpdir):
     import tarfile
     removeit(os.path.join(home, projectsdir, savedir))
     removeit(os.path.join(tmpdir, savedir))
-
-    #print 'removing: %s'%os.path.join(home,projectsdir,savedir)
-    #print 'removing: %s'%os.path.join(tmpdir,savedir)
 
     if not os.path.exists(os.path.join(home, projectsdir, savedir +
                           archiveend)):
@@ -184,10 +178,12 @@ def removeit(path):
         if os.path.isdir(f):
             sys.stderr.write('Unable to remove. "%s" has subdirectories!' % p)
             return 2
-
-    for f in g:
-        os.remove(f)
-    os.rmdir(p)
+    try:
+        for f in g:
+            os.remove(f)
+        os.rmdir(p)
+    except OSError:
+        pass
 
 def remove(path):
     try:
@@ -245,7 +241,7 @@ def archiveme(tmpdir, home, projectsdir, savedir, archiveend, target):
         t1.close()
     except Exception:
         print 'Failed to archive.'
-        raise x
+        raise
 
 
 def list_sessions(home, projectsdir, archiveend, match, verbose=True):
