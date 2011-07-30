@@ -92,9 +92,9 @@ layout-redo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - load a snapshot of the current
 <br>
 layout-undo&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - load a snapshot of the current layout,
 <br>
-kill&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - send SIGTERM to last process started in a window
+kill&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - send SIGTERM to last the process started in a window
 <br>
-kill-zombie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - kill all zombie windows in session
+kill-zombie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - kill all zombie windows in the session
 <br>
 kill-group&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - recursively kill all windows in a group
 <br>
@@ -172,9 +172,7 @@ and sorts processes by parent pid. There is almost no "stuffing" of commands
 <br>
 into windows (except when saving Vim sessions) so there is no interaction 
 <br>
-with programs itself. Currently, saver is not capable of saving other user's
-<br>
-processes, even if used with sudo, but this may change in future.
+with programs itself.
 <br>
 
 <br>
@@ -212,9 +210,9 @@ execvp() function.
 <br>
 
 <br>
-Primer is capable of restoring an arbitrary number of processes, provided that
+Primer is capable of restoring an arbitrary number of processes, provided
 <br>
-all intermediate nodes are shells which accept the '-c command' switch.
+that all intermediate nodes are shells which accept the '-c command' switch.
 <br>
 
 <br>
@@ -268,13 +266,13 @@ Bugs
 <br>
 * Tools using layouts may fail if operating on detached Screen sessions.
 <br>
-* Regions tool startup is slow if there is no hardstatus line.
+* Saver is incapable of properly saving other user's (or SUID) processes
 <br>
 * In order to speed up Screen commands execution :msgminwait is set to 0
 <br>
 &nbsp; and the original value is not restored.
 <br>
-* :hardcopydir is altered and not restored
+* :hardcopydir is altered and not restored properly
 <br>
 
 <br>
@@ -289,7 +287,7 @@ Please send suggestions and bug reports to Github issue tracker:
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: July 28, 2011
+    Last modified: July 30, 2011
     </h6>
     </center>
     

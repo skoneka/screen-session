@@ -100,7 +100,7 @@ Options:<br>
 
 -l --log&nbsp; [file]<br>
 
-&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout and stderr<br>
 
 -d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
 
@@ -122,9 +122,9 @@ scs load<br>
 
 scs load --exact<br>
 
-#4# load the last saved session inside the current session without layouts<br>
+#4# load inside the current session without layouts and start all subprograms<br>
 
-scs load --no-layout<br>
+scs load --no-layout --force-start all<br>
 
 #5# load the last saved session into a new Screen<br>
 
@@ -150,7 +150,7 @@ Options:<br>
 
 -l --log&nbsp; [file]<br>
 
-&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout and stderr<br>
 
 -d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
 
@@ -184,7 +184,7 @@ Options:<br>
 
 -l --log&nbsp; [file]<br>
 
-&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout and stderr<br>
 
 -d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
 
@@ -244,7 +244,7 @@ Options:<br>
 
 -l --log [file]<br>
 
-&nbsp;&nbsp;&nbsp; output to a file instead of stdout<br>
+&nbsp;&nbsp;&nbsp; output to a file instead of stdout and stderr<br>
 
 -d --dir&nbsp; [directory = $HOME/.screen-sessions]<br>
 
@@ -262,13 +262,13 @@ screen-session save -S SESSIONNAME mysavedsession<br>
 
 scs save --force<br>
 
-#3# save the current session without layouts<br>
+#3# save the current session without layouts and without window "SECURE" scroll<br>
 
-scs save --no-layout<br>
+scs save --no-layout --no-scroll SECURE<br>
 
-#4# run session saver after 3 minutes of inactivity, exclude group SECURE<br>
+#4# run session saver after 3 minutes of inactivity<br>
 
-:idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null<br>
+:idle 180 at 0 exec scs save --force --log /dev/null<br>
 
 #5# an alternative binding<br>
 
@@ -354,7 +354,7 @@ Useful for closing random emacs/vim instances and hung up ssh clients.<br>
 
 For a list of signal names run: $ pydoc signal<br>
 
-WARNING: sending SIGKILL to the current window may crash Screen<br>
+WARNING: sending KILL signal to the current window may crash Screen<br>
 
 </samp><hr>
 <a name="kill_group"></a>
@@ -688,6 +688,10 @@ rotate left&nbsp; and select - number and [L]<br>
 
 rotate right and select - number and [R]<br>
 
+<br>
+
+Note: regions tool may appear late if there is no hardstatus line<br>
+
 </samp><hr>
 <a name="renumber"></a>
 <h3 style="color: #990000;"># renumber</h3>
@@ -697,12 +701,6 @@ Usage: screen-session renumber [options]<br>
 <br>
 
 Renumber windows to fill the gaps.<br>
-
-Use case: suppose you are trying to run ":at 0 some_command" but there is<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; no such window.<br>
-
-<br>
 
 </samp><hr>
 <a name="subwindows"></a>
@@ -723,7 +721,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: July 28, 2011
+    Last modified: July 30, 2011
     </h6>
     </center>
     
