@@ -86,10 +86,7 @@
 #define BLACKLISTMAX 100
 #define BASEDATA_LINES 8
 #define PROCLINES 7
-#define QUOTEME(x) #x
-#define Q(x) QUOTEME(x)
-#define X $
-#define O \20
+
 #define SAFE_FREE(pt)\
     assert(pt!=NULL);\
     free(pt);\
