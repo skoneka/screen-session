@@ -42,9 +42,10 @@ Modifications included in Screen bundled with screen-session.
         - dumpscreen [window | window-full | layout | layout-info | history]
         - tty
         - maxlay
-    - make "group", "maxwin", "layout", "screen"  queryable
-    - associate focuminsize with the layout
-    - fix monitor crash
+    - make it possible to query "group", "maxwin", "layout", "screen" commands
+    - associate :focusminsize with the layout
+    - fix a crash when opening :windowlist inside a group
+      (triggered by :monitor feature)
     - an escape for the escape key
 
 
@@ -57,4 +58,8 @@ Compile and install the modified Screen:
 
     sudo make install
 
+Verify, that you are running the proper Screen version:
+
+    % screen --version
+    Screen version 4.01.00scs_VERSION (screen-session project) 27-July-11
 

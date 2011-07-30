@@ -31,8 +31,8 @@ layout-checkpoint - record a snapshot of the current layout.
 layout-history    - display saved snapshots of the current layout
 layout-redo       - load a snapshot of the current layout,
 layout-undo       - load a snapshot of the current layout,
-kill              - send SIGTERM to last process started in a window
-kill-zombie       - kill all zombie windows in session
+kill              - send SIGTERM to last the process started in a window
+kill-zombie       - kill all zombie windows in the session
 kill-group        - recursively kill all windows in a group
 manager           - sessions manager (screenie like) but featuring session
                     preview in a split window
@@ -71,8 +71,7 @@ and ":wviminfo".
 Session saver accesses important data by directly reading /proc filesystem 
 and sorts processes by parent pid. There is almost no "stuffing" of commands 
 into windows (except when saving Vim sessions) so there is no interaction 
-with programs itself. Currently, saver is not capable of saving other user's
-processes, even if used with sudo, but this may change in future.
+with programs itself.
 
 During session loading, every new window starts with screen-session-primer
 (a small C program) which displays a list of processes and asks user what
@@ -91,8 +90,8 @@ $ primer_start-program ID-of-a-process-to-be-started
 primer_start-program reads the process data from savefile/win_NUM and calls
 execvp() function.
 
-Primer is capable of restoring an arbitrary number of processes, provided that
-all intermediate nodes are shells which accept the '-c command' switch.
+Primer is capable of restoring an arbitrary number of processes, provided
+that all intermediate nodes are shells which accept the '-c command' switch.
 
 May be restored completely:
 0 zsh -> 1 bash -> 2 vim hello.c
@@ -119,10 +118,10 @@ Bugs
 -----------------------------------------------------------------------
 
 * Tools using layouts may fail if operating on detached Screen sessions.
-* Regions tool startup is slow if there is no hardstatus line.
+* Saver is incapable of properly saving other user's (or SUID) processes
 * In order to speed up Screen commands execution :msgminwait is set to 0
   and the original value is not restored.
-* :hardcopydir is altered and not restored
+* :hardcopydir is altered and not restored properly
 
 Please send suggestions and bug reports to Github issue tracker:
 http://github.com/skoneka/screen-session/issues

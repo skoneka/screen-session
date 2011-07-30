@@ -97,7 +97,9 @@ rotate right - number and [r]
 reverse goto region     - number and [G]
 swap regions and select - number and [S]
 rotate left  and select - number and [L]
-rotate right and select - number and [R]\
+rotate right and select - number and [R]
+
+Note: regions tool may appear late if there is no hardstatus line\
 """
 
 help_kill = """\
@@ -107,7 +109,7 @@ Usage: screen-session kill [options] [signal=TERM] [window=current]
 Kill last process started in a window.
 Useful for closing random emacs/vim instances and hung up ssh clients.
 For a list of signal names run: $ pydoc signal
-WARNING: sending SIGKILL to the current window may crash Screen\
+WARNING: sending KILL signal to the current window may crash Screen\
 """
 
 help_kill_zombie = """\
@@ -324,9 +326,7 @@ See also: layout-checkpoint, layout-undo, layout-redo\
 help_renumber = """\
 Usage: screen-session renumber [options]
 
-Renumber windows to fill the gaps.
-Use case: suppose you are trying to run ":at 0 some_command" but there is
-         no such window.
+Renumber windows to fill the gaps.\
 """
 
 _help_sort = """\
@@ -360,7 +360,7 @@ Options:
 --unpack [savefile]
     unpack savefile to /tmp/screen-session-$USER
 -l --log  [file]
-    output to a file instead of stdout
+    output to a file instead of stdout and stderr
 -d --dir  [directory = $HOME/.screen-sessions]
     directory holding saved sessions
 
@@ -374,7 +374,7 @@ List saved sessions.
 
 Options:
 -l --log  [file]
-    output to a file instead of stdout
+    output to a file instead of stdout and stderr
 -d --dir  [directory = $HOME/.screen-sessions]
     directory holding saved sessions
 
@@ -405,7 +405,7 @@ Options:
 -V --no-vim
     disable vim session saving
 -l --log [file]
-    output to a file instead of stdout
+    output to a file instead of stdout and stderr
 -d --dir  [directory = $HOME/.screen-sessions]
     directory holding saved sessions
 
@@ -414,10 +414,10 @@ Examples:
 screen-session save -S SESSIONNAME mysavedsession
 #2# save the current session, force overwrite of old savefiles
 scs save --force
-#3# save the current session without layouts
-scs save --no-layout
-#4# run session saver after 3 minutes of inactivity, exclude group SECURE
-:idle 180 at 0 exec scs save --no-scroll SECURE --force --log /dev/null
+#3# save the current session without layouts and without window "SECURE" scroll
+scs save --no-layout --no-scroll SECURE
+#4# run session saver after 3 minutes of inactivity
+:idle 180 at 0 exec scs save --force --log /dev/null
 #5# an alternative binding
 bind S eval 'colon' 'stuff "at 0 exec screen -mdc /dev/null scs save -fS \\"$PID.$STY\\""'
 
@@ -447,7 +447,7 @@ Options:
 -m --mru
     enable restoring of the Most Recently Used order of windows
 -l --log  [file]
-    output to a file instead of stdout
+    output to a file instead of stdout and stderr
 -d --dir  [directory = $HOME/.screen-sessions]
     directory holding saved sessions
 
@@ -458,8 +458,8 @@ screen-session load -S SESSIONNAME --exact mysavedsession
 scs load
 #3# load the last saved session with exactly the same window numbers
 scs load --exact
-#4# load the last saved session inside the current session without layouts
-scs load --no-layout
+#4# load inside the current session without layouts and start all subprograms
+scs load --no-layout --force-start all
 #5# load the last saved session into a new Screen
 screen -m scs load --exact-kill
 

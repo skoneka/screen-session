@@ -114,11 +114,13 @@ Modifications included in Screen bundled with screen-session.
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - maxlay
 <br>
-&nbsp;&nbsp;&nbsp; - make "group", "maxwin", "layout", "screen"&nbsp; queryable
+&nbsp;&nbsp;&nbsp; - make it possible to query "group", "maxwin", "layout", "screen" commands
 <br>
-&nbsp;&nbsp;&nbsp; - associate focuminsize with the layout
+&nbsp;&nbsp;&nbsp; - associate :focusminsize with the layout
 <br>
-&nbsp;&nbsp;&nbsp; - fix monitor crash
+&nbsp;&nbsp;&nbsp; - fix a crash when opening :windowlist inside a group
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (triggered by :monitor feature)
 <br>
 &nbsp;&nbsp;&nbsp; - an escape for the escape key
 <br>
@@ -144,6 +146,14 @@ Compile and install the modified Screen:
 <br>
 
 <br>
+Verify, that you are running the proper Screen version:
+<br>
+
+<br>
+&nbsp;&nbsp;&nbsp; % screen --version
+<br>
+&nbsp;&nbsp;&nbsp; Screen version 4.01.00scs_VERSION (screen-session project) 27-July-11
+<br>
 
 <br>
 </samp>
@@ -151,7 +161,7 @@ Compile and install the modified Screen:
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: July 28, 2011
+    Last modified: July 30, 2011
     </h6>
     </center>
     
