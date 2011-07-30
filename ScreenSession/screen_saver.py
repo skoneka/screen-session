@@ -314,7 +314,7 @@ def main():
             doexit(1)
 
         if ret:
-            out('session saving failed')
+            sys.stderr.write('session saving failed\n')
             scs.Xecho("screen-session saving FAILED")
         else:
             out('compressing...')
@@ -371,7 +371,7 @@ def main():
             doexit(1)
 
         if ret:
-            out('session loading failed')
+            sys.stderr.write('session loading failed\n')
             scs.Xecho("screen-session loading FAILED")
         else:
             scs.Xecho("screen-session finished loading")

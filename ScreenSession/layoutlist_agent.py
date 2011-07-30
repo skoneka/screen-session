@@ -424,7 +424,7 @@ def menu_table(
         elif x in (curses.KEY_END, ord('$')):
             pos_x = len(laytable[pos_y]) - 1
         elif x == curses.KEY_PPAGE:
-            pos_y = pos_y - 5 if pos_y - 5 > 0 else 0
+            pos_y = pos_y - 5 > 0 and pos_y - 5 or 0
         elif x == ord('?'):
             from help import help_layoutlist
             screen.erase()
@@ -536,7 +536,7 @@ def menu_table(
             #sys.stderr.write("KEY(%d) POS(%d,%d) RLEN(%d) CLEN(%d)\n"%(x,pos_x,pos_y,row_len,col_len))
 
             if x == curses.KEY_NPAGE:
-                pos_y = pos_y + 5 if pos_y + 5 < col_len else col_len
+                pos_y = pos_y + 5 < col_len and pos_y + 5 or col_len
             elif x in (ord('j'), curses.KEY_DOWN):
                 if pos_y < col_len:
                     pos_y += 1
@@ -671,8 +671,13 @@ def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
     screen = curses.initscr()
     (laytable, pos_start) = create_table(ss, screen, curlay, layinfo,
             lnum, height)
-
-    curses.start_color()
+    try:
+        curses.start_color()
+    except:
+        curses.endwin()
+        sys.stderr.write('start_color() failed!\n')
+        return 1
+        
     curses.noecho()
 
     #screen.notimeout(1)
@@ -719,9 +724,9 @@ if __name__ == '__main__':
     session = (sys.argv)[1]
     curwin = (sys.argv)[2]
     curlay = (sys.argv)[3]
-    requirecleanup_win = True if (sys.argv)[4] == '1' else False
-    requirecleanup_lay = True if (sys.argv)[5] == '1' else False
-    NO_END = True if (sys.argv)[6] == '1' else False
+    requirecleanup_win = (sys.argv)[4] == '1' and True or False
+    requirecleanup_lay = (sys.argv)[5] == '1' and True or False
+    NO_END = (sys.argv)[6] == '1' and True or False
     MAXTITLELEN = int((sys.argv)[7])
     AUTOSEARCH_MIN_MATCH = int((sys.argv)[8])
 

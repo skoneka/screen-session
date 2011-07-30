@@ -669,7 +669,7 @@ class ScreenSaver(object):
             return msg.split(" (", 1)[0]
 
     def focusminsize(self, args=""):
-        msg = self.command_at(True if not args else False, 'focusminsize %s' % args)
+        msg = self.command_at(args and True or False, 'focusminsize %s' % args)
         if args:
             try:
                 return msg.split('is ', 1)[1].strip()
@@ -1110,8 +1110,7 @@ class ScreenSaver(object):
                 if layout_c > 2000:
                     sys.stderr.write('\nErrors during layouts loading.\n')
                     break
-            finally:
-                lc += 1
+            lc += 1
         out('')
         if not lc == 0:
 

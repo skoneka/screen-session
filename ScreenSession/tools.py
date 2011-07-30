@@ -393,6 +393,6 @@ def kill_win_last_proc(session, win="-1", sig="TERM"):
         ## No processes for this window.
         ## Do nothing
 
-        return True
+        return False
 
 

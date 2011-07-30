@@ -34,5 +34,7 @@ try:
 except:
     win = "-1"
 
-ret = tools.kill_win_last_proc(session, win, mode)
-exit(0 if ret else 1)
+if tools.kill_win_last_proc(session, win, mode):
+    sys.exit(0)
+else:
+    sys.exit(1)

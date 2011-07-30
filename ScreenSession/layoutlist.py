@@ -34,13 +34,13 @@ if __name__ == '__main__':
             'layoutlist_agent.py')
 
     session = (sys.argv)[1]
-    newlay = True if (sys.argv)[2] == '1' else False
-    newwin = True if (sys.argv)[3] == '1' else False
+    newlay = (sys.argv)[2] == '1' and True or False
+    newwin = (sys.argv)[3] == '1' and True or False
     s_no_end = (sys.argv)[4]
-    no_end = True if (sys.argv)[4] == '1' else False
+    no_end = (sys.argv)[4] == '1' and True or False
     title_width = int((sys.argv)[5])
     autosearch = (sys.argv)[6]
-    layout_checkpoint = True if (sys.argv)[7] == '1' else False
+    layout_checkpoint = (sys.argv)[7] == '1' and True or False
 
     try:
         height = int((sys.argv)[8])
