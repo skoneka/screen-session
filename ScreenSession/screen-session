@@ -159,9 +159,9 @@ else
             elif [ $mode = "find-pid" -o $mode = "fp" ]; then
                 $PYTHONBIN $SCRIPTPATH/find_pid.py "$session" "$@"
                 ret=$?
-            elif [ $mode = "find-file" -o $mode = "ff" ]; then
-                $PYTHONBIN $SCRIPTPATH/find_file.py "$session" "$@"
-                ret=$?
+            #elif [ $mode = "find-file" -o $mode = "ff" ]; then
+            #    $PYTHONBIN $SCRIPTPATH/find_file.py "$session" "$@"
+            #    ret=$?
             elif [ $mode = "kill" -o $mode = "K" ]; then
                 # screen-session kill [signal=TERM] [win=current]
                 $PYTHONBIN $SCRIPTPATH/kill.py "$session" "$@"
