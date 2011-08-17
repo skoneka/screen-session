@@ -70,7 +70,7 @@ def main():
             "pack=",
             "unpack=",
             "log=",
-            "no-mru",
+            "mru",
             "no-vim",
             "no-scroll=",
             "no-layout",
@@ -83,8 +83,8 @@ def main():
             "help",
             ])
     except getopt.GetoptError, err:
-        sys.stderr.write('BAD OPTIONS\n')
-        raise SystemExit
+        sys.stderr.write(str(err) + '\n')
+        doexit(2)
 
     mode = 0
     util.archiveend = '.tar.bz2'
