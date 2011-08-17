@@ -203,18 +203,47 @@ def cleantmp(tmpdir, home, projectsdir, archiveend, blacklistfile,
     files_all = glob.glob(os.path.join(home, projectsdir, '*'))
     files_archives = glob.glob(os.path.join(home, projectsdir, '*%s' %
                                archiveend))
-    files_remove = list((set(files_all) - set(files_archives)) - set([os.path.join(home,
+    unsorted_remove = list((set(files_all) - set(files_archives)) - set([os.path.join(home,
                         projectsdir, blacklistfile)]))
-    for file in files_remove:
+    sort_remove = []
+    for f in unsorted_remove:
         try:
-            delta = ctime - os.path.getmtime(file)
-        except:
-            delta = timeout + 1
-        if delta > timeout:  # if seconds passed since last modification
-            removeit(file)
-    files_remove = glob.glob(os.path.join(tmpdir, '*'))
+            stats = os.stat(f)
+            lastmod_date = time.localtime(stats.st_mtime)
+            date_file_tuple = (lastmod_date, f)
+            sort_remove.append(date_file_tuple)
+        except OSError:
+            sort_remove.append((0, f))
+    sort_remove.sort(reverse = True)
+   
+    files_remove = []
+    for (d,f) in sort_remove[2:]:
+        files_remove.append(f)
+
+    for file in files_remove:
+        if os.path.islink(file):
+            try:
+                delta = ctime - os.path.getmtime(file)
+            except:
+                delta = timeout + 1
+            if delta > timeout:  # if seconds passed since last modification
+                removeit(file)
+    files_all = glob.glob(os.path.join(tmpdir, '*'))
     files_noremove = glob.glob(os.path.join(tmpdir, '___*'))
-    files_remove = list(set(files_remove) - set(files_noremove))
+    unsorted_remove = list(set(files_all) - set(files_noremove))
+
+    sort_remove = []
+    for f in unsorted_remove:
+        stats = os.stat(f)
+        lastmod_date = time.localtime(stats.st_mtime)
+        date_file_tuple = (lastmod_date, f)
+        sort_remove.append(date_file_tuple)
+    sort_remove.sort(reverse = True)
+   
+    files_remove = []
+    for (d,f) in sort_remove[2:]:
+        files_remove.append(f)
+
     for file in files_remove:
         try:
             delta = ctime - os.path.getmtime(file)
