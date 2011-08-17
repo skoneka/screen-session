@@ -32,7 +32,6 @@ import GNUScreen as sc
 from GNUScreen import SCREEN
 from ScreenSaver import ScreenSaver
 
-logfile = "___log-regions"
 inputfile = "___regions-input-%d" % os.getpid()
 sourcefile = os.path.join(tmpdir_source, "regions-source-%d" % os.getpid())
 subprogram = 'screen-session-helper'
@@ -151,7 +150,6 @@ def handler(signum, frame):
 
 
 def cleanup():
-    print ('restoring windows ' + str(win_history))
     cmd = ''
     f = open(sourcefile, 'w')
     for (i, w) in enumerate(win_history):
@@ -164,13 +162,11 @@ focus
     f.flush()
     f.close()
     scs.source(sourcefile)
-    print (focusminsize)
     scs.focusminsize(focusminsize)
     sc.cleanup()
     remove(sourcefile)
 
 def prepare_windows(scs):
-    print ('prepare_windows(%s)' % scs.pid)
     global focusminsize
     regions = None
     regions = sc.get_regions(sc.dumpscreen_layout(scs.pid))
@@ -178,7 +174,6 @@ def prepare_windows(scs):
     focusminsize = "%s %s" % (regions.focusminsize_x, regions.focusminsize_x)
     regions_c = len(regions.regions)
     focus_offset = regions.focus_offset
-    print ("regions = " + str(regions))
     scs.focusminsize('0 0')
     this_win_history = []
     cmd = ''
@@ -196,7 +191,6 @@ focus
     regions_n = []
     regions_n = sc.get_regions(sc.dumpscreen_layout(scs.pid))
     sc.cleanup()
-    print ("regions_n = " + str(regions_n))
 
     for r in (regions.regions)[focus_offset:]:
         this_win_history.append(r[0])
@@ -215,18 +209,13 @@ focus
 if __name__ == '__main__':
     if not os.path.exists(tmpdir_source):
         os.makedirs(tmpdir_source)
-    logfile = os.path.join(tmpdir, logfile)
+
     inputfile = os.path.join(tmpdir, inputfile)
-    file = os.path.join(tmpdir, logfile)
-    sys.stdout = open(logfile, 'w')
-    sys.stderr = sys.stdout
-    print ('regions script')
     subprogram = os.path.join(os.path.dirname((sys.argv)[0]), subprogram)
 
     session = (sys.argv)[1]
     scs = ScreenSaver(session)
     (win_history, wins, regions_c) = prepare_windows(scs)
-    print ('helper windows ' + str(wins))
 
     signal.signal(signal.SIGUSR1, handler)
     signal.pause()
