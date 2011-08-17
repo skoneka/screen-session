@@ -35,7 +35,6 @@ session = (sys.argv)[2]
 tdir = (sys.argv)[3]
 session_arg = '-S "%s"' % session
 cwin = sc.get_current_window(session)
-windows_old = sc.parse_windows(sc.get_windows(session))[0]
 
 if tdir == '':
     f = os.popen(SCREEN + ' %s -Q @tty' % session_arg)
@@ -64,16 +63,10 @@ if tdir == '':
         thedir = info[0]
     else:
         thedir = os.getcwd()
-elif tdir == '.':
-    thedir = os.getcwd()
-elif tdir == '..':
-    thedir = os.path.split(os.getcwd())[0]
-elif tdir == '~':
-    thedir = os.getenv('HOME')
 else:
-    thedir = tdir
+    thedir = os.path.expanduser(tdir)
 
-command = SCREEN + ' %s -X screen' % session_arg
+command = SCREEN + ' %s -Q screen' % session_arg
 
 if len(sys.argv) > 4:
     command += ' -t "%s"' % (" ").join(["%s" % v for v in (sys.argv)[4:]])
@@ -88,13 +81,14 @@ try:
 except:
     command += ' "' + os.getenv('SHELL') + '"'
 
-#print (command)
+f = os.popen(command)
+nwin = f.readline().split(':')[1].strip()
+f.close()
 
-os.system(command)
-
-windows_new = sc.parse_windows(sc.get_windows(session))[0]
-windows_diff = sc.find_new_windows(windows_old, windows_new)
-target = windows_diff[0]
-moveto = int(cwin) + 1
-sc.move(int(target), moveto, True, session)
+targ_num = int(cwin) + 1
+if nwin != '-1':
+    sc.move(int(nwin), targ_num, True, session)
+    print(targ_num)
+else:
+    print(nwin)
 
