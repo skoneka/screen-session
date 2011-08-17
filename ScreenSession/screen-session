@@ -41,7 +41,7 @@ if [ $# -eq 0 ]; then
 fi
 
 mode=$1
-shift 1 "$@"
+shift 1
 
 if [ $# -ge 1 ]; then
     if [ $1 = "--help" -o $1 = "-h" ]; then
