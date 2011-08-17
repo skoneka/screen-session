@@ -44,7 +44,6 @@ def nest_layout(session, src_layuot, dst_layout):
                 int(regions_dst.regions[regions_dst.focus_offset][2]))
     dst_term_size = (int(regions_dst.term_size_x),
                     int(regions_dst.term_size_y))
-    scs.focusminsize('0 0')
     scs.layout('select %s' % src_layout, False)
 
     scs.layout('dump %s' % src_dumpfile, False)

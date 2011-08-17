@@ -129,6 +129,8 @@ class Regions:
 layout_source_file = None
 layout_session = None
 layout_file = None
+layout_focusminsize_x = '0'
+layout_focusminsize_y = '0'
 
 def layout_begin(session):
     global layout_file
@@ -139,6 +141,7 @@ def layout_begin(session):
     if not os.path.exists(tmpdir_source):
         os.makedirs(tmpdir_source)
     layout_file = open(layout_source_file, 'w')
+    layout_file.write('focusminsize 0 0\n')
     return layout_file
 
 def layout_select_layout(layout):
@@ -154,6 +157,10 @@ def layout_end():
     global layout_file
     global layout_session
     global layout_source_file
+    global layout_focusminsize_x
+    global layout_focusminsize_y
+    if layout_focusminsize_x != '0' or layout_focusminsize_y != '0':
+        layout_file.write('focusminsize %s %s\n' % (layout_focusminsize_x, layout_focusminsize_y))
     layout_file.close()
     from ScreenSaver import ScreenSaver
     ss = ScreenSaver(layout_session)
@@ -162,6 +169,8 @@ def layout_end():
 
 def layout_load_regions(regions, wins_trans, new_term_size_x, new_term_sizy_y):
     global layout_file
+    global layout_focusminsize_x
+    global layout_focusminsize_y
     term_size_x = int(regions.term_size_x)
     term_size_y = int(regions.term_size_y)
     regions_size = []
@@ -173,7 +182,11 @@ def layout_load_regions(regions, wins_trans, new_term_size_x, new_term_sizy_y):
         winlist.append(window)
         nsizex = (int(sizex) * new_term_size_x) / term_size_x
         nsizey = (int(sizey) * new_term_sizy_y) / term_size_y
-        regions_size.append((nsizex, nsizey))
+
+        # set regions dimensions, do not run if there is only a single region
+        if len(regions.regions) > 1:
+            layout_file.write('resize -h %d\n' %nsizex)
+            layout_file.write('resize -v %d\n' %nsizey)
         if not window == "-1":
             try:
 
@@ -184,6 +197,7 @@ def layout_load_regions(regions, wins_trans, new_term_size_x, new_term_sizy_y):
                 else:
                     w = window
                 layout_file.write('select %s\n' % w)
+                # layout_file.write('fit\n')
             except:
                 sys.stderr.write('Unable to set focus for: %s\n' %
                     window)
@@ -191,23 +205,15 @@ def layout_load_regions(regions, wins_trans, new_term_size_x, new_term_sizy_y):
             layout_file.write('select -\n')
         layout_file.write('focus\n')
 
-    # set regions dimensions, do not run if there is only a single region
 
-    if len(regions_size) > 1:
-        layout_file.write('focus top\n')
-        for (nsizex, nsizey) in regions_size:
-            if sizex > 0:
-                layout_file.write('resize -h %d\n' %nsizex)
-                layout_file.write('resize -v %d\n' %nsizey)
-                layout_file.write('fit\n')
-            layout_file.write('focus\n')
-
+    if len(regions.regions) > 1:
         # restore focus on the right region
         layout_file.write('focus top\n')
         for i in range(0, regions.focus_offset):
             layout_file.write('focus\n')
-    if regions.focusminsize_x != '0' or regions.focusminsize_y != '0':
-        layout_file.write("%s %s\n" % (regions.focusminsize_x, regions.focusminsize_y))
+
+    layout_focusminsize_x = regions.focusminsize_x
+    layout_focusminsize_y = regions.focusminsize_y
 
 def dumpscreen_layout(session):
     from ScreenSaver import ScreenSaver
@@ -265,7 +271,6 @@ def get_regions(tfile):
         regions.regions.append(tuple(line))
     tfiled.close()
     return regions
-
 
 def gen_all_windows_fast(session, datadir):
     from ScreenSaver import ScreenSaver
