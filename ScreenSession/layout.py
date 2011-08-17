@@ -39,7 +39,7 @@ class LayoutHistory:
 
 
 def setup_dirs(session, layout):
-    global checkpointdir, tdir, tdir_u, tdir_r, tdir_c
+    global checkpointdir, tdir, tdir_u, tdir_r, tdir_c, tdir_z
     
     session = session.split('.',1)[0]
     checkpointdir = '___layout_checkpoint'
@@ -48,14 +48,14 @@ def setup_dirs(session, layout):
             (checkpointdir, session, layout))
     tdir_u = os.path.join(tmpdir, '%s/u' % (tdir))
     tdir_r = os.path.join(tmpdir, '%s/r' % (tdir))
-    tdir_c = os.path.join(tmpdir, '%s/L%s' % (tdir, os.getpid()))
+    tdir_c = os.path.join(tmpdir, '%s/L%d_%d' % (tdir, os.getpid(), time.time()))
+    tdir_z = os.path.join(tmpdir, '%s/zoom' % (tdir))
     if not os.path.exists(tdir):
         os.makedirs(tdir)
 
-    for d in (tdir_u, tdir_r):
+    for d in (tdir_u, tdir_r, tdir_z):
         if not os.path.exists(d):
             os.mkdir(d)
-
 
 
 def layout_checkpoint(session, layout):
@@ -89,6 +89,7 @@ def layout_checkpoint(session, layout):
             os.rmdir(redo_dir)
     except OSError:
         pass
+    return tfile1,tfile2
 
 def get_layout_history(session, layout):
     layhist = LayoutHistory()
@@ -190,4 +191,28 @@ if __name__ == '__main__':
             print ('No saved snapshots for %s layout %s' % (session, layout))
     elif mode == 'checkpoint':
         layout_checkpoint(session, layout)
+    elif mode == 'zoom':
+        f_dump, f_regions = layout_checkpoint(session, layout)
+        f_z_regions = os.path.join(tdir_z, layout_regions)
+        f_z_dump = os.path.join(tdir_z, layout_dump)
+        regions_c = sc.get_regions(f_regions)
+        if len(regions_c.regions) > 1:
+            import shutil
+            shutil.copy(f_dump, f_z_dump)
+            shutil.copy(f_regions, f_z_regions)
+            ss.only()
+        elif os.path.exists(f_z_regions):
+            regions_z = sc.get_regions(f_z_regions)
+            term_x, term_y = map(int, ss.dinfo()[0:2])
+            lay_f = sc.layout_begin(session)
+            lay_f.write('only\n')
+            sc.layout_load_dump(open(f_z_dump, 'r'))
+
+            old_region = regions_z.regions[regions_z.focus_offset]
+            current_region = regions_c.regions[regions_c.focus_offset]
+            new_region = (current_region[0], old_region[1], old_region[2])
+            regions_z.regions[regions_z.focus_offset] = new_region
+
+            sc.layout_load_regions(regions_z, None, term_x, term_y)
+            sc.layout_end()
     sc.cleanup()

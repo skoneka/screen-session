@@ -191,6 +191,9 @@ else
             elif [ $mode = "layout-history" -o $mode = "lh" ]; then
                 $PYTHONBIN $SCRIPTPATH/layout.py history "$session" "$@"
                 ret=$?
+            elif [ $mode = "layout-zoom" -o $mode = "lz" ]; then
+                $PYTHONBIN $SCRIPTPATH/layout.py zoom "$session" "$@"
+                ret=$?
             elif [ $mode = "renumber" ]; then
                 $PYTHONBIN $SCRIPTPATH/renumber.py "$session" "$@"
                 ret=$?
