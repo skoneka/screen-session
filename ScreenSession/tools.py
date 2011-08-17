@@ -135,28 +135,23 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                     if showpid:
                         try:
                             pids = sc.get_tty_pids(ctty)
-                        except:
-                            lines.append("%s No access\n" % cwin)
-                            pass
-                        for pid in pids:
-                            sum_process_total += 1
-                            try:
-                                (cwd, exe, cmd) = sc.get_pid_info(pid)
-                                lines.append("%s PID   %s CWD %s\n" % (cwin,
-                                        pid, cwd))
-                                lines.append("%s PID   %s EXE %s\n" % (cwin,
-                                        pid, exe))
-                                cmd = cmd.split('\0')
-                                pcmd = cmd[0]
-
-                                if cmd[1] != '':
-                                    pcmd += " "+" ".join(["\"%s\"" % v for v in cmd[1:-1]])
-
-                                lines.append("%s PID   %s CMD %s\n" % (cwin,
-                                        pid, pcmd))
-                            except:
-
+                            for pid in pids:
+                                sum_process_total += 1
                                 try:
+                                    (cwd, exe, cmd) = sc.get_pid_info(pid)
+                                    lines.append("%s PID   %s CWD %s\n" % (cwin,
+                                            pid, cwd))
+                                    lines.append("%s PID   %s EXE %s\n" % (cwin,
+                                            pid, exe))
+                                    cmd = cmd.split('\0')
+                                    pcmd = cmd[0]
+
+                                    if cmd[1] != '':
+                                        pcmd += " "+" ".join(["\"%s\"" % v for v in cmd[1:-1]])
+
+                                    lines.append("%s PID   %s CMD %s\n" % (cwin,
+                                            pid, pcmd))
+
                                     if cmd[0].endswith('screen-session-primer') and cmd[1] == '-p':
                                         sum_primer += 1
                                         lines[0] = lines[0][:-1] + " / primer\n"
@@ -164,10 +159,10 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                                         sum_vim += 1
                                         lines[0] = lines[0][:-1] + " / VIM\n"
                                 except:
-                                    pass
-
-                                lines.append("%s PID > %s < No permission\n" %
-                                        (cwin, pid))
+                                    lines.append("%s PID > %s < No permission\n" %
+                                            (cwin, pid))
+                        except:
+                            lines.append("%s Unable to access PIDs associated with tty.\n" % cwin)
                 try:
                     map(stdout.write, lines)
                 except:
