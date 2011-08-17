@@ -19,7 +19,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-VERSION = 'git'
+VERSION = '(devel)'
 version_str = \
     "screen-session %s - a collection of tools for GNU Screen." % \
     VERSION
@@ -36,9 +36,8 @@ Unpractical/useless tools:
 '''
 
 help_help = """\
+%s
 Usage:   screen-session [mode] [options]
-
-A collection of utilities for GNU Screen.
 
 Help:    scs help [mode]
 
@@ -58,16 +57,16 @@ Session saver modes:
 
 Other tools:
     dump        - print informations about windows in the session
-    find-file   - find open files in windows
     group       - move windows to a group
     kill        - send a signal to the last process started in a window
     kill-group  - recursively kill a group and all windows inside
     kill-zombie - kill all zombie windows in the session
     layoutlist  - display a browseable list of layouts in the session
-    layout-checkpoint - record a snapshot of the current layout.
+    layout-checkpoint - record a snapshot of the current layout
     layout-history - display saved snapshots of the current layout
-    layout-redo - load a snapshot of the current layout,
-    layout-undo - load a snapshot of the current layout,
+    layout-redo - load a snapshot of the current layout
+    layout-undo - load a snapshot of the current layout
+    layout-zoom - zoom into and out of a region
     manager     - a sessions manager with a split Screen window preview
     name        - get or set the sessionname
     nest-layout - nest a layout in the current region
@@ -77,7 +76,7 @@ Other tools:
     subwindows  - print windows contained in a group
 
 Please report bugs to http://github.com/skoneka/screen-session/issues\
-"""
+""" % version_str
 
 help_regions = """\
 Usage: screen-session regions [options]
@@ -163,7 +162,7 @@ Find PIDs in windows. Obsoleted by "dump" tool.
 Example: screen-session find-pid $(pgrep vim)\
 """
 
-help_find_file = """\
+_help_find_file = """\
 Usage: screen-session find-file [options] [files]
        scs ff
 
@@ -319,6 +318,18 @@ Usage: screen-session layout-history [options]
        scs lh
 
 Display saved snapshots of the current layout.
+
+See also: layout-checkpoint, layout-undo, layout-redo\
+"""
+
+help_layout_zoom= """\
+Usage: screen-session layout-zoom [options] 
+       scs lz
+       :bind o at 0 exec scs layout-zoom
+
+Zoom into and out of a region. Intented to replace ":only" command.
+Requires an active layout. Inspired by ZoomWin Vim plugin:
+http://www.vim.org/scripts/script.php?script_id=508
 
 See also: layout-checkpoint, layout-undo, layout-redo\
 """
@@ -492,7 +503,7 @@ def run(argv):
         elif mode in ('find-pid', 'fp'):
             print _help_find_pid
         elif mode in ('find-file', 'ff'):
-            print help_find_file
+            print _help_find_file
         elif mode == 'grab':
             print _help_grab
         elif mode in ('group', 'g'):
@@ -513,6 +524,8 @@ def run(argv):
             print help_layout_redo
         elif mode in ('layout-history', 'lh'):
             print help_layout_history
+        elif mode in ('layout-zoom', 'lz'):
+            print help_layout_zoom
         elif mode == 'renumber':
             print help_renumber
         elif mode == 'sort':

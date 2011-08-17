@@ -24,13 +24,13 @@ ls                - list saved sessions
 ----
 
 dump              - print detailed informations about windows in the session
-find-file         - find opened files in windows (requires lsof)
 group             - move windows to a group
 layoutlist        - display a list of layouts
 layout-checkpoint - record a snapshot of the current layout.
 layout-history    - display saved snapshots of the current layout
 layout-redo       - load a snapshot of the current layout,
 layout-undo       - load a snapshot of the current layout,
+layout-zoom       - zoom into and out of a region
 kill              - send SIGTERM to last the process started in a window
 kill-zombie       - kill all zombie windows in the session
 kill-group        - recursively kill all windows in a group

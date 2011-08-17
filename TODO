@@ -29,8 +29,7 @@
     login options (-l and -ln) , terminal type  option  (-T  <term>),
     the  all-capability-flag  (-a)
 * Detect and filter "orphaned" processes (eg started with &)
-* Encrypt save files
-* Save file editing (like in screeninator)
+* Easy save file editing (like in screeninator)
 
 // manager:
 * Add session-wide and host-wide window search

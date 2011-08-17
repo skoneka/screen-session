@@ -34,9 +34,9 @@ HTML_BEG = \
 <html lang="en">
 <head>
 <title>screen-session project</title>
-<meta name="Generator" content="Vim/7.3">
+<meta name="Generator" content="ScreenSession/make_docs.py">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-
+<meta name="keywords" content="screen-session, GNU Screen, utilities, tools, documentation, tmux, Screen">
 <link rel="home" title="Home" href="http://adb.cba.pl">
 </head>
 <body bgcolor="#ffffff" text="#000000">
@@ -221,6 +221,7 @@ def write_documentation():
                 if len(name) > max_command_len:
                     max_command_len = len(name)
                 helps_tools.append((name, icomment, text))
+    print("""screen-session is a collection of utilities for GNU Screen.<br><hr>""")
 
     def doc_print_index_row(href, name, comment):
         print """<tr><td><a href="#%s">%s</a></td><td>&nbsp;%s</td></tr>""" % \
