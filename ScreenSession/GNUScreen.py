@@ -113,6 +113,19 @@ class Regions:
     focusminsize_y = None
     regions = []
 
+    def __str__(self):
+        return """\
+        title = %s
+        focus_offset = %s
+        term_size_x = %s
+        term_size_y = %s
+        focusminsize_x = %s
+        focusminsize_y = %s
+        regions = %s\
+        """ % (str(self.title), str(self.focus_offset), str(self.term_size_x),
+            str(self.term_size_y), str(self.focusminsize_x),
+            str(self.focusminsize_y), str(self.regions))
+
 layout_source_file = None
 layout_session = None
 layout_file = None
