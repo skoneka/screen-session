@@ -785,12 +785,12 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
    * so we assume it is a shell */
   if (procs_n > 1) {
     /* move saved arguments of the current shell to make place for
-     *   "-ic command" */
+     *   "-c command" */
     for (i = proc_args_n - 1; i > 3; i--) {
       strcpy (proc_args[i], proc_args[i - 3]);
     }
 
-    strcpy (proc_args[1], "-ic");
+    strcpy (proc_args[1], "-c");
 
     char *command =
       malloc (((procs_n) * 4 + 2 * ((2 * strlen (thisprogram)) +
