@@ -43,6 +43,7 @@ Key      | Arguments | Description\n\
 [E]dit   |           | edit primer's source file with $EDITOR\n\
          |[number]   | try to restart saved processes up to [number]\n\
 [O]nly   |[numbers..]| select processes which will be restarted\n\
+[F]ilter |           | toggle filter ( :exec ) restoring\n\
 ";
 
 #include <stdio.h>
