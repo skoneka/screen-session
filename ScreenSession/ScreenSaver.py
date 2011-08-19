@@ -290,8 +290,9 @@ class ScreenSaver(object):
                         win[7],
                         nproc,
                         ))
-            except Exception:
-                sys.stderr.write('%d Unable to load window\n' % id)
+            except Exception,x:
+                sys.stderr.write('%d Unable to load window ( %s )\n' %
+                        (id, str(x)))
 
         try:
             for (
@@ -892,9 +893,9 @@ class ScreenSaver(object):
                                 blacklist = False
                             cpids_data.append(pidinfo + tuple([blacklist]))
                             ncpids.append(pid)
-                        except:
-                            errors.append('%s PID %s: Unable to access. No permission or no procfs.' %
-                                    (cwin, pid))
+                        except Exception,x:
+                            errors.append('%s PID %s: Unable to access ( %s )' %
+                                    (cwin, pid, str(x)))
                     cpids = ncpids
 
             if cpids:

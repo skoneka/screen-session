@@ -158,17 +158,17 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                                     elif cmd[0] in ('vi', 'vim', 'viless', 'vimdiff'):
                                         sum_vim += 1
                                         lines[0] = lines[0][:-1] + " / VIM\n"
-                                except:
-                                    lines.append("%s PID > %s < No permission\n" %
-                                            (cwin, pid))
-                        except:
-                            lines.append("%s Unable to access PIDs associated with tty.\n" % cwin)
+                                except OSError,x:
+                                    lines.append("%s PID > %s < Unable to access pid data ( %s )\n" %
+                                            (cwin, pid, str(x)))
+                        except Exception,x:
+                            lines.append("%s Unable to access PIDs associated with tty ( %s )\n" %
+                                    (cwin,str(x)))
                 try:
                     map(stdout.write, lines)
                 except:
                     break
-                    None
-                    pass
+
         print 'WINDOWS: %d\t[ %d basic | %d group | %d zombie | %d telnet ]' % \
             (sum_win, sum_basic, sum_group, sum_zombie, sum_telnet)
         print 'PROCESS: %d\t[ %d primer | %d vim ]' % (sum_process_total,
