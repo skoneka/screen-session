@@ -266,13 +266,16 @@ def kill_zombie(session, datadir, groupids=[]):
 def subwindows(session, datadir, groupids):
     ss = ScreenSaver(session)
     bAll = False
-    if groupids[0] in ('cg', 'current', '..'):
-        groupids[0] = ss.get_group()[0]
-        if groupids[0] == "-1":
+    try:
+        if groupids[0] in ('cg', 'current', '..'):
+            groupids[0] = ss.get_group()[0]
+            if groupids[0] == "-1":
+                bAll = True
+        elif groupids[0] in ('cw', 'current-window', '.'):
+            groupids[0] = ss.get_number_and_title()[0]
+        elif groupids[0] == 'all':
             bAll = True
-    elif groupids[0] in ('cw', 'current-window', '.'):
-        groupids[0] = ss.get_number_and_title()[0]
-    elif groupids[0] == 'all':
+    except IndexError:
         bAll = True
     group_wins = {}
     group_groups = {}

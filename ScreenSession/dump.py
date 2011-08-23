@@ -23,16 +23,15 @@ import sys
 import GNUScreen as sc
 from ScreenSaver import ScreenSaver
 import tools
+import util 
 
 if __name__ == '__main__':
     session = (sys.argv)[1]
     showpid = (sys.argv)[2]
     reverse = (sys.argv)[3]
     sort = (sys.argv)[4]
-    try:
-        groupids = (sys.argv)[5:]
-    except:
-        groupids = []
+    windows = util.expand_numbers_list((sys.argv)[5:])
+
     if showpid == '0':
         showpid = False
     else:
@@ -47,6 +46,6 @@ if __name__ == '__main__':
         sort = True
     ss = ScreenSaver(session)
     tools.dump(ss, tools.require_dumpscreen_window(session, True),
-               showpid, reverse, sort, groupids)
+               showpid, reverse, sort, windows)
     tools.cleanup()
 

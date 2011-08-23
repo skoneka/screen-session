@@ -23,8 +23,10 @@ import sys
 import tools
 
 session = (sys.argv)[1]
-groupids = (sys.argv)[2:]
+
+windows = util.expand_numbers_list((sys.argv)[2:])
+
 tools.kill_zombie(session, tools.require_dumpscreen_window(session,
-                  False), groupids)
+                  False), windows)
 tools.cleanup()
 

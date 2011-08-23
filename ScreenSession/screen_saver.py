@@ -101,8 +101,8 @@ def main():
     mru = False
     force_start = []
     scroll = []
-    excluded = None
-    excluded_layouts = None
+    excluded = []
+    excluded_layouts = []
     verbose = False
     log = None
     force = False
@@ -143,20 +143,20 @@ def main():
         elif o in ("-V", "--no-vim"):
             bVim = False
         elif o in ("-H", "--no-scroll"):
-            scroll = a
+            scroll.append(a)
         elif o in ("-x", "--exact"):
             bExact = True
         elif o in ("-X", "--exact-kill"):
             bExact = True
             bKill = True
         elif o in ("-e", "--exclude"):
-            excluded = a
+            excluded.append(a)
         elif o in ("-L", "--exclude-layout"):
-            excluded_layouts = a
+            excluded_layouts.append(a)
         elif o in ("-f", "--force"):
             force = True
         elif o in ("-F", "--force-start"):
-            force_start = a
+            force_start.append(a)
         elif o in ("-y", "--no-layout"):
             enable_layout = False
         elif o in ("-h", "--help"):
@@ -274,14 +274,11 @@ def main():
     scs.bVim = bVim
     scs.mru = mru
     scs.bNoGroupWrap = bNoGroupWrap
-    if force_start:
-        scs.force_start = force_start.strip().split(',')
-    if excluded:
-        scs.excluded = excluded.split(',')
-    if excluded_layouts:
-        scs.excluded_layouts = excluded_layouts.split(',')
-    if scroll:
-        scs.scroll = scroll.split(',')
+
+    scs.force_start = expand_numbers_list(force_start)
+    scs.excluded = expand_numbers_list(excluded)
+    scs.excluded_layouts = expand_numbers_list(excluded_layouts)
+    scs.scroll = expand_numbers_list(scroll)
 
     if not os.path.exists(util.tmpdir):
         os.makedirs(util.tmpdir)

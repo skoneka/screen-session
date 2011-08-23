@@ -367,3 +367,23 @@ def which(file, mode=os.F_OK | os.X_OK, path=None):
                   find_in_path(file, path))
 
 
+def expand_numbers(numstr):
+    if not numstr:
+        return []
+    nums = numstr.split(',')
+    n_nums = []
+    for n in nums:
+        if '-' in n:
+            nmin,nmax = map(int, n.split('-'))
+            for n_j in range(nmin, nmax + 1):
+                n_nums.append('%s' % n_j)
+        else:
+            n_nums.append('%s' % n)
+    return n_nums
+
+def expand_numbers_list(numlist):
+    windows = []
+    for w in numlist:
+        for wn in expand_numbers(w):
+            windows.append(wn)
+    return windows
