@@ -107,7 +107,6 @@ Usage: screen-session kill [options] [signal=TERM] [window=current]
 
 Kill last process started in a window.
 Useful for closing random emacs/vim instances and hung up ssh clients.
-For a list of signal names run: $ pydoc signal
 WARNING: sending KILL signal to the current window may crash Screen\
 """
 
@@ -492,6 +491,12 @@ def run(argv):
             print help_regions
         elif mode in ('kill', 'K'):
             print help_kill
+            import inspect
+            import signal
+            print ("\nSignals:")
+            for (name, obj) in inspect.getmembers(signal):
+                if name.startswith('SIG'):
+                    print(name[3:])
         elif mode in ('kill-zombie', 'kz'):
             print help_kill_zombie
         elif mode in ('kill-group', 'kg'):
