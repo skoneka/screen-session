@@ -43,7 +43,7 @@ Help:    scs help [mode]
 
 Options supported by all tools:
     -S [target] - target Screen session name
-    --help      - print detailed mode's help
+    -h  --help  - print detailed mode's help
 
 Environment variables:
     SCREENBIN   - GNU Screen executable path

@@ -333,8 +333,6 @@ Kill last process started in a window.<br>
 
 Useful for closing random emacs/vim instances and hung up ssh clients.<br>
 
-For a list of signal names run: $ pydoc signal<br>
-
 WARNING: sending KILL signal to the current window may crash Screen<br>
 
 </samp><hr>
@@ -451,7 +449,7 @@ Usage: screen-session layout-zoom [options] <br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lz<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind o scs layout-zoom<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind o at 0 exec scs layout-zoom<br>
 
 <br>
 
@@ -643,13 +641,15 @@ Usage: screen-session new-window [options] [program]<br>
 
 Start a new Screen window with the same working directory as the current window.<br>
 
-It also sets new window number to current number + 1.<br>
-
 <br>
 
 Options:<br>
 
--d [directory] - specify the new window working directory<br>
+-d [directory] - specify the new window working director<br>
+
+-n [win_num]&nbsp;&nbsp; - set the new window number<br>
+
+-N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - automatically set the new window number to (current number + 1)<br>
 
 </samp><hr>
 <a name="regions"></a>
@@ -724,7 +724,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: August 12, 2011
+    Last modified: August 23, 2011
     </h6>
     </center>
     
