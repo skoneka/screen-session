@@ -357,8 +357,11 @@ def logic(scs, fifoname, fifoname2, session, psession, last_session):
     sys.stdout.flush()
     scs.screen("-t \"diagnostic window\" '%s' '%s' '%s' '%s'" % (os.getenv('PYTHONBIN'),
                (sys.argv)[0], 'ui2', fifoname2))
+    pager = os.getenv("PAGER")
+    if not pager:
+        pager = 'less'
     scs.screen("-t \"help window\" sh -c \"screen-session help manager | %s\"" %
-               os.getenv("PAGER"))
+               pager)
     pipeout = os.open(fifoname2, os.O_WRONLY)
     ui2pipe = pipeout
     sys.stdout = os.fdopen(pipeout, 'w')
