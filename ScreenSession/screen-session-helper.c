@@ -273,10 +273,7 @@ regions_helper (char *fname, char *n)
   if (n[0] == '0') {
     print_number ("0", red);
     printf ("\
-goto:\t [number]<space><g><'>\n\
-swap:\t [number]<s> \n\
-rotate left:\t [number]<l>\n\
-rotate right:\t [number]<r>\n\
+Press '?' to view help\n\
 >> ");
   }
   else {
@@ -284,7 +281,18 @@ rotate right:\t [number]<r>\n\
   }
   int prefix;
   char mode;
-  getinput (&prefix, &mode);
+  while (1) {
+    getinput (&prefix, &mode);
+    if (mode == '?')
+      printf ("\n\
+goto:\t [number]<space><g><'>\n\
+swap:\t [number]<s> \n\
+rotate left:\t [number]<l>\n\
+rotate right:\t [number]<r>\n\
+>> ");
+    else
+      break;
+  }
   if (mode == '\n')
     mode = 'e';
   /*
