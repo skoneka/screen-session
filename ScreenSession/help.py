@@ -134,10 +134,11 @@ Usage: screen-session new-window [options] [program]
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""
 
 Start a new Screen window with the same working directory as the current window.
-It also sets new window number to current number + 1.
 
 Options:
--d [directory] - specify the new window working directory\
+-d [directory] - specify the new window working director
+-n [win_num]   - set the new window number
+-N             - automatically set the new window number to (current number + 1)\
 """
 
 help_dump = """\

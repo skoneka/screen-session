@@ -81,8 +81,10 @@ else
     SORT='0'
     shiftcount=0
     bSession=0
+    NUMBER="-1"
+    RENUMBER="0"
 
-    while getopts ":Pprslca:wt:S:d:": OPT; do
+    while getopts ":Pprn:Nslca:wt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -106,6 +108,10 @@ else
         d)  DIR="$OPTARG"
             ;;
         a)  AUTOSEARCH="$OPTARG"
+            ;;
+        n)  NUMBER="$OPTARG"
+            ;;
+        N)  RENUMBER="1"
             ;;
         esac
     done
@@ -151,7 +157,7 @@ else
                 fi
                 ret=$?
             elif [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
-                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" "$DIR" "$@"
+                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" $NUMBER $RENUMBER "$DIR" "$@"
                 ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
                 $PYTHONBIN $SCRIPTPATH/dump.py "$session" $SHOWPID $REVERSE $SORT "$@"
