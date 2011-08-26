@@ -4451,6 +4451,11 @@ int key;
 	}
       else if (!strcmp(args[0], "select"))
 	{
+	  if (!laytab)
+	    {
+	      OutputMsg(0, "not on a layout");
+	      break;
+	    }
 	  if (!display)
 	    {
 	      if (args[1])

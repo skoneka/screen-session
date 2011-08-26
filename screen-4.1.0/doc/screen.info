@@ -5639,8 +5639,7 @@ instead.
      current time `HH:MM' in 12h format
 
 `E'
-     sets %? to true if command mode is active ( escape key was pressed
-     )
+     sets %? to true if command mode is active (escape key was pressed)
 
 `d'
      day number
@@ -6663,19 +6662,19 @@ Node: Backtick211151
 Node: Screen Saver212412
 Node: Zmodem213629
 Node: String Escapes214533
-Node: Environment220106
-Node: Files221208
-Node: Credits222302
-Node: Bugs224341
-Node: Known Bugs224813
-Node: Reporting Bugs226917
-Node: Availability227690
-Node: Installation228241
-Node: Socket Directory228634
-Node: Compiling Screen229171
-Node: Concept Index230570
-Node: Command Index233418
-Node: Keystroke Index247132
+Node: Environment220099
+Node: Files221201
+Node: Credits222295
+Node: Bugs224334
+Node: Known Bugs224806
+Node: Reporting Bugs226910
+Node: Availability227683
+Node: Installation228234
+Node: Socket Directory228627
+Node: Compiling Screen229164
+Node: Concept Index230563
+Node: Command Index233411
+Node: Keystroke Index247125
 
 End Tag Table
 
