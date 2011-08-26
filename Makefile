@@ -143,6 +143,7 @@ install: all
 	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
 	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
 	@${PYTHONBIN} -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
+	@echo Remember to install screen-4.1.0
 
 installtest: all
 	@echo linking \"${pwd}/${SRCDIR}/screen-session\" to \"${DESTDIR}${PREFIX}/bin/screen-session\"

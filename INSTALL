@@ -53,7 +53,7 @@ Compile and install the modified Screen:
 
     cd screen-session-VERSION/screen-4.1.0
 
-    ./configure --prefix=/usr/local
+    ./configure
     make
 
     sudo make install

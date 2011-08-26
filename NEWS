@@ -1,3 +1,19 @@
+screen-session 0.6.4
+--------------------
+
+http://github.com/skoneka/screen-session/downloads/screen-session-0.6.4.tar.gz
+
+This is a small, mostly bug fix release. New features include:
+
+  * layout-zoom
+    Zoom into and out of a region. Intended to replace ":only" command.
+    Requires an active layout. Inspired by ZoomWin Vim plugin:
+    http://www.vim.org/scripts/script.php?script_id=508
+
+  * tools accept now window ranges ( i.e. scs dump 2-5 )
+
+
+
 Announcing screen-session 0.6.3
 -------------------------------
 

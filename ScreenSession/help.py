@@ -327,7 +327,7 @@ Usage: screen-session layout-zoom [options]
        scs lz
        :bind o at 0 exec scs layout-zoom
 
-Zoom into and out of a region. Intented to replace ":only" command.
+Zoom into and out of a region. Intended to replace ":only" command.
 Requires an active layout. Inspired by ZoomWin Vim plugin:
 http://www.vim.org/scripts/script.php?script_id=508
 
