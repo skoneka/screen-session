@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <title>screen-session project</title>
-<meta name="Generator" content="Vim/7.3">
+<meta name="Generator" content="ScreenSession/make_docs.py">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-
+<meta name="keywords" content="screen-session, GNU Screen, utilities, tools, documentation, tmux, Screen">
 <link rel="home" title="Home" href="http://adb.cba.pl">
 </head>
 <body bgcolor="#ffffff" text="#000000">
@@ -25,6 +25,7 @@
  | 
 <a href="https://github.com/skoneka/screen-session/downloads">Download</a>
 <h3>Documentation</h3>
+screen-session is a collection of utilities for GNU Screen.<br><hr>
 <h4>Session saver modes:</h4>
 <table>
 <tr><td><a href="#load">load</a></td><td>&nbsp;Load saved session from a file.</td></tr>
@@ -35,7 +36,6 @@
 <h4>Tools:</h4>
 <table>
 <tr><td><a href="#dump">dump</a></td><td>&nbsp;Print informations about windows in session (MRU order by default).</td></tr>
-<tr><td><a href="#find_file">find-file</a></td><td>&nbsp;Find open files in windows. Requires lsof.</td></tr>
 <tr><td><a href="#group">group</a></td><td>&nbsp;Move windows to a group.</td></tr>
 <tr><td><a href="#kill">kill</a></td><td>&nbsp;Kill last process started in a window.</td></tr>
 <tr><td><a href="#kill_group">kill-group</a></td><td>&nbsp;Recursively kill groups and windows inside.</td></tr>
@@ -44,6 +44,7 @@
 <tr><td><a href="#layout_history">layout-history</a></td><td>&nbsp;Display saved snapshots of the current layout.</td></tr>
 <tr><td><a href="#layout_redo">layout-redo</a></td><td>&nbsp;Load a snapshot of the current layout,</td></tr>
 <tr><td><a href="#layout_undo">layout-undo</a></td><td>&nbsp;Load a snapshot of the current layout,</td></tr>
+<tr><td><a href="#layout_zoom">layout-zoom</a></td><td>&nbsp;Zoom into and out of a region. Intended to replace ":only" command.</td></tr>
 <tr><td><a href="#layoutlist">layoutlist</a></td><td>&nbsp;Displays a browseable list of layouts. There are two list creation algorithms.</td></tr>
 <tr><td><a href="#manager">manager</a></td><td>&nbsp;Sessions manager for GNU Screen with preview in a split window.</td></tr>
 <tr><td><a href="#name">name</a></td><td>&nbsp;Get or set the sessionname.</td></tr>
@@ -303,26 +304,6 @@ Options:<br>
 -s&nbsp;&nbsp; - sort by window number<br>
 
 </samp><hr>
-<a name="find_file"></a>
-<h3 style="color: #990000;"># find-file</h3>
-<samp>
-Usage: screen-session find-file [options] [files]<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs ff<br>
-
-<br>
-
-Find open files in windows. Requires lsof.<br>
-
-<br>
-
-Example:<br>
-
-tail -f /var/log/dmesg<br>
-
-scs find-file /var/log/dmesg<br>
-
-</samp><hr>
 <a name="group"></a>
 <h3 style="color: #990000;"># group</h3>
 <samp>
@@ -351,8 +332,6 @@ Usage: screen-session kill [options] [signal=TERM] [window=current]<br>
 Kill last process started in a window.<br>
 
 Useful for closing random emacs/vim instances and hung up ssh clients.<br>
-
-For a list of signal names run: $ pydoc signal<br>
 
 WARNING: sending KILL signal to the current window may crash Screen<br>
 
@@ -461,6 +440,28 @@ step = 0 indicates current snapshot, step = 1 previous snapshot,...<br>
 <br>
 
 See also: layout-checkpoint, layout-redo, layout-history<br>
+
+</samp><hr>
+<a name="layout_zoom"></a>
+<h3 style="color: #990000;"># layout-zoom</h3>
+<samp>
+Usage: screen-session layout-zoom [options] <br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; scs lz<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind o at 0 exec scs layout-zoom<br>
+
+<br>
+
+Zoom into and out of a region. Intended to replace ":only" command.<br>
+
+Requires an active layout. Inspired by ZoomWin Vim plugin:<br>
+
+<a href="http://www.vim.org/scripts/script.php?script_id=508">http://www.vim.org/scripts/script.php?script_id=508</a><br>
+
+<br>
+
+See also: layout-checkpoint, layout-undo, layout-redo<br>
 
 </samp><hr>
 <a name="layoutlist"></a>
@@ -640,13 +641,15 @@ Usage: screen-session new-window [options] [program]<br>
 
 Start a new Screen window with the same working directory as the current window.<br>
 
-It also sets new window number to current number + 1.<br>
-
 <br>
 
 Options:<br>
 
--d [directory] - specify the new window working directory<br>
+-d [directory] - specify the new window working director<br>
+
+-n [win_num]&nbsp;&nbsp; - set the new window number<br>
+
+-N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - automatically set the new window number to (current number + 1)<br>
 
 </samp><hr>
 <a name="regions"></a>
@@ -721,7 +724,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: July 30, 2011
+    Last modified: August 26, 2011
     </h6>
     </center>
     
