@@ -248,7 +248,8 @@ Usage: screen-session layoutlist [options] [HEIGHT]
 Displays a browseable list of layouts. There are two list creation algorithms.
 If HEIGHT != 0, an alternative list creation algorithm is used. Layout numbers
 are modulo divided by HEIGHT and the reminder determines their Y position.
-This tool comes handy after raising the maximum number of layouts."
+This tool comes handy after raising the maximum number of layouts 
+(see ":maxlay" Screen command).
 
 Options:
 -a [min_len=2]  - minimum matching charecters for auto highlight,
