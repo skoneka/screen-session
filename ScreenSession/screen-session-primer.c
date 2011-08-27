@@ -1039,11 +1039,13 @@ main (int argc, char **argv)
     int cmdline_begin_c = 0;
     char proc_blacklisted[7];
     char buf[5];
-    int b_zombie;
+    int b_zombie = 1;
+    /* 
     if (type[0] == 'z')
       b_zombie = 1;
     else
       b_zombie = 0;
+    */  
     for (i = 0; i < procs_c; i++) {
       fscanf (fp, "%s\n", buf);	/* read -- separator */
       if (!force_start && i != 0)
