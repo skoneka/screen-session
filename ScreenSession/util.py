@@ -373,11 +373,14 @@ def expand_numbers(numstr):
     nums = numstr.split(',')
     n_nums = []
     for n in nums:
-        if '-' in n:
-            nmin,nmax = map(int, n.split('-'))
-            for n_j in range(nmin, nmax + 1):
-                n_nums.append('%s' % n_j)
-        else:
+        try:
+            if '-' in n:
+                nmin,nmax = map(int, n.split('-'))
+                for n_j in range(nmin, nmax + 1):
+                    n_nums.append('%s' % n_j)
+            else:
+                raise
+        except:
             n_nums.append('%s' % n)
     return n_nums
 
