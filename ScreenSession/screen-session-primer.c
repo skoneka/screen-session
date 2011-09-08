@@ -44,6 +44,8 @@ Key      | Arguments | Description\n\
          |[number]   | try to restart saved processes up to [number]\n\
 [O]nly   |[numbers..]| select processes which will be restarted\n\
 [F]ilter |           | toggle filter ( :exec ) restoring\n\
+\n\
+Scrollback will not be reread if the KEY letter is uppercase.\n\
 ";
 
 #include <stdio.h>
@@ -367,7 +369,7 @@ mygetch (void)
 
 
 int
-userInput (int *menu_num, int **num, int max, int *bFilter)
+userInput (int *menu_num, int **num, int max, int *bFilter, int *bScrollback)
 {
   char ch;			/* handles user input */
   char buffer[USERINPUTMAXBUFFERSIZE];	/* sufficient to handle one line */
@@ -423,9 +425,10 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       args_index--;
       buffer[char_count] = 0x00;	/* null terminate buffer */
       switch (menu) {
-      case '0':
-      case 'z':
       case 'Z':
+        *bScrollback = !bScrollback;
+      case 'z':
+      case '0':
 	number = 0;
 	valid_choice = 1;
 	menu_choice = ZOMBIE;
@@ -438,20 +441,23 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	valid_choice = 1;
 	menu_choice = RESET;
 	break;
-      case 'd':
       case 'D':
+        *bScrollback = !bScrollback;
+      case 'd':
 	number = -1;
 	valid_choice = 1;
 	menu_choice = DEFAULT;
 	break;
-      case 'a':
       case 'A':
+        *bScrollback = !bScrollback;
+      case 'a':
 	number = -1;
 	menu_choice = ALL;
 	valid_choice = 1;
 	break;
-      case 'o':
       case 'O':
+        *bScrollback = !bScrollback;
+      case 'o':
       case '/':
 	menu_choice = ONLY;
 	number = args[0];
@@ -472,8 +478,9 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
 	menu_choice = EXIT;
 	valid_choice = 1;
 	break;
-      case 'n':
       case 'N':
+        *bScrollback = !bScrollback;
+      case 'n':
 	menu_choice = NUMBER;
 	number = args[0];
 	if (number == -1)
@@ -486,7 +493,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter)
       case 'f':
       case 'F':
 	*bFilter = (*bFilter) ? 0 : 1;
-	printf ("Filter turned %s\n", (*bFilter) ? "ON" : "OFF");
+	printf ("Filter turned %s\n", (*bFilter) ? "OFF" : "ON");
 	menu_choice = NONE;
 	valid_choice = 0;
 	break;
@@ -1123,10 +1130,11 @@ main (int argc, char **argv)
     int number;
     int *numbers = NULL;
     int numbers_c;
+    int bScrollback = 1;
     if (force_start)
       menu = ALL;
     else
-      numbers_c = userInput (&menu, &numbers, procs_c - 1, &bFilter);
+      numbers_c = userInput (&menu, &numbers, procs_c - 1, &bFilter, &bScrollback);
     char *shell = NULL;
     char **arglist = NULL;
     int *args = NULL;
@@ -1142,7 +1150,8 @@ main (int argc, char **argv)
       reset_primer (argv, fullpath, scrollbackfile, datafile);
       break;
     case DEFAULT:
-      read_scrollback (fullpath, scrollbackfile);
+      if (bScrollback)
+        read_scrollback (fullpath, scrollbackfile);
       shell = getenv ("SHELL");
       arglist = malloc (2 * sizeof (char *));
       arglist[0] = malloc ((strlen (shell) + 1) * sizeof (char));
@@ -1158,7 +1167,8 @@ main (int argc, char **argv)
       printf (PRIMER "ZOMBIE\n");
       /* FALLTHROUGH */
     case ONLY:
-      read_scrollback (fullpath, scrollbackfile);
+      if (bScrollback)
+        read_scrollback (fullpath, scrollbackfile);
       printf (PRIMER "Starting processes ");
       print_ints (numbers, numbers_c);
       printf ("...\n");
@@ -1170,7 +1180,7 @@ main (int argc, char **argv)
 
     case ALL:
       args = malloc (procs_c * sizeof (int));
-      if (!force_start)
+      if (!force_start && bScrollback)
 	read_scrollback (fullpath, scrollbackfile);
       printf (PRIMER "Starting all programs... ");
       for (i = 1; i <= procs_c - 1; i++) {
@@ -1188,7 +1198,8 @@ main (int argc, char **argv)
 
     case NUMBER:
       args = malloc (procs_c * sizeof (int));
-      read_scrollback (fullpath, scrollbackfile);
+      if (bScrollback)
+        read_scrollback (fullpath, scrollbackfile);
       number = numbers[0];
       printf (PRIMER "Starting programs up to %d ( ", number);
       if (number > procs_c) {
