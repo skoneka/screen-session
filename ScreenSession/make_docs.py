@@ -157,7 +157,7 @@ def write_screenshots():
     menu = start_page(url)
     images = (('saver-800x600.png', 'session saver'),
               ('layoutlist-800x600.png', 'layoutlist'),
-              ('manager-800x600.png', 'session manager'),
+              ('manager-800x600.png', 'sessions manager'),
               ('regions-800x600.png', 'regions tool'))
     for (f, desc) in images:
         print """<br>%s<br><a href="%s"><img alt="%s screenshot" src="%s"></a><br><br>""" % \
@@ -221,7 +221,13 @@ def write_documentation():
                 if len(name) > max_command_len:
                     max_command_len = len(name)
                 helps_tools.append((name, icomment, text))
-    print("""screen-session is a collection of utilities for GNU Screen.<br><hr>""")
+    print("""screen-session is a collection of utilities for GNU Screen.<br><br>""")
+    print """<samp>"""
+    for l in help_main[1:]:
+        if l.startswith('Session saver modes:'):
+            break;
+        print "%s<br>\n" % l
+    print """</samp>"""
 
     def doc_print_index_row(href, name, comment):
         print """<tr><td><a href="#%s">%s</a></td><td>&nbsp;%s</td></tr>""" % \

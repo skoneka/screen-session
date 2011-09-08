@@ -48,6 +48,9 @@ Modifications included in Screen bundled with screen-session.
       (triggered by :monitor feature)
     - an escape for the escape key
 
+To compile Screen you need the following packages installed on your system:
+    build-essentials
+    libncurses-dev
 
 Compile and install the modified Screen:
 
@@ -62,4 +65,7 @@ Verify, that you are running the proper Screen version:
 
     % screen --version
     Screen version 4.01.00scs_VERSION (screen-session project) 27-July-11
+
+    % screen-session --version
+    screen-session VERSION - a collection of tools for GNU Screen.
 

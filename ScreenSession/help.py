@@ -139,7 +139,7 @@ Usage: screen-session new-window [options] [program]
 Start a new Screen window with the same working directory as the current window.
 
 Options:
--d [directory] - specify the new window working director
+-d [directory] - specify the new window working directory
 -n [win_num]   - set the new window number
 -N             - automatically set the new window number to (current number + 1)\
 """
@@ -278,9 +278,13 @@ m or a          - toggle MRU view,
 v               - toggle search/autohighlight results view
 o               - toggle current and selected layouts
 q               - quit / select previous layout
-Q               - force quit if "-c" option was used\
+Q               - force quit if "-c" option was used
 
-See also: layout-checkpoint
+Note: If you are using -c and -l options and layoutlist stopped working
+      properly, then delete the temporary directory:
+      /tmp/screen-session-$USER/___layoutlist
+
+See also: layout-checkpoint, layout-zoom\
 """
 
 
@@ -302,7 +306,7 @@ Usage: screen-session layout-undo [options] [step = 1]
        scs lu
 
 Load a snapshot of the current layout,
-step = 0 indicates current snapshot, step = 1 previous snapshot,...
+step = 0 indicates the current snapshot, step = 1 the previous snapshot, ...
 
 See also: layout-checkpoint, layout-redo, layout-history\
 """
@@ -312,7 +316,7 @@ Usage: screen-session layout-redo [options] [step = 1]
        scs lr
 
 Load a snapshot of the current layout,
-step = 0 indicates current snapshot, step = 1 previous snapshot,...
+step = 0 indicates the current snapshot, step = 1 the previous snapshot, ...
 
 See also: layout-checkpoint, layout-undo, layout-history\
 """
