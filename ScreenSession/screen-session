@@ -43,11 +43,9 @@ fi
 mode=$1
 shift 1
 
-if [ $# -ge 1 ]; then
-    if [ $1 = "--help" -o $1 = "-h" ]; then
-        $PYTHONBIN $SCRIPTPATH/help.py $mode
-        exit $?;
-    fi
+if [ $mode = "--help" -o $mode = "-h" ]; then
+    $PYTHONBIN $SCRIPTPATH/help.py $mode
+    exit $?;
 fi
 
 umask 0077
@@ -73,6 +71,7 @@ else
     LAYOUT_CHECKPOINT='0'
     DIR=''
     TITLE_WIDTH='11'
+    TTY='-1'
     cOPT='0'
     lOPT='0'
     wOPT='0'
@@ -90,6 +89,7 @@ else
             bSession=1
             ;;
         t)  TITLE_WIDTH="$OPTARG"
+            TTY="$OPTARG"
             ;;
         P)  SHOWPID="0"
             ;;
@@ -169,8 +169,8 @@ else
             #    $PYTHONBIN $SCRIPTPATH/find_file.py "$session" "$@"
             #    ret=$?
             elif [ $mode = "kill" -o $mode = "K" ]; then
-                # screen-session kill [signal=TERM] [win=current]
-                $PYTHONBIN $SCRIPTPATH/kill.py "$session" "$@"
+                # screen-session kill [-t tty] [signal=TERM] [win=current]
+                $PYTHONBIN $SCRIPTPATH/kill.py "$session" "$TTY" "$@"
                 ret=$?
             elif [ $mode = "kill-zombie" -o $mode = "kz" ]; then
                 $PYTHONBIN $SCRIPTPATH/kill-zombie.py "$session" "$@"

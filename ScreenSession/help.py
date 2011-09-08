@@ -102,12 +102,15 @@ Note: regions tool may appear late if there is no hardstatus line\
 """
 
 help_kill = """\
-Usage: screen-session kill [options] [signal=TERM] [window=current]
+Usage: screen-session kill [options] [window=current]
        scs K
 
 Kill last process started in a window.
 Useful for closing random emacs/vim instances and hung up ssh clients.
-WARNING: sending KILL signal to the current window may crash Screen\
+WARNING: sending KILL signal to the current window may crash Screen.
+
+Options:
+-t [tty device]
 """
 
 help_kill_zombie = """\

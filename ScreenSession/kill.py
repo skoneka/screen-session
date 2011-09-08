@@ -24,17 +24,23 @@ import sys
 import tools
 
 session = (sys.argv)[1]
+
+if (sys.argv)[2] != '-1':
+    ctty = (sys.argv)[2]
+else:
+    ctty = None
+
 try:
-    mode = (sys.argv)[2]
+    mode = (sys.argv)[3]
 except:
     mode = 'TERM'
 
 try:
-    win = (sys.argv)[3]
+    win = (sys.argv)[4]
 except:
     win = "-1"
 
-if tools.kill_win_last_proc(session, win, mode):
+if tools.kill_win_last_proc(session, win, mode, ctty):
     sys.exit(0)
 else:
     sys.exit(1)

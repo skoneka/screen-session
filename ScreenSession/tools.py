@@ -349,10 +349,11 @@ def kill_group(session, datadir, groupids):
     ##remove(sourcefile)
 
 
-def get_win_last_proc(session, win="-1"):
+def get_win_last_proc(session, win="-1", ctty = None):
     import platform
-    ss = ScreenSaver(session, '/dev/null', '/dev/null')
-    ctty = ss.tty(win)
+    if not ctty:
+        ss = ScreenSaver(session, '/dev/null', '/dev/null')
+        ctty = ss.tty(win)
     if ctty is None or ctty == -1:
         stderr.write("Window does not exist (%s)\n" % win)
         return False
@@ -369,9 +370,9 @@ def get_win_last_proc(session, win="-1"):
         return None
 
 
-def kill_win_last_proc(session, win="-1", sig="TERM"):
+def kill_win_last_proc(session, win="-1", sig="TERM", ctty = None):
     import signal
-    pid = get_win_last_proc(session, win)
+    pid = get_win_last_proc(session, win, ctty)
     if pid:
         snum = 'SIG' + sig.upper()
         if hasattr(signal, snum):
