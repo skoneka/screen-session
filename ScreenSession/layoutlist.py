@@ -38,12 +38,13 @@ if __name__ == '__main__':
     newwin = (sys.argv)[3] == '1' and True or False
     s_no_end = (sys.argv)[4]
     no_end = (sys.argv)[4] == '1' and True or False
-    title_width = int((sys.argv)[5])
-    autosearch = (sys.argv)[6]
-    layout_checkpoint = (sys.argv)[7] == '1' and True or False
+    select_other = (sys.argv)[5] == '1' and True or False
+    title_width = int((sys.argv)[6])
+    autosearch = (sys.argv)[7]
+    layout_checkpoint = (sys.argv)[8] == '1' and True or False
 
     try:
-        height = int((sys.argv)[8])
+        height = int((sys.argv)[9])
     except:
         height = 0
 
@@ -113,5 +114,5 @@ if __name__ == '__main__':
         layoutlist_agent.NO_END = no_end
         layoutlist_agent.AUTOSEARCH_MIN_MATCH = int(autosearch)
         sys.exit(layoutlist_agent.run(session, False, False, None,
-                 currentlayout, height))
+                 currentlayout, height, select_other))
 

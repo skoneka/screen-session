@@ -82,8 +82,9 @@ else
     bSession=0
     NUMBER="-1"
     RENUMBER="0"
+    SELECT_OTHER="0"
 
-    while getopts ":Pprn:Nslca:wt:S:d:": OPT; do
+    while getopts ":Pprn:NMslca:wt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -112,6 +113,8 @@ else
         n)  NUMBER="$OPTARG"
             ;;
         N)  RENUMBER="1"
+            ;;
+        M)  SELECT_OTHER="1"
             ;;
         esac
     done
@@ -183,7 +186,8 @@ else
                 fi
                 ret=$?
             elif [ $mode = "layoutlist" -o $mode = "ll" ]; then
-                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT $cOPT $TITLE_WIDTH "$AUTOSEARCH" "$LAYOUT_CHECKPOINT" "$@"
+                $PYTHONBIN $SCRIPTPATH/layoutlist.py "$session" $lOPT $wOPT \
+                    $cOPT $SELECT_OTHER $TITLE_WIDTH "$AUTOSEARCH" "$LAYOUT_CHECKPOINT" "$@"
                 ret=$?
             elif [ $mode = "layout-checkpoint" -o $mode = "lc" ]; then
                 $PYTHONBIN $SCRIPTPATH/layout.py checkpoint "$session" "$@"

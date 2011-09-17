@@ -262,6 +262,7 @@ Options:
                   there should be running only one layoutlist started with "-c"
                   per session
 -l              - create a temporary layout and window for layoutlist
+-M              - select previous layout and exit
 -p              - run layout-checkpoint before activating layoutlist
 -w              - create a temporary window for layoutlist
 -t [width=11]   - set title width

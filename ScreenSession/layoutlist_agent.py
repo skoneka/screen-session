@@ -625,7 +625,7 @@ def create_table(ss, screen, curlay, layinfo, lnum, height):
 
 
 def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
-        height):
+        height, select_other = False):
     global lock_and_com_file, mru_file
     lltmpdir = os.path.join(tmpdir, '___layoutlist')
     try:
@@ -645,6 +645,16 @@ def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
         lnum = None
 
     mru_file = os.path.join(lltmpdir, '%s_MRU' % session)
+    if select_other:
+        mru_layouts = pickle.load(open(mru_file, 'r'))
+        num, title = mru_layouts[1]
+        tmp = mru_layouts[0]
+        mru_layouts[0] = mru_layouts[1]
+        mru_layouts[1] = tmp
+        ss.command_at(False, 'eval "layout select %s" "layout title"' %
+                      num)
+        pickle.dump(mru_layouts, open(mru_file, 'w'))
+        return ret
     if NO_END:
         lock_and_com_file = os.path.join(lltmpdir, '%s' %
                 session)
@@ -677,7 +687,7 @@ def run(session, requirecleanup_win, requirecleanup_lay, curwin, curlay,
         curses.endwin()
         sys.stderr.write('start_color() failed!\n')
         return 1
-        
+
     curses.noecho()
 
     #screen.notimeout(1)
