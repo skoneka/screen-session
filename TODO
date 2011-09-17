@@ -13,7 +13,7 @@
 * yank-ring (kill-ring)
 * register edit cp mv rm
 * Set terminal emulator title
-* Resize terminal emulator font (like in grml zsh but within Screen)
+* Resize terminal emulator font (like in grml zsh but from within Screen)
 
 // broken/unfinished tools:
 * grab
@@ -21,6 +21,8 @@
 * manager-remote
 
 // saver:
+* Do not use the temporary directory after session loading was finished
+  ( gzip every scrollback file separately )
 * Create a shellrc plug for more accurate command line saving
   and an ability to save other users processes
 * Write a .vimrc snippet for automatic undo history saving in Vim 7.3+
