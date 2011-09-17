@@ -1216,7 +1216,7 @@ Excluded layouts: %s""" % str(ex_lay))
         fname = os.path.join(findir, name)
         cmd = \
             """^[^[:silent call histdel(':',-1) | \
-            exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
+exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
             (fname + '_session', fname + '_info')
         self.stuff(cmd, winid)
         self.__vim_files.append(fname + '_session')
