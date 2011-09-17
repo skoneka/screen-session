@@ -36,7 +36,9 @@ number = (sys.argv)[3]
 bRenumber = (sys.argv)[4] == '1' and True or False
 tdir = (sys.argv)[5]
 session_arg = '-S "%s"' % session
-cwin = sc.get_current_window(session)
+
+if bRenumber:
+   cwin = sc.get_current_window(session)
 
 if tdir == '':
     f = os.popen(SCREEN + ' %s -Q @tty' % session_arg)
@@ -71,28 +73,28 @@ else:
 command = SCREEN + ' %s -Q screen' % session_arg
 
 if len(sys.argv) > 6:
-    command += ' -t "%s"' % (" ").join(["%s" % v for v in (sys.argv)[6:]])
+    command += ' -t \'%s\'' % (" ").join(["%s" % v for v in (sys.argv)[6:]])
 else:
-    command += ' -t "%s"' % thedir
+    command += ' -t \'%s\'' % thedir
 
-command += " " + primer + " " + '"%s"' % thedir
+command += " " + primer + " " + '\'%s\'' % thedir
 try:
     program = (sys.argv)[6]
     for arg in (sys.argv)[6:]:
-        command += ' "' + arg + '"'
+        command += ' \'' + arg + '\''
 except:
-    command += ' "' + os.getenv('SHELL') + '"'
+    command += ' \'' + os.getenv('SHELL') + '\''
 
 f = os.popen(command)
 nwin = f.readline().split(':')[1].strip()
 f.close()
 
-targ_num = int(cwin) + 1
 if nwin != '-1':
     if number != '-1':
         sc.move(int(nwin), int(number), True, session)
         print(number)
     elif bRenumber:
+        targ_num = int(cwin) + 1
         sc.move(int(nwin), targ_num, True, session)
         print(targ_num)
 else:
