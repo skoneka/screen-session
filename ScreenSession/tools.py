@@ -3,9 +3,8 @@
 #
 #    tools.py : functions used by tools
 #
-#    Copyright (C) 2010-2011 Artur Skonecki
+#    Copyright (C) 2010-2011 Artur Skonecki http://github.com/skoneka
 #
-#    Authors: Artur Skonecki http://github.com/skoneka
 #             Brendon Crawford https://github.com/brendoncrawford
 #
 #    This program is free software: you can redistribute it and/or modify

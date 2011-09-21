@@ -5,9 +5,8 @@
 #                     many important functions interfacing with GNU Screen
 #                     ( which should moved to GNUScreen.py )
 #
-#    Copyright (C) 2010-2011 Artur Skonecki
+#    Copyright (C) 2010-2011 Artur Skonecki http://github.com/skoneka
 #
-#    Authors: Artur Skonecki http://github.com/skoneka
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

@@ -4,9 +4,8 @@
 #    sort.py :  sort windows by title; currently broken, it should be rewritten
 #               with support for selecting groups through tools.subwindows()
 #
-#    Copyright (C) 2010-2011 Artur Skonecki
+#    Copyright (C) 2010-2011 Artur Skonecki http://github.com/skoneka
 #
-#    Authors: Artur Skonecki http://github.com/skoneka
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
