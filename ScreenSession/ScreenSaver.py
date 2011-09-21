@@ -721,7 +721,7 @@ class ScreenSaver(object):
         msg = self.command_at(True, 'scrollback %s' % args, win)
         return msg.rsplit(" ", 1)[1].strip()
 
-    def source(self, args=""):
+    def source(self, args="", msg=None):
         f = None
         start = datetime.datetime.now()
         while f == None:
@@ -733,7 +733,9 @@ class ScreenSaver(object):
                     raise IOError
         f.close()
         self.command_at(False, "source \"%s\"" % args)
-        self.command_at(False, "echo \"sourcing %s\"" % args)  # this line seems to force Screen to read entire sourced file, so it can be deleted afterwards
+        if not msg:
+            msg = "sourcing %s" % args
+        self.command_at(False, "echo \"%s\"" % msg)  # this line seems to force Screen to read entire sourced file, so it can be deleted afterwards
 
     def select(self, args="", win="-1"):
         msg = self.query_at('select %s' % args, win)

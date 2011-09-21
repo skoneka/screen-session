@@ -184,8 +184,8 @@ focus
 """ %
                 (subprogram, subprogram_args, inputfile, i))
     f.flush()
-    f.close()
-    scs.source(sourcefile)
+    f.close
+    scs.source(sourcefile, "screen-session regions")
     remove(sourcefile)
 
     regions_n = []
