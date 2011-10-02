@@ -18,7 +18,7 @@ OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window
 OBJ = ${SRCMAIN1:.c=.o} ${SRCMAIN2:.c=.o}
 pwd=`pwd`
 
-all: ${EXE1} ${EXE2}
+all: options ${EXE1} ${EXE2}
 
 options:
 	@echo screen-session build options:
