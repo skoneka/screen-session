@@ -558,7 +558,7 @@ class ScreenSaver(object):
             swin = ""
         else:
             swin = "-p %s" % win
-        cmd = '%s %s -X %s' % (self.sc, swin, command)
+        cmd = r"""%s %s -X %s""" % (self.sc, swin, command)
 
         # print ('command_at(%s, %s, %s): %s'%(output, command, win, cmd))
 
@@ -580,9 +580,9 @@ class ScreenSaver(object):
         if win == "-1":
             win = ""
         else:
-            win = "-p %s" % win
+            win = r'''-p "%s"''' % win
         try:
-            cmd = '%s %s -Q @%s' % (self.sc, win, command)
+            cmd = r"""%s %s -Q @%s""" % (self.sc, win, command)
             l = util.timeout_command(cmd, self.timeout)[0]
 
             # print ('%s = query_at(%s, %s): %s'%(l, command, win , cmd))

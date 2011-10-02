@@ -39,7 +39,9 @@ session_arg = '-S "%s"' % session
 if bRenumber:
    cwin = sc.get_current_window(session)
 
-if tdir == '':
+if tdir.startswith('/') or tdir.startswith('~'):
+    thedir = os.path.expanduser(tdir)
+else:
     f = os.popen(SCREEN + ' %s -Q @tty' % session_arg)
     ctty = f.readline()
     f.close()
@@ -66,23 +68,22 @@ if tdir == '':
         thedir = info[0]
     else:
         thedir = os.getcwd()
-else:
-    thedir = os.path.expanduser(tdir)
+    thedir = os.path.join(thedir,tdir)
 
 command = SCREEN + ' %s -Q screen' % session_arg
 
 if len(sys.argv) > 6:
-    command += ' -t \'%s\'' % (" ").join(["%s" % v for v in (sys.argv)[6:]])
+    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[6:]])
 else:
-    command += ' -t \'%s\'' % thedir
+    command += r""" -t '%s'""" % thedir
 
-command += " " + primer + " " + '\'%s\'' % thedir
+command += " " + primer + " " + r"""'%s'""" % thedir
 try:
     program = (sys.argv)[6]
     for arg in (sys.argv)[6:]:
-        command += ' \'' + arg + '\''
+        command += " '" + arg + "'"
 except:
-    command += ' \'' + os.getenv('SHELL') + '\''
+    command += " '" + os.getenv('SHELL') + "'"
 
 f = os.popen(command)
 nwin = f.readline().split(':')[1].strip()
