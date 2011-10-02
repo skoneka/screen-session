@@ -669,7 +669,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
     return 1;
   }
 
-  /* skip irrevelant lines */
+  /* skip irrelevant lines */
   while ((c = fgetc (fp)) != EOF) {
     if (c == '\n') {
       nl_c++;
