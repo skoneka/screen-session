@@ -117,7 +117,7 @@ else
         esac
     done
     shift $(($OPTIND - 1))
-    
+
     if [ "$session" = "." ]; then
         # TODO: fix / rewrite sessionname.py
         session=`$PYTHONBIN $SCRIPTPATH/sessionname.py "$session"`
