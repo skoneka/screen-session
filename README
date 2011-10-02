@@ -118,6 +118,7 @@ Bugs
 -----------------------------------------------------------------------
 
 * Tools using layouts may fail if operating on detached Screen sessions.
+* Some scripts do not work properly if there is more than 1 client attached.
 * Saver is incapable of properly saving other user's (or SUID) processes
 * In order to speed up Screen commands execution :msgminwait is set to 0
   and the original value is not restored.
