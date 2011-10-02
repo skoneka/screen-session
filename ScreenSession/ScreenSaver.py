@@ -877,10 +877,9 @@ class ScreenSaver(object):
             if ctypestr[0] == 'g':
                 pass
             else:
-                if ctypestr[0] == 'b':
+                # get sorted pids associated with the window
 
-                    # get sorted pids associated with the window
-
+                try:
                     cpids = sc.get_tty_pids(ctty)
                     cpids_data = []
                     ncpids = []
@@ -898,6 +897,10 @@ class ScreenSaver(object):
                             errors.append('%s PID %s: Unable to access ( %s )' %
                                     (cwin, pid, str(x)))
                     cpids = ncpids
+                except Exception,x:
+                    errors.append('%s Unable to access %s ( %s )' %
+                            (cwin, str(ctty), str(x)))
+                    cpids=[]
 
             if cpids:
                 for (i, pid) in enumerate(cpids):
