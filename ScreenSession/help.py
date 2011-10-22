@@ -492,7 +492,7 @@ def run(argv):
     except:
         mode = 'help'
     try:
-        if mode in ('help', 'h'):
+        if mode in ('help', 'h', '-h', '--help'):
             print help_help
         elif mode == '--version':
             print version_str
