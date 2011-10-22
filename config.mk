@@ -4,8 +4,10 @@ VERSION = 0.6.5devel
 # Customize below to fit your system
 
 # paths
-PREFIX = /usr/local
-INSTFOLDER = ${PREFIX}/share/screen-session
+# use DESTDIR as in http://www.gnu.org/prep/standards/standards.html#DESTDIR
+# e.g. make DESTDIR=/tmp/install install
+BINDIR = /usr/local/bin
+INSTFOLDER = /usr/local/share/screen-session
 
 # includes and libs
 INCS =
@@ -15,8 +17,6 @@ LIBS =
 CPPFLAGS = -DVERSION=\"${VERSION}\" -DCOLOR
 CFLAGS = -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
 LDFLAGS = -s ${LIBS}
-# CFLAGS = -ggdb -std=c99 -pedantic -Wall ${INCS} ${CPPFLAGS}
-# LDFLAGS = ${LIBS}
 
 # compiler and linker
 CC = cc

@@ -134,28 +134,28 @@ dist_screen:
     screen-session-${VERSION}/screen-4.1.0
 
 install: all
-	@echo installing files to ${INSTFOLDER}/
-	@mkdir -p ${INSTFOLDER}
-	@cp -f ${EXE1} ${EXE2} ${OTHSRC} ${INSTFOLDER}
-	@chmod 755 ${INSTFOLDER}/screen-session-helper ${INSTFOLDER}/screen-session-primer ${INSTFOLDER}/screen-session
-	@echo linking executables to ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${INSTFOLDER}/screen-session ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
-	@${PYTHONBIN} -c "import compileall; compileall.compile_dir('${INSTFOLDER}',force=1)"
+	@echo installing files to ${DESTDIR}${INSTFOLDER}/
+	@mkdir -p ${DESTDIR}${INSTFOLDER}
+	@cp -f ${EXE1} ${EXE2} ${OTHSRC} ${DESTDIR}${INSTFOLDER}
+	@chmod 755 ${DESTDIR}${INSTFOLDER}/screen-session-helper ${DESTDIR}${INSTFOLDER}/screen-session-primer ${DESTDIR}${INSTFOLDER}/screen-session
+	@echo linking executables to ${DESTDIR}${BINDIR}
+	@mkdir -p ${DESTDIR}${BINDIR}
+	@ln -sf ${DESTDIR}${INSTFOLDER}/screen-session ${DESTDIR}${BINDIR}
+	@ln -sf ${DESTDIR}${BINDIR}/screen-session ${DESTDIR}${BINDIR}/scs
+	@${PYTHONBIN} -c "import compileall; compileall.compile_dir('${DESTDIR}${INSTFOLDER}',force=1)"
 	@echo Remember to install screen-4.1.0
 
 installtest: all
-	@echo linking \"${pwd}/${SRCDIR}/screen-session\" to \"${DESTDIR}${PREFIX}/bin/screen-session\"
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${PREFIX}/bin
-	@ln -sf ${DESTDIR}${PREFIX}/bin/screen-session ${DESTDIR}${PREFIX}/bin/scs
+	@echo linking \"${pwd}/${SRCDIR}/screen-session\" to \"${DESTDIR}${BINDIR}/screen-session\"
+	@mkdir -p ${DESTDIR}${BINDIR}
+	@ln -sf ${pwd}/${SRCDIR}/screen-session ${DESTDIR}${BINDIR}
+	@ln -sf ${DESTDIR}${BINDIR}/screen-session ${DESTDIR}${BINDIR}/scs
 
 uninstall:
-	@echo removing files from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/screen-session
-	@rm -f ${DESTDIR}${PREFIX}/bin/scs
-	@echo removing directory  ${INSTFOLDER}
-	@rm -r ${INSTFOLDER}
+	@echo removing files from ${DESTDIR}${BINDIR}
+	@rm -f ${DESTDIR}${BINDIR}/screen-session
+	@rm -f ${DESTDIR}${BINDIR}/scs
+	@echo removing directory  ${DESTDIR}${INSTFOLDER}
+	@rm -r ${DESTDIR}${INSTFOLDER}
 
 .PHONY: all options clean dist install uninstall docs
