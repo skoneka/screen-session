@@ -1064,7 +1064,7 @@ main (int argc, char **argv)
       fscanf (fp, "%d\n", &proc_args_n);
       int null_c = 0;
       cmdline_begin_c = 0;
-      if (b_zombie)
+      if (!force_start && b_zombie)
 	printf ("%sZOMBIE:%s ", red, none);
       while ((c = fgetc (fp)) != EOF) {
 	if (cmdline_begin_c < CMDLINE_BEGIN) {
@@ -1097,7 +1097,7 @@ main (int argc, char **argv)
 	if (null_c > proc_args_n)
 	  break;
       }
-      if (b_zombie) {
+      if (!force_start && b_zombie) {
 	printf ("\n");
 	b_zombie = 0;
       }
@@ -1250,8 +1250,8 @@ main (int argc, char **argv)
       system (buf_pack);
       SAFE_FREE (buf_pack);
       reset_primer (argv, fullpath, scrollbackfile, datafile);
-      
-      /* 
+
+      /*
       int pid = fork ();
       if (pid == 0) {
 	char *buf_pack =
