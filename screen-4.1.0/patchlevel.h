@@ -535,5 +535,5 @@
 #define REV 4
 #define VERS 1
 #define PATCHLEVEL 0
-#define DATE "27-August-11"
-#define STATE "scs_0.6.4"
+#define DATE "31-Oct-11"
+#define STATE "scs_0.6.5"
