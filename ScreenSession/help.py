@@ -101,7 +101,7 @@ Note: regions tool may appear late if there is no hardstatus line\
 """
 
 help_kill = """\
-Usage: screen-session kill [options] [window=current]
+Usage: screen-session kill [options] [signal=TERM] [window=current]
        scs K
 
 Kill last process started in a window.
@@ -110,6 +110,9 @@ WARNING: sending KILL signal to the current window may crash Screen.
 
 Options:
 -t [tty device]
+
+Example:
+scs kill TERM 3
 """
 
 help_kill_zombie = """\

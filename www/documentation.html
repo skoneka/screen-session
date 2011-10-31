@@ -361,7 +361,21 @@ Kill last process started in a window.<br>
 
 Useful for closing random emacs/vim instances and hung up ssh clients.<br>
 
-WARNING: sending KILL signal to the current window may crash Screen<br>
+WARNING: sending KILL signal to the current window may crash Screen.<br>
+
+<br>
+
+Options:<br>
+
+-t [tty device]<br>
+
+<br>
+
+Example:<br>
+
+scs kill TERM 3<br>
+
+<br>
 
 </samp><hr>
 <a name="kill_group"></a>
@@ -445,7 +459,7 @@ Usage: screen-session layout-redo [options] [step = 1] <br>
 
 Load a snapshot of the current layout,<br>
 
-step = 0 indicates current snapshot, step = 1 previous snapshot,...<br>
+step = 0 indicates the current snapshot, step = 1 the previous snapshot, ...<br>
 
 <br>
 
@@ -463,7 +477,7 @@ Usage: screen-session layout-undo [options] [step = 1] <br>
 
 Load a snapshot of the current layout,<br>
 
-step = 0 indicates current snapshot, step = 1 previous snapshot,...<br>
+step = 0 indicates the current snapshot, step = 1 the previous snapshot, ...<br>
 
 <br>
 
@@ -531,6 +545,8 @@ Options:<br>
 
 -l&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - create a temporary layout and window for layoutlist<br>
 
+-M&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - select previous layout and exit<br>
+
 -p&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - run layout-checkpoint before activating layoutlist<br>
 
 -w&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - create a temporary window for layoutlist<br>
@@ -565,9 +581,17 @@ q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 Q&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - force quit if "-c" option was used<br>
 
-See also: layout-checkpoint<br>
+<br>
+
+Note: If you are using -c and -l options and layoutlist stopped working<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; properly, then delete the temporary directory:<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /tmp/screen-session-$USER/___layoutlist<br>
 
 <br>
+
+See also: layout-checkpoint, layout-zoom<br>
 
 </samp><hr>
 <a name="manager"></a>
@@ -675,7 +699,7 @@ Start a new Screen window with the same working directory as the current window.
 
 Options:<br>
 
--d [directory] - specify the new window working director<br>
+-d [directory] - specify the new window working directory<br>
 
 -n [win_num]&nbsp;&nbsp; - set the new window number<br>
 
@@ -754,7 +778,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: August 27, 2011
+    Last modified: October 31, 2011
     </h6>
     </center>
     
