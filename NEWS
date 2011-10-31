@@ -1,6 +1,18 @@
 screen-session 0.6.4
 --------------------
 
+http://github.com/skoneka/screen-session/downloads/screen-session-0.6.5.tar.gz
+
+  * layoutlist: add -M option ( select previous layout and exit )
+  * Makefile: support DESTDIR environment variable
+  * saver: do not crash if a window was started with ":screen su"
+  * kill: add -t <tty> option
+
+
+
+screen-session 0.6.4
+--------------------
+
 http://github.com/skoneka/screen-session/downloads/screen-session-0.6.4.tar.gz
 
 This is a small, mostly bug fix release. New features include:
