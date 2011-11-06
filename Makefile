@@ -65,7 +65,7 @@ dist_scs:
 	@echo creating dist tarball
 	@rm -rf screen-session-${VERSION}
 	@mkdir -p screen-session-${VERSION} screen-session-${VERSION}/${SRCDIR}
-	@cp -R Makefile config.mk ${DOCS_SRC_0} screen-session-${VERSION}
+	@cp -R Makefile config.mk configure ${DOCS_SRC_0} screen-session-${VERSION}
 	@cp -R ${OTHSRC} ${SRCMAIN2} ${SRCMAIN1} ${SRCHEAD} ${DOCS_GEN} screen-session-${VERSION}/${SRCDIR}
 	@sed -i "s/^VERSION.*/VERSION='${VERSION}'/" screen-session-${VERSION}/${SRCDIR}/help.py
 	@sed -i "s/VERSION/${VERSION}/" screen-session-${VERSION}/INSTALL
