@@ -31,9 +31,10 @@ try:
 except:
     ppid = -1
 session = (sys.argv)[2]
-number = (sys.argv)[3]
-bRenumber = (sys.argv)[4] == '1' and True or False
-tdir = (sys.argv)[5]
+sourcenumber = (sys.argv)[3]
+number = (sys.argv)[4]
+bRenumber = (sys.argv)[6] == '1' and True or False
+tdir = (sys.argv)[6]
 session_arg = '-S "%s"' % session
 
 if bRenumber:
@@ -42,7 +43,10 @@ if bRenumber:
 if tdir.startswith('/') or tdir.startswith('~'):
     thedir = os.path.expanduser(tdir)
 else:
-    f = os.popen(SCREEN + ' %s -Q @tty' % session_arg)
+    if sourcenumber == "-1":
+        f = os.popen(SCREEN + ' %s -Q @tty' % session_arg)
+    else:
+        f = os.popen(SCREEN + ' %s -p %s -Q @tty' % (session_arg, sourcenumber))
     ctty = f.readline()
     f.close()
     if ctty.startswith('/dev'):
@@ -72,15 +76,15 @@ else:
 
 command = SCREEN + ' %s -Q screen' % session_arg
 
-if len(sys.argv) > 6:
-    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[6:]])
+if len(sys.argv) > 7:
+    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[7:]])
 else:
     command += r""" -t '%s'""" % thedir
 
 command += " " + primer + " " + r"""'%s'""" % thedir
 try:
-    program = (sys.argv)[6]
-    for arg in (sys.argv)[6:]:
+    program = (sys.argv)[7]
+    for arg in (sys.argv)[7:]:
         command += " '" + arg + "'"
 except:
     command += " '" + os.getenv('SHELL') + "'"

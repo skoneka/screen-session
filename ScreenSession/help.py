@@ -143,7 +143,8 @@ Start a new Screen window with the same working directory as the current window.
 Options:
 -d [directory] - specify the new window working directory
 -n [win_num]   - set the new window number
--N             - automatically set the new window number to (current number + 1)\
+-N             - automatically set the new window number to (current number + 1)
+-m [win_num]   - specify the source window\
 """
 
 help_dump = """\
