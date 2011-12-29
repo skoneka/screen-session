@@ -114,23 +114,23 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                     sum_telnet += 1
                 print "----------------------------------------"
                 lines = []
-                lines.append("%s TYPE  %s\n" % (cwin, ctypestr))
+                lines.append("%s TYPE %s\n" % (cwin, ctypestr))
                 if cgroupid == "-1":
                     groupstr = "-1"
                 else:
                     groupstr = cgroupid + " " + cgroup
-                lines.append("%s GRP   %s\n" % (cwin, groupstr))
-                lines.append("%s TITL  %s\n" % (cwin, ctitle))
+                lines.append("%s GRP %s\n" % (cwin, groupstr))
+                lines.append("%s TITL %s\n" % (cwin, ctitle))
                 cmdargs = cmdargs.split('\0')
                 pcmdargs = cmdargs[0]
                 if cmdargs[1] != '':
                     pcmdargs += " " + (" ").join(["\"%s\"" % v for v in
                             cmdargs[1:-1]])
-                lines.append("%s CARG  %s\n" % (cwin, pcmdargs))
+                lines.append("%s CARG %s\n" % (cwin, pcmdargs))
                 if cfilter != "-1":
-                    lines.append("%s EXEC  %s\n" % (cwin, cfilter))
+                    lines.append("%s EXEC %s\n" % (cwin, cfilter))
                 if ctype == 0:
-                    lines.append("%s TTY   %s\n" % (cwin, ctty))
+                    lines.append("%s TTY %s\n" % (cwin, ctty))
                     if showpid:
                         try:
                             pids = sc.get_tty_pids(ctty)
@@ -138,9 +138,9 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                                 sum_process_total += 1
                                 try:
                                     (cwd, exe, cmd) = sc.get_pid_info(pid)
-                                    lines.append("%s PID   %s CWD %s\n" % (cwin,
+                                    lines.append("%s PID %s CWD %s\n" % (cwin,
                                             pid, cwd))
-                                    lines.append("%s PID   %s EXE %s\n" % (cwin,
+                                    lines.append("%s PID %s EXE %s\n" % (cwin,
                                             pid, exe))
                                     cmd = cmd.split('\0')
                                     pcmd = cmd[0]
@@ -148,7 +148,7 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                                     if cmd[1] != '':
                                         pcmd += " "+" ".join(["\"%s\"" % v for v in cmd[1:-1]])
 
-                                    lines.append("%s PID   %s CMD %s\n" % (cwin,
+                                    lines.append("%s PID %s CMD %s\n" % (cwin,
                                             pid, pcmd))
 
                                     if cmd[0].endswith('screen-session-primer') and cmd[1] == '-p':
@@ -158,7 +158,7 @@ def dump(ss, datadir, showpid=True, reverse=True, sort=False, groupids=[]):
                                         sum_vim += 1
                                         lines[0] = lines[0][:-1] + " / VIM\n"
                                 except OSError,x:
-                                    lines.append("%s PID > %s < Unable to access pid data ( %s )\n" %
+                                    lines.append("%s PID %s Unable to access pid data ( %s )\n" %
                                             (cwin, pid, str(x)))
                         except Exception,x:
                             lines.append("%s Unable to access PIDs associated with tty ( %s )\n" %
