@@ -949,7 +949,7 @@ main (int argc, char **argv)
        start a program in a directory
        primer -D directory program args
      */
-    chdir (argv[2]);
+    recurse_chdir (argv[2]);
     execvp (argv[3], &argv[3]);
     return 0;
   }
