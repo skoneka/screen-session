@@ -1130,6 +1130,7 @@ main (int argc, char **argv)
     int *numbers = NULL;
     int numbers_c;
     int bScrollback = 1;
+    recurse_chdir (proc_cwd);
     if (force_start)
       menu = ALL;
     else
