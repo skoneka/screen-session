@@ -38,10 +38,13 @@ number = (sys.argv)[4]
 bRenumber = (sys.argv)[6] == '1' and True or False
 tdir = (sys.argv)[6]
 tgroup = (sys.argv)[7]
+altdir = (sys.argv)[8]
+baltdir = (sys.argv)[9]
+
 session_arg = '-S "%s"' % session
 
 if bRenumber:
-   cwin = sc.get_current_window(session)
+    cwin = sc.get_current_window(session)
 
 if tdir.startswith('/') or tdir.startswith('~'):
     thedir = os.path.expanduser(tdir)
