@@ -97,7 +97,7 @@ nwin = f.readline().split(':')[1].strip()
 f.close()
 
 if tgroup != '-1':
-    os.spawnv(os.P_WAIT, SCREEN , ['screen', '-X', 'group', tgroup])
+    os.spawnv(os.P_WAIT, SCREEN , ['screen', '-S', session, '-X', 'group', tgroup])
 
 if nwin != '-1':
     if number != '-1':
