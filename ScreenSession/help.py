@@ -144,7 +144,8 @@ Options:
 -d [directory] - specify the new window working directory
 -n [win_num]   - set the new window number
 -N             - automatically set the new window number to (current number + 1)
--m [win_num]   - specify the source window\
+-m [win_num]   - specify the source window
+-g [group]     - specify window's group\
 """
 
 help_dump = """\

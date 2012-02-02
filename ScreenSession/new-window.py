@@ -24,6 +24,8 @@ import platform
 import GNUScreen as sc
 from GNUScreen import SCREEN
 
+ARGSNUM = 8
+
 primer = os.path.join(os.path.split(os.path.abspath(__file__))[0],
                       'screen-session-primer -D')
 try:
@@ -35,6 +37,7 @@ sourcenumber = (sys.argv)[3]
 number = (sys.argv)[4]
 bRenumber = (sys.argv)[6] == '1' and True or False
 tdir = (sys.argv)[6]
+tgroup = (sys.argv)[7]
 session_arg = '-S "%s"' % session
 
 if bRenumber:
@@ -76,15 +79,15 @@ else:
 
 command = SCREEN + ' %s -Q screen' % session_arg
 
-if len(sys.argv) > 7:
-    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[7:]])
+if len(sys.argv) > ARGSNUM:
+    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[ARGSNUM:]])
 else:
     command += r""" -t '%s'""" % thedir
 
 command += " " + primer + " " + r"""'%s'""" % thedir
 try:
-    program = (sys.argv)[7]
-    for arg in (sys.argv)[7:]:
+    program = (sys.argv)[ARGSNUM]
+    for arg in (sys.argv)[ARGSNUM:]:
         command += " '" + arg + "'"
 except:
     command += " '" + os.getenv('SHELL') + "'"
@@ -92,6 +95,9 @@ except:
 f = os.popen(command)
 nwin = f.readline().split(':')[1].strip()
 f.close()
+
+if tgroup != '-1':
+    os.spawnv(os.P_WAIT, SCREEN , ['screen', '-X', 'group', tgroup])
 
 if nwin != '-1':
     if number != '-1':
