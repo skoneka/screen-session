@@ -24,7 +24,7 @@ import platform
 import GNUScreen as sc
 from GNUScreen import SCREEN
 
-ARGSNUM = 8
+ARGSNUM = 10
 
 primer = os.path.join(os.path.split(os.path.abspath(__file__))[0],
                       'screen-session-primer -D')
@@ -83,6 +83,18 @@ else:
 command = SCREEN + ' %s -Q screen' % session_arg
 
 if len(sys.argv) > ARGSNUM:
+    if baltdir == '1':
+        d = os.path.realpath(thedir)[1:]
+        while True:
+            prog = os.path.join(altdir, d, sys.argv[ARGSNUM])
+            if not os.path.exists(prog):
+                if d == '':
+                    prog = os.path.join(altdir, os.path.realpath(thedir)[1:], sys.argv[ARGSNUM])
+                    break
+                d = os.path.dirname(d)
+            else:
+                break
+        sys.argv[ARGSNUM] = prog
     command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[ARGSNUM:]])
 else:
     command += r""" -t '%s'""" % thedir

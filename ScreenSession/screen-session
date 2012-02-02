@@ -86,8 +86,10 @@ else
     RENUMBER="0"
     SELECT_OTHER="0"
     GROUP="-1"
+    ALTDIR="$HOME/.alter"
+    USEALTDIR="0"
 
-    while getopts ":Pprg:n:Nm:Mslca:wt:S:d:": OPT; do
+    while getopts ":PAD:prg:n:Nm:Mslca:wt:S:d:": OPT; do
         case "$OPT" in
         S)  session="$OPTARG"
             bSession=1
@@ -114,6 +116,10 @@ else
         d)  DIR="$OPTARG"
             ;;
         a)  AUTOSEARCH="$OPTARG"
+            ;;
+        A)  USEALTDIR="1"
+            ;;
+        D)  ALTDIR="$OPTARG"
             ;;
         n)  NUMBER="$OPTARG"
             ;;
@@ -168,7 +174,7 @@ else
                 ret=$?
             elif [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
                 $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" \
-                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$@"
+                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$ALTDIR" $USEALTDIR "$@"
                 ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
                 $PYTHONBIN $SCRIPTPATH/dump.py "$session" $SHOWPID $REVERSE $SORT "$@"
