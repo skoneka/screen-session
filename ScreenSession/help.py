@@ -137,21 +137,32 @@ Usage: screen-session new-window [options] [program]
        scs new
        scs nw
        :bind c eval "colon" "stuff \\"at 0 exec scs new-window \\""
-       :bind -k k5 at 0 exec scs new-window -A key_F5
+       :bind -k k5 at 0 exec scs new-window -a0 key_F5
 
 Start a new Screen window with the same working directory as the current window.
 
 Options:
 -d [dir]       - specify the new window working directory
+-g [group]     - set the new window group
 -n [win_num]   - set the new window number
 -N             - automatically set the new window number to (current number + 1)
 -m [win_num]   - specify the source window
--D [dir]       - specify the directory used with -A (default: $HOME/.alter)
--A             - prepend a directory specified with -D and current directory to
+-D [dir]       - specify the directory used with -a (default: $HOME/.alter)
+-a [position]  - prepend a directory specified with -D and current directory to
                  [program], useful for creating directory specific keybindings,
-                 e.g. while CWD is /tmp/test "scs new-window -A key_F5"
-                 is the same as "scs new-window $HOME/.alter/tmp/test/key_F5"
--g [group]     - set the new window group\
+                 e.g. while CWD is /tmp/test
+
+                 "scs new-window -a0 key_F5" is almost like
+                 "scs new-window $HOME/.alter/tmp/test/key_F5"
+
+                 "scs new-window -a1 $EDITOR key_F5" is almost like
+                 "scs new-window $EDITOR $HOME/.alter/tmp/test/key_F5"
+
+                 If the -a flag was set then, before creating a new window,
+                 the script tests whether the generated path exists and
+                 climbs the directory tree if the file was not found. If
+                 the root is reached and no file was found the path will be
+                 set to the first tested path.\
 """
 
 help_dump = """\

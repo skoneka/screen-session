@@ -39,7 +39,7 @@ bRenumber = (sys.argv)[6] == '1' and True or False
 tdir = (sys.argv)[6]
 tgroup = (sys.argv)[7]
 altdir = (sys.argv)[8]
-baltdir = (sys.argv)[9]
+altdir_pos = (sys.argv)[9]
 
 session_arg = '-S "%s"' % session
 
@@ -83,18 +83,19 @@ else:
 command = SCREEN + ' %s -Q screen' % session_arg
 
 if len(sys.argv) > ARGSNUM:
-    if baltdir == '1':
+    if altdir_pos != '-1':
         d = os.path.realpath(thedir)[1:]
+        ap = int(altdir_pos)
         while True:
-            prog = os.path.join(altdir, d, sys.argv[ARGSNUM])
-            if not os.path.exists(prog):
+            s = os.path.join(altdir, d, sys.argv[ARGSNUM+ap])
+            if not os.path.exists(s):
                 if d == '':
-                    prog = os.path.join(altdir, os.path.realpath(thedir)[1:], sys.argv[ARGSNUM])
+                    s = os.path.join(altdir, os.path.realpath(thedir)[1:], sys.argv[ARGSNUM+ap])
                     break
                 d = os.path.dirname(d)
             else:
                 break
-        sys.argv[ARGSNUM] = prog
+        sys.argv[ARGSNUM+ap] = s
     command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[ARGSNUM:]])
 else:
     command += r""" -t '%s'""" % thedir
