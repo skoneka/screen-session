@@ -72,6 +72,9 @@ Other tools:
     new-window  - open a new Screen window with the same working directory
     regions     - display a number in each region (tmux display-panes)
     renumber    - renumber windows to fill the gaps
+    (undoc) raise-window
+    (undoc) run-or-raise
+    (undoc) run-or-raise-and-quit
     subwindows  - print windows contained in a group
 
 Please report bugs to http://github.com/skoneka/screen-session/issues\

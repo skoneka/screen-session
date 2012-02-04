@@ -223,6 +223,15 @@ else
             elif [ $mode = "subwindows" -o $mode = "sw" ]; then
                 $PYTHONBIN $SCRIPTPATH/subwindows.py "$session" "$@"
                 ret=$?
+            elif [ $mode = "raise-window" -o $mode = "rw" ]; then
+                sh $SCRIPTPATH/raise-window.sh "$@"
+                ret=$?
+            elif [ $mode = "run-or-raise" -o $mode = "ror" ]; then
+                sh $SCRIPTPATH/run-or-raise.sh "$@"
+                ret=$?
+            elif [ $mode = "run-or-raise-and-quit" -o $mode = "roraq" ]; then
+                sh $SCRIPTPATH/run-or-raise-and-quit.sh "$@"
+                ret=$?
             #elif [ $mode = "sort" ]; then
             #    $PYTHONBIN $SCRIPTPATH/sort.py "$session" "$@"
             else
