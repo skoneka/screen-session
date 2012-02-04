@@ -158,7 +158,11 @@ else
         #elif [ $mode = "grab" ]; then
         #    sh $SCRIPTPATH/screen-session-grab "$@"
         elif [ "$session" != "__no__session__" ]; then
-            if [ $mode = "group" -o $mode = "g" ]; then
+            if [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
+                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" \
+                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$ALTDIR" $ALTDIRPOS "$@"
+                ret=$?
+            elif [ $mode = "group" -o $mode = "g" ]; then
                 sh $SCRIPTPATH/win-to-group "$session" "$@"
                 ret=$?
             elif [ $mode = "regions" -o $mode = "r" ]; then
@@ -170,10 +174,6 @@ else
                 else
                     $PYTHONBIN $SCRIPTPATH/nest_layout.py "$session" "$@"
                 fi
-                ret=$?
-            elif [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
-                $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" \
-                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$ALTDIR" $ALTDIRPOS "$@"
                 ret=$?
             elif [ $mode = "dump" -o $mode = "d" ]; then
                 $PYTHONBIN $SCRIPTPATH/dump.py "$session" $SHOWPID $REVERSE $SORT "$@"
