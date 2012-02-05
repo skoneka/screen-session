@@ -43,7 +43,7 @@ shift 1
 
 for w in "$@"
 do
-    if [ $w = "--help" -o $w = "-h" ]; then
+    if [ "$w" = "--help" -o "$w" = "-h" ]; then
         $PYTHONBIN $SCRIPTPATH/help.py $mode
         exit $?;
     fi
