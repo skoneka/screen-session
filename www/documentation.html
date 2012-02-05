@@ -691,6 +691,8 @@ Usage: screen-session new-window [options] [program]<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind c eval "colon" "stuff \"at 0 exec scs new-window \""<br>
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :bind -k k5 at 0 exec scs new-window -a0 key_F5<br>
+
 <br>
 
 Start a new Screen window with the same working directory as the current window.<br>
@@ -699,11 +701,47 @@ Start a new Screen window with the same working directory as the current window.
 
 Options:<br>
 
--d [directory] - specify the new window working directory<br>
+-d [dir]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - specify the new window working directory<br>
+
+-g [group]&nbsp;&nbsp;&nbsp;&nbsp; - set the new window group<br>
 
 -n [win_num]&nbsp;&nbsp; - set the new window number<br>
 
 -N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - automatically set the new window number to (current number + 1)<br>
+
+-m [win_num]&nbsp;&nbsp; - specify the source window<br>
+
+-D [dir]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - specify the directory used with -a (default: $HOME/.alter)<br>
+
+-a [position]&nbsp; - prepend a directory specified with -D and current directory to<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [program], useful for creating directory specific keybindings,<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; e.g. while CWD is /tmp/test<br>
+
+<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window -a0 key_F5" is almost like<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window $HOME/.alter/tmp/test/key_F5"<br>
+
+<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window -a1 $EDITOR key_F5" is almost like<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window $EDITOR $HOME/.alter/tmp/test/key_F5"<br>
+
+<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If the -a flag was set then, before creating a new window,<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the script tests whether the generated path exists and<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; climbs the directory tree if the file was not found. If<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the root is reached and no file was found the path will be<br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set to the first tested path.<br>
 
 </samp><hr>
 <a name="regions"></a>
@@ -778,7 +816,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: October 31, 2011
+    Last modified: February 05, 2012
     </h6>
     </center>
     
