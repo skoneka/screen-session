@@ -149,6 +149,8 @@ else
     elif [ $mode = "--help" -o $mode = "-h" -o $mode = "help" -o $mode = "h" ]; then
         $PYTHONBIN $SCRIPTPATH/help.py "$@"
         ret=$?
+    elif [ $mode = "send-escape" -o $mode = "se" ]; then
+        sh $SCRIPTPATH/send-escape.sh "$@"
     else
         $SCREENBIN -S "$session" -X msgminwait 0
         if [ $mode = "manager" -o $mode = "m" ]; then

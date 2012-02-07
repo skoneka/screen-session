@@ -75,6 +75,7 @@ Other tools:
     (undoc) raise-window
     (undoc) run-or-raise
     (undoc) run-or-raise-and-quit
+    (undoc) send-escape
     subwindows  - print windows contained in a group
 
 Please report bugs to http://github.com/skoneka/screen-session/issues\

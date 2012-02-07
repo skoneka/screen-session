@@ -12,7 +12,36 @@ SRCMAIN2 = ${SRCDIR}/screen-session-helper.c
 EXE1 = ${SRCMAIN1:.c=}
 EXE2 = ${SRCMAIN2:.c=}
 SRCHEAD = ${SRCDIR}/screen-session-define.h
-OTHSRC = ${SRCDIR}/screen-session ${SRCDIR}/screen_saver.py ${SRCDIR}/new-window.py ${SRCDIR}/regions.py ${SRCDIR}/screen-session-grab ${SRCDIR}/manager.py  ${SRCDIR}/ScreenSaver.py ${SRCDIR}/__init__.py ${SRCDIR}/GNUScreen.py ${SRCDIR}/util.py ${SRCDIR}/renumber.py ${SRCDIR}/sort.py ${SRCDIR}/kill.py ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py ${SRCDIR}/sessionname.py ${SRCDIR}/tools.py ${SRCDIR}/dump.py ${SRCDIR}/win-to-group ${SRCDIR}/nest_layout.py ${SRCDIR}/find_pid.py ${SRCDIR}/find_file.py ${SRCDIR}/subwindows.py ${SRCDIR}/screenrc_MANAGER ${SRCDIR}/layoutlist.py ${SRCDIR}/layoutlist_agent.py ${SRCDIR}/layout.py ${SRCDIR}/raise-window.sh ${SRCDIR}/run-or-raise-and-quit.sh ${SRCDIR}/run-or-raise.sh ${DOCS_SRC_1}
+OTHSRC = ${SRCDIR}/screen-session \
+         ${SRCDIR}/screen_saver.py \
+         ${SRCDIR}/new-window.py \
+         ${SRCDIR}/regions.py \
+         ${SRCDIR}/screen-session-grab \
+         ${SRCDIR}/manager.py \
+         ${SRCDIR}/ScreenSaver.py \
+         ${SRCDIR}/__init__.py \
+         ${SRCDIR}/GNUScreen.py \
+         ${SRCDIR}/util.py \
+         ${SRCDIR}/renumber.py \
+         ${SRCDIR}/sort.py \
+         ${SRCDIR}/kill.py \
+         ${SRCDIR}/kill-zombie.py ${SRCDIR}/kill-group.py \
+         ${SRCDIR}/sessionname.py \
+         ${SRCDIR}/tools.py \
+         ${SRCDIR}/dump.py \
+         ${SRCDIR}/win-to-group \
+         ${SRCDIR}/nest_layout.py \
+         ${SRCDIR}/find_pid.py \
+         ${SRCDIR}/find_file.py \
+         ${SRCDIR}/subwindows.py \
+         ${SRCDIR}/screenrc_MANAGER \
+         ${SRCDIR}/layoutlist.py ${SRCDIR}/layoutlist_agent.py \
+         ${SRCDIR}/layout.py \
+         ${SRCDIR}/raise-window.sh \
+         ${SRCDIR}/run-or-raise-and-quit.sh \
+         ${SRCDIR}/run-or-raise.sh \
+         ${SRCDIR}/send-escape.sh \
+         ${DOCS_SRC_1}
 
 
 OBJ = ${SRCMAIN1:.c=.o} ${SRCMAIN2:.c=.o}
