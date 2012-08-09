@@ -910,11 +910,17 @@ reset_primer (char **argv, char *fullpath, char *scrollbackfile,
 int
 main (int argc, char **argv)
 {
+
 /*
 /full/path/to/program -p workingdir scrollbackfile datafile
 ./program -s basedir thisprogramname datafile [processes_ids..]
 */
   int i;
+  /*
+  for (i=0; i<argc; i++)
+      printf("%s\n", argv[i]);
+  printf("End Of argv\n");
+  */
   FILE *fp = NULL;
   int c;
   if (argc == 1) {

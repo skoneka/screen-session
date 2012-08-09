@@ -48,6 +48,7 @@ Environment variables:
     SCREENBIN   - GNU Screen executable path
     PYTHONBIN   - Python interpreter path
     STY         - target Screen session name
+    SCSTMPDIR   - (fixit)
 
 Session saver modes:
     save        - save Screen ( and VIM ) session
@@ -72,11 +73,14 @@ Other tools:
     new-window  - open a new Screen window with the same working directory
     regions     - display a number in each region (tmux display-panes)
     renumber    - renumber windows to fill the gaps
+    subwindows  - print windows contained in a group
     (undoc) raise-window
     (undoc) run-or-raise
     (undoc) run-or-raise-and-quit
     (undoc) send-escape
-    subwindows  - print windows contained in a group
+    (undoc) edit-buffer
+    (undoc) edit-colon
+    (undoc) show-buffer
 
 Please report bugs to http://github.com/skoneka/screen-session/issues\
 """ % version_str
@@ -146,27 +150,38 @@ Usage: screen-session new-window [options] [program]
 Start a new Screen window with the same working directory as the current window.
 
 Options:
--d [dir]       - specify the new window working directory
--g [group]     - set the new window group
--n [win_num]   - set the new window number
+-d [dir]       - specify the working directory
+-t [title]     - specify the title
+-g [group]     - set the group
+-n [win_num]   - set the window number
 -N             - automatically set the new window number to (current number + 1)
 -m [win_num]   - specify the source window
 -D [dir]       - specify the directory used with -a (default: $HOME/.alter)
 -a [position]  - prepend a directory specified with -D and current directory to
-                 [program], useful for creating directory specific keybindings,
-                 e.g. while CWD is /tmp/test
+                 [program], useful for making directory specific keybindings
 
-                 "scs new-window -a0 key_F5" is almost like
-                 "scs new-window $HOME/.alter/tmp/test/key_F5"
+e.g. while current working directory is set to "/tmp"
 
-                 "scs new-window -a1 $EDITOR key_F5" is almost like
-                 "scs new-window $EDITOR $HOME/.alter/tmp/test/key_F5"
+:bind -k k5 at 0 exec scs new-window -a0 key_F5
+is almost like
+:bind -k k5 at 0 exec scs new-window $HOME/.alter/tmp/key_F5
 
-                 If the -a flag was set then, before creating a new window,
-                 the script tests whether the generated path exists and
-                 climbs the directory tree if the file was not found. If
-                 the root is reached and no file was found the path will be
-                 set to the first tested path.\
+:bind -k k5 at 0 exec scs new-window -a1 $EDITOR key_F5
+is almost like
+:bind -k k5 at 0 exec scs new-window $EDITOR $HOME/.alter/tmp/key_F5
+
+If the -a flag was set then, before creating a new window, the script
+tests whether the generated path exists and climbs the directory tree
+if the file was not found. If the root is reached and no file was found
+the path will be set to the first tested path.
+
+An example "key_F5" script, which opens a new window inside "NOTIFY" group
+and tries to raise a window running "inotail -f .*". If no matching window
+was found, it will execute the command.
+
+#!/bin/sh
+scs nw -g NOTIFY scs run-or-raise-and-quit inotail -f $HOME/.screen_messages
+screen -p $WINDOW -X kill\
 """
 
 help_dump = """\

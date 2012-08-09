@@ -597,7 +597,7 @@ class ScreenSaver(object):
         except:
             return None
 
-    def get_number_and_title(self, win="-1"):
+    def get_number_and_title(self, win="-"):
         msg = self.query_at('number', win)
         (number, title) = msg.split("(", 1)
         number = number.strip()
@@ -663,7 +663,7 @@ class ScreenSaver(object):
     def Xecho(self, args, win="-1"):
         msg = self.command_at(False, 'echo \"%s\"' % args)
 
-    def number(self, args="", win="-1"):
+    def number(self, args="", win="-"):
         msg = self.query_at('number %s' % args, win)
         if not args:
             return msg.split(" (", 1)[0]
@@ -676,10 +676,10 @@ class ScreenSaver(object):
             except:
                 return '0 0'
 
-    def stuff(self, args="", win="-1"):
+    def stuff(self, args="", win="-"):
         self.command_at(False, 'stuff "%s"' % args, win)
 
-    def colon(self, args="", win="-1"):
+    def colon(self, args="", win="-"):
         self.command_at(False, 'colon "%s"' % args, win)
 
     def resize(self, args=""):
@@ -688,7 +688,7 @@ class ScreenSaver(object):
     def focus(self, args=""):
         self.command_at(False, 'focus %s' % args)
 
-    def kill(self, win="-1"):
+    def kill(self, win="-"):
         self.command_at(False, 'kill', win)
 
     def idle(self, timeout, args):
@@ -710,13 +710,13 @@ class ScreenSaver(object):
     def split(self, args=""):
         self.command_at(False, 'split %s' % args)
 
-    def screen(self, args="", win="-1"):
+    def screen(self, args="", win="-"):
         msg = self.query_at('screen %s' % args, win)
         if msg.startswith('No more'):
             raise ValueError('No more windows.')
         else:
             return msg.split(':')[1].strip()
-    def scrollback(self, args="", win="-1"):
+    def scrollback(self, args="", win="-"):
         msg = self.command_at(True, 'scrollback %s' % args, win)
         return msg.rsplit(" ", 1)[1].strip()
 
@@ -736,7 +736,7 @@ class ScreenSaver(object):
             msg = "sourcing %s" % args
         self.command_at(False, "echo \"%s\"" % msg)  # this line seems to force Screen to read entire sourced file, so it can be deleted afterwards
 
-    def select(self, args="", win="-1"):
+    def select(self, args="", win="-"):
         msg = self.query_at('select %s' % args, win)
         return msg
 
@@ -764,7 +764,7 @@ class ScreenSaver(object):
         msg = self.query_at('time %s' % args)
         return msg
 
-    def title(self, args="", win="-1"):
+    def title(self, args="", win="-"):
         if args:
             args = '"%s"' % args
             self.command_at(False, 'title %s' % args, win)
@@ -800,7 +800,7 @@ class ScreenSaver(object):
         else:
             return True
 
-    def get_group(self, win="-1"):
+    def get_group(self, win="-"):
         msg = self.query_at('group', win)
         if msg.endswith('no group'):
             group = self.none_group
@@ -810,7 +810,7 @@ class ScreenSaver(object):
             groupid = groupid.rsplit(" ", 1)[1]
         return (groupid, group)
 
-    def group(self, output=True, args="", win="-1"):
+    def group(self, output=True, args="", win="-"):
         if args:
             args = '"%s"' % args
         msg = self.command_at(output, 'group %s' % args, win)
@@ -876,6 +876,8 @@ class ScreenSaver(object):
 
             if ctypestr[0] == 'g':
                 pass
+            elif ctypestr[0] == 'z':
+                cpids = []
             else:
                 # get sorted pids associated with the window
 

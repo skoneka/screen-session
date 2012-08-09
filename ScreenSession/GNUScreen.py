@@ -373,9 +373,16 @@ def _get_pid_info_sun(pid):
 def _get_pid_info_bsd(pid):
     procdir = "/proc"
     piddir = os.path.join(procdir, str(pid))
-    p = os.popen('procstat -f %s' % pid)
-    p.readline()
-    cwd = '/' + p.readline().strip().split('/', 1)[1]
+
+    # searching the entire tree to find the filename associated with an inode
+    # is not a feasible option!
+    #cwd = os.popen("""fstat -p $$|perl -ane '$F[3] eq "wd" && system("find",$F[4],"-xdev","-inum",$F[5],"-print");' 2> /dev/null""").readline().strip()
+
+    for line in os.popen("""procstat -f %s""" % pid):
+        o = line.strip().split()
+        if o[2] == 'cwd':
+            cwd = o[-1]
+            break
 
     #cwd=os.popen('pwdx '+pid).readline().split(':',1)[1].strip()
 
@@ -665,7 +672,7 @@ def get_current_window(session=None):
         screen = SCREEN + " -S '%s' " % session
     else:
         screen = SCREEN + " "
-    return int(subprocess.Popen('%s -Q @number' % screen, shell=True,
+    return int(subprocess.Popen('%s -p - -Q @number' % screen, shell=True,
                stdout=subprocess.PIPE).communicate()[0].split(" ", 1)[0])
 
 

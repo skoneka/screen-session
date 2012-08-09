@@ -24,10 +24,10 @@ import platform
 import GNUScreen as sc
 from GNUScreen import SCREEN
 
-ARGSNUM = 10
+ARGSNUM = 11
 
-primer = os.path.join(os.path.split(os.path.abspath(__file__))[0],
-                      'screen-session-primer -D')
+primer = [os.path.join(os.path.split(os.path.abspath(__file__))[0],
+                      'screen-session-primer'), '-D']
 try:
     ppid = int((sys.argv)[1])
 except:
@@ -40,6 +40,7 @@ tdir = (sys.argv)[6]
 tgroup = (sys.argv)[7]
 altdir = (sys.argv)[8]
 altdir_pos = (sys.argv)[9]
+title = (sys.argv)[10]
 
 session_arg = '-S "%s"' % session
 
@@ -75,12 +76,32 @@ else:
             except:
                 p_i -= 1
                 thepid = pids[p_i]
-        thedir = info[0]
+        try:
+            thedir = info[0]
+        except:
+            thedir = '.'
     else:
         thedir = os.getcwd()
     thedir = os.path.join(thedir,tdir)
 
-command = SCREEN + ' %s -Q screen' % session_arg
+command = [ SCREEN, '-S', session, '-Q', 'screen']
+# command contents should be [ SCREEN ] so screen does no variable expansion,
+# but it breaks nwin and does not bring the new window to the foreground.
+#
+# # Does not bring the new window to the foreground
+# # it may come handy sometimes, but it also breaks "other" command
+# # (the new background window is first in the ":windowlist -m")
+# os.popen2(['screen'])
+# # Brings the new window to the foreground.
+# os.popen('screen')[1].readlines()
+# # Brings the new window to the foreground (does not work with Screen's :exec)
+# os.spawnvp(os.P_WAIT, '/usr/bin/screen', ['screen'])
+# I guess screen does a isatty or a ttyname check.
+# 
+#
+# Additionally session must be specified with $STY. As opposed to -S <session>
+# Screen does no guessing on $STY so it must be the exact socket name.
+#command = [ SCREEN ]
 
 if len(sys.argv) > ARGSNUM:
     if altdir_pos != '-1':
@@ -96,24 +117,32 @@ if len(sys.argv) > ARGSNUM:
             else:
                 break
         sys.argv[ARGSNUM+ap] = s
-    command += r""" -t '%s'""" % (" ").join(["%s" % v for v in (sys.argv)[ARGSNUM:]])
-else:
-    command += r""" -t '%s'""" % thedir
 
-command += " " + primer + " " + r"""'%s'""" % thedir
+if title != '':
+    command += ['-t', title]
+elif len(sys.argv) > ARGSNUM:
+    command += ['-t', (" ").join(["%s" % v for v in (sys.argv)[ARGSNUM:]])]
+else:
+    command += ['-t', thedir]
+
+command += primer
+command += [thedir]
+
 try:
     program = (sys.argv)[ARGSNUM]
-    for arg in (sys.argv)[ARGSNUM:]:
-        command += " '" + arg + "'"
+    command += (sys.argv)[ARGSNUM:]
 except:
-    command += " '" + os.getenv('SHELL') + "'"
-
-f = os.popen(command)
+    command += [os.getenv('SHELL')]
+#print command
+#os.spawnvp(os.P_WAIT, SCREEN , command)
+f = os.popen2(command)[1]
 nwin = f.readline().split(':')[1].strip()
 f.close()
+nwin = '-'
 
 if tgroup != '-1':
-    os.spawnv(os.P_WAIT, SCREEN , ['screen', '-S', session, '-X', 'group', tgroup])
+    # '-' may be used instead of nwin
+    os.spawnv(os.P_WAIT, SCREEN , ['screen', '-S', session, '-p', nwin, '-X', 'group', tgroup])
 
 if nwin != '-1':
     if number != '-1':

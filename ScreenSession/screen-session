@@ -25,6 +25,10 @@ if [ -z "$PYTHONBIN" ]; then
     export PYTHONBIN=`which python`
 fi
 
+if [ -z "$SCSTMPDIR" ]; then
+    export SCSTMPDIR="/tmp/screen-session-$USER"
+fi
+
 # faster, but less portable
 #SCRIPTPATH=$(dirname $(realpath $0))
 SCRIPTPATH=$($PYTHONBIN -c "import os;print (os.path.split(os.path.realpath(\"$0\"))[0])")
@@ -38,22 +42,18 @@ if [ $# -eq 0 ]; then
     exit 0;
 fi
 
-mode=$1
+mode="$1"
 shift 1
 
-for w in "$@"
-do
-    if [ "$w" = "--help" -o "$w" = "-h" ]; then
-        $PYTHONBIN $SCRIPTPATH/help.py $mode
-        exit $?;
-    fi
-done
+if [ "$1" = "--help" -o "$1" = "-h" ]; then
+    $PYTHONBIN $SCRIPTPATH/help.py $mode
+    exit $?;
+fi
 
 umask 0077
 
-scsfiledir="/tmp/screen-session-$USER"
-if [ ! -d "$scsfiledir" ]; then
-    mkdir -p $scsfiledir
+if [ ! -d "$SCSTMPDIR" ]; then
+    mkdir -p $SCSTMPDIR
 fi
 
 if [ "$session" = '' ]; then
@@ -71,6 +71,7 @@ else
     AUTOSEARCH='2'
     LAYOUT_CHECKPOINT='0'
     DIR=''
+    TITLE=''
     TITLE_WIDTH='11'
     TTY='-1'
     cOPT='0'
@@ -96,6 +97,7 @@ else
             ;;
         t)  TITLE_WIDTH="$OPTARG"
             TTY="$OPTARG"
+            TITLE="$OPTARG"
             ;;
         P)  SHOWPID="0"
             ;;
@@ -162,7 +164,7 @@ else
         elif [ "$session" != "__no__session__" ]; then
             if [ $mode = "new-window" -o $mode = "new" -o $mode = "nw" ]; then
                 $PYTHONBIN $SCRIPTPATH/new-window.py $$ "$session" \
-                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$ALTDIR" $ALTDIRPOS "$@"
+                    $SOURCENUMBER $NUMBER $RENUMBER "$DIR" "$GROUP" "$ALTDIR" $ALTDIRPOS "$TITLE" "$@"
                 ret=$?
             elif [ $mode = "group" -o $mode = "g" ]; then
                 sh $SCRIPTPATH/win-to-group "$session" "$@"
@@ -225,6 +227,9 @@ else
             elif [ $mode = "subwindows" -o $mode = "sw" ]; then
                 $PYTHONBIN $SCRIPTPATH/subwindows.py "$session" "$@"
                 ret=$?
+            elif [ $mode = "raise-group" -o $mode = "rg" ]; then
+                sh $SCRIPTPATH/raise-group.sh "$@"
+                ret=$?
             elif [ $mode = "raise-window" -o $mode = "rw" ]; then
                 sh $SCRIPTPATH/raise-window.sh "$@"
                 ret=$?
@@ -233,6 +238,15 @@ else
                 ret=$?
             elif [ $mode = "run-or-raise-and-quit" -o $mode = "roraq" ]; then
                 sh $SCRIPTPATH/run-or-raise-and-quit.sh "$@"
+                ret=$?
+            elif [ $mode = "edit-buffer" -o $mode = "eb" ]; then
+                sh $SCRIPTPATH/edit-buffer.sh "$@"
+                ret=$?
+            elif [ $mode = "edit-colon" -o $mode = "ec" ]; then
+                sh $SCRIPTPATH/edit-colon.sh "$@"
+                ret=$?
+            elif [ $mode = "show-buffer" -o $mode = "sb" ]; then
+                sh $SCRIPTPATH/show-buffer.sh "$@"
                 ret=$?
             #elif [ $mode = "sort" ]; then
             #    $PYTHONBIN $SCRIPTPATH/sort.py "$session" "$@"
