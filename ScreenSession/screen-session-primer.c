@@ -756,7 +756,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
    * proc_args */
 
   char *needle_vim = "vim_";
-  char *needle_shell_variables = "shell_variables_";
+  char *needle_shellvars = "shellvars_";
 
   if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0 ) {
 	  char *session = get_session (config);
@@ -797,16 +797,16 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	    strcat (buf, VIM_SESSION);
 	    requireSession (basedir, buf, 0);
 	    SAFE_FREE (buf);
-	  } else if (strncmp(proc_vim, needle_shell_variables, strlen(needle_shell_variables)) == 0 ) {
-      char *shell_variables_path =
+	  } else if (strncmp(proc_vim, needle_shellvars, strlen(needle_shellvars)) == 0 ) {
+      char *shellvars_path =
       malloc ((strlen (basedir) + strlen(session) + strlen (proc_vim) + 3) * sizeof (char));
-      strcpy (shell_variables_path, basedir);
-      strcat (shell_variables_path, "/");
-      strcat (shell_variables_path, session);
-      strcat (shell_variables_path, "/");
-      strcat (shell_variables_path, proc_vim);
-		  printf (PRIMER "Load shell envvars with:\nsource %s\n", shell_variables_path);
-      SAFE_FREE (shell_variables_path);
+      strcpy (shellvars_path, basedir);
+      strcat (shellvars_path, "/");
+      strcat (shellvars_path, session);
+      strcat (shellvars_path, "/");
+      strcat (shellvars_path, proc_vim);
+		  printf (PRIMER "Load shell envvars with:\nsource %s\n", shellvars_path);
+      SAFE_FREE (shellvars_path);
 	  }
 	SAFE_FREE (session);
   }
@@ -1142,21 +1142,21 @@ main (int argc, char **argv)
 	printf ("\tEXE: %s\n", proc_exe);
 	if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0) {
 	  char *needle_vim = "vim_";
-	  char *needle_shell_variables = "shell_variables_";
+	  char *needle_shellvars = "shellvars_";
 		if(strncmp(proc_vim, needle_vim, strlen(needle_vim)) == 0) {
 		  printf ("\tVIMSESSION: %s\n", proc_vim);
-		} else if (strncmp(proc_vim, needle_shell_variables, strlen(needle_shell_variables)) == 0) {
+		} else if (strncmp(proc_vim, needle_shellvars, strlen(needle_shellvars)) == 0) {
       char *session = get_session (datafile);
-      char *shell_variables_path =
+      char *shellvars_path =
       malloc ((strlen (fullpath) + strlen(session) + strlen (proc_vim) + 3) * sizeof (char));
-      strcpy (shell_variables_path, fullpath);
-      strcat (shell_variables_path, "/");
-      strcat (shell_variables_path, session);
-      strcat (shell_variables_path, "/");
-      strcat (shell_variables_path, proc_vim);
-      printf ("\tLoad shell envvars with:\nsource %s\n", shell_variables_path);
+      strcpy (shellvars_path, fullpath);
+      strcat (shellvars_path, "/");
+      strcat (shellvars_path, session);
+      strcat (shellvars_path, "/");
+      strcat (shellvars_path, proc_vim);
+      printf ("\tLoad shell envvars with:\nsource %s\n", shellvars_path);
       SAFE_FREE (session);
-      SAFE_FREE (shell_variables_path);
+      SAFE_FREE (shellvars_path);
 		}
 	}
 	if (strncmp (proc_blacklisted, "True", 4) == 0

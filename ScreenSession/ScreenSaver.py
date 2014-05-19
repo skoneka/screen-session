@@ -962,7 +962,7 @@ class ScreenSaver(object):
                     #elif args[0] in self.shell_names: # and self.bSaveShell:
                     elif args[0].split('/')[-1] in self.shell_names and i == len(cpids_data)-1: # and self.bSaveShell:
                         sys.stdout.write('(shell)')
-                        extra_data_name = self.__save_shell_variables(cwin)
+                        extra_data_name = self.__save_shellvars(cwin)
 
                     cpids_data[i] = (cpids_data[i][0], cpids_data[i][1],
                             cpids_data[i][2], cpids_data[i][3], extra_data_name)
@@ -1000,7 +1000,7 @@ class ScreenSaver(object):
             bpath1 = os.path.join(findir, "win_")
             bpath2 = os.path.join(findir, "hardcopy.")
             bpath3 = os.path.join(findir, "vim_W")
-            bpath4 = os.path.join(findir, "shell_variables_W")
+            bpath4 = os.path.join(findir, "shellvars_W")
             for win in excluded_wins:
                 util.remove(bpath1 + win)
                 util.remove(bpath2 + win)
@@ -1243,9 +1243,9 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
 
         return name
 
-    def __save_shell_variables(self, winid):
+    def __save_shellvars(self, winid):
         findir = sc.datadir
-        name = "shell_variables_W%s_%s" % (winid, self.__unique_ident)
+        name = "shellvars_W%s_%s" % (winid, self.__unique_ident)
         fname = os.path.join(findir, name)
         cmd = \
             """^Uset -o posix ; set > %s ^M""" % fname
@@ -1273,6 +1273,7 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
         f = open(fname, "a")
         # import changes from previous savefiles (run with non-restarted windows still running primer)
         if rollback[0]:
+            print('Rolling back to primer data in windows running primer')
             rollback_dir = rollback[2]
             target = rollback[0]
             fr = open(target, 'r')
@@ -1296,6 +1297,22 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
                         except:
                             errors.append('Unable to rollback vim: %s' %
                                     filename)
+                elif i - last_sep == 6 and line.startswith('shellvars_'):
+                    print('shellvars')
+
+                    #import shellvars files but also update the window number in the datafile
+
+                    filename = os.path.join(rollback_dir, line.strip())
+                    try:
+                        tshellvars = "shellvars_W%s_%s" % (winid, os.path.basename(filename).split("_",2)[2])
+                        print tshellvars
+                        tshellvars = os.path.join(self.basedir, self.savedir,
+                                tshellvars)
+                        shutil.move(filename, tshellvars)
+                        print filename,tshellvars
+                    except:
+                        errors.append('Unable to rollback shellvars: %s' %
+                                filename)
             util.remove(target)
         else:
             pids_data_len = "1"
