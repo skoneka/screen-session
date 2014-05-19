@@ -84,6 +84,8 @@ class ScreenSaver(object):
     excluded_layouts = None
 
     vim_names = ('vi', 'vim', 'viless', 'vimdiff')
+    shell_names = ('bash')
+
     __unique_ident = None
     __wins_trans = {}
     __scrollbacks = []
@@ -931,18 +933,18 @@ class ScreenSaver(object):
 
                     #out('%s    pid = %s:     cwd = %s;  exe = %s;  cmdline = %s' % (text,pid, cpids_data[i][0], cpids_data[i][1], cpids_data[i][2]))
 
-                    vim_name = str(None)
+                    extra_data_name = str(None)
                     args = cpids_data[i][2].split('\x00')
                     if args[0].endswith(self.primer_base) and args[1] == \
                         "-p":
                         sys.stdout.write('(primer)')
                         rollback = self.__rollback(cpids_data[i][2])
-                    elif args[0] in self.vim_names and self.bVim:
+                    elif args[0] in self.vim_names and self.bVim and i == len(cpids_data)-1:
 
                         #out(str(rollback))
 
                         sys.stdout.write('(vim)')
-                        vim_name = self.__save_vim(cwin)
+                        extra_data_name = self.__save_vim(cwin)
                         nargs = []
                         rmarg = False
                         for arg in args:
@@ -957,9 +959,14 @@ class ScreenSaver(object):
                         newdata = (cpids_data[i][0], cpids_data[i][1], ('\x00').join(["%s" %
                                    v for v in args]), cpids_data[i][3])
                         cpids_data[i] = newdata
+                    #elif args[0] in self.shell_names: # and self.bSaveShell:
+                    elif args[0].split('/')[-1] in self.shell_names and i == len(cpids_data)-1: # and self.bSaveShell:
+                        sys.stdout.write('(shell)')
+                        extra_data_name = self.__save_shell_variables(cwin)
 
                     cpids_data[i] = (cpids_data[i][0], cpids_data[i][1],
-                            cpids_data[i][2], cpids_data[i][3], vim_name)
+                            cpids_data[i][2], cpids_data[i][3], extra_data_name)
+
             scrollback_filename = os.path.join(findir, "hardcopy." +
                     cwin)
             sys.stdout.write("%s %s; " % (cwin, ctypestr))
@@ -993,10 +1000,13 @@ class ScreenSaver(object):
             bpath1 = os.path.join(findir, "win_")
             bpath2 = os.path.join(findir, "hardcopy.")
             bpath3 = os.path.join(findir, "vim_W")
+            bpath4 = os.path.join(findir, "shell_variables_W")
             for win in excluded_wins:
                 util.remove(bpath1 + win)
                 util.remove(bpath2 + win)
                 for f in glob.glob(bpath3 + win + '_*'):
+                    util.remove(f)
+                for f in glob.glob(bpath4 + win + '_*'):
                     util.remove(f)
 
         #if mru_w[0] in excluded_wins or mru_w[0] in excluded_groups:
@@ -1233,6 +1243,15 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
 
         return name
 
+    def __save_shell_variables(self, winid):
+        findir = sc.datadir
+        name = "shell_variables_W%s_%s" % (winid, self.__unique_ident)
+        fname = os.path.join(findir, name)
+        cmd = \
+            """^Uset -o posix ; set > %s ^M""" % fname
+        self.stuff(cmd, winid)
+        return name
+
     def __save_win(self, winid, ctype, pids_data, ctime, rollback):
 
         # print (self,winid,ctype,pids_data,ctime,rollback)
@@ -1252,6 +1271,7 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
         zombie_vector = linecache.getline(fname, zombie_vector_pos)
 
         f = open(fname, "a")
+        # import changes from previous savefiles (run with non-restarted windows still running primer)
         if rollback[0]:
             rollback_dir = rollback[2]
             target = rollback[0]
