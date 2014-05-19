@@ -267,6 +267,8 @@ class ScreenSaver(object):
         out("restoring Screen session inside window %s (%s)" % (rootwindow,
             rootgroup))
 
+        self.command_at(True, 'setenv SCREENSESSION %s' % os.path.join(self.basedir, self.savedir) )
+
         wins = []
         for id in range(0, int(self.MAXWIN_REAL)):
             try:

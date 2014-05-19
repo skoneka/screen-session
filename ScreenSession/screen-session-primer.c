@@ -798,15 +798,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
 	    requireSession (basedir, buf, 0);
 	    SAFE_FREE (buf);
 	  } else if (strncmp(proc_vim, needle_shellvars, strlen(needle_shellvars)) == 0 ) {
-      char *shellvars_path =
-      malloc ((strlen (basedir) + strlen(session) + strlen (proc_vim) + 3) * sizeof (char));
-      strcpy (shellvars_path, basedir);
-      strcat (shellvars_path, "/");
-      strcat (shellvars_path, session);
-      strcat (shellvars_path, "/");
-      strcat (shellvars_path, proc_vim);
-		  printf (PRIMER "Load shell envvars with:\nsource %s\n", shellvars_path);
-      SAFE_FREE (shellvars_path);
+      printf (PRIMER "Load shell envvars with: source $SCSENV\n");
 	  }
 	SAFE_FREE (session);
   }
@@ -1154,7 +1146,9 @@ main (int argc, char **argv)
       strcat (shellvars_path, session);
       strcat (shellvars_path, "/");
       strcat (shellvars_path, proc_vim);
-      printf ("\tLoad shell envvars with:\nsource %s\n", shellvars_path);
+      setenv("SCSENV", shellvars_path, 1);
+
+      printf ("\tLoad shell envvars with: $ source $SCSENV\n");
       SAFE_FREE (session);
       SAFE_FREE (shellvars_path);
 		}
