@@ -899,7 +899,8 @@ class ScreenSaver(object):
                             cpids_data.append(pidinfo + tuple([blacklist]))
                             ncpids.append(pid)
                         except Exception,x:
-                            errors.append('%s PID %s: Unable to access ( %s )' %
+                            if cwin != homewindow:
+                                errors.append('%s PID %s: Unable to access ( %s )' %
                                     (cwin, pid, str(x)))
                     cpids = ncpids
                 except Exception,x:
