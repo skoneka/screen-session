@@ -366,6 +366,16 @@ mygetch (void)
   return ch;
 }
 
+char * gen_fullpath(char *homedir, char *workingdir) {
+      char *fullpath =
+          malloc ((strlen (homedir) + strlen (workingdir) + 2) * sizeof (char));
+      strcpy (fullpath, homedir);
+      strcat (fullpath, "/");
+      strcat (fullpath, workingdir);
+      return fullpath;
+}
+
+
 
 int
 userInput (int *menu_num, int **num, int max, int *bFilter, int *bScrollback)
@@ -740,47 +750,65 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   getline (&proc_vim, &proc_vim_s, fp);	/* vim save file base name */
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
+  printf("\n");
 
   /* if there is a vim save file base name append "-S vim_session -i vim_info" to
    * proc_args */
-  if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0) {
-    proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
-    proc_args[proc_args_n + 2] = malloc ((strlen ("-i") + 1) * sizeof (char));
-    char *session = get_session (config);
-    proc_args[proc_args_n + 1] =
-      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
-	       strlen (VIM_SESSION) + 5) * sizeof (char));
-    proc_args[proc_args_n + 3] =
-      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
-	       strlen (VIM_INFO) + 5) * sizeof (char));
 
-    strcpy (proc_args[proc_args_n], "-S");
+  char *needle_vim = "vim_";
+  char *needle_shell_variables = "shell_variables_";
 
-    strcpy (proc_args[proc_args_n + 1], basedir);
-    strcat (proc_args[proc_args_n + 1], "/");
-    strcat (proc_args[proc_args_n + 1], session);
-    strcat (proc_args[proc_args_n + 1], "/");
-    strcat (proc_args[proc_args_n + 1], proc_vim);
-    strcat (proc_args[proc_args_n + 1], VIM_SESSION);
+  if (strcmp (proc_vim, "-1") != 0 && strcmp (proc_vim, "None") != 0 ) {
+	  char *session = get_session (config);
+	  if (strncmp(proc_vim, needle_vim, strlen(needle_vim)) == 0 ) {
+	    proc_args[proc_args_n] = malloc ((strlen ("-S") + 1) * sizeof (char));
+	    proc_args[proc_args_n + 2] = malloc ((strlen ("-i") + 1) * sizeof (char));
+	    proc_args[proc_args_n + 1] =
+	      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
+		       strlen (VIM_SESSION) + 5) * sizeof (char));
+	    proc_args[proc_args_n + 3] =
+	      malloc ((strlen (basedir) + strlen (session) + strlen (proc_vim) +
+		       strlen (VIM_INFO) + 5) * sizeof (char));
 
-    strcpy (proc_args[proc_args_n + 2], "-i");
+	    strcpy (proc_args[proc_args_n], "-S");
 
-    strcpy (proc_args[proc_args_n + 3], basedir);
-    strcat (proc_args[proc_args_n + 3], "/");
-    strcat (proc_args[proc_args_n + 3], session);
-    strcat (proc_args[proc_args_n + 3], "/");
-    strcat (proc_args[proc_args_n + 3], proc_vim);
-    strcat (proc_args[proc_args_n + 3], VIM_INFO);
+	    strcpy (proc_args[proc_args_n + 1], basedir);
+	    strcat (proc_args[proc_args_n + 1], "/");
+	    strcat (proc_args[proc_args_n + 1], session);
+	    strcat (proc_args[proc_args_n + 1], "/");
+	    strcat (proc_args[proc_args_n + 1], proc_vim);
+	    strcat (proc_args[proc_args_n + 1], VIM_SESSION);
 
-    char *buf =
-      malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) +
-	       5) * sizeof (char));
-    strcpy (buf, session);
-    strcat (buf, "/");
-    strcat (buf, proc_vim);
-    strcat (buf, VIM_SESSION);
-    requireSession (basedir, buf, 0);
-    SAFE_FREE (buf);
+	    strcpy (proc_args[proc_args_n + 2], "-i");
+
+	    strcpy (proc_args[proc_args_n + 3], basedir);
+	    strcat (proc_args[proc_args_n + 3], "/");
+	    strcat (proc_args[proc_args_n + 3], session);
+	    strcat (proc_args[proc_args_n + 3], "/");
+	    strcat (proc_args[proc_args_n + 3], proc_vim);
+	    strcat (proc_args[proc_args_n + 3], VIM_INFO);
+
+	    char *buf =
+	      malloc ((strlen (session) + strlen (proc_vim) + strlen (VIM_SESSION) +
+		       5) * sizeof (char));
+	    strcpy (buf, session);
+	    strcat (buf, "/");
+	    strcat (buf, proc_vim);
+	    strcat (buf, VIM_SESSION);
+	    requireSession (basedir, buf, 0);
+	    SAFE_FREE (buf);
+	  } else if (strncmp(proc_vim, needle_shell_variables, strlen(needle_shell_variables)) == 0 ) {
+      char *shell_variables_path =
+      malloc ((strlen (basedir) + strlen(session) + strlen (proc_vim) + 3) * sizeof (char));
+      strcpy (shell_variables_path, basedir);
+      strcat (shell_variables_path, "/");
+      strcat (shell_variables_path, session);
+      strcat (shell_variables_path, "/");
+      strcat (shell_variables_path, proc_vim);
+		  printf (PRIMER "Load shell envvars with:\nsource %s\n", shell_variables_path);
+      SAFE_FREE (shell_variables_path);
+	  }
+	SAFE_FREE (session);
   }
 
   if (strcmp (proc_blacklisted, "True") == 0)
@@ -981,11 +1009,9 @@ main (int argc, char **argv)
     char *scrollbackfile = argv[3];
     char *datafile = argv[4];
 
-    char *fullpath =
-      malloc ((strlen (homedir) + strlen (workingdir) + 2) * sizeof (char));
-    strcpy (fullpath, homedir);
-    strcat (fullpath, "/");
-    strcat (fullpath, workingdir);
+
+    char *fullpath = gen_fullpath(homedir, workingdir);
+
     chdir (fullpath);		/* some fopen's currently depend on this */
     read_scrollback (fullpath, scrollbackfile);
 
@@ -1114,8 +1140,25 @@ main (int argc, char **argv)
 	printf ("\n");
 	printf ("\tCWD: %s\n", proc_cwd);
 	printf ("\tEXE: %s\n", proc_exe);
-	if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0)
-	  printf ("\tVIMSESSION: %s\n", proc_vim);
+	if (strcmp ("-1", proc_vim) != 0 && strcmp ("None", proc_vim) != 0) {
+	  char *needle_vim = "vim_";
+	  char *needle_shell_variables = "shell_variables_";
+		if(strncmp(proc_vim, needle_vim, strlen(needle_vim)) == 0) {
+		  printf ("\tVIMSESSION: %s\n", proc_vim);
+		} else if (strncmp(proc_vim, needle_shell_variables, strlen(needle_shell_variables)) == 0) {
+      char *session = get_session (datafile);
+      char *shell_variables_path =
+      malloc ((strlen (fullpath) + strlen(session) + strlen (proc_vim) + 3) * sizeof (char));
+      strcpy (shell_variables_path, fullpath);
+      strcat (shell_variables_path, "/");
+      strcat (shell_variables_path, session);
+      strcat (shell_variables_path, "/");
+      strcat (shell_variables_path, proc_vim);
+      printf ("\tLoad shell envvars with:\nsource %s\n", shell_variables_path);
+      SAFE_FREE (session);
+      SAFE_FREE (shell_variables_path);
+		}
+	}
 	if (strncmp (proc_blacklisted, "True", 4) == 0
 	    || is_blacklisted (fullpath, cmdline_begin, i))
 	  printf
