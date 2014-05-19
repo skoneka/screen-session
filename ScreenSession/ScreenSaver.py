@@ -56,6 +56,7 @@ class ScreenSaver(object):
     enable_layout = False
     exact = False
     bVim = True
+    bShellvars = True
     mru = True
     bNoGroupWrap = False
     force_start = []
@@ -959,10 +960,9 @@ class ScreenSaver(object):
                         newdata = (cpids_data[i][0], cpids_data[i][1], ('\x00').join(["%s" %
                                    v for v in args]), cpids_data[i][3])
                         cpids_data[i] = newdata
-                    #elif args[0] in self.shell_names: # and self.bSaveShell:
-                    elif args[0].split('/')[-1] in self.shell_names and i == len(cpids_data)-1: # and self.bSaveShell:
+                    elif self.bShellvars and args[0].split('/')[-1] in self.shell_names and i == len(cpids_data)-1:
                         sys.stdout.write('(shell)')
-                        extra_data_name = self.__save_shellvars(cwin)
+                        extra_data_name = self.__save_shellvars(cwin, args[0].split('/')[-1])
 
                     cpids_data[i] = (cpids_data[i][0], cpids_data[i][1],
                             cpids_data[i][2], cpids_data[i][3], extra_data_name)
@@ -1243,13 +1243,14 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
 
         return name
 
-    def __save_shellvars(self, winid):
+    def __save_shellvars(self, winid, shell):
         findir = sc.datadir
         name = "shellvars_W%s_%s" % (winid, self.__unique_ident)
         fname = os.path.join(findir, name)
-        cmd = \
-            """^Uset -o posix ; set > %s ^M""" % fname
-        self.stuff(cmd, winid)
+        if shell in ('bash', 'zsh'):
+            cmd = \
+                """^Uset > %s ^M""" % fname
+            self.stuff(cmd, winid)
         return name
 
     def __save_win(self, winid, ctype, pids_data, ctime, rollback):

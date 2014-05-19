@@ -445,7 +445,7 @@ help_saver_save = """\
 Usage: screen-session save [-S sessionname] [options] [target_savefile]
        :bind S at 0 exec screen -mdc /dev/null screen-session save -fS $PID.$STY
 
-Save GNU Screen and VIM sessions to a file.
+Save GNU Screen and VIM sessions to a file. Dump shell envvars.
 Howto: http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session
 
 Options:
@@ -464,6 +464,8 @@ Options:
     disable layout saving
 -V --no-vim
     disable vim session saving
+-W --no-shellvars
+    disable dumping of shell envvars
 -l --log [file]
     output to a file instead of stdout and stderr
 -d --dir  [directory = $HOME/.screen-sessions]

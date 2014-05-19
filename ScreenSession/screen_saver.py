@@ -61,7 +61,7 @@ def main():
 
     try:
         (opts, args) = getopt.getopt((sys.argv)[argstart:],
-                "e:L:s:S:mntxXyc:fF:d:hvp:VH:l:", [
+                "e:L:s:S:mntxXyc:fF:d:hvp:VWH:l:", [
             "exclude=",
             "exclude-layout=",
             "exact",
@@ -71,6 +71,7 @@ def main():
             "log=",
             "mru",
             "no-vim",
+            "no-shellvars",
             "no-scroll=",
             "no-layout",
             "no-group-wrap",
@@ -92,6 +93,7 @@ def main():
     current_session = None
     bNoGroupWrap = False
     bVim = True
+    bShellvars = True
     bExact = False
     bKill = False
     bHelp = False
@@ -141,6 +143,8 @@ def main():
             current_session = a
         elif o in ("-V", "--no-vim"):
             bVim = False
+        elif o in ("-W", "--no-shellvars"):
+            bShellvars = False
         elif o in ("-H", "--no-scroll"):
             scroll.append(a)
         elif o in ("-x", "--exact"):
@@ -271,6 +275,7 @@ def main():
     scs.enable_layout = enable_layout
     scs.exact = bExact
     scs.bVim = bVim
+    scs.bShellvars = bShellvars
     scs.mru = mru
     scs.bNoGroupWrap = bNoGroupWrap
 
