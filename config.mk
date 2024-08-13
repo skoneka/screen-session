@@ -1,5 +1,5 @@
 # screen-session version
-VERSION = 0.6.6devel
+VERSION = 0.6.6cyanogilvie
 
 # Customize below to fit your system
 

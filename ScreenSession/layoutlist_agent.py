@@ -26,6 +26,8 @@ import GNUScreen as sc
 from util import tmpdir
 from ScreenSaver import ScreenSaver
 import curses
+from six.moves import map
+from six.moves import range
 
 AUTOSEARCH_MIN_MATCH = 2
 MAXTITLELEN = 11
@@ -310,7 +312,7 @@ def menu_table(
 
                             #pid,cwin,clay,MAXTITLELEN,height = map( str_strip,f.readlines() )
 
-                            nd = map(str_strip, f.readlines())
+                            nd = list(map(str_strip, f.readlines()))
                             curwin = nd[3]
                             sel_num = curlay = nd[4]
                             MAXTITLELEN = int(nd[5])

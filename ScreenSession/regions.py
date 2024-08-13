@@ -30,6 +30,7 @@ from util import tmpdir, tmpdir_source, remove
 import GNUScreen as sc
 from GNUScreen import SCREEN
 from ScreenSaver import ScreenSaver
+from six.moves import range
 
 inputfile = "___regions-input-%d" % os.getpid()
 sourcefile = os.path.join(tmpdir_source, "regions-source-%d" % os.getpid())

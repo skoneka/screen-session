@@ -34,23 +34,24 @@ import util
 from util import tmpdir
 from ScreenSaver import ScreenSaver
 from help import VERSION
+from six.moves import input
 try:
     from commands import getoutput
 except ImportError:
     from subprocess import getoutput
 
-try:
-    raw_input
-except NameError:
-    import builtins
-
-    original_input = builtins.input
-    del builtins.input
-
-    def raw_input(*args, **kwargs):
-        return original_input(*args, **kwargs)
-
-    builtins.raw_input = raw_input
+#try:
+#    raw_input
+#except NameError:
+#    import builtins
+#
+#    original_input = builtins.input
+#    del builtins.input
+#
+#    def raw_input(*args, **kwargs):
+#        return original_input(*args, **kwargs)
+#
+#    builtins.raw_input = raw_input
 
 tui = 1
 tui_focus = 0
@@ -78,7 +79,7 @@ def menu_account(accounts,last_selection):
                 if(i==last_selection):
                     sys.stdout.write('->')
                 print('\t%d. %s'%(i+1,acc))
-            inputstring = raw_input("
+            inputstring = input("
 Help:\tadd user@host\t del <id>
 Choose 1-%d or press Enter: "%(i+1))
             if not inputstring:
@@ -97,34 +98,32 @@ Choose 1-%d or press Enter: "%(i+1))
                         return -1
                     elif inputstring.startswith('h'):
                         print('HELP')
-                        raw_input('Press Enter to continue...')
+                        input('Press Enter to continue...')
                     elif inputstring.startswith('a'):
                         print('adding')
                         try:
                             account=inputstring.split(' ',1)[1]
                             accounts.append(account)
-                            f = open(accountsfile,'a')
-                            f.write('
+                            with open(accountsfile,'a') as f:
+                                f.write('
 '+account.strip())
-                            f.close()
                         except:
-                            raw_input('Usage: add user@host')
+                            input('Usage: add user@host')
                     elif inputstring.startswith('d'):
                         print('deleting')
                         try:
                             i = int(inputstring.split(' ',1)[1])
                             if i > 1:
-                                f = open(accountsfile,'r')
-                                paccounts=map(string.strip,f.readlines())
-                                f.close()
+                                with open(accountsfile,'r') as f:
+                                    paccounts = [line.strip() for f in f.readlines()]
                                 accounts=[accounts[0]]
                                 for a in paccounts:
                                     if a:
                                         accounts.append(a)
                                 accounts.pop(i-1)
-                                f = open(accountsfile,'w')
-                                for a in accounts[1:]:
-                                    f.write(a+'
+                                with open(accountsfile,'w') as f:
+                                    for a in accounts[1:]:
+                                        f.write(a+'
 ')
                         except:
                             print('Usage: del <id>')
@@ -175,7 +174,7 @@ def menu_tmp(preselect=None):
             if preselect:
                 inputstring = preselect
             else:
-                inputstring = raw_input("\nChoose 1-%d or ?: " % (i - 1))
+                inputstring = input("\nChoose 1-%d or ?: " % (i - 1))
             if inputstring:
                 try:
                     choice = int(inputstring)
@@ -187,7 +186,7 @@ def menu_tmp(preselect=None):
                         break
                     print2ui('UI: Out of range')
                     os.system('clear')
-                except:
+                except ValueError:  # Specify the exception type
                     command = inputstring
                     break
             else:
@@ -198,15 +197,13 @@ def menu_tmp(preselect=None):
         except EOFError:
             command = "quit"
             return command
-        except:
+        except Exception as e:  # Changed to Python 3 syntax
             if choice == "":
                 choice = 1
                 break
             tries += 1
             choice = ""
-            sys.stderr.write("""
-ERROR: Invalid input
-""")
+            sys.stderr.write(f"\nERROR: Invalid input: {str(e)}\n")
             None
 
     if inputstring:
@@ -238,18 +235,18 @@ def prime(fifoname):
     session = sc.find_new_session(l1, l2)
     sys.stderr.write('target session = %s\n' % session)
 
-    print 'session: %s' % session
+    print('session: %s' % session)
     return session
 
 
 def ui2(fifoname):
     sys.stderr.write('starting ui2\n')
     sys.stderr.flush()
-    print 'ui2 reading [%s]' % fifoname
+    print('ui2 reading [%s]' % fifoname)
     pipein = open(fifoname, 'r')  # open fifo as stdio object
     while 1:
         line = pipein.readline()[:-1]  # blocks until data sent
-        print line
+        print(line)
 
 
         #print ('Parent %d got "%s" at %s' % (os.getpid(), line, time.time( )))
@@ -349,9 +346,9 @@ def logic(scs, fifoname, fifoname2, session, psession, last_session):
 
     #os.system(SCREEN+' -X split -v')
 
-    print 'run opening [%s]' % fifoname
+    print('run opening [%s]' % fifoname)
     pipein = open(fifoname, 'r')
-    print 'run printing'
+    print('run printing')
     sys.stderr.write("%s %s %s\n" % ((sys.argv)[0], 'ui2', fifoname2))
     sys.stdout.flush()
     scs.screen("-t \"diagnostic window\" '%s' '%s' '%s' '%s'" % (os.getenv('PYTHONBIN'),
@@ -728,18 +725,18 @@ def run(psession):
                 psession = options[1]
                 last_session = options[2]
             if command[0] == "enter":
-                print "entering \"%s\"" % command[1]
+                print("entering \"%s\"" % command[1])
 
                 #os.execvp('screen',['-x',command[1]])
                 #os.system(SCREEN+' -x \"%s\"'%(command[1]))
 
                 attach_session(command[1])
             elif command[0] == 'restart':
-                print 'restarting...'
+                print('restarting...')
                 pass
             elif command[0] == 'new':
                 cmd = SCREEN + ' -m %s' % command[1]
-                print "creating session: [%s]" % cmd
+                print("creating session: [%s]" % cmd)
                 os.popen(cmd)
             else:
                 try:
@@ -758,7 +755,7 @@ def main():
     global tui
     sys.stderr.write('starting..\n')
     if sys.argv == 0:
-        print 'Usage: program [p|ui|ui2] [psession=session or named pipe]'
+        print('Usage: program [p|ui|ui2] [psession=session or named pipe]')
     if (sys.argv)[1][0] == 'p':
         bMenuRemote = False
         try:
@@ -775,7 +772,7 @@ def main():
         while True:
             #if bMenuRemote:
             #    f = open(accountsfile, 'r')
-            #    accounts_tmp = map(string.strip, f.readlines())
+            #    accounts_tmp = [line.strip() for line in f.readlines]
             #    accounts = ['%s@%s' % (USER, HOSTNAME)]
             #    for a in accounts_tmp:
             #        if a:
@@ -789,7 +786,7 @@ def main():
             #        account = accounts[iaccount]
 
             if account != 'current':
-                print 'Connecting with %s' % account
+                print('Connecting with %s' % account)
                 (user, host) = account.split('@', 1)
                 if host == 'localhost' or host == HOSTNAME:
                     if user == USER:

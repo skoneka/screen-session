@@ -38,6 +38,8 @@ from util import out, requireme, linkify, which, timeout_command
 import util
 import GNUScreen as sc
 from GNUScreen import SCREEN
+from six.moves import map
+from six.moves import range
 
 
 class ScreenSaver(object):
@@ -49,9 +51,6 @@ class ScreenSaver(object):
     basedir = ""
     projectsdir = ".screen-sessions"
     savedir = ""
-    MAXWIN = -1
-    MAXWIN_REAL = -1
-    MINWIN_REAL = 0
     force = False
     enable_layout = False
     exact = False
@@ -270,19 +269,17 @@ class ScreenSaver(object):
         self.command_at(True, 'setenv SCREENSESSION %s' % os.path.join(self.basedir, self.savedir) )
 
         wins = []
-        for id in range(0, int(self.MAXWIN_REAL)):
-            try:
-                filename = os.path.join(self.basedir, self.savedir,
-                        "win_" + str(id))
-                if os.path.exists(filename):
-                    f = open(filename)
-                    win = list(f)[0:9]
-                    f.close()
-                    win = [x.strip() for x in win]
-                    try:
-                        nproc = win[8]
-                    except:
-                        nproc = '0'
+        savedir_path = os.path.join(self.basedir, self.savedir)
+
+        for filename in os.listdir(savedir_path):
+            if filename.startswith("win_") and filename[4:].isdigit():
+                try:
+                    file_path = os.path.join(savedir_path, filename)
+                    with open(file_path, 'r') as f:
+                        win = [line.strip() for line in f.readlines()[:9]]
+
+                    nproc = win[8] if len(win) > 8 else '0'
+
                     wins.append((
                         win[0],
                         win[1],
@@ -293,9 +290,10 @@ class ScreenSaver(object):
                         win[6],
                         win[7],
                         nproc,
-                        ))
-            except Exception,x:
-                sys.stderr.write('%d Unable to load window ( %s )\n' %
+                    ))
+                except Exception as x:
+                    id = filename[4:]  # Extract the id from the filename
+                    sys.stderr.write('%d Unable to load window ( %s )\n' %
                         (id, str(x)))
 
         try:
@@ -617,10 +615,6 @@ class ScreenSaver(object):
         msg = self.query_at('tty', win)
         return msg
 
-    def maxwin(self):
-        msg = self.query_at('maxwin')
-        return int(msg.split(':')[1].strip())
-
     '''
     def get_info(self,win):
 
@@ -900,12 +894,12 @@ class ScreenSaver(object):
                                 blacklist = False
                             cpids_data.append(pidinfo + tuple([blacklist]))
                             ncpids.append(pid)
-                        except Exception,x:
+                        except Exception as x:
                             if cwin != homewindow:
                                 errors.append('%s PID %s: Unable to access ( %s )' %
                                     (cwin, pid, str(x)))
                     cpids = ncpids
-                except Exception,x:
+                except Exception as x:
                     errors.append('%s Unable to access %s ( %s )' %
                             (cwin, str(ctty), str(x)))
                     cpids=[]
@@ -1073,7 +1067,7 @@ class ScreenSaver(object):
             return (None, None, None)
 
     def __load_layouts(self):
-        cdinfo = map(int, self.dinfo()[0:2])
+        cdinfo = list(map(int, self.dinfo()[0:2]))
         out('Terminal size: %s %s' % (cdinfo[0], cdinfo[1]))
         homewindow = self.homewindow
         (homelayout, homelayoutname) = self.get_layout_number()
@@ -1309,11 +1303,11 @@ exec 'mksession' fnameescape('%s') | exec 'wviminfo' fnameescape('%s')\n""" % \
                     filename = os.path.join(rollback_dir, line.strip())
                     try:
                         tshellvars = "shellvars_W%s_%s" % (winid, os.path.basename(filename).split("_",2)[2])
-                        print tshellvars
+                        print("%s" % (tshellvars))
                         tshellvars = os.path.join(self.basedir, self.savedir,
                                 tshellvars)
                         shutil.move(filename, tshellvars)
-                        print filename,tshellvars
+                        print(filename,tshellvars)
                     except:
                         errors.append('Unable to rollback shellvars: %s' %
                                 filename)

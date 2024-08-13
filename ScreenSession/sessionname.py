@@ -73,12 +73,12 @@ if s:
             raise Exception
     except:
         if not session or s.find(session) > -1:
-            print s
+            print(s)
             sys.exit(0)
         else:
-            print "__no__session__"
+            print("__no__session__")
             sys.exit(1)
 else:
-    print "__no__session__"
+    print("__no__session__")
     sys.exit(1)
 

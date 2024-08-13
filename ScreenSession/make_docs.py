@@ -22,6 +22,7 @@ import sys
 import inspect
 import re
 import help
+import six
 
 TITLE = "screen-session"
 
@@ -61,7 +62,7 @@ _urlfinderregex = re.compile(r'http([^\.\s]+\.[^\.\s]*)+[^\.\s]{2,}')
 def linkify(text, maxlinklength):
     def replacewithlink(matchobj):
         url = matchobj.group(0)
-        text = unicode(url)
+        text = six.text_type(url)
         if len(text) > maxlinklength:
             halflength = maxlinklength / 2
             text = text[0:halflength] + '...' + text[len(text) - halflength:]
@@ -93,18 +94,18 @@ def gen_menu(menu_items, current_url):
 def print_menu(menu):
     for (i, m) in enumerate(menu):
         if i != 0:
-            print ' | '
-        print m
+            print(' | ')
+        print(m)
 
 
 def start_page(url):
     menu = gen_menu(MENU_ITEMS, url)
     sys.stdout = open('www/%s' % url, 'w')
-    print HTML_BEG
+    print(HTML_BEG)
     print_menu(menu)
     for (murl, desc) in MENU_ITEMS:
         if murl == url:
-            print "<h3>%s</h3>" % desc
+            print("<h3>%s</h3>" % desc)
     return menu
 
 
@@ -112,7 +113,7 @@ def end_page(menu):
     import datetime
     today = datetime.date.today()
     date = today.strftime("%B %d, %Y")
-    print """
+    html = """
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
@@ -121,13 +122,14 @@ def end_page(menu):
     </center>
     """ % \
         date
-    print HTML_END
+    print(html)
+    print(HTML_END)
     sys.stdout.close()
 
 
 def write_index_redirect():
     sys.stdout = open('index.html', 'w')
-    print """\
+    html = """\
 <html>
 <head>
 <base href="www" />
@@ -138,16 +140,17 @@ def write_index_redirect():
 </body>
 </html>
 """
+    print(html)
     sys.stdout.close()
 
 
 def write_index():
     url = 'index.html'
     menu = start_page(url)
-    print """<samp>"""
+    print("<samp>")
     for line in open('README', 'r'):
-        print process_text(line) + '<br>'
-    print """</samp>"""
+        print(process_text(line) + '<br>')
+    print("</samp>")
     end_page(menu)
 
 
@@ -159,8 +162,8 @@ def write_screenshots():
               ('manager-800x600.png', 'sessions manager'),
               ('regions-800x600.png', 'regions tool'))
     for (f, desc) in images:
-        print """<br>%s<br><a href="%s"><img alt="%s screenshot" src="%s"></a><br><br>""" % \
-            (desc, img_base + f, desc, img_base + 'thumbs/' + f)
+        print("""<br>%s<br><a href="%s"><img alt="%s screenshot" src="%s"></a><br><br>""" % \
+            (desc, img_base + f, desc, img_base + 'thumbs/' + f))
 
     end_page(menu)
 
@@ -168,10 +171,10 @@ def write_screenshots():
 def write_installation():
     url = 'installation.html'
     menu = start_page(url)
-    print """<samp>"""
+    print("<samp>")
     for line in open('INSTALL', 'r'):
-        print process_text(line) + '<br>'
-    print """</samp>"""
+        print(process_text(line) + '<br>')
+    print("</samp>")
     end_page(menu)
 
 
@@ -184,10 +187,10 @@ def write_gnu_screen():
 def write_news():
     url = 'news.html'
     menu = start_page(url)
-    print """<samp>"""
+    print("<samp>")
     for line in open('NEWS', 'r'):
         print(process_text(line) + '<br>')
-    print """</samp>"""
+    print("</samp>")
     end_page(menu)
 
 
@@ -221,48 +224,46 @@ def write_documentation():
                     max_command_len = len(name)
                 helps_tools.append((name, icomment, text))
     print("""screen-session is a collection of utilities for GNU Screen.<br><br>""")
-    print """<samp>"""
+    print("""<samp>""")
     for l in help_main[1:]:
         if l.startswith('Session saver modes:'):
             break;
-        print "%s<br>\n" % l
-    print """</samp>"""
+        print("%s<br>\n" % l)
+    print("""</samp>""")
 
     def doc_print_index_row(href, name, comment):
-        print """<tr><td><a href="#%s">%s</a></td><td>&nbsp;%s</td></tr>""" % \
-            (href, name, comment)
+        print("""<tr><td><a href="#%s">%s</a></td><td>&nbsp;%s</td></tr>""" % \
+            (href, name, comment))
 
     #for line in help_main:
     #    print("%s<br>"%line)
 
-    print """<h4>Session saver modes:</h4>"""
-    print """<table>"""
+    print("""<h4>Session saver modes:</h4>""")
+    print("""<table>""")
     for (name, icomment, text) in helps_saver:
         doc_print_index_row(name, name, text[icomment])
-    print """</table>"""
-    print """<h4>Tools:</h4>"""
-    print """<table>"""
+    print("""</table>""")
+    print("""<h4>Tools:</h4>""")
+    print("""<table>""")
     for (name, icomment, text) in helps_tools:
         doc_print_index_row(name, name.replace('_', '-'), text[icomment])
-    print """</table>"""
+    print("""</table>""")
 
     for (name, icomment, text) in helps_saver:
-        print """<a name="%s"></a>""" % name
-        print """<h3 style="color: #990000;"><b># %s</b></h3>""" % name.replace('_',
-                '-')
-        print """<samp>"""
+        print("""<a name="%s"></a>""" % name)
+        print("""<h3 style="color: #990000;"><b># %s</b></h3>""" % name.replace('_', '-'))
+        print("""<samp>""")
         for l in text:
-            print "%s<br>\n" % l
-        print """</samp><hr>"""
+            print("%s<br>\n" % l)
+        print("""</samp><hr>""")
 
     for (name, icomment, text) in helps_tools:
-        print """<a name="%s"></a>""" % name
-        print """<h3 style="color: #990000;"># %s</h3>""" % name.replace('_',
-                '-')
-        print """<samp>"""
+        print("""<a name="%s"></a>""" % name)
+        print("""<h3 style="color: #990000;"># %s</h3>""" % name.replace('_', '-'))
+        print("""<samp>""")
         for l in text:
-            print "%s<br>\n" % l
-        print """</samp><hr>"""
+            print("%s<br>\n" % l)
+        print("""</samp><hr>""")
     end_page(menu)
 
 

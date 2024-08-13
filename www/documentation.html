@@ -51,6 +51,8 @@ Environment variables:<br>
 
 &nbsp;&nbsp;&nbsp; STY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - target Screen session name<br>
 
+&nbsp;&nbsp;&nbsp; SCSTMPDIR&nbsp;&nbsp; - (fixit)<br>
+
 <br>
 
 </samp>
@@ -59,7 +61,7 @@ Environment variables:<br>
 <tr><td><a href="#load">load</a></td><td>&nbsp;Load saved session from a file.</td></tr>
 <tr><td><a href="#ls">ls</a></td><td>&nbsp;List saved sessions.</td></tr>
 <tr><td><a href="#other">other</a></td><td>&nbsp;Auxiliary mode, used mainly by screen-session-primer.</td></tr>
-<tr><td><a href="#save">save</a></td><td>&nbsp;Save GNU Screen and VIM sessions to a file.</td></tr>
+<tr><td><a href="#save">save</a></td><td>&nbsp;Save GNU Screen and VIM sessions to a file. Dump shell envvars.</td></tr>
 </table>
 <h4>Tools:</h4>
 <table>
@@ -233,7 +235,7 @@ Usage: screen-session save [-S sessionname] [options] [target_savefile]<br>
 
 <br>
 
-Save GNU Screen and VIM sessions to a file.<br>
+Save GNU Screen and VIM sessions to a file. Dump shell envvars.<br>
 
 Howto: <a href="http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session">http://adb.cba.pl/gnu-screen-tips-page-my.html#howto-screen-session</a><br>
 
@@ -270,6 +272,10 @@ Options:<br>
 -V --no-vim<br>
 
 &nbsp;&nbsp;&nbsp; disable vim session saving<br>
+
+-W --no-shellvars<br>
+
+&nbsp;&nbsp;&nbsp; disable dumping of shell envvars<br>
 
 -l --log [file]<br>
 
@@ -701,11 +707,13 @@ Start a new Screen window with the same working directory as the current window.
 
 Options:<br>
 
--d [dir]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - specify the new window working directory<br>
+-d [dir]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - specify the working directory<br>
 
--g [group]&nbsp;&nbsp;&nbsp;&nbsp; - set the new window group<br>
+-t [title]&nbsp;&nbsp;&nbsp;&nbsp; - specify the title<br>
 
--n [win_num]&nbsp;&nbsp; - set the new window number<br>
+-g [group]&nbsp;&nbsp;&nbsp;&nbsp; - set the group<br>
+
+-n [win_num]&nbsp;&nbsp; - set the window number<br>
 
 -N&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - automatically set the new window number to (current number + 1)<br>
 
@@ -715,33 +723,53 @@ Options:<br>
 
 -a [position]&nbsp; - prepend a directory specified with -D and current directory to<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [program], useful for creating directory specific keybindings,<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; e.g. while CWD is /tmp/test<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [program], useful for making directory specific keybindings<br>
 
 <br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window -a0 key_F5" is almost like<br>
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window $HOME/.alter/tmp/test/key_F5"<br>
+e.g. while current working directory is set to "/tmp"<br>
 
 <br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window -a1 $EDITOR key_F5" is almost like<br>
+:bind -k k5 at 0 exec scs new-window -a0 key_F5<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "scs new-window $EDITOR $HOME/.alter/tmp/test/key_F5"<br>
+is almost like<br>
+
+:bind -k k5 at 0 exec scs new-window $HOME/.alter/tmp/key_F5<br>
 
 <br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If the -a flag was set then, before creating a new window,<br>
+:bind -k k5 at 0 exec scs new-window -a1 $EDITOR key_F5<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the script tests whether the generated path exists and<br>
+is almost like<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; climbs the directory tree if the file was not found. If<br>
+:bind -k k5 at 0 exec scs new-window $EDITOR $HOME/.alter/tmp/key_F5<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the root is reached and no file was found the path will be<br>
+<br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; set to the first tested path.<br>
+If the -a flag was set then, before creating a new window, the script<br>
+
+tests whether the generated path exists and climbs the directory tree<br>
+
+if the file was not found. If the root is reached and no file was found<br>
+
+the path will be set to the first tested path.<br>
+
+<br>
+
+An example "key_F5" script, which opens a new window inside "NOTIFY" group<br>
+
+and tries to raise a window running "inotail -f .*". If no matching window<br>
+
+was found, it will execute the command.<br>
+
+<br>
+
+#!/bin/sh<br>
+
+scs nw -g NOTIFY scs run-or-raise-and-quit inotail -f $HOME/.screen_messages<br>
+
+screen -p $WINDOW -X kill<br>
 
 </samp><hr>
 <a name="regions"></a>
@@ -816,7 +844,7 @@ A dot "." selects current window, 2 dots ".."&nbsp; select current group.<br>
     <center>
     <h6>
     <a href="http://validator.w3.org/check?uri=referer">HTML 4.01 Transitional</a>&nbsp;
-    Last modified: February 05, 2012
+    Last modified: August 13, 2024
     </h6>
     </center>
     

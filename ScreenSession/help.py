@@ -536,71 +536,71 @@ def run(argv):
         mode = 'help'
     try:
         if mode in ('help', 'h', '-h', '--help'):
-            print help_help
+            print(help_help)
         elif mode == '--version':
-            print version_str
+            print(version_str)
         elif mode in ('regions', 'r'):
-            print help_regions
+            print(help_regions)
         elif mode in ('kill', 'K'):
-            print help_kill
+            print(help_kill)
             import inspect
             import signal
-            print ("\nSignals:")
+            print(("\nSignals:"))
             for (name, obj) in inspect.getmembers(signal):
                 if name.startswith('SIG'):
                     print(name[3:])
         elif mode in ('kill-zombie', 'kz'):
-            print help_kill_zombie
+            print(help_kill_zombie)
         elif mode in ('kill-group', 'kg'):
-            print help_kill_group
+            print(help_kill_group)
         elif mode in ('dir', 'new', 'new-window', 'nw'):
-            print help_new_window
+            print(help_new_window)
         elif mode in ('dump', 'd'):
-            print help_dump
+            print(help_dump)
         elif mode in ('find-pid', 'fp'):
-            print _help_find_pid
+            print(_help_find_pid)
         elif mode in ('find-file', 'ff'):
-            print _help_find_file
+            print(_help_find_file)
         elif mode == 'grab':
-            print _help_grab
+            print(_help_grab)
         elif mode in ('group', 'g'):
-            print help_group
+            print(help_group)
         elif mode in ('manager', 'm'):
-            print help_manager
+            print(help_manager)
         elif mode in ('manager-remote', 'mr'):
-            print _help_manager_remote
+            print(_help_manager_remote)
         elif mode in ('nest', 'nest-layout', 'nl'):
-            print help_nest
+            print(help_nest)
         elif mode in ('layoutlist', 'll'):
-            print help_layoutlist
+            print(help_layoutlist)
         elif mode in ('layout-checkpoint', 'lc'):
-            print help_layout_checkpoint
+            print(help_layout_checkpoint)
         elif mode in ('layout-undo', 'lu'):
-            print help_layout_undo
+            print(help_layout_undo)
         elif mode in ('layout-redo', 'lr'):
-            print help_layout_redo
+            print(help_layout_redo)
         elif mode in ('layout-history', 'lh'):
-            print help_layout_history
+            print(help_layout_history)
         elif mode in ('layout-zoom', 'lz'):
-            print help_layout_zoom
+            print(help_layout_zoom)
         elif mode == 'renumber':
-            print help_renumber
+            print(help_renumber)
         elif mode == 'sort':
-            print _help_sort
+            print(_help_sort)
         elif mode in ('subwindows', 'sw'):
-            print help_subwindows
+            print(help_subwindows)
         elif mode in ('name', 'n'):
-            print help_name
+            print(help_name)
         elif mode == 'ls':
-            print help_saver_ls
+            print(help_saver_ls)
         elif mode == 'save':
-            print help_saver_save
+            print(help_saver_save)
         elif mode == 'load':
-            print help_saver_load
+            print(help_saver_load)
         elif mode == 'other':
-            print help_saver_other
+            print(help_saver_other)
         else:
-            print 'No help for mode: %s' % mode
+            print('No help for mode: %s' % mode)
             return 1
     except IOError:
         pass

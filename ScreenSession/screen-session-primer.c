@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 /*
  *    Copyright (C) 2010-2011 Artur Skonecki http://github.com/skoneka
  *
@@ -184,7 +185,7 @@ line_to_string (FILE * fp, char **line, size_t * size)
 }
 
 int
-getline (char **lineptr, size_t * n, FILE * stream)
+mygetline (char **lineptr, size_t * n, FILE * stream)
 {
   return line_to_string (stream, lineptr, n);
 }
@@ -509,7 +510,7 @@ userInput (int *menu_num, int **num, int max, int *bFilter, int *bScrollback)
       case '?':
       case 'h':
       case 'H':
-	printf (help_str);
+	printf ("%s", help_str);
 	valid_choice = 0;
 	menu_choice = NONE;
       default:
@@ -688,10 +689,10 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       break;
   }
   c = fgetc (fp);
-  getline (&proc_cwd, &proc_cwd_s, fp);	/* CWD */
+  mygetline (&proc_cwd, &proc_cwd_s, fp);	/* CWD */
   proc_cwd = strtrim_right (proc_cwd, '\n');
   printf (PRIMER "CWD(%s) starting: ", proc_cwd);
-  getline (&proc_exe, &proc_exe_s, fp);	/* EXE - executable path */
+  mygetline (&proc_exe, &proc_exe_s, fp);	/* EXE - executable path */
   proc_exe = strtrim_right (proc_exe, '\n');
   fscanf (fp, "%d\n", &proc_args_n);	/* The number of program arguments */
   if (procs_n > 1) {
@@ -702,7 +703,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
   long file_pos = ftell (fp);
   size_t buf_size = 1;
   char *buf = malloc (buf_size * sizeof (char));
-  getline (&buf, &buf_size, fp);
+  mygetline (&buf, &buf_size, fp);
   fseek (fp, file_pos, SEEK_SET);
   int l = 0, prev_l = 0;
 
@@ -747,7 +748,7 @@ start (char *basedir, char *thisprogram, char *config, int procs_n,
       break;
   }
   fscanf (fp, "%s\n", proc_blacklisted);	/* whether the particular process was blacklisted, currently broken */
-  getline (&proc_vim, &proc_vim_s, fp);	/* vim save file base name */
+  mygetline (&proc_vim, &proc_vim_s, fp);	/* vim save file base name */
   proc_vim = strtrim_right (proc_vim, '\n');
   fclose (fp);
   printf("\n");
@@ -1032,14 +1033,14 @@ main (int argc, char **argv)
     char *title = malloc (title_s * sizeof (char));
     size_t timesaved_s = 1;
     char *timesaved = malloc (timesaved_s * sizeof (char));
-    getline (&buftext, &buftext_s, fp);	/* win number */
-    getline (&buftext, &buftext_s, fp);	/* CURRENTLY UNUSED (put window flags here) */
-    getline (&buftext, &buftext_s, fp);	/* group */
-    getline (&type, &type_s, fp);	/* win type */
-    getline (&title, &title_s, fp);	/* title */
-    getline (&filter, &filter_s, fp);	/* filter */
-    getline (&buftext, &buftext_s, fp);	/* scrollback len */
-    getline (&cmdargs, &cmdargs_s, fp);	/* This pool is not used by primer. Screen dumps on this position zombie command vector. session asver processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
+    mygetline (&buftext, &buftext_s, fp);	/* win number */
+    mygetline (&buftext, &buftext_s, fp);	/* CURRENTLY UNUSED (put window flags here) */
+    mygetline (&buftext, &buftext_s, fp);	/* group */
+    mygetline (&type, &type_s, fp);	/* win type */
+    mygetline (&title, &title_s, fp);	/* title */
+    mygetline (&filter, &filter_s, fp);	/* filter */
+    mygetline (&buftext, &buftext_s, fp);	/* scrollback len */
+    mygetline (&cmdargs, &cmdargs_s, fp);	/* This pool is not used by primer. Screen dumps on this position zombie command vector. session asver processes this vector and saves it as a first process (id=0) which is later used by [Z]ombie.
 					 */
     fscanf (fp, "%d\n", &procs_c);
     int bFilter = 0;
@@ -1081,9 +1082,9 @@ main (int argc, char **argv)
       if (!force_start && i != 0)
 	printf ("%s%s %d%s: ", blue_b, buf, i, none);
       /* cwd exe args */
-      getline (&proc_cwd, &proc_cwd_s, fp);
+      mygetline (&proc_cwd, &proc_cwd_s, fp);
       proc_cwd = strtrim_right (proc_cwd, '\n');
-      getline (&proc_exe, &proc_exe_s, fp);
+      mygetline (&proc_exe, &proc_exe_s, fp);
       proc_exe = strtrim_right (proc_exe, '\n');
       fscanf (fp, "%d\n", &proc_args_n);
       int null_c = 0;
@@ -1126,7 +1127,7 @@ main (int argc, char **argv)
 	b_zombie = 0;
       }
       fscanf (fp, "%s\n", proc_blacklisted);
-      getline (&proc_vim, &proc_vim_s, fp);
+      mygetline (&proc_vim, &proc_vim_s, fp);
       proc_vim = strtrim_right (proc_vim, '\n');
       if (!force_start && i != 0) {
 	printf ("\n");
@@ -1160,7 +1161,7 @@ main (int argc, char **argv)
 	     magenta, none);
       }
     }
-    getline (&buftext, &buftext_s, fp);	/*last line - output from :time */
+    mygetline (&buftext, &buftext_s, fp);	/*last line - output from :time */
     if (!force_start && type[0] != 'z')
       printf ("%sSAVED:%s %s\n", green_r, none, buftext);
     fclose (fp);

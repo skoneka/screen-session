@@ -25,6 +25,7 @@ import time
 from util import tmpdir, removeit
 from ScreenSaver import ScreenSaver
 import GNUScreen as sc
+from six.moves import map
 
 HISTLEN = 8
 
@@ -153,7 +154,7 @@ if __name__ == '__main__':
             targ = 0
 
         cur = layhist.current[0]
-        term_x, term_y = map(int, ss.dinfo()[0:2])
+        term_x, term_y = list(map(int, ss.dinfo()[0:2]))
         lay_f = sc.layout_begin(session)
         lay_f.write('only\n')
         sc.layout_load_dump(open(os.path.join(ld, layout_dump), 'r'))
@@ -202,7 +203,7 @@ if __name__ == '__main__':
             ss.only()
         elif os.path.exists(f_z_regions):
             regions_z = sc.get_regions(f_z_regions)
-            term_x, term_y = map(int, ss.dinfo()[0:2])
+            term_x, term_y = list(map(int, ss.dinfo()[0:2]))
             lay_f = sc.layout_begin(session)
             lay_f.write('only\n')
             sc.layout_load_dump(open(f_z_dump, 'r'))

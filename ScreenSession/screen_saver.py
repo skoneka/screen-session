@@ -82,7 +82,7 @@ def main():
             "dir=",
             "help",
             ])
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         sys.stderr.write(str(err) + '\n')
         doexit(2)
 
@@ -110,7 +110,6 @@ def main():
     enable_layout = True
     projectsdir = None
     savedir = None
-    maxwin = -1
     input = None
     output = None
     try:
@@ -264,12 +263,6 @@ def main():
     elif savedir == scs.blacklistfile:
         out("savedir cannot be named \"%s\". Aborting." % savedir)
         doexit(1)
-
-    maxwin_real = scs.maxwin()
-    if maxwin == -1:
-        maxwin = maxwin_real
-    scs.MAXWIN = maxwin
-    scs.MAXWIN_REAL = maxwin_real
 
     scs.force = force
     scs.enable_layout = enable_layout
